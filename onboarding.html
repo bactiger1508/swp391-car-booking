@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Dẫn Cài Đặt Project Car Rental</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --text-main: #1f2937;
+            --text-light: #4b5563;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 50px 60px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            font-size: 32px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #1e40af;
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            color: #3b82f6;
+            font-size: 18px;
+            margin-top: 24px;
+        }
+
+        p, li {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 24px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            color: #854d0e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: Consolas, monospace;
+            font-size: 15px;
+            overflow-x: auto;
+            margin: 16px 0;
+            border-left: 4px solid var(--primary);
+        }
+
+        .keyboard {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
+            box-shadow: 0 2px 0 #cbd5e1;
+            color: #334155;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .alert-warning {
+            background: #fffbeb;
+            border: 1px solid #fef08a;
+            color: #92400e;
+        }
+        .alert-danger {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .step-box {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚗 Hướng Dẫn Cực Chi Tiết: Setup Project Car Rental</h1>
+    <p style="text-align: center; color: #64748b; margin-top: -20px;">Dành cho thành viên chưa cài đặt bất cứ phần mềm nào trên máy.</p>
+
+    <!-- PHẦN 1: JAVA -->
+    <h2>☕ 1. Cài Đặt Java (JDK 21) & Cấu Hình Biến Môi Trường</h2>
+    <div class="step-box">
+        <p>Project này bắt buộc phải dùng Java 21.</p>
+        <ol>
+            <li>Truy cập <a href="https://adoptium.net/temurin/releases/?version=21" target="_blank">Adoptium JDK 21</a>. Tải file cài đặt đuôi <code>.msi</code> hoặc <code>.exe</code> dành cho Windows x64.</li>
+            <li>Chạy file vừa tải, cứ nhấn <b>Next</b> liên tục cho đến khi <b>Finish</b>. Cứ để nó cài vào đường dẫn mặc định (thường là <code>C:\Program Files\Eclipse Adoptium\jdk-21...</code> hoặc <code>C:\Program Files\Java\jdk-21...</code>).</li>
+            <li><b>Bước Quan Trọng Nhất: Cài biến môi trường (PATH)</b> để máy tính hiểu lệnh Java:
+                <ul>
+                    <li>Nhấn phím <span class="keyboard">Windows</span> (biểu tượng cửa sổ trên bàn phím), gõ tìm kiếm chữ: <span class="highlight">Environment Variables</span>. Chọn kết quả <b>"Edit the system environment variables"</b>.</li>
+                    <li>Một cửa sổ nhỏ hiện ra, bạn nhấn nút <b>"Environment Variables..."</b> ở góc dưới bên phải.</li>
+                    <li>Ở bảng phía dưới cùng (System variables), cuộn tìm dòng chữ <b>Path</b>. Click chuột trái vào chữ Path đó rồi nhấn nút <b>Edit...</b></li>
+                    <li>Nhấn nút <b>New</b>. Dán đường dẫn thư mục <code>bin</code> của Java vào. (Ví dụ: <code>C:\Program Files\Eclipse Adoptium\jdk-21.0.2.13-hotspot\bin</code>).</li>
+                    <li>Tiếp tục ở bảng System variables, nhấn <b>New...</b> để tạo biến mới: 
+                        <br>Variable name: <code>JAVA_HOME</code>
+                        <br>Variable value: Điền đường dẫn thư mục Java nhưng <b>BỎ thư mục bin đi</b>. (Ví dụ: <code>C:\Program Files\Eclipse Adoptium\jdk-21.0.2.13-hotspot</code>).
+                    </li>
+                    <li>Nhấn <b>OK</b> ở tất cả các bảng để lưu lại.</li>
+                </ul>
+            </li>
+            <li><b>Kiểm tra xem đã thành công chưa:</b> Nhấn phím <span class="keyboard">Windows</span> + <span class="keyboard">R</span>, gõ <code>cmd</code> rồi Enter. Gõ lệnh:
+                <div class="code-block">java -version</div>
+                Nếu nó hiện ra chữ "openjdk version 21..." thì xin chúc mừng, bạn đã làm đúng!
+            </li>
+        </ol>
+    </div>
+
+    <!-- PHẦN 2: GIT -->
+    <h2>🐙 2. Cài Đặt Git</h2>
+    <div class="step-box">
+        <ol>
+            <li>Truy cập <a href="https://git-scm.com/download/win" target="_blank">Git for Windows</a> và tải bản <b>64-bit Git for Windows Setup</b>.</li>
+            <li>Chạy file vừa tải. Lúc cài đặt màn hình sẽ hỏi rất nhiều thứ lằng nhằng, bạn <b>KHÔNG CẦN CHỈNH GÌ CẢ</b>, cứ nhắm mắt nhấn <b>Next</b> liên tục đến khi <b>Install</b> và <b>Finish</b>.</li>
+        </ol>
+    </div>
+
+    <!-- PHẦN 3: TOMCAT -->
+    <h2>🐱 3. Cài Đặt Apache Tomcat 10.1</h2>
+    <div class="step-box">
+        <div class="alert alert-danger">
+            <b>Chú ý:</b> Bắt buộc phải là Tomcat bản 10.x trở lên. Không dùng bản 9 vì dự án này dùng công nghệ <b>Jakarta EE</b>.
+        </div>
+        <ol>
+            <li>Truy cập <a href="https://tomcat.apache.org/download-10.cgi" target="_blank">Trang tải Tomcat 10</a>.</li>
+            <li>Trong phần <b>Core</b>, nhấp vào link <b>64-bit Windows zip</b> để tải về.</li>
+            <li>Sau khi tải xong, click chuột phải vào file zip, chọn <b>Extract All...</b> (Giải nén).</li>
+            <li><b>NÊN</b> giải nén ra thẳng ổ C để đường dẫn ngắn gọn, dễ tìm. Ví dụ: <code>C:\apache-tomcat-10.1.xx</code>. Tuyệt đối không để trong thư mục có dấu tiếng Việt (ví dụ `C:\Thư mục của tôi`).</li>
+        </ol>
+    </div>
+
+    <!-- PHẦN 4: SQL SERVER -->
+    <h2>🗄️ 4. Cài Đặt & Cấu Hình SQL Server (Quan Trọng 🌟)</h2>
+    <div class="step-box">
+        <ol>
+            <li><b>Cài đặt SQL Server Developer:</b> Tải bộ cài SQL Server trên trang chủ Microsoft, chọn kiểu cài đặt <b>Basic</b> hoặc <b>Custom</b>. Tại bước xác thực (Authentication Mode), <b>PHẢI CHỌN "Mixed Mode"</b> và nhập mật khẩu cho tài khoản <code>sa</code> (ví dụ nhập mật khẩu là <code>123</code> cho dễ nhớ).</li>
+            <li><b>Cài đặt SSMS:</b> Tải SQL Server Management Studio (SSMS) và cứ Next để cài đặt.</li>
+            <li><b>BẬT KẾT NỐI MẠNG CHO SQL SERVER (Bước hay bị quên nhất):</b>
+                <ul>
+                    <li>Nhấn phím <span class="keyboard">Windows</span>, tìm và mở app <b>SQL Server Configuration Manager</b>.</li>
+                    <li>Ở cột bên trái, bấm nút mũi tên sổ xuống chỗ <b>SQL Server Network Configuration</b> -> Chọn <b>Protocols for MSSQLSERVER</b>.</li>
+                    <li>Nhìn sang cột bên phải, thấy dòng <b>TCP/IP</b> đang bị tắt (Disabled). Click chuột phải vào nó chọn <b>Enable</b>.</li>
+                    <li>Tiếp tục click chuột phải vào TCP/IP chọn <b>Properties</b>.</li>
+                    <li>Chuyển sang tab <b>IP Addresses</b>. Cuộn thanh trượt xuống tuốt dưới cùng, tìm phần có tên là <b>IPAll</b>.</li>
+                    <li>Xóa trống ô <b>TCP Dynamic Ports</b> (nếu có số 0 thì xóa đi). Ở ô <b>TCP Port</b>, nhập số <span class="highlight">1433</span>. Nhấn OK.</li>
+                </ul>
+            </li>
+            <li><b>Khởi động lại SQL Server:</b> Nhấn phím <span class="keyboard">Windows</span>, gõ <code>Services</code>. Tìm dòng <code>SQL Server (MSSQLSERVER)</code>, chuột phải chọn <b>Restart</b>.</li>
+        </ol>
+    </div>
+
+    <!-- PHẦN 5: KÉO CODE VÀ TẠO DB -->
+    <h2>📥 5. Kéo Source Code (Clone) và Khởi Tạo Database</h2>
+    <div class="step-box">
+        <h3>A. Tải Source Code</h3>
+        <p>Mở thư mục bạn muốn lưu dự án (ví dụ `Documents`). Click chuột phải vào khoảng trống chọn <b>Open in Terminal</b> (hoặc Git Bash Here).</p>
+        <p>Gõ lệnh sau và Enter:</p>
+        <div class="code-block">git clone [LINK_GITHUB_CỦA_NHÓM_BẠN]</div>
+        <p>Sau khi chạy xong sẽ có thư mục <code>car-rental-management</code>.</p>
+
+        <h3>B. Khởi tạo Database</h3>
+        <ol>
+            <li>Mở phần mềm <b>SQL Server Management Studio (SSMS)</b>. Đăng nhập bằng `Authentication: SQL Server Authentication`, Login: <code>sa</code>, Password: <code>123</code> (hoặc pass bạn đã đặt).</li>
+            <li>Vào thư mục <code>car-rental-management\database</code> bạn vừa clone về. Bạn sẽ thấy 2 file: <code>schema.sql</code> và <code>sample-data.sql</code>.</li>
+            <li>Kéo thả file <code>schema.sql</code> vào cửa sổ SSMS. Bấm nút <b>Execute (F5)</b>. Chờ nó báo Success.</li>
+            <li>Tiếp tục kéo thả file <code>sample-data.sql</code> vào SSMS và bấm <b>Execute (F5)</b>.</li>
+        </ol>
+        <p>👉 Vậy là DB của bạn đã sẵn sàng với 5 tài khoản và 10 chiếc ô tô xịn xò.</p>
+    </div>
+
+    <!-- PHẦN 6: NETBEANS -->
+    <h2>IDE 6. Cấu Hình Project Trong Apache NetBeans</h2>
+    <div class="step-box">
+        <ol>
+            <li>Mở NetBeans. Trên thanh menu, chọn <b>File -> Open Project...</b> và chọn thư mục <code>car-rental-management</code>. Đợi một xíu dưới góc phải báo "Background scanning" chạy xong.</li>
+            <li><b>Thêm Tomcat vào NetBeans:</b>
+                <ul>
+                    <li>Nhìn sang panel bên trái, bấm vào tab <b>Services</b> (cùng hàng với chữ Projects).</li>
+                    <li>Chuột phải vào hình bánh răng <b>Servers</b> -> <b>Add Server...</b></li>
+                    <li>Chọn <b>Apache Tomcat or TomEE</b> -> Next.</li>
+                    <li>Bấm nút <b>Browse...</b> và chỉ đường dẫn tới thư mục <code>C:\apache-tomcat-10.1.xx</code> mà bạn đã giải nén ở Phần 3.</li>
+                    <li>Nếu nó bắt nhập user/pass thì cứ nhập bừa <code>admin/admin</code>. Nhấn Finish.</li>
+                </ul>
+            </li>
+            <li><b>Đổi Mật Khẩu Database:</b>
+                <br>Quay lại tab <b>Projects</b>. Mở thư mục <code>Source Packages -> (default package)</code>. Click đúp mở file <b>db.properties</b>.
+                <br>Nếu mật khẩu SQL của bạn là 123, hãy đảm bảo nội dung file là:
+                <div class="code-block">db.user=sa<br>db.password=123</div>
+                Đừng quên bấm <span class="keyboard">Ctrl</span> + <span class="keyboard">S</span> để lưu lại.
+            </li>
+        </ol>
+    </div>
+
+    <!-- PHẦN 7: CHẠY THÔI -->
+    <h2>🚀 7. Chạy Ứng Dụng Nào!</h2>
+    <div class="step-box">
+        <ol>
+            <li>Click <b>chuột phải</b> vào tên Project (có hình ly cà phê và chữ m màu vàng) -> Chọn <b>Clean and Build</b> (Shift + F11). 
+                <br><i>Lưu ý: Lần chạy đầu tiên sẽ tốn khoảng 1-2 phút vì Maven phải tải các thư viện xuống máy. Vui lòng kiên nhẫn đợi đến khi thấy chữ <b>BUILD SUCCESS</b> màu xanh lá cây.</i>
+            </li>
+            <li>Sau khi Build Success, nhấn <b>chuột phải</b> vào tên Project -> Chọn <b>Run</b> (F6).</li>
+            <li>Trình duyệt sẽ tự bật lên hoặc bạn tự vào link: <a href="http://localhost:8080/car-rental-management/home">http://localhost:8080/car-rental-management/home</a></li>
+        </ol>
+        
+        <div class="alert alert-warning">
+            <b>Tài khoản Đăng Nhập Test:</b>
+            <ul style="margin-top: 10px; margin-bottom: 0;">
+                <li>Quyền Admin: <code>admin@carrental.com</code> / Mật khẩu: <code>password</code></li>
+                <li>Quyền Khách: <code>customer@carrental.com</code> / Mật khẩu: <code>password</code></li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
