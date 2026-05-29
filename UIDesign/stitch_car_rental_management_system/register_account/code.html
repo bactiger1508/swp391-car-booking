@@ -1,0 +1,195 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Đăng ký tài khoản - FleetPro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b38d5b",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "primary": "#041638",
+                        "on-primary-fixed": "#081a3d",
+                        "error-container": "#ffdad6",
+                        "secondary": "#505f76",
+                        "on-primary-fixed-variant": "#37466b",
+                        "surface-container-low": "#f5f3f6",
+                        "tertiary-fixed": "#ffddb5",
+                        "secondary-fixed": "#d3e4fe",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "outline": "#75777f",
+                        "inverse-surface": "#303033",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#8393bc",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8fc",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-surface": "#1b1b1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "surface-container-high": "#e9e7eb",
+                        "inverse-primary": "#b6c6f1",
+                        "tertiary": "#251400",
+                        "surface-container-highest": "#e4e2e5",
+                        "surface-tint": "#4e5e84",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-container": "#1b2b4e",
+                        "surface": "#fbf8fc",
+                        "on-tertiary-fixed": "#2a1800"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_md": "16px",
+                        "gutter": "24px",
+                        "stack_lg": "24px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "status-badge": ["12px", { "lineHeight": "12px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen flex antialiased">
+<div class="hidden lg:flex lg:w-5/12 bg-primary relative overflow-hidden flex-col justify-between p-12">
+<div class="absolute inset-0 z-0 bg-cover bg-center opacity-30 mix-blend-overlay" data-alt="A high-angle architectural shot of a modern, sleek corporate parking facility featuring rows of pristine, identical fleet vehicles neatly aligned. The lighting is bright, natural daylight casting sharp, structural shadows. The overall aesthetic is highly organized, professional, and minimalist, utilizing a cool-toned palette dominated by deep navy blues, metallic greys, and stark whites." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA3ZFem7WpnXV-Z_rrGMrZSVtDFtK83Vb3H-mlPMzWqaB2-pAJnDhYEdimgP-HYgk-hFXtXwSVxKN1mJEBCb5cldx_-9Pti2g1KS1ltsB9jMBrUE3tJOtA2B1UPp-nm9miRQ5vYOaqOr5QMUzU9RxMfeKXNOdYQ-0-nvFtfNNtxIuNBVvlozNsxFSwk9QnFV4kl1X4lqU_w8eyO3LrbZ3bBb1Wvq9MT4QN9d8Zlo_qYdmT6t3km7HXlgr5mu9NiK9M9GbV2kip1ilE');"></div>
+<div class="relative z-10 flex items-center gap-3 text-on-primary">
+<div class="w-10 h-10 rounded bg-on-primary flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+<span class="font-display-lg text-display-lg tracking-tight">CarPro</span>
+</div>
+<div class="relative z-10 text-on-primary max-w-md">
+<h2 class="font-headline-md text-headline-md mb-4">Nâng tầm di chuyển doanh nghiệp.</h2>
+<p class="font-body-md text-body-md opacity-80 leading-relaxed">Tạo tài khoản khách hàng để truy cập đặt xe theo thời gian thực, quản lý các chuyến đi đang hoạt động và tối ưu hóa hậu cần di chuyển của doanh nghiệp.</p>
+</div>
+</div>
+<div class="w-full lg:w-7/12 flex items-center justify-center p-8 sm:p-12 relative bg-surface-container-lowest">
+<a class="absolute top-8 left-8 lg:left-auto lg:right-8 flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps uppercase tracking-wider" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+            Về trang chủ
+        </a>
+<div class="w-full max-w-md space-y-8 bg-surface p-0 sm:p-10 sm:rounded-xl sm:shadow-sm sm:border sm:border-outline-variant transition-all">
+<div class="text-center sm:text-left">
+<h1 class="font-display-lg text-display-lg text-primary mb-2">Tạo tài khoản</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Đăng ký hồ sơ khách hàng mới để bắt đầu.</p>
+</div>
+<form class="space-y-5">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface mb-2" for="fullName">Họ và tên</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant opacity-70">person</span>
+<input class="w-full h-12 pl-12 pr-4 rounded bg-surface border border-outline-variant text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder-on-surface-variant/50" id="fullName" placeholder="vd: Nguyễn Văn A" type="text">
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface mb-2" for="email">Email</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant opacity-70 text-lg">mail</span>
+<input class="w-full h-12 pl-12 pr-4 rounded bg-surface border border-outline-variant text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder-on-surface-variant/50" id="email" placeholder="ten@congty.com" type="email">
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface mb-2" for="phone">Số điện thoại</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant opacity-70 text-lg">call</span>
+<input class="w-full h-12 pl-12 pr-4 rounded bg-surface border border-outline-variant text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder-on-surface-variant/50" id="phone" placeholder="+84 900 000 000" type="tel">
+</div>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface mb-2" for="password">Mật khẩu</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant opacity-70 text-lg">lock</span>
+<input class="w-full h-12 pl-12 pr-4 rounded bg-surface border border-outline-variant text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder-on-surface-variant/50" id="password" placeholder="••••••••" type="password">
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface mb-2" for="confirmPassword">Xác nhận mật khẩu</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant opacity-70 text-lg">lock</span>
+<input class="w-full h-12 pl-12 pr-4 rounded bg-surface border border-outline-variant text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md text-body-md placeholder-on-surface-variant/50" id="confirmPassword" placeholder="••••••••" type="password">
+</div>
+</div>
+<div class="pt-6 space-y-6">
+<button class="w-full h-12 bg-primary text-on-primary font-title-sm text-title-sm rounded hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center gap-2 shadow-sm" type="button">
+                        Tạo tài khoản
+                        <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</button>
+<div class="text-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Đã có tài khoản?</span>
+<a class="font-body-sm text-body-sm text-primary font-bold hover:underline ml-1" href="#">Đăng nhập</a>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+
+</body></html>

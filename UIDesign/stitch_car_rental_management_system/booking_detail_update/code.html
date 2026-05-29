@@ -1,0 +1,388 @@
+<!DOCTYPE html><html class="light" lang="vi" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Chi tiết Đơn thuê - CarRent Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f5f3f6",
+                        "surface-dim": "#dbd9dd",
+                        "error": "#ba1a1a",
+                        "primary": "#041638",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-tertiary-container": "#b38d5b",
+                        "tertiary": "#251400",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#081a3d",
+                        "surface": "#fbf8fc",
+                        "on-surface-variant": "#45464e",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "surface-variant": "#e4e2e5",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-fixed-variant": "#37466b",
+                        "background": "#fbf8fc",
+                        "on-primary-container": "#8393bc",
+                        "surface-container-highest": "#e4e2e5",
+                        "secondary-fixed": "#d3e4fe",
+                        "inverse-primary": "#b6c6f1",
+                        "on-background": "#1b1b1e",
+                        "on-secondary": "#ffffff",
+                        "outline": "#75777f",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#303033",
+                        "tertiary-fixed": "#ffddb5",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "primary-container": "#1b2b4e",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "secondary": "#505f76",
+                        "surface-tint": "#4e5e84",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-container-high": "#e9e7eb",
+                        "surface-bright": "#fbf8fc",
+                        "primary-fixed": "#d9e2ff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1b1b1e",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#eabf89"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack_lg": "24px",
+                        "sidebar_width": "280px",
+                        "stack_sm": "8px",
+                        "margin_page": "32px",
+                        "container_max_width": "1440px",
+                        "gutter": "24px",
+                        "stack_md": "16px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "status-badge": ["12px", {"lineHeight": "12px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #F8FAFC;
+        }
+        .sidebar-active {
+            background-color: #d0e1fb;
+            color: #54647a;
+            border-left: 4px solid #b7c8e1;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- Fixed SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary flex flex-col shadow-md border-r border-outline-variant z-50 overflow-y-auto">
+<div class="p-8">
+<h1 class="font-display-lg text-display-lg text-on-primary font-bold tracking-tight">CarPro</h1>
+<p class="text-on-primary-fixed-variant text-body-sm opacity-80 mt-1">Quản lý đội xe thông minh</p>
+</div>
+<nav class="flex-grow">
+<ul class="space-y-1">
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="home">home</span> Trang chủ</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="directions_car">directions_car</span> Danh sách xe</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="person">person</span> Hồ sơ cá nhân</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 bg-secondary-container text-on-secondary-container border-l-4 border-secondary-fixed-dim transition-all" href="#"><span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Đơn thuê của tôi</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="payments">payments</span> Thanh toán</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="description">description</span> Hợp đồng</a></li>
+<li class=""><a class="flex items-center gap-4 py-3 px-8 text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container transition-colors" href="#"><span class="material-symbols-outlined" data-icon="assignment">assignment</span> Quản lý đơn thuê</a></li>
+</ul>
+</nav>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface border-b border-outline-variant shadow-sm z-40 flex justify-between items-center px-8 ml-[280px]">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full w-96">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full ml-2" placeholder="Tìm kiếm mã đơn, khách hàng..." type="text">
+</div>
+<div class="flex items-center gap-6">
+<button class="hover:bg-surface-container-high rounded-full p-2 transition-all"><span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span></button>
+<button class="hover:bg-surface-container-high rounded-full p-2 transition-all"><span class="material-symbols-outlined text-primary" data-icon="help_outline">help_outline</span></button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<span class="text-body-sm font-semibold text-primary">Nguyễn Văn A</span>
+<img class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A professional headshot of a Vietnamese male manager in a clean, brightly lit corporate office. He is smiling warmly, wearing a crisp white business shirt. The background is a soft blur of modern architectural elements and indoor plants, reflecting a professional and reliable car rental service atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGSprhKUx8N0qCNVFBfNxBtj85i_uegIqpAJdWhZOZ78QM-SpC05o3-3omfrkk46jUdC0G5BEeRfl-nM2Av7QFX5bKMJtYt-8-t6BQZOh1iGIdMp9x332aQFrt0Z9DlWHFhcKKWA9otNZWG-uSvO7ryABCc1Xpe8lGJ4najrZCl5HLKfhIOecf0VWJvbaVabVHCFAwUCqbVeGMcIPlhCG40uLiqvGkwdh80c2lkbXe5H5A_F9eHgMHnVCi_tFh8oHQoRqXXEOv9QM">
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] pt-24 px-8 pb-12 max-w-container_max_width">
+<!-- Page Header & Status -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant text-body-sm mb-2">
+<a class="hover:text-primary" href="#">Quản lý đơn thuê</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="font-semibold text-primary">Chi tiết đơn #RENT-2024-0892</span>
+</nav>
+<h2 class="font-headline-md text-headline-md text-primary">Chi tiết &amp; Cập nhật Đơn thuê</h2>
+</div>
+<div class="flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-outline-variant">
+<span class="text-body-sm text-on-surface-variant font-medium">Trạng thái hiện tại:</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-status-badge text-status-badge flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="event_available">event_available</span> Đã xác nhận
+                </span>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Information -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Customer & Vehicle Bento Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Customer Card -->
+<div class="bg-white p-6 rounded-xl shadow-sm border border-outline-variant group hover:shadow-md transition-all">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-sm text-title-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+                                Thông tin khách hàng
+                            </h3>
+<button class="text-primary hover:bg-surface-container-low p-2 rounded-full transition-colors"><span class="material-symbols-outlined" data-icon="edit">edit</span></button>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between">
+<span class="text-on-surface-variant text-body-sm">Họ và tên</span>
+<span class="font-semibold text-primary">Lê Minh Hoàng</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant text-body-sm">Số điện thoại</span>
+<span class="font-semibold text-primary">0987 654 321</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant text-body-sm">Email</span>
+<span class="font-semibold text-primary">hoang.le@email.com</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant text-body-sm">GPLX</span>
+<span class="font-semibold text-primary">VN-123456789</span>
+</div>
+</div>
+</div>
+<!-- Vehicle Card -->
+<div class="bg-white p-6 rounded-xl shadow-sm border border-outline-variant group hover:shadow-md transition-all">
+<h3 class="font-title-sm text-title-sm text-primary flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+                            Thông tin xe thuê
+                        </h3>
+<div class="flex gap-4">
+<img class="w-24 h-24 rounded-lg object-cover" data-alt="A sleek, modern dark navy blue luxury sedan parked in a clean, minimalist studio setting with soft cinematic lighting. The car's polished finish reflects elegant highlights. The aesthetic is corporate and high-end, using deep blues and cool tones to signify reliability and premium service." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRIwELJuTTJ1eJnpCzIE-dEzQX5wONfZ8xdWgFl5gPyZ06okyyfofYhRTtsaUFH4oHuQBvkDVg1q26gHvuJkWa0cZSxWHYmoBn7k40OxUZ_eerqTVVFwCQ22pQPDN7_kt3ClPHg_qhd6fYDdVOLBKn4jTyXPMg1AxdZ0sYH00A3LxDbiEX8lPaREZQupHSdvVSqb2YrzvORdNYSkVn30VB1M6MZN4D62r19BSYmbHypDEovrJVJfaXQCQdhwTu8D-5EIMj2QLP1DI">
+<div class="space-y-1">
+<p class="font-bold text-primary text-body-md">VinFast Lux A2.0</p>
+<p class="text-body-sm text-on-surface-variant">Biển số: 51H-999.88</p>
+<p class="text-body-sm text-on-surface-variant">Loại xe: Sedan 5 chỗ</p>
+<p class="text-primary font-semibold text-body-sm mt-2">1,200,000đ / ngày</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Update Form Section -->
+<div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant">
+<h3 class="font-title-sm text-title-sm text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="edit_calendar">edit_calendar</span>
+                        Cập nhật lịch trình thuê xe
+                    </h3>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">NGÀY NHẬN XE</label>
+<div class="relative">
+<input class="w-full border-outline-variant rounded-lg focus:ring-primary focus:border-primary p-3 pl-10 text-body-md" type="date" value="2024-10-15">
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">NGÀY TRẢ XE</label>
+<div class="relative">
+<input class="w-full border-outline-variant rounded-lg focus:ring-primary focus:border-primary p-3 pl-10 text-body-md" type="date" value="2024-10-18">
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline" data-icon="calendar_month">calendar_month</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">ĐỊA ĐIỂM NHẬN XE</label>
+<div class="relative">
+<select class="w-full border-outline-variant rounded-lg focus:ring-primary focus:border-primary p-3 pl-10 text-body-md appearance-none">
+<option>Sân bay Tân Sơn Nhất, TP.HCM</option>
+<option>Văn phòng Quận 1</option>
+<option>Giao tận nơi (Nội thành)</option>
+</select>
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline" data-icon="location_on">location_on</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block">ĐỊA ĐIỂM TRẢ XE</label>
+<div class="relative">
+<select class="w-full border-outline-variant rounded-lg focus:ring-primary focus:border-primary p-3 pl-10 text-body-md appearance-none">
+<option>Sân bay Tân Sơn Nhất, TP.HCM</option>
+<option>Văn phòng Quận 1</option>
+<option>Thu hồi tận nơi (Nội thành)</option>
+</select>
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline" data-icon="pin_drop">pin_drop</span>
+</div>
+</div>
+<div class="md:col-span-2 mt-4 flex items-start gap-3 bg-surface-container-low p-4 rounded-lg">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="info">info</span>
+<p class="text-body-sm text-on-surface-variant leading-relaxed">Việc thay đổi thời gian thuê có thể làm thay đổi tổng chi phí và phụ thuộc vào tình trạng xe sẵn có. Vui lòng kiểm tra kỹ trước khi lưu.</p>
+</div>
+</form>
+</div>
+<!-- Policies Section -->
+<div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant overflow-hidden relative">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-[120px]" data-icon="policy">policy</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-primary mb-4">Chính sách thay đổi &amp; Hủy bỏ</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+<div class="space-y-3">
+<h4 class="font-semibold text-primary flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Thay đổi lịch trình
+                            </h4>
+<ul class="text-body-sm text-on-surface-variant space-y-2 list-disc pl-5">
+<li class="">Miễn phí thay đổi trước 24h kể từ giờ nhận xe.</li>
+<li class="">Thay đổi trong vòng 24h sẽ tính phí 10% giá trị ngày đầu tiên.</li>
+<li class="">Tối đa 02 lần thay đổi cho mỗi đơn thuê.</li>
+</ul>
+</div>
+<div class="space-y-3">
+<h4 class="font-semibold text-error flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span> Hủy đơn thuê
+                            </h4>
+<ul class="text-body-sm text-on-surface-variant space-y-2 list-disc pl-5">
+<li class="">Hủy trước 48h: Hoàn tiền 100% (trừ phí chuyển khoản).</li>
+<li class="">Hủy từ 24h - 48h: Hoàn tiền 50%.</li>
+<li class="">Hủy dưới 24h: Không áp dụng hoàn tiền cọc.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Summary & Actions -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Payment Summary -->
+<div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant sticky top-24">
+<h3 class="font-title-sm text-title-sm text-primary mb-6">Tóm tắt thanh toán</h3>
+<div class="space-y-4 pb-6 border-b border-outline-variant">
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Giá thuê (3 ngày)</span>
+<span class="font-medium text-primary">3,600,000đ</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Phí giao xe (Sân bay)</span>
+<span class="font-medium text-primary">150,000đ</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Bảo hiểm chuyến đi</span>
+<span class="font-medium text-primary">300,000đ</span>
+</div>
+</div>
+<div class="py-6 space-y-2">
+<div class="flex justify-between items-center">
+<span class="font-bold text-primary text-body-md">Tổng cộng</span>
+<span class="font-bold text-primary text-headline-md">4,050,000đ</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-tertiary-fixed-variant">Đã thanh toán (Cọc)</span>
+<span class="font-semibold text-on-tertiary-fixed-variant">1,000,000đ</span>
+</div>
+<div class="flex justify-between text-body-sm bg-surface-container px-3 py-2 rounded-lg mt-4">
+<span class="font-medium text-primary">Cần thanh toán thêm</span>
+<span class="font-bold text-primary">3,050,000đ</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="space-y-4 pt-4">
+<button class="w-full bg-primary text-on-primary py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary-container transition-all active:scale-95 shadow-md" onclick="handleSave()">
+<span class="material-symbols-outlined" data-icon="save">save</span>
+                            Lưu thay đổi
+                        </button>
+<button class="w-full bg-white text-error border-2 border-error/20 py-4 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-error-container hover:border-error/40 transition-all active:scale-95" onclick="handleCancel()">
+<span class="material-symbols-outlined" data-icon="cancel">cancel</span>
+                            Hủy đơn thuê
+                        </button>
+<button class="w-full text-on-surface-variant py-2 px-6 rounded-lg font-medium hover:underline text-body-sm">
+                            Liên hệ hỗ trợ: 1900 8888
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Success Feedback Overlay (Hidden by default) -->
+<div class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" id="success-overlay">
+<div class="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-xs text-center border border-outline-variant">
+<div class="w-20 h-20 bg-secondary-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="check_circle" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+</div>
+<h4 class="font-headline-md text-primary mb-2">Thành công!</h4>
+<p class="text-body-sm text-on-surface-variant mb-6">Thông tin đơn thuê của bạn đã được cập nhật trên hệ thống.</p>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-semibold" onclick="closeOverlay()">Đóng</button>
+</div>
+</div>
+<script>
+        function handleSave() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.add('opacity-100'), 10);
+        }
+
+        function handleCancel() {
+            if(confirm('Bạn có chắc chắn muốn hủy đơn thuê này không? Thao tác này không thể hoàn tác và có thể phát sinh phí hủy.')) {
+                alert('Đang xử lý yêu cầu hủy đơn...');
+            }
+        }
+
+        function closeOverlay() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('opacity-100');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+        
+        // Simple ripple-like effect on buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chi tiết hợp đồng - CarRent Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#005FB8",
+                        "on-primary": "#FFFFFF",
+                        "primary-container": "#D6E3FF",
+                        "on-primary-container": "#001B3E",
+                        secondary: "#565F71",
+                        "on-secondary": "#FFFFFF",
+                        "secondary-container": "#DAE2F9",
+                        "on-secondary-container": "#131C2C",
+                        tertiary: "#705575",
+                        "on-tertiary": "#FFFFFF",
+                        surface: "#FDFBFF",
+                        "on-surface": "#1A1C1E",
+                        "surface-container-low": "#F2F3F7",
+                        "surface-container-high": "#E2E2E6",
+                        "surface-container-highest": "#DDE2EA",
+                        "outline": "#74777F",
+                        "outline-variant": "#C4C6D0",
+                        "secondary-fixed-dim": "#BEC6DC"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Public Sans", "sans-serif"],
+                        "display": ["Public Sans", "sans-serif"],
+                        "body": ["Public Sans", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary dark:bg-primary-container border-r border-outline-variant dark:border-outline shadow-md flex flex-col h-full z-50">
+<div class="p-6">
+<h1 class="font-display-lg text-display-lg text-on-primary font-bold tracking-tight">CarRent Pro</h1>
+<p class="text-on-primary/80 text-sm mt-1">Quản lý đội xe thông minh</p>
+</div>
+<nav class="flex-1 overflow-y-auto sidebar-scroll">
+<ul class="space-y-1 py-4">
+<!-- Navigation Items -->
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">home</span>Trang chủ</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">directions_car</span>Danh sách xe</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">person</span>Hồ sơ cá nhân</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">receipt_long</span>Đơn thuê của tôi</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">payments</span>Thanh toán</a></li>
+<li><a class="flex items-center bg-secondary-container text-on-secondary-container border-l-4 border-secondary-fixed-dim py-3 px-6 transition-all cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">description</span>Hợp đồng</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">assignment</span>Quản lý đơn thuê</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">fact_check</span>Duyệt đơn thuê</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">key</span>Bàn giao/Trả xe</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">group</span>Quản lý người dùng</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">security</span>Phân quyền</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">garage</span>Quản lý xe</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">build</span>Lịch bảo dưỡng</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">settings_applications</span>Cấu hình chính sách</a></li>
+<li><a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors cursor-pointer active:scale-95 duration-200" href="#"><span class="material-symbols-outlined mr-3">insert_chart</span>Báo cáo doanh thu</a></li>
+</ul>
+</nav>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface dark:bg-surface-container-low border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-8 z-40 ml-[280px]">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm w-80 focus:ring-2 focus:ring-primary" placeholder="Tìm kiếm hợp đồng..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all"><span class="material-symbols-outlined">help_outline</span></button>
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all"><span class="material-symbols-outlined">dark_mode</span></button>
+<div class="flex items-center gap-3 ml-4 border-l pl-4 border-outline-variant">
+<div class="text-right">
+<p class="text-sm font-semibold">Nguyễn Văn A</p>
+<p class="text-xs text-outline">Quản trị viên</p>
+</div>
+<img alt="Ảnh đại diện người dùng" class="w-10 h-10 rounded-full border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXqT-TJih1nVGjAJCyWT2W4EslxeA67MTUawJRKfc5ppKJiWiSinSvDQ25WOCOxijZah5levgWKNeMe1fAJ8BwOROt9-k4iIRpJhA_jvbuWb_hcIEKJXByPlhy4nDdkwYaBGnL8xHzHIEffbM-7-CeGbXrYrJ5aEiOfAp9LTkAMSAXZZnoHDr5fvTuAAbM3IGNifY63sgq5vShfkF-pzqVoQAsj0Go8l7Hy0umcsCzW0Zmw1QbUleyePLNcK1DGRa8kK1OtePU0_g"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[280px] mt-16 p-8 h-[calc(100vh-64px)] overflow-y-auto bg-surface-container-low">
+<!-- Breadcrumbs & Actions -->
+<div class="flex justify-between items-center mb-8">
+<div>
+<nav class="flex text-sm text-outline mb-1 gap-2">
+<span>Hợp đồng</span>
+<span>/</span>
+<span class="text-primary font-medium">Chi tiết hợp đồng #CT-2023-8892</span>
+</nav>
+<h2 class="text-3xl font-bold tracking-tight">Chi tiết hợp đồng thuê xe</h2>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center px-6 py-2.5 bg-primary-container text-on-primary-container rounded-xl font-semibold hover:brightness-95 transition-all shadow-sm">
+<span class="material-symbols-outlined mr-2">payments</span>
+                    Ghi nhận thanh toán
+                </button>
+<button class="flex items-center px-6 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all shadow-md">
+<span class="material-symbols-outlined mr-2">front_loader</span>
+                    Bàn giao xe
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Contract Info Card -->
+<div class="col-span-8 space-y-6">
+<!-- Core Details Section -->
+<div class="glass-card rounded-2xl p-6 shadow-sm overflow-hidden relative">
+<div class="absolute top-0 right-0 px-4 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-bl-xl uppercase tracking-wider">Đang hiệu lực</div>
+<h3 class="text-xl font-bold mb-6 flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">assignment_turned_in</span>
+                        Thông tin cơ bản
+                    </h3>
+<div class="grid grid-cols-3 gap-8">
+<div>
+<p class="text-xs text-outline font-bold uppercase mb-1">Mã hợp đồng</p>
+<p class="text-lg font-semibold">#CT-2023-8892</p>
+</div>
+<div>
+<p class="text-xs text-outline font-bold uppercase mb-1">Ngày lập</p>
+<p class="text-lg font-semibold">12/10/2023</p>
+</div>
+<div>
+<p class="text-xs text-outline font-bold uppercase mb-1">Loại hình</p>
+<p class="text-lg font-semibold">Thuê tự lái</p>
+</div>
+<div class="col-span-3 h-px bg-outline-variant my-2"></div>
+<div class="col-span-2">
+<p class="text-xs text-outline font-bold uppercase mb-1">Thời gian thuê</p>
+<div class="flex items-center gap-4">
+<div>
+<p class="text-sm text-outline">Từ ngày</p>
+<p class="text-base font-semibold">08:00 - 15/10/2023</p>
+</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div>
+<p class="text-sm text-outline">Đến ngày</p>
+<p class="text-base font-semibold">20:00 - 18/10/2023</p>
+</div>
+</div>
+</div>
+<div>
+<p class="text-xs text-outline font-bold uppercase mb-1">Tổng cộng</p>
+<p class="text-2xl font-extrabold text-primary">4,500,000 VND</p>
+</div>
+</div>
+</div>
+<!-- Terms and Conditions -->
+<div class="glass-card rounded-2xl p-6 shadow-sm">
+<h3 class="text-xl font-bold mb-6 flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">gavel</span>
+                        Điều khoản và Chính sách
+                    </h3>
+<div class="space-y-4 max-h-[400px] overflow-y-auto pr-4 sidebar-scroll">
+<div class="p-4 bg-surface-container-low rounded-xl">
+<h4 class="font-bold text-sm mb-2">1. Trách nhiệm bên thuê</h4>
+<p class="text-sm text-on-surface/80 leading-relaxed italic">Bên thuê cam kết sử dụng xe đúng mục đích, không sử dụng xe vào các hoạt động vi phạm pháp luật. Chịu hoàn toàn trách nhiệm về vi phạm giao thông trong thời gian thuê.</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<h4 class="font-bold text-sm mb-2">2. Chính sách nhiên liệu</h4>
+<p class="text-sm text-on-surface/80 leading-relaxed italic">Bên thuê nhận xe với mức nhiên liệu hiện tại và phải trả xe với mức nhiên liệu tương ứng. Trường hợp thiếu hụt sẽ tính phí 25,000 VND/lít.</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<h4 class="font-bold text-sm mb-2">3. Phí quá giờ</h4>
+<p class="text-sm text-on-surface/80 leading-relaxed italic">Mỗi giờ trả chậm so với thời gian quy định sẽ tính phí 100,000 VND/giờ. Nếu quá 5 giờ sẽ tính thành 01 ngày thuê mới.</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-xl">
+<h4 class="font-bold text-sm mb-2">4. Bảo hiểm và Va chạm</h4>
+<p class="text-sm text-on-surface/80 leading-relaxed italic">Xe đã bao gồm bảo hiểm thân vỏ. Trong trường hợp xảy ra va chạm do lỗi bên thuê, mức khấu trừ tối thiểu là 2,000,000 VND/vụ.</p>
+</div>
+</div>
+</div>
+<!-- Digital Signatures -->
+<div class="grid grid-cols-2 gap-6">
+<div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-primary/20">
+<h4 class="text-sm font-bold text-outline uppercase mb-4 text-center">Chữ ký Bên Cho Thuê (Bên A)</h4>
+<div class="h-32 border-2 border-dashed border-outline-variant rounded-xl flex items-center justify-center relative bg-white/50">
+<img alt="Signature A" class="h-24 opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3hHlBVYYK_3eG87qhB6k29HLmJLNmTAvWUPikrF0NM7D53hr1Zp4fXtSUZxwcAHJU3qcTLmPHIk5EOfwCaZB3PbrdFmyJ8GAeYM876FxI4zTt5NEvAShBu-Q3ilLC6MU-sH8AC6YKNbDqYaQ06l890NyXMhzCjKs15jNDW_k--fnOHa5o-Quo8b13cf7wsDIuw52yreh_HekfrOJAlS5Afoafj_sU_8D53TTMbsYgWm2qPHCL2b3VC6D3qbRwp88t05um9Qv8_ps"/>
+<p class="absolute bottom-2 right-2 text-[10px] text-outline font-mono">Verified: 2023-10-12 14:22:05</p>
+</div>
+<p class="text-center mt-3 font-bold">Lê Thành Nam</p>
+<p class="text-center text-xs text-outline">Đại diện CarRent Pro</p>
+</div>
+<div class="glass-card rounded-2xl p-6 shadow-sm border-t-4 border-primary/20">
+<h4 class="text-sm font-bold text-outline uppercase mb-4 text-center">Chữ ký Bên Thuê (Bên B)</h4>
+<div class="h-32 border-2 border-dashed border-outline-variant rounded-xl flex items-center justify-center relative bg-white/50">
+<img alt="Signature B" class="h-24 opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF7yrRWT9y_jRTVUNJuXdEywpQPPWi_tFd_F5GCM_6h1RBTTSn61fjUszdYjcrFa4IRfTDMUfoFHACpTJ3LHRm5zFieFS_O0C1CRG-De2Q16OMNmOWnwsbI6NUniRbcOXYkw6Bk3G_h7wcL4DCMF_ym4cQp9-wF844dFOVw-ue28m9TB284SBX2unMUWFbKoxnoJTfU5FAj5IgQ8dXI_3IqypCLH4gG3tFZzFgGX5i2N9BxPMGFmk193mRYIdfjdPVj3LNmbwdWj0"/>
+<p class="absolute bottom-2 right-2 text-[10px] text-outline font-mono">Verified: 2023-10-12 15:45:12</p>
+</div>
+<p class="text-center mt-3 font-bold">Trần Văn Hoàng</p>
+<p class="text-center text-xs text-outline">Khách hàng cá nhân</p>
+</div>
+</div>
+</div>
+<!-- Side Sidebar: Customer & Car -->
+<div class="col-span-4 space-y-6">
+<!-- Car Card -->
+<div class="glass-card rounded-2xl overflow-hidden shadow-sm group">
+<div class="h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A sleek modern white sedan parked on a clean minimalist urban street with soft morning sunlight. The car is the primary subject, presented in a high-end commercial photography style. The background features blurred architectural elements in shades of cool grey and white, emphasizing a clean and professional automotive aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvqC7UB91l6qq1hOXrfsvHcRrudr5w8KlbFSAN8S3gGE0o4fKoIGbnppLe9GzXy9ljtUbHbrrW0MjsBy-sXdt6WD7cdQqiIXp5HJ6BCivJ7V07PpGOYjV_9bqatTekNVEkJkn4wxPA2AMM6Mt84gx90pv9rQ98v5pnQtyjLh2VeIttsKE_F0sbulxnqaFpiaEnTEiGV6bMJJvOYEtR_DN7cIBOO2ueAuPkzFX7BY5gfBVAEsgxHRnPQEgICTrnVyGUormW3DOf7mU"/>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h4 class="text-xl font-bold text-primary">Toyota Camry 2022</h4>
+<span class="px-3 py-1 bg-primary text-on-primary text-[10px] font-bold rounded-full">VIP</span>
+</div>
+<p class="text-sm text-outline mb-4">Biển số: <span class="font-bold text-on-surface">30A - 888.99</span></p>
+<div class="grid grid-cols-2 gap-3 text-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg">settings</span>
+<span>Số tự động</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg">local_gas_station</span>
+<span>Xăng</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg">airline_seat_recline_normal</span>
+<span>5 chỗ</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg">speed</span>
+<span>25.000 km</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Customer Card -->
+<div class="glass-card rounded-2xl p-6 shadow-sm">
+<h3 class="text-sm font-bold text-outline uppercase mb-4">Thông tin khách hàng</h3>
+<div class="flex items-center gap-4 mb-6">
+<img alt="Avatar Khách hàng" class="w-16 h-16 rounded-2xl bg-secondary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmsHaMs0pmfBm5WHx69GUg42d1qS7HJ6OK-mQNRq41nM4Qa25vZ3qAxrE_ngpV4tv7JsimZTipXmPTzOgFWxGSrysCYO8tjWk4QoCfuecUkBIDXuosinDGZZdaKYYkJjp9_GJuOKvX2E22c6RowGs-ogpmRvYzz5gbJksaCQI81LMaM0ZWC8aqnVpciC0mPTmYcXqpUoqkOUd0p_N-abdkhO2soe-lK8cBsJ30Xvs92Dt_1XydbqYtBEZEXxuMq5a6Ff3HZfd2gP4"/>
+<div>
+<p class="text-lg font-bold">Trần Văn Hoàng</p>
+<p class="text-sm text-outline">Thành viên Bạc (Silver)</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl">phone_iphone</span>
+<div>
+<p class="text-xs text-outline">Số điện thoại</p>
+<p class="text-sm font-medium">0909.123.456</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl">mail</span>
+<div>
+<p class="text-xs text-outline">Email</p>
+<p class="text-sm font-medium">hoang.tv@gmail.com</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl">badge</span>
+<div>
+<p class="text-xs text-outline">Số CCCD/GPLX</p>
+<p class="text-sm font-medium">001092000456 - B1.2</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline text-outline rounded-xl font-semibold hover:bg-surface-container-highest transition-all text-sm">
+                        Xem hồ sơ chi tiết
+                    </button>
+</div>
+<!-- Map / Pickup Location -->
+<div class="glass-card rounded-2xl overflow-hidden shadow-sm h-48 relative">
+<div class="absolute top-3 left-3 z-10 px-3 py-1 bg-white/90 rounded-full text-[10px] font-bold shadow-sm">Địa điểm nhận xe</div>
+<img class="w-full h-full object-cover" data-alt="A stylized minimalist map of a modern city center in Hanoi, Vietnam, showing clean street layouts with soft teal and light grey color tones. Small icons for landmarks and a highlighted route are visible. The mood is functional yet aesthetically pleasing, following a high-end UI design pattern for navigation modules." data-location="Hanoi" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIC1TgQeILnnoVzdb-jBX0VTOjNWqjnsCB8JiIHVQ6xIazAob135_iNcAdoHwJB__g6dQv8cFP07mM0UzWHyxyrQWDjox5A-sWK7ugn425FTSxwkV5m7luwLWyx7d2_FUcy_5etcSazxBty1opu84eKQ31_f7JykOmRMkh4R5xoyjxTAvLTt7c0xgtabQqtbzLajZ2ofbZu2xExZofeHSMmRF-RDk9FxY9B8jagHO2MIXZuL0H_s2oDRVUdaOc4Avd7U4S0jEubb4"/>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions and subtle effects
+        document.querySelectorAll('.active\\:scale-95').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.95)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+
+        // Toggle dark mode (simulation for UI demonstration)
+        const darkModeBtn = document.querySelector('button .material-symbols-outlined[textContent="dark_mode"]')?.parentElement;
+        if (darkModeBtn) {
+            darkModeBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+        }
+    </script>
+</body></html>

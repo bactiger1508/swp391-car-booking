@@ -1,0 +1,402 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Phê Duyệt Đặt Xe - VinaFleet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b38d5b",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "primary": "#041638",
+                        "on-primary-fixed": "#081a3d",
+                        "error-container": "#ffdad6",
+                        "secondary": "#505f76",
+                        "on-primary-fixed-variant": "#37466b",
+                        "surface-container-low": "#f5f3f6",
+                        "tertiary-fixed": "#ffddb5",
+                        "secondary-fixed": "#d3e4fe",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "outline": "#75777f",
+                        "inverse-surface": "#303033",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#8393bc",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8fc",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-surface": "#1b1b1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "surface-container-high": "#e9e7eb",
+                        "inverse-primary": "#b6c6f1",
+                        "tertiary": "#251400",
+                        "surface-container-highest": "#e4e2e5",
+                        "surface-tint": "#4e5e84",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-container": "#1b2b4e",
+                        "surface": "#fbf8fc",
+                        "on-tertiary-fixed": "#2a1800",
+                        "success-container": "#bbf7d0",
+                        "on-success-container": "#166534"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_md": "16px",
+                        "gutter": "24px",
+                        "stack_lg": "24px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "status-badge": ["12px", { "lineHeight": "12px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf8fc; color: #1b1b1e; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+        
+        .shadow-ambient { box-shadow: 0px 1px 3px rgba(0,0,0,0.1); }
+        .shadow-hover { box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col py-stack_lg px-stack_sm shadow-lg z-20">
+<div class="px-stack_sm mb-8">
+<h1 class="font-display-lg text-display-lg text-on-primary">VinaFleet</h1>
+<p class="font-body-sm text-body-sm text-on-primary-container opacity-80 mt-1">Cổng Quản Trị</p>
+</div>
+<button class="w-full bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm py-3 rounded-lg mb-6 hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span> Đặt Nhanh
+        </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span> Tổng Quan
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">directions_car</span> Đội Xe
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg border-l-4 border-secondary-fixed-dim bg-on-primary-fixed-variant text-on-primary font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">calendar_today</span> Đặt Xe
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">groups</span> Khách Hàng
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">badge</span> Nhân Viên
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">analytics</span> Báo Cáo
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">settings</span> Cài Đặt
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">build</span> Bảo Trì
+                </a>
+</li>
+</ul>
+<div class="mt-auto flex flex-col gap-2 border-t border-on-primary-fixed-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">help</span> Hỗ Trợ
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all font-label-caps text-label-caps cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined">logout</span> Đăng Xuất
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col ml-[280px]">
+<!-- TopNavBar -->
+<header class="w-full h-16 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm flex items-center justify-between px-margin_page sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-extrabold tracking-tight">Quản Lý VinaFleet</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-body-sm transition-all w-64" placeholder="Tìm kiếm đặt xe, xe..." type="text">
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden ml-2 border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate manager in a modern office setting. The lighting is soft and bright, emphasizing a clean, corporate aesthetic. The background is a slightly blurred office environment with neutral tones, fitting the professional light-mode UI design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs2SJiRZ9Z7bvcuqEtJOwEnm01BmfCj83XZXZov_Yy1H1Q3Rf29zIRX2dliSWbeQ7rMEKP6B-AQfnhJdNfcQpAAYuiVygMr4b0CVp_jDc4vlF3bfP5ScHWcqU3rnI3yB_HTE4zizxApSvEkB_v4u_0HomZM7K1VUvPK0ZstSzawdJkECuF8uEDmxgGsCFeQ_srnMRKdJD7Vdb0AFYv4CrscVPTscva0CDtNRPs1D2_ImgNfc7fIjhaqnSyaDo-Ka56myfHGBAfD8E">
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-margin_page max-w-container_max_width mx-auto w-full">
+<!-- Header Actions -->
+<div class="flex justify-between items-center mb-stack_lg">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<a class="text-on-surface-variant font-body-sm text-body-sm hover:underline flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[16px]">arrow_back</span> Quay lại Đặt Xe</a>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-background flex items-center gap-3">
+                        Đơn Đặt Xe #BKG-8472 
+                        <span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface-variant px-2 py-1 rounded font-status-badge text-status-badge uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-outline"></span> Chờ Phê Duyệt
+                        </span>
+</h1>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2 bg-error-container text-error font-title-sm text-title-sm rounded-lg hover:bg-[#ffb4ab] transition-colors flex items-center gap-2 border border-transparent shadow-ambient hover:shadow-hover">
+<span class="material-symbols-outlined fill">cancel</span> Từ Chối
+                    </button>
+<button class="px-6 py-2 bg-[#166534] text-white font-title-sm text-title-sm rounded-lg hover:bg-[#15803d] transition-colors flex items-center gap-2 shadow-ambient hover:shadow-hover">
+<span class="material-symbols-outlined fill">check_circle</span> Phê Duyệt
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Info Column (8 cols) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<!-- Vehicle & Trip Details -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant overflow-hidden">
+<div class="bg-[#F1F5F9] px-6 py-4 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-sm text-title-sm text-primary uppercase tracking-wide">Yêu Cầu Xe &amp; Hành Trình</h3>
+</div>
+<div class="p-6 flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-1/3 rounded-lg overflow-hidden border border-outline-variant bg-surface-container">
+<img alt="Tesla Model 3" class="w-full h-40 object-cover" data-alt="A sleek white Tesla Model 3 parked in a modern, clean urban environment. The lighting is bright daylight, casting crisp shadows. The aesthetic is premium, technological, and corporate, aligning perfectly with a modern fleet management system's visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-qUT0m62pAdN3pF-AYCW1egjXHib4511MJrbCqmxG4BKirR0e3oGKKn7LD_Hy3pr_V3v3UxIXo52iwcjp70qUo7ugyWeDk-nb4nbkV51llU_xIZTShGj4t8XSpReKibUdHpmKAkpJnUupQ7vypedpj-7Wah5Y2pKLake8YaBNMn346vcGxDWr466OBMh5oJwr4MOWxzxVDECAhG6mH3WvueUSPEq4iUj6V60Q9IkuVKNiJ6MEGR7ddjuSBiZNraJZS1W8cfPCH7A">
+<div class="p-3 text-center bg-surface-container-lowest">
+<p class="font-title-sm text-title-sm text-primary">2023 Tesla Model 3</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Biển số: CA-EV789</p>
+</div>
+</div>
+<div class="w-full md:w-2/3 grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Điểm Nhận Xe</p>
+<p class="font-body-md text-body-md font-medium text-on-background flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">location_on</span>
+                                        SFO Airport, Terminal 2<br>San Francisco, CA
+                                    </p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Điểm Trả Xe</p>
+<p class="font-body-md text-body-md font-medium text-on-background flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">location_on</span>
+                                        Downtown Hub<br>Market St, SF
+                                    </p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Ngày &amp; Giờ Nhận</p>
+<p class="font-body-md text-body-md font-medium text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+                                        Oct 24, 2024 - 09:00 AM
+                                    </p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Ngày &amp; Giờ Trả</p>
+<p class="font-body-md text-body-md font-medium text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+                                        Oct 27, 2024 - 05:00 PM
+                                    </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Financial Summary -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant overflow-hidden">
+<div class="bg-[#F1F5F9] px-6 py-4 border-b border-outline-variant">
+<h3 class="font-title-sm text-title-sm text-primary uppercase tracking-wide">Tóm Tắt Tài Chính</h3>
+</div>
+<div class="p-6">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="pb-3 font-label-caps text-label-caps text-on-surface-variant w-1/2">Mô Tả Hạng Mục</th>
+<th class="pb-3 font-label-caps text-label-caps text-on-surface-variant w-1/4 text-right">Đơn Giá</th>
+<th class="pb-3 font-label-caps text-label-caps text-on-surface-variant w-1/4 text-right">Thành Tiền</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-outline-variant">
+<td class="py-4 font-body-md text-body-md">Phí Thuê Ngày (Xe Điện Cao Cấp) - 3 Ngày</td>
+<td class="py-4 font-body-md text-body-md text-right text-on-surface-variant">$125.00/ngày</td>
+<td class="py-4 font-body-md text-body-md text-right font-medium">$375.00</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="py-4 font-body-md text-body-md">Gói Bảo Hiểm Toàn Diện</td>
+<td class="py-4 font-body-md text-body-md text-right text-on-surface-variant">$25.00/ngày</td>
+<td class="py-4 font-body-md text-body-md text-right font-medium">$75.00</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="py-4 font-body-md text-body-md">Phụ Phí Sân Bay SFO</td>
+<td class="py-4 font-body-md text-body-md text-right text-on-surface-variant">Cố Định</td>
+<td class="py-4 font-body-md text-body-md text-right font-medium">$45.00</td>
+</tr>
+<tr>
+<td class="py-4 font-title-sm text-title-sm text-right pr-6" colspan="2">Tổng Tạm Giữ Yêu Cầu:</td>
+<td class="py-4 font-title-sm text-title-sm text-right text-primary font-bold text-xl">$495.00</td>
+</tr>
+</tbody>
+</table>
+<div class="mt-4 p-3 bg-success-container/20 border border-[#bbf7d0] rounded flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#166534]">credit_card</span>
+<span class="font-body-sm text-body-sm text-[#166534] font-medium">Phương thức thanh toán đã xác thực: Visa đuôi 4242</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Info Column (4 cols) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<!-- Customer Verification -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant overflow-hidden">
+<div class="bg-[#F1F5F9] px-6 py-4 border-b border-outline-variant">
+<h3 class="font-title-sm text-title-sm text-primary uppercase tracking-wide">Xác Minh Khách Hàng</h3>
+</div>
+<div class="p-6">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="Customer Photo" class="w-full h-full object-cover" data-alt="A professional headshot of a female corporate client. She is smiling subtly, set against a clean, light-colored background. The lighting is studio-quality and even, fitting for an ID verification profile picture in a high-end enterprise software application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt281I4Fg-dGku_EwOqSYE0EpH5XyTLDYEXp7GISDvAOdqeS-hpxStu8tKlGhg2BfGSnB14ZLY7DiLWWjZpuJlee_J9cC7b9fVAffo_IDpqc7lW_ondsnNXFCcyChNe69ZwdLRxGun4rsohTNJyaM6hh89QohL6M225uW5Oa94hJ36quTg6WSB4odxnhNlkKLywXaeegedlNjarr2wRFOnROO5OFEhH8iQXNGn_wAudtodhqOXBSFoqsyYIW9gE9BZhM9KHEH5mYQ">
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm text-on-background">Sarah Jenkins</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tài Khoản Doanh Nghiệp: TechCorp Inc.</p>
+</div>
+</div>
+<ul class="flex flex-col gap-3 mb-6">
+<li class="flex justify-between items-center pb-2 border-b border-outline-variant/50">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">mail</span> Email</span>
+<span class="font-body-sm text-body-sm font-medium">s.jenkins@techcorp.com</span>
+</li>
+<li class="flex justify-between items-center pb-2 border-b border-outline-variant/50">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">phone</span> Số Điện Thoại</span>
+<span class="font-body-sm text-body-sm font-medium">+1 (555) 019-2834</span>
+</li>
+<li class="flex justify-between items-center pb-2 border-b border-outline-variant/50">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">history</span> Điểm Rủi Ro</span>
+<span class="font-body-sm text-body-sm font-medium text-[#166534] bg-success-container/30 px-2 py-0.5 rounded">Rủi Ro Thấp (98/100)</span>
+</li>
+</ul>
+<div class="bg-surface-container p-4 rounded-lg border border-outline-variant">
+<h5 class="font-label-caps text-label-caps text-on-surface-variant mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">id_card</span> Thông Tin Bằng Lái</h5>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tỉnh/Thành:</span>
+<span class="font-body-sm text-body-sm font-medium">California</span>
+</div>
+<div class="flex justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Số Bằng:</span>
+<span class="font-body-sm text-body-sm font-medium">*** *** 892</span>
+</div>
+<div class="flex justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ngày Hết Hạn:</span>
+<span class="font-body-sm text-body-sm font-medium">05/2026</span>
+</div>
+<div class="mt-2 flex items-center gap-2 text-[#166534] bg-success-container/20 p-2 rounded text-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span> Bằng Lái Đã Được Xác Minh Qua Checkr
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Availability Check -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient border border-outline-variant overflow-hidden">
+<div class="bg-[#F1F5F9] px-6 py-4 border-b border-outline-variant">
+<h3 class="font-title-sm text-title-sm text-primary uppercase tracking-wide">Tình Trạng Khả Dụng &amp; Trùng Lặp</h3>
+</div>
+<div class="p-6">
+<div class="flex items-start gap-3 p-4 bg-success-container/20 border border-[#bbf7d0] rounded-lg mb-4">
+<span class="material-symbols-outlined text-[#166534] mt-0.5">check_circle</span>
+<div>
+<p class="font-title-sm text-title-sm text-[#166534]">Xe Sẵn Sàng</p>
+<p class="font-body-sm text-body-sm text-[#166534]/80 mt-1">Không phát hiện đơn đặt xe trùng lặp cho xe Tesla Model 3 (CA-EV789) trong thời gian yêu cầu.</p>
+</div>
+</div>
+<div class="border-t border-outline-variant pt-4">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-2">Bảo Trì Trước Chuyến</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px]">cleaning_services</span> Vệ sinh theo lịch: 23 Thg 10, 14:00
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack_md bg-surface-container-low dark:bg-on-background border-t border-outline-variant flex justify-between items-center px-margin_page mt-auto">
+<span class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-secondary-container">© 2024 Hệ Thống Cho Thuê Xe VinaFleet. Bảo lưu mọi quyền.</span>
+<div class="flex gap-4">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Chính Sách Bảo Mật</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Điều Khoản Dịch Vụ</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Hỗ Trợ</a>
+</div>
+</footer>
+</div>
+</body></html>

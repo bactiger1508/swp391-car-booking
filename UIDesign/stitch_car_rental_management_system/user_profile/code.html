@@ -1,0 +1,446 @@
+<!DOCTYPE html><html class="light" lang="vi" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Hồ Sơ Người Dùng - Quản Lý FleetPro</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#b38d5b",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dbd9dd",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1b1b1e",
+                    "primary-fixed-dim": "#b6c6f1",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#54647a",
+                    "surface-container": "#efedf1",
+                    "primary": "#041638",
+                    "on-primary-fixed": "#081a3d",
+                    "error-container": "#ffdad6",
+                    "secondary": "#505f76",
+                    "on-primary-fixed-variant": "#37466b",
+                    "surface-container-low": "#f5f3f6",
+                    "tertiary-fixed": "#ffddb5",
+                    "secondary-fixed": "#d3e4fe",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary-container": "#402700",
+                    "on-tertiary-fixed-variant": "#5e4116",
+                    "outline": "#75777f",
+                    "inverse-surface": "#303033",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c5c6cf",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-primary-container": "#8393bc",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf8fc",
+                    "surface-bright": "#fbf8fc",
+                    "surface-variant": "#e4e2e5",
+                    "on-surface": "#1b1b1e",
+                    "on-secondary-fixed": "#0b1c30",
+                    "tertiary-fixed-dim": "#eabf89",
+                    "surface-container-high": "#e9e7eb",
+                    "inverse-primary": "#b6c6f1",
+                    "tertiary": "#251400",
+                    "surface-container-highest": "#e4e2e5",
+                    "surface-tint": "#4e5e84",
+                    "primary-fixed": "#d9e2ff",
+                    "on-surface-variant": "#45464e",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f2f0f3",
+                    "primary-container": "#1b2b4e",
+                    "surface": "#fbf8fc",
+                    "on-tertiary-fixed": "#2a1800"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar_width": "280px",
+                    "margin_page": "32px",
+                    "stack_md": "16px",
+                    "gutter": "24px",
+                    "stack_lg": "24px",
+                    "stack_sm": "8px",
+                    "container_max_width": "1440px"
+            },
+            "fontFamily": {
+                    "label-caps": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Inter"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "title-sm": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Inter"
+                    ],
+                    "status-badge": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "title-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "30px",
+                            {
+                                    "lineHeight": "38px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "status-badge": [
+                            "12px",
+                            {
+                                    "lineHeight": "12px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar_width bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-fixed shadow-lg flex flex-col py-stack_lg px-stack_sm z-20 hidden md:flex">
+<!-- Header -->
+<div class="px-stack_md pb-stack_lg mb-stack_lg border-b border-on-primary-fixed-variant">
+<div class="flex items-center gap-stack_sm mb-stack_sm">
+<div class="w-8 h-8 bg-surface rounded flex items-center justify-center text-primary font-bold">F</div>
+<h1 class="font-display-lg text-display-lg text-on-primary">CarPro</h1>
+</div>
+<p class="font-label-caps text-label-caps text-on-primary-container opacity-80">Trang quản trị</p>
+</div>
+<!-- CTA -->
+<div class="px-stack_md mb-stack_lg">
+<button class="w-full bg-secondary-fixed text-on-secondary-fixed py-2 rounded-DEFAULT font-label-caps text-label-caps hover:bg-secondary-fixed-dim transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span> Đặt Xe Nhanh
+            </button>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                        Bảng Điều Khiển
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+                        Đội Xe
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+                        Đặt Chỗ
+                    </a>
+</li>
+<!-- Active Tab: Customers -->
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT border-l-4 border-secondary-fixed-dim bg-on-primary-fixed-variant text-on-primary hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">groups</span>
+                        Khách Hàng
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">badge</span>
+                        Nhân Viên
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                        Báo Cáo
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Cài Đặt
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 rounded-r-DEFAULT text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">build</span>
+                        Bảo Trì
+                    </a>
+</li>
+</ul>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto pt-stack_lg border-t border-on-primary-fixed-variant border-opacity-30">
+<ul class="space-y-1">
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps rounded-r-DEFAULT" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Hỗ Trợ
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-stack_md px-stack_md py-2 text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 font-label-caps text-label-caps rounded-r-DEFAULT" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Đăng Xuất
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-sidebar_width min-w-0">
+<!-- TopNavBar -->
+<header class="w-full h-16 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm flex items-center justify-between px-margin_page z-10 sticky top-0">
+<!-- Left: Search/Brand context -->
+<div class="flex items-center gap-stack_md flex-1">
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed hidden lg:block">Quản Lý CarPro</span>
+<div class="relative max-w-md w-full lg:ml-stack_lg">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size: 20px;">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-body-sm focus:ring-2 focus:ring-primary focus:bg-surface transition-all placeholder:text-on-surface-variant" placeholder="Tìm kiếm khách hàng..." type="text">
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-stack_sm">
+<button class="p-2 rounded-full text-on-surface-variant dark:text-on-secondary-container hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant dark:text-on-secondary-container hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container ml-stack_sm overflow-hidden border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGIsE8f5iZV-2455JSeighr6IuY2GhMPwFXeJ9pt-pbdZYLtG34bHzZRlhaExVIKtKEOpfAjT3sJ7eYUOpB_Tpcr1ew6fooJ0oVBteA138VJJTjWPuiONixI8_MWCSgw0U9ijD4XuKpgOz_bPOthO-tq8CPcVl4X0_kvs6ZktBhH7_CbF1sXFt3u5aWxMC4Dv37xyRBDPr5zq-CvAOC38q8wF6QiY4aJ-WOqVzE5AG8AKP1Bxre8IxflyS9wJzxzRYzcREuu3zaqI">
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 px-margin_page py-stack_lg flex flex-col bg-background max-w-container_max_width mx-auto w-full">
+<!-- Page Header & Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-stack_md mb-stack_lg">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined" style="font-size: 20px;">arrow_back</span></a>
+<h2 class="font-headline-md text-headline-md text-on-surface">Hồ Sơ Khách Hàng</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant ml-7">Quản lý thông tin cá nhân và xác minh tài liệu danh tính.</p>
+</div>
+<!-- Admin Actions -->
+<div class="flex items-center gap-stack_sm">
+<button class="px-4 py-2 border border-error text-error bg-surface hover:bg-error-container transition-colors rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">block</span>
+                        Từ Chối Hồ Sơ
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">verified_user</span>
+                        Xác Minh Hồ Sơ
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Summary Card (4 cols) -->
+<div class="col-span-1 lg:col-span-4 bg-surface rounded-xl shadow-sm border border-outline-variant p-stack_lg flex flex-col items-center text-center sticky top-24">
+<div class="relative mb-stack_md">
+<div class="w-24 h-24 rounded-full bg-surface-container-high overflow-hidden border-4 border-surface shadow-sm">
+<img alt="Customer Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged man with short brown hair and a light beard, wearing a neutral-colored casual shirt. The background is slightly blurred, creating a modern, clean look suitable for a corporate profile avatar. The lighting is soft and even, highlighting his approachable expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF633sjT3vYmxZPLkzLj8-uGb7ReGy5aAX0LWPH5GTAW43HspaAnmKspeRrKXTOd6qZzJTDNuHgubrilPkf0ubhQm9nyf8eHHrS8cAhkSbqv4kRU3t9OOKNguN963BRCBQqsnoS5DjQU1yK_Vr1-YF1AfIrHvb1TmAsVEgIbl42K1afjlgtvibGrMm4HlVLq41ncHgOEH8d68zjUJ6UAjSUFCE1FG3_dLct5z3YacnResl78xU_3-qovSAONZqXT1aqoHFLSsuH4w">
+</div>
+<div class="absolute bottom-0 right-0 bg-error-container text-on-error-container p-1 rounded-full border-2 border-surface" title="Đang chờ xác minh">
+<span class="material-symbols-outlined" style="font-size: 16px;">pending_actions</span>
+</div>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Marcus Reynolds</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-stack_md">ID: CUST-8842-A</p>
+<div class="w-full flex items-center justify-center gap-2 py-1 px-3 bg-error-container/20 rounded-full mb-stack_lg">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-status-badge text-status-badge text-error uppercase tracking-wider">Chưa Xác Minh</span>
+</div>
+<div class="w-full border-t border-outline-variant pt-stack_md space-y-stack_sm">
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Thành viên từ</span>
+<span class="text-on-surface font-semibold">24 Th10, 2023</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Tổng Số Lượt Thuê</span>
+<span class="text-on-surface font-semibold">4</span>
+</div>
+</div>
+<button class="mt-stack_lg w-full px-4 py-2 border border-primary text-primary hover:bg-primary-fixed transition-colors rounded-DEFAULT font-label-caps text-label-caps flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span>
+                        Xem Lịch Sử Đặt Xe
+                    </button>
+</div>
+<!-- Right Column: Details Forms (8 cols) -->
+<div class="col-span-1 lg:col-span-8 flex flex-col gap-gutter">
+<!-- Section: Personal Information -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="px-stack_lg py-stack_md border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">person</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">Thông Tin Cá Nhân</h3>
+</div>
+<div class="p-stack_lg grid grid-cols-1 md:grid-cols-2 gap-stack_md">
+<div class="col-span-1 md:col-span-2">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Họ và tên</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" type="text" value="Marcus Julian Reynolds">
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Email</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" type="email" value="m.reynolds@example.com">
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Số điện thoại</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" type="tel" value="+1 (555) 867-5309">
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Ngày sinh</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" type="date" value="1985-06-15">
+</div>
+<div class="col-span-1 md:col-span-2">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Địa chỉ</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow" type="text" value="42 Wallaby Way, Sydney, NSW 2000">
+</div>
+</div>
+</div>
+<!-- Section: Identity & License Details -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="px-stack_lg py-stack_md border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">id_card</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">Tài Liệu Danh Tính</h3>
+</div>
+<div class="p-stack_lg grid grid-cols-1 md:grid-cols-2 gap-stack_md">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Số CCCD</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow font-mono tracking-wider" type="text" value="001085012345">
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Số giấy phép lái xe</label>
+<input class="w-full bg-surface border border-outline-variant rounded-DEFAULT px-3 py-2 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow font-mono tracking-wider" type="text" value="DL-9948-TX-22">
+</div>
+</div>
+</div>
+<!-- Section: Document Uploads -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="px-stack_lg py-stack_md border-b border-outline-variant bg-surface-container-low/50 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">cloud_upload</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">Xác Minh Hình Ảnh Giấy Phép</h3>
+</div>
+<div class="p-stack_lg">
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-stack_md">Vui lòng tải lên hình ảnh rõ nét mặt trước của giấy phép lái xe để xác minh.</p>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">image</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-on-surface mb-1">Tải Lên Hình Ảnh Giấy Phép</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4 max-w-sm">Kéo và thả hình ảnh vào đây, hoặc nhấp để duyệt. Định dạng hỗ trợ: JPG, PNG, PDF (Tối đa 5MB).</p>
+<button class="px-4 py-2 border border-primary text-primary bg-surface hover:bg-primary-fixed transition-colors rounded-DEFAULT font-label-caps text-label-caps shadow-sm">
+                                    Chọn Tệp
+                                </button>
+</div>
+</div>
+</div>
+<!-- Final Action -->
+<div class="flex justify-end pt-stack_sm">
+<button class="px-6 py-3 bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-DEFAULT font-label-caps text-label-caps flex items-center gap-2 shadow-sm text-[14px]">
+<span class="material-symbols-outlined" style="font-size: 20px;">save</span>
+                            Lưu Hồ Sơ
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack_md bg-surface-container-low dark:bg-on-background border-t border-outline-variant flex justify-between items-center px-margin_page mt-auto font-body-sm text-body-sm text-on-surface-variant dark:text-on-secondary-container">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-primary">FleetPro</span>
+<span class="">© 2024 Hệ Thống Cho Thuê Xe FleetPro. Đã đăng ký bản quyền.</span>
+</div>
+<div class="flex items-center gap-stack_lg">
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Điều khoản dịch vụ</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Hỗ trợ</a>
+</div>
+</footer>
+</div>
+
+
+</body></html>

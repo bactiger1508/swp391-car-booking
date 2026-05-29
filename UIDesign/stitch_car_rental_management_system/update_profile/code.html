@@ -1,0 +1,370 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cập nhật Hồ sơ cá nhân - Car Rental Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#1b2b4e",
+                        "outline-variant": "#c5c6cf",
+                        "inverse-primary": "#b6c6f1",
+                        "surface-container-low": "#f5f3f6",
+                        "surface-bright": "#fbf8fc",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary": "#041638",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "on-primary-fixed-variant": "#37466b",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e4e2e5",
+                        "primary-fixed": "#d9e2ff",
+                        "secondary": "#505f76",
+                        "outline": "#75777f",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-tint": "#4e5e84",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#251400",
+                        "surface-variant": "#e4e2e5",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#b38d5b",
+                        "inverse-surface": "#303033",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#402700",
+                        "surface-container-high": "#e9e7eb",
+                        "on-primary-fixed": "#081a3d",
+                        "tertiary-fixed": "#ffddb5",
+                        "surface-container": "#efedf1",
+                        "on-tertiary-fixed": "#2a1800",
+                        "surface-dim": "#dbd9dd",
+                        "secondary-container": "#d0e1fb",
+                        "on-surface": "#1b1b1e",
+                        "surface": "#fbf8fc",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-secondary-container": "#54647a",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "on-primary-container": "#8393bc",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "background": "#fbf8fc",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#45464e",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "24px",
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "status-badge": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "status-badge": ["12px", {"lineHeight": "12px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .form-input-focus:focus {
+            border-color: #041638;
+            box-shadow: 0 0 0 2px rgba(4, 22, 56, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col shadow-md z-50">
+<div class="px-6 py-8">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">CarPro</h1>
+<p class="text-secondary-fixed/70 text-sm mt-1">Enterprise Fleet Management</p>
+</div>
+<nav class="flex-1 overflow-y-auto space-y-1 py-4">
+<!-- Home -->
+<a class="flex items-center gap-3 px-6 py-3 text-secondary-fixed/70 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-body-md text-body-md">Home</span>
+</a>
+<!-- Vehicles -->
+<a class="flex items-center gap-3 px-6 py-3 text-secondary-fixed/70 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+<span class="font-body-md text-body-md">Vehicles</span>
+</a>
+<!-- Profile (Active) -->
+<a class="flex items-center gap-3 px-6 py-3 border-l-4 border-secondary-fixed bg-on-primary-fixed-variant text-on-primary" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-body-md text-body-md">Profile</span>
+</a>
+<!-- My Bookings -->
+<a class="flex items-center gap-3 px-6 py-3 text-secondary-fixed/70 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="font-body-md text-body-md">My Bookings</span>
+</a>
+<!-- Payments -->
+<a class="flex items-center gap-3 px-6 py-3 text-secondary-fixed/70 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-body-md text-body-md">Payments</span>
+</a>
+<!-- Group Header -->
+<div class="px-6 py-3 text-secondary-fixed/40 font-label-caps text-label-caps uppercase tracking-widest mt-4">Management</div>
+<a class="flex items-center gap-3 px-6 py-3 text-secondary-fixed/70 hover:bg-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-body-md text-body-md">Booking Management</span>
+</a>
+<!-- Scroll simulation for longer list -->
+<div class="h-20"></div>
+</nav>
+</aside>
+<!-- Main Content Shell -->
+<div class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="h-16 flex justify-between items-center px-8 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-full w-64 focus:ring-2 focus:ring-primary/20 text-body-sm font-body-sm" placeholder="Tìm kiếm..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative hover:bg-surface-container-low p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+<button class="hover:bg-surface-container-low p-2 rounded-full transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="help">help</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-outline-variant">
+<div class="text-right">
+<p class="font-title-sm text-sm text-on-surface">Nguyễn Văn A</p>
+<p class="text-xs text-on-surface-variant">Khách hàng thân thiết</p>
+</div>
+<img alt="User Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="A professional headshot of a smiling Vietnamese man in his 30s wearing a clean business casual shirt. He is outdoors in a bright, modern corporate courtyard with lush green foliage blurred in the soft-focus background. The lighting is warm morning sunlight, creating a high-end, trustworthy corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfp8Hng8CiyIp7WoLv39I3ahWxr01VZjUEA_NuYpLtAx9Jpbw7KAF1cBOi-UkMoR34S3ULMysg2hdN3qeJSrkgP6AKhlWxn5jTEZPGLWY7KFOJdOpd69zI3wkE1o2qyhTSGPqGoTEdqmcHfxf8usNGAMN8flNUr2lVdb9I_xNXqk9B-k0JhNruXQoXXEqXggovyNhN_5WscekclN0LW1eOAce6PTXxvqCshFaPLLLm8LXY_by9oUMcEbIF-kTZWP3KQiGEijALzqg">
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-8 max-w-7xl mx-auto w-full">
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-2 mb-6 text-body-sm font-body-sm text-on-surface-variant">
+<a class="hover:text-primary" href="#">Trang chủ</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary" href="#">Hồ sơ cá nhân</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-semibold">Chỉnh sửa hồ sơ</span>
+</nav>
+<h2 class="font-display-lg text-display-lg mb-8 text-primary">Cập nhật hồ sơ cá nhân</h2>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Avatar & Quick Info -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-8 flex flex-col items-center">
+<div class="relative group">
+<img alt="Large Avatar" class="w-40 h-40 rounded-full object-cover border-4 border-primary-fixed shadow-md" data-alt="A high-resolution, detailed portrait of a professional man with a friendly expression. The scene is lit with cinematic, soft light that highlights his features clearly. The background is a clean, minimalist architectural space with neutral tones, aligning with a premium corporate management software aesthetic." id="profile-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfdACVFvUmmds-LpQFeQ6ZPdkXB23Ttk6_ySsAjocZ3X7-anQMhkfWd9HNxZjMh-xnkdiShAf5YDRcqIqErc72AhD5nBV88xpqCG2xUxSvpJT1AHgTqvLoNkwxAxKOb8J-7W95ZghSme6t5mcBrS7-gXiUjVkWgNYHVhboUlwF5arrBsvovGOiEqWc-ZgZkInQ3p8ZJo_wiZa8h-SVaWTXKVPqKudq5sqrv_B1T689zQiL0H0I3YQkM5ghKfUgSn7iTrG6h9ozNFw">
+<label class="absolute bottom-2 right-2 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary-container transition-all shadow-lg" for="avatar-upload">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</label>
+<input accept="image/*" class="hidden" id="avatar-upload" type="file">
+</div>
+<div class="text-center mt-6">
+<h3 class="font-headline-md text-primary">Nguyễn Văn A</h3>
+<p class="text-on-surface-variant font-body-sm">ID: KH-2024-8892</p>
+</div>
+<div class="w-full mt-8 pt-8 border-t border-outline-variant space-y-4">
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Ngày tham gia:</span>
+<span class="font-semibold text-primary">12/05/2023</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Hạng thành viên:</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-status-badge text-status-badge">Vàng</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="text-on-surface-variant">Chuyến đã đi:</span>
+<span class="font-semibold text-primary">24</span>
+</div>
+</div>
+<button class="mt-8 w-full py-3 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors" onclick="document.getElementById('avatar-upload').click()">
+                            Thay đổi ảnh đại diện
+                        </button>
+</div>
+<!-- Additional Sidebar Widget (Static) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-6">
+<h4 class="font-title-sm text-primary mb-4">Trạng thái xác thực</h4>
+<div class="space-y-3">
+<div class="flex items-center gap-3 text-success">
+<span class="material-symbols-outlined text-emerald-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-sm font-medium text-emerald-700">Email đã xác minh</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-emerald-600" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-sm font-medium text-emerald-700">CCCD đã xác thực</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Edit Form -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-8">
+<form class="space-y-8" onsubmit="return false;">
+<!-- Basic Information Section -->
+<section>
+<div class="flex items-center gap-2 mb-6">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+<h3 class="font-title-sm text-primary uppercase tracking-wide">Thông tin cá nhân</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Họ và tên</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg font-body-md text-body-md form-input-focus transition-all" type="text" value="Nguyễn Văn A">
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Số điện thoại</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg font-body-md text-body-md form-input-focus transition-all" type="tel" value="0901234567">
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Email</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg bg-surface-container-low text-on-surface-variant font-body-md text-body-md cursor-not-allowed" disabled="" type="email" value="nguyenvana@example.com">
+<p class="text-[10px] text-on-surface-variant">Liên hệ admin để thay đổi email</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Ngày sinh</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg font-body-md text-body-md form-input-focus transition-all" type="date" value="1992-10-15">
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Địa chỉ hiện tại</label>
+<textarea class="w-full px-4 py-3 border border-outline-variant rounded-lg font-body-md text-body-md form-input-focus transition-all" rows="2">123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh</textarea>
+</div>
+</div>
+</section>
+<!-- Identity Documents -->
+<section class="pt-8 border-t border-outline-variant">
+<div class="flex items-center gap-2 mb-6">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+<h3 class="font-title-sm text-primary uppercase tracking-wide">Giấy tờ định danh</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Số CCCD</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg bg-surface-container-low text-on-surface-variant font-body-md text-body-md cursor-default" readonly="" type="text" value="001209304561">
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Số bằng lái xe (B2)</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg bg-surface-container-low text-on-surface-variant font-body-md text-body-md cursor-default" readonly="" type="text" value="790123456789">
+</div>
+</div>
+<div class="mt-8">
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-4">Ảnh bằng lái hiện tại</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="relative group aspect-[1.6/1] bg-surface-container rounded-lg overflow-hidden border border-outline-variant">
+<img alt="Driver License Front" class="w-full h-full object-cover" data-alt="A macro shot of a driver's license card placed on a dark wooden surface. The card details are blurred to maintain privacy, but the structure of a modern identification card is visible with holographic elements reflecting a soft blue light. The lighting is focused and professional, highlighting the texture and premium quality of the document." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDImqgx7ShPFpdxBLVIiWkgxLaOfy8MF99ILIi2jGs6s67huIPH4An10bV2YgclQXvwdUAiMBcUWCRM7ovXg5FbZ7nfzlbgXr2vrx8MQpnNH54cdJGXuJheGWpSD5vU-ccdyYAgUDf6XXqXJK-vr6Mcs4X5kpjpFrKTe282bqEh-3H01uD7tosYLkWvqVPdhDbb77REc6nrCWtjrGhA7wL6pUI1spc4EEz5oSHinPZsS0qwg0HsoV-ScbhNamPeTXkXEgsqb_XfB50">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-white text-primary px-4 py-2 rounded font-body-sm shadow-md">Xem phóng to</button>
+</div>
+</div>
+<div class="flex flex-col justify-center items-center border-2 border-dashed border-outline-variant rounded-lg p-6 bg-surface-bright hover:bg-surface-container-low transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-4xl text-outline mb-3 group-hover:text-primary transition-colors">cloud_upload</span>
+<p class="font-body-md text-primary font-semibold">Cập nhật ảnh bằng lái mới</p>
+<p class="text-xs text-on-surface-variant mt-2">Hỗ trợ JPG, PNG (Tối đa 5MB)</p>
+<input class="hidden" type="file">
+</div>
+</div>
+</div>
+</section>
+<!-- Form Actions -->
+<div class="pt-10 flex gap-4">
+<button class="flex-1 md:flex-none md:min-w-[160px] bg-primary text-white px-8 py-3.5 rounded-lg font-title-sm shadow-md hover:bg-primary-container transition-all active:scale-95" type="submit">
+                                    Lưu thay đổi
+                                </button>
+<button class="flex-1 md:flex-none md:min-w-[120px] bg-white border border-outline text-on-surface-variant px-8 py-3.5 rounded-lg font-title-sm hover:bg-surface-container-low transition-all" type="button">
+                                    Hủy bỏ
+                                </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto py-8 px-8 bg-surface-container-low border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-sm text-on-surface-variant text-sm">© 2024 Car Rental System. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="font-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Help Center</a>
+</div>
+</footer>
+</div>
+<script>
+        // Micro-interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatarUpload = document.getElementById('avatar-upload');
+            const profilePreview = document.getElementById('profile-preview');
+
+            avatarUpload?.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        profilePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Simple animation effect
+                    profilePreview.classList.add('opacity-0');
+                    setTimeout(() => {
+                        profilePreview.classList.remove('opacity-0');
+                        profilePreview.classList.add('transition-opacity', 'duration-500');
+                    }, 100);
+                }
+            });
+
+            // Input focus highlights
+            const inputs = document.querySelectorAll('input:not([disabled]), textarea');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.querySelector('label')?.classList.add('text-primary');
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.querySelector('label')?.classList.remove('text-primary');
+                });
+            });
+        });
+    </script>
+
+
+</body></html>

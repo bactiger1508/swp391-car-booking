@@ -1,0 +1,474 @@
+<!DOCTYPE html><html lang="vi" style="width: 1280px; height: 1537px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FleetPro - Danh sách xe</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Hide scrollbar for cleaner UI */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c5c6cf; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #75777f; }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-container": "#b38d5b",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#dbd9dd",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1b1b1e",
+                    "primary-fixed-dim": "#b6c6f1",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#54647a",
+                    "surface-container": "#efedf1",
+                    "primary": "#041638",
+                    "on-primary-fixed": "#081a3d",
+                    "error-container": "#ffdad6",
+                    "secondary": "#505f76",
+                    "on-primary-fixed-variant": "#37466b",
+                    "surface-container-low": "#f5f3f6",
+                    "tertiary-fixed": "#ffddb5",
+                    "secondary-fixed": "#d3e4fe",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary-container": "#402700",
+                    "on-tertiary-fixed-variant": "#5e4116",
+                    "outline": "#75777f",
+                    "inverse-surface": "#303033",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c5c6cf",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-primary-container": "#8393bc",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf8fc",
+                    "surface-bright": "#fbf8fc",
+                    "surface-variant": "#e4e2e5",
+                    "on-surface": "#1b1b1e",
+                    "on-secondary-fixed": "#0b1c30",
+                    "tertiary-fixed-dim": "#eabf89",
+                    "surface-container-high": "#e9e7eb",
+                    "inverse-primary": "#b6c6f1",
+                    "tertiary": "#251400",
+                    "surface-container-highest": "#e4e2e5",
+                    "surface-tint": "#4e5e84",
+                    "primary-fixed": "#d9e2ff",
+                    "on-surface-variant": "#45464e",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f2f0f3",
+                    "primary-container": "#1b2b4e",
+                    "surface": "#fbf8fc",
+                    "on-tertiary-fixed": "#2a1800"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar_width": "280px",
+                    "margin_page": "32px",
+                    "stack_md": "16px",
+                    "gutter": "24px",
+                    "stack_lg": "24px",
+                    "stack_sm": "8px",
+                    "container_max_width": "1440px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "status-badge": ["Inter"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "status-badge": ["12px", {"lineHeight": "12px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar_width bg-primary shadow-lg flex flex-col py-stack_lg px-stack_sm z-30">
+<div class="px-stack_md mb-stack_lg">
+<h1 class="font-display-lg text-display-lg text-on-primary mb-1">CarPro</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container opacity-80">Cổng quản trị</p>
+</div>
+<button class="mx-stack_sm mb-stack_lg bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm rounded-lg py-3 px-4 flex items-center justify-center gap-2 hover:bg-secondary-fixed-dim transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+            Đặt xe nhanh
+        </button>
+<ul class="flex flex-col gap-1 flex-grow">
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">dashboard</span> Bảng điều khiển
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps border-l-4 border-secondary-fixed-dim bg-on-primary-fixed-variant text-on-primary hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">directions_car</span> Đội xe
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">calendar_today</span> Đặt xe
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">groups</span> Khách hàng
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">badge</span> Nhân viên
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">analytics</span> Báo cáo
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">settings</span> Cài đặt
+            </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">build</span> Bảo trì
+            </li>
+</ul>
+<div class="mt-auto border-t border-on-primary-fixed-variant pt-stack_sm">
+<ul class="flex flex-col gap-1">
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">help</span> Hỗ trợ
+                </li>
+<li class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-caps text-label-caps text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">logout</span> Đăng xuất
+                </li>
+</ul>
+</div>
+</nav>
+<!-- Main Container -->
+<div class="ml-sidebar_width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface text-primary font-body-md text-body-md w-full h-16 border-b border-outline-variant shadow-sm flex items-center justify-between px-margin_page sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-primary">Quản lý CarPro</span>
+</div>
+<div class="flex items-center gap-stack_md">
+<div class="relative bg-surface-container-low rounded-full px-4 py-2 flex items-center gap-2 border border-outline-variant focus-within:border-primary focus-within:shadow-sm transition-all w-64">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 p-0 text-body-md w-full placeholder:text-outline text-on-surface" placeholder="Tìm kiếm..." type="text">
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-2">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCszrGBn4icsTylmnzkgO-4GHO_Q7A0bpCO2rp6NQgtZX13OJxfHSpqEGJxTX6Ik7uGJuqH-suxxg_dJfoZZMyhqMQhmAwXO9Lo1pICv7Bq1VOoo-dPf4BQnBwIB3NSUxX-5q2NMS7B8lxuzzhVu5pZg-C1Ph8fHp_kUrODhWSyABOvD77BhGUAEg8ZuDyyAPpkW9XI1ozxJPIlZkDbvqknNS9gAM6OGPhf6y4xJecqdOhTjyDoeXOqCgzImMT0CNi8ihE_1h5fZog">
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-grow p-margin_page bg-background">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-stack_lg">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-background mb-2">Xe hiện có</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Duyệt và lọc kho xe hiện tại để khách hàng đặt trước.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface text-primary border border-outline-variant font-title-sm text-title-sm px-4 py-2 rounded-lg hover:bg-surface-container-low transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">download</span> Xuất danh sách
+                    </button>
+</div>
+</div>
+<!-- Filter Bar (Bento-style horizontal strip) -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-stack_md mb-stack_lg grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-stack_md items-end">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Khoảng thời gian</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">calendar_today</span>
+<input class="w-full pl-9 pr-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Chọn ngày" type="text">
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Hãng xe</label>
+<select class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+<option>Tất cả hãng</option>
+<option>Toyota</option>
+<option>Ford</option>
+<option>BMW</option>
+<option>Mercedes-Benz</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Số ghế</label>
+<select class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+<option>Bất kỳ</option>
+<option>2 Chỗ</option>
+<option>4-5 Chỗ</option>
+<option>7+ Chỗ</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Mức giá</label>
+<select class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+<option>Mọi giá</option>
+<option>Dưới $50/ngày</option>
+<option>$50 - $100/ngày</option>
+<option>Trên $100/ngày</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Loại nhiên liệu</label>
+<select class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+<option>Tất cả loại</option>
+<option>Xăng</option>
+<option>Dầu Diesel</option>
+<option>Hybrid</option>
+<option>Điện</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Hộp số</label>
+<select class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer">
+<option>Bất kỳ</option>
+<option>Tự động</option>
+<option>Số sàn</option>
+</select>
+</div>
+</div>
+<!-- Active Filters Tags -->
+<div class="flex gap-2 mb-stack_lg flex-wrap">
+<span class="bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps px-3 py-1.5 rounded-full flex items-center gap-1">
+                    Có sẵn hôm nay <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-surface-container text-on-surface-variant font-label-caps text-label-caps px-3 py-1.5 rounded-full flex items-center gap-1 border border-outline-variant">
+                    Tự động <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<button class="text-primary font-body-sm text-body-sm hover:underline ml-2">Xóa tất cả bộ lọc</button>
+</div>
+<!-- Vehicle Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
+<div class="h-48 relative bg-surface-variant w-full">
+<img alt="Vehicle Image" class="w-full h-full object-cover" data-alt="A sleek, modern silver luxury sedan parked perfectly in a high-end, minimalist architectural showroom. The lighting is soft and diffused, highlighting the clean lines and polished metallic surfaces of the car. The environment is pristine, featuring cool white and soft gray tones that align perfectly with a premium corporate aesthetic. The mood is professional, upscale, and impeccably maintained." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc-Mjrpr1B1KL9QXMfOQJ0cpRCsa79DTbpc3AekkSRJ5qelwK8I1cIIt5HZm7XdKsO_nen4ldya1nAQD6uI7hySr7KvLhqwPqF7fGFxuHvv__DdwKOAU5iiEz9K6slO_i0x1WPeLTMk_4kdWQ7FdvD_RonF_dk0ynq2FOFS84o1acixyuakzeo-1uYSh0z_ZirkrsqEMIOiaz5fP5kYR7VHGHEBv_W-YksTTp3LJUlj7JlVYbbvxXJsIiukTmOZ_6werQvEM2LmMg">
+<div class="absolute top-3 right-3 bg-[#E6F4EA] text-[#137333] font-status-badge text-status-badge px-2 py-1 rounded flex items-center gap-1 shadow-sm border border-[#CEEAD6]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Có sẵn
+                        </div>
+</div>
+<div class="p-stack_md flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Mercedes-Benz C-Class</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sedan hạng sang • 2023</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 my-stack_md border-y border-outline-variant py-3">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">airline_seat_recline_normal</span>
+<span class="font-body-sm text-body-sm">5 Chỗ</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant border-x border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+<span class="font-body-sm text-body-sm">Xăng</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-body-sm text-body-sm">Tự động</span>
+</div>
+</div>
+<div class="flex justify-between items-end mb-stack_md">
+<div>
+<span class="font-headline-md text-headline-md text-primary">$120</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ngày</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Cọc: $500</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-auto">
+<button class="border border-primary text-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-surface-container-low transition-colors">Xem chi tiết</button>
+<button class="bg-primary text-on-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-on-primary-fixed-variant transition-colors shadow-sm">Tạo đặt xe</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
+<div class="h-48 relative bg-surface-variant w-full">
+<img alt="Vehicle Image" class="w-full h-full object-cover" data-alt="A pristine, modern white compact SUV positioned in a well-lit, minimalist outdoor corporate campus setting. The sunlight is crisp and bright, creating soft, natural shadows that emphasize the vehicle's rugged yet refined design. The background consists of smooth concrete and modern glass architecture. The overall aesthetic is highly professional, clean, and reliable, suitable for a trusted fleet service." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAghuEXFZLC0wC5Y6QIpvO0BNfHtF9VZn1h4ybR3B6Mx3KoA84Cag946jtloJzWinjQG30j9B55f6xhOtGx5_dKs3TeEoD5h52Bp2P20gxL_IpulPSuNPOvkBOZo76JMNE0tCx24ijy74XzVqaRPOHr0_xnKT1yFJzBALtvU1LI2Dzwgvfm8TRPhsBWnGTvgc_jjYM8OnUIpzXjo7nbG6kVNmVr9bwfZaawit4QRqlnRwYCB8-TXhZn55qyx8YH-irVSO6NtX6O0yc">
+<div class="absolute top-3 right-3 bg-[#E6F4EA] text-[#137333] font-status-badge text-status-badge px-2 py-1 rounded flex items-center gap-1 shadow-sm border border-[#CEEAD6]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Có sẵn
+                        </div>
+</div>
+<div class="p-stack_md flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Toyota RAV4 Hybrid</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">SUV cỡ nhỏ • 2024</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 my-stack_md border-y border-outline-variant py-3">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">airline_seat_recline_normal</span>
+<span class="font-body-sm text-body-sm">5 Chỗ</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant border-x border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">electric_car</span>
+<span class="font-body-sm text-body-sm">Hybrid</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-body-sm text-body-sm">Tự động</span>
+</div>
+</div>
+<div class="flex justify-between items-end mb-stack_md">
+<div>
+<span class="font-headline-md text-headline-md text-primary">$85</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ngày</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Cọc: $300</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-auto">
+<button class="border border-primary text-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-surface-container-low transition-colors">Xem chi tiết</button>
+<button class="bg-primary text-on-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-on-primary-fixed-variant transition-colors shadow-sm">Tạo đặt xe</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col relative">
+<!-- Maintenance Overlay -->
+<div class="absolute inset-0 bg-surface/50 backdrop-blur-[1px] z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+<button class="border border-primary bg-surface text-primary font-title-sm text-title-sm rounded-lg py-2 px-6 shadow-md hover:bg-surface-container-low transition-colors">Xem trạng thái</button>
+</div>
+<div class="h-48 relative bg-surface-variant w-full opacity-80 grayscale-[30%]">
+<img alt="Vehicle Image" class="w-full h-full object-cover" data-alt="A sturdy, dark grey passenger van parked inside a bright, meticulously clean service garage. The lighting is cool, artificial white, highlighting the structured interior of the maintenance facility. The vehicle is presented clearly, conveying a sense of organized fleet management and scheduled care. The overall palette relies on industrial greys, clean whites, and subtle blue undertones, adhering to a corporate operational aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmu1-VaoDG8E9MwxJwfEhPDOKAj_Dh6hmSWnR4YVhjl-pp9i4KWEZlV9OCHXmCiRZx3v7Jnh5wh6jxejfhDKCMWeZeoQy7MUu5ku2gDZSj7pRRlCG2HC__6DdECaCtqbL8Jvk9z4CYvoP2GH-EaQ97oy0ZGWTldLggoU7WTGS955USlAKkgZ3jX0HPNWBVhve7ky2PF0NMJ3wlViCEJC1gCgSirgwyd1l2LpZWCErodGn67LUkAxql4sovdDmU1yclh2ZH5rwcMaM">
+<div class="absolute top-3 right-3 bg-[#FEF7E0] text-[#B06000] font-status-badge text-status-badge px-2 py-1 rounded flex items-center gap-1 shadow-sm border border-[#FDE293]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">build</span> Bảo trì
+                        </div>
+</div>
+<div class="p-stack_md flex flex-col flex-grow opacity-80">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Ford Transit Custom</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Xe khách • 2022</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 my-stack_md border-y border-outline-variant py-3">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-body-sm text-body-sm">9 Chỗ</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant border-x border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">local_gas_station</span>
+<span class="font-body-sm text-body-sm">Dầu Diesel</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-body-sm text-body-sm">Số sàn</span>
+</div>
+</div>
+<div class="flex justify-between items-end mb-stack_md">
+<div>
+<span class="font-headline-md text-headline-md text-on-surface-variant">$140</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ngày</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#B06000]">Dự kiến trả: Ngày mai</p>
+</div>
+<div class="grid grid-cols-1 mt-auto">
+<button class="bg-surface-container text-on-surface-variant font-title-sm text-title-sm rounded-lg py-2 cursor-not-allowed opacity-50" disabled="">Không có sẵn</button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
+<div class="h-48 relative bg-surface-variant w-full">
+<img alt="Vehicle Image" class="w-full h-full object-cover" data-alt="A sleek, aerodynamic electric sports sedan finished in a deep metallic blue, positioned on a polished concrete floor within a high-tech studio environment. Intense, focused spotlights create striking reflections across the vehicle's curving body panels. The setting is ultra-modern and minimalist, emphasizing advanced technology and sustainable luxury. The visual tone is dramatic, premium, and sophisticated, perfectly aligned with modern enterprise standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPaIDzTSInL4Vie4FrFGO4Q2G-HtcV2anc5hqQC4TY_3ma-Z6U2i4TSQDZNoKJukf5pdJ1GUNyoAMmSAspPJseCtzxJ6LNIpj1fwQooKKJ4wUA99qGng5T0_qbICepnXJAKOJRK8ND1LkXnhFOHV75P4ldNZNwreKqQDLGuokb0tjCh5RZSk4KqsqP_PEl0Vk8qmdEqgUHhSloeBUph6BSmUDg75J8l_VJXb8OTRrGqrhozR6RJlXnQGFekQkaO1ufIrnzNckUTAg">
+<div class="absolute top-3 right-3 bg-[#E6F4EA] text-[#137333] font-status-badge text-status-badge px-2 py-1 rounded flex items-center gap-1 shadow-sm border border-[#CEEAD6]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Có sẵn
+                        </div>
+</div>
+<div class="p-stack_md flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface">Tesla Model 3</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sedan điện • 2024</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 my-stack_md border-y border-outline-variant py-3">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">airline_seat_recline_normal</span>
+<span class="font-body-sm text-body-sm">5 Chỗ</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant border-x border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+<span class="font-body-sm text-body-sm">Điện</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-body-sm text-body-sm">Tự động</span>
+</div>
+</div>
+<div class="flex justify-between items-end mb-stack_md">
+<div>
+<span class="font-headline-md text-headline-md text-primary">$110</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ngày</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Cọc: $400</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-auto">
+<button class="border border-primary text-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-surface-container-low transition-colors">Xem chi tiết</button>
+<button class="bg-primary text-on-primary font-title-sm text-title-sm rounded-lg py-2 hover:bg-on-primary-fixed-variant transition-colors shadow-sm">Tạo đặt xe</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-stack_lg flex justify-center items-center gap-2">
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-primary text-on-primary font-body-md text-body-md flex items-center justify-center shadow-sm">1</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant text-on-surface font-body-md text-body-md flex items-center justify-center hover:bg-surface-container-low transition-colors">2</button>
+<button class="w-10 h-10 rounded-lg border border-outline-variant text-on-surface font-body-md text-body-md flex items-center justify-center hover:bg-surface-container-low transition-colors">3</button>
+<span class="text-on-surface-variant px-2">...</span>
+<button class="w-10 h-10 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm w-full py-stack_md border-t border-outline-variant flex justify-between items-center px-margin_page mt-auto z-20">
+<span class="font-label-caps text-label-caps text-primary">© 2024 Hệ thống Thuê xe FleetPro. Đã đăng ký bản quyền.</span>
+<div class="flex gap-stack_md">
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Chính sách Bảo mật</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Điều khoản Dịch vụ</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Hỗ trợ</a>
+</div>
+</footer>
+</div>
+
+
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

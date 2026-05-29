@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ghi nhận thanh toán - CarRent Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1d4ed8",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#dbeafe",
+                        "on-primary-container": "#1e40af",
+                        secondary: "#475569",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#f1f5f9",
+                        "on-secondary-container": "#1e293b",
+                        "secondary-fixed-dim": "#94a3b8",
+                        surface: "#ffffff",
+                        "surface-container-low": "#f8fafc",
+                        "surface-container-high": "#f1f5f9",
+                        "surface-container-highest": "#e2e8f0",
+                        "on-surface": "#0f172a",
+                        "on-surface-variant": "#64748b",
+                        outline: "#cbd5e1",
+                        "outline-variant": "#e2e8f0",
+                        error: "#b91c1c"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Public Sans", "sans-serif"],
+                        display: ["Public Sans", "sans-serif"],
+                        body: ["Public Sans", "sans-serif"],
+                        label: ["Public Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface antialiased">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary flex flex-col shadow-md border-r border-outline-variant z-50">
+<div class="p-6">
+<h1 class="font-display-lg text-[24px] text-on-primary font-bold tracking-tight">CarRent Pro</h1>
+<p class="text-on-primary/70 text-xs mt-1">Quản lý đội xe thông minh</p>
+</div>
+<nav class="flex-1 overflow-y-auto sidebar-scroll mt-4">
+<div class="space-y-1">
+<!-- Active: Thanh toán -->
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">home</span>
+<span class="font-medium text-sm">Trang chủ</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="font-medium text-sm">Danh sách xe</span>
+</div>
+<div class="bg-secondary-container text-on-secondary-container border-l-4 border-secondary-fixed-dim py-3 px-6 transition-all flex items-center gap-3 cursor-pointer">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-medium text-sm">Thanh toán</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-medium text-sm">Đơn thuê của tôi</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">description</span>
+<span class="font-medium text-sm">Hợp đồng</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-medium text-sm">Quản lý đơn thuê</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium text-sm">Quản lý người dùng</span>
+</div>
+<div class="text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors flex items-center gap-3 cursor-pointer active:scale-95 duration-200">
+<span class="material-symbols-outlined">insert_chart</span>
+<span class="font-medium text-sm">Báo cáo doanh thu</span>
+</div>
+</div>
+</nav>
+<div class="p-4 border-t border-white/10">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+<img alt="Ảnh đại diện người dùng" class="w-8 h-8 rounded-full bg-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwibu6g5QwKabISoNIhiGW_q2HeeY-g4CZ7F3zj5f4Pfl6OIZ3h1g-vptTg8BTRa6yNB-MKEveQYTtFX-dH-V_kBkNVeLRxjnOSCD25h82ntlqJ7VxZIHtS6_WcbxUGnjN391xO_IZnyu2erFNdVIy7PLVnzJXZXYwHOlti_u5bJfifTmoe-UkmaVJclqLAC3AA0LkJTZA-FZchKPBqhDr0l294bHKJ-LBx-OPEELOqDXdy3k54U9c5zrhIVAVFMSpswXSEN0OcgM"/>
+<div class="overflow-hidden">
+<p class="text-on-primary text-sm font-semibold truncate">Nguyễn Văn A</p>
+<p class="text-on-primary/60 text-xs truncate">Quản trị viên</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface flex justify-between items-center px-8 z-40 border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-4">
+<h2 class="text-primary font-semibold text-lg">Hệ thống Quản lý Thuê xe</h2>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative group">
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary/20 w-64 transition-all" placeholder="Tìm kiếm giao dịch..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2 text-on-surface-variant text-sm">search</span>
+</div>
+<button class="hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<button class="hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+</button>
+<button class="hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-24 pb-12 px-8 min-h-screen">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section -->
+<div class="mb-8">
+<div class="flex items-center gap-2 text-on-surface-variant text-sm mb-2">
+<span>Thanh toán</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-medium">Ghi nhận thanh toán mới</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-on-surface">Ghi nhận giao dịch</h1>
+<p class="text-on-surface-variant mt-1">Cập nhật trạng thái tài chính cho đơn thuê <span class="font-semibold text-on-surface">#ORD-2023-8842</span></p>
+</div>
+<!-- Asymmetric Bento Layout -->
+<div class="grid grid-cols-12 gap-6 items-start">
+<!-- Left Column: Form Section -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+                                Thông tin thanh toán
+                            </h3>
+<span class="px-3 py-1 bg-primary-container text-on-primary-container text-xs font-bold rounded-full">UC 3.4.x</span>
+</div>
+<div class="p-8">
+<form class="space-y-8" id="paymentForm">
+<!-- Transaction Type Selector -->
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-3">Loại thanh toán</label>
+<div class="grid grid-cols-3 gap-4">
+<label class="relative flex flex-col p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-all group">
+<input checked="" class="absolute top-4 right-4 text-primary focus:ring-primary" name="payment_type" type="radio" value="deposit"/>
+<span class="material-symbols-outlined text-on-surface-variant mb-2 group-hover:text-primary transition-colors">account_balance_wallet</span>
+<span class="text-sm font-bold">Đặt cọc</span>
+<span class="text-[10px] text-on-surface-variant">Giữ chỗ &amp; bảo đảm xe</span>
+</label>
+<label class="relative flex flex-col p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-all group">
+<input class="absolute top-4 right-4 text-primary focus:ring-primary" name="payment_type" type="radio" value="rent"/>
+<span class="material-symbols-outlined text-on-surface-variant mb-2 group-hover:text-primary transition-colors">directions_car</span>
+<span class="text-sm font-bold">Thuê xe</span>
+<span class="text-[10px] text-on-surface-variant">Thanh toán cước thuê</span>
+</label>
+<label class="relative flex flex-col p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-all group">
+<input class="absolute top-4 right-4 text-primary focus:ring-primary" name="payment_type" type="radio" value="refund"/>
+<span class="material-symbols-outlined text-on-surface-variant mb-2 group-hover:text-primary transition-colors">keyboard_return</span>
+<span class="text-sm font-bold">Hoàn tiền</span>
+<span class="text-[10px] text-on-surface-variant">Trả lại tiền thừa/cọc</span>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Amount Input -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-on-surface" for="amount">Số tiền (VNĐ)</label>
+<div class="relative">
+<input class="w-full pl-4 pr-12 py-3 bg-surface border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-lg font-bold" id="amount" placeholder="0" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-medium">đ</span>
+</div>
+</div>
+<!-- Method Selector -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-on-surface" for="method">Phương thức thanh toán</label>
+<select class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="method">
+<option value="cash">Tiền mặt</option>
+<option value="transfer">Chuyển khoản ngân hàng</option>
+<option value="card">Thẻ tín dụng/ATM</option>
+<option value="e-wallet">Ví điện tử (Momo/ZaloPay)</option>
+</select>
+</div>
+</div>
+<!-- Note TextArea -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-on-surface" for="note">Ghi chú giao dịch</label>
+<textarea class="w-full px-4 py-3 bg-surface border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="note" placeholder="Nhập chi tiết về giao dịch này..." rows="3"></textarea>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-4 pt-4">
+<button class="px-6 py-2.5 border border-outline-variant text-on-surface font-medium rounded-lg hover:bg-surface-container-high transition-all active:scale-95" type="button">
+                                        Hủy bỏ
+                                    </button>
+<button class="px-8 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary-container hover:text-on-primary-container shadow-md shadow-primary/20 transition-all active:scale-95 flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                                        Xác nhận thanh toán
+                                    </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<!-- Right Column: Summary Card -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Billing Summary -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="p-5 border-b border-outline-variant bg-primary-container/30">
+<h3 class="font-bold flex items-center gap-2 text-on-primary-container">
+<span class="material-symbols-outlined">summarize</span>
+                                Tóm tắt đơn thuê
+                            </h3>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between text-sm text-on-surface-variant">
+<span>Tiền thuê xe (5 ngày)</span>
+<span class="font-medium text-on-surface">7.500.000 đ</span>
+</div>
+<div class="flex justify-between text-sm text-on-surface-variant">
+<span>Phí bảo hiểm</span>
+<span class="font-medium text-on-surface">500.000 đ</span>
+</div>
+<div class="flex justify-between text-sm text-on-surface-variant">
+<span>Dịch vụ thêm (GPS)</span>
+<span class="font-medium text-on-surface">200.000 đ</span>
+</div>
+<div class="pt-4 border-t border-dashed border-outline-variant flex justify-between items-end">
+<span class="text-sm font-semibold">Tổng cộng</span>
+<span class="text-2xl font-black text-primary">8.200.000 đ</span>
+</div>
+</div>
+</div>
+<!-- Payment Status Bento -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-6 space-y-4">
+<h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">Trạng thái hiện tại</h4>
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Đã thanh toán</p>
+<p class="text-lg font-bold">2.000.000 đ</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-red-50 rounded-lg border border-red-100">
+<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div>
+<p class="text-xs text-red-600 font-medium">Còn lại cần thu</p>
+<p class="text-lg font-bold text-red-600">6.200.000 đ</p>
+</div>
+</div>
+</div>
+<!-- Vehicle Context Card -->
+<div class="relative group overflow-hidden rounded-xl h-48 shadow-lg">
+<img alt="Xe cao cấp đang được thuê" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A luxurious black sedan car parked in a clean, modern studio setting with dramatic studio lighting reflecting off its polished metallic surface. High-contrast environment with deep shadows and brilliant highlights, creating a premium and sophisticated atmosphere. The color palette is dominated by dark charcoal and chrome, aligning with a professional corporate vehicle rental UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBBzcjZtM4lnmaMlD0eS7HHn-U5CQ4K-CZeyiwi-EJP89ztCtam6D-TOkfORPxgs7xS-rElTiWEi0Ek9Xx7827ehCGlJj_4_GV_b_RcKYKaX2SbZbl4f_-3CpJei71PbcWEg1FtdvhpD0x68rn0kFGoh0Oa27sUzwG4oz7zzS2i92s3yy7qF50ouFrYuOLBmy3zWbAhPDVSuZ9atdhubIv02C2RyVdUjAhgvmlfsSYFwDedIOMdgCL64LFnKjysf257Dy4Y30R60I"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-5">
+<span class="px-2 py-0.5 bg-white/20 backdrop-blur-md text-white text-[10px] uppercase font-bold rounded w-fit mb-2">Đang phục vụ</span>
+<h4 class="text-white font-bold text-lg leading-tight">Mercedes-Benz S-Class 2023</h4>
+<p class="text-white/70 text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pin_drop</span>
+                                Chi nhánh Quận 1, TP. HCM
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Success Toast (Hidden by default) -->
+<div class="fixed bottom-8 right-8 flex items-center gap-4 bg-green-600 text-on-primary px-6 py-4 rounded-xl shadow-2xl translate-y-20 opacity-0 transition-all duration-300 z-50" id="successToast">
+<span class="material-symbols-outlined">check_circle</span>
+<div>
+<p class="font-bold">Ghi nhận thành công!</p>
+<p class="text-sm opacity-90">Hệ thống đã cập nhật số dư cho đơn thuê.</p>
+</div>
+<button class="ml-4 hover:bg-white/20 p-1 rounded-full transition-all" onclick="hideToast()">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<script>
+        const form = document.getElementById('paymentForm');
+        const toast = document.getElementById('successToast');
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Show toast
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            // Auto hide after 4 seconds
+            setTimeout(hideToast, 4000);
+        });
+
+        function hideToast() {
+            toast.classList.add('translate-y-20', 'opacity-0');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+        }
+
+        // Add some interactivity to type selection
+        const radioGroups = document.querySelectorAll('input[name="payment_type"]');
+        radioGroups.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Clear all active styles
+                document.querySelectorAll('input[name="payment_type"]').forEach(r => {
+                    r.parentElement.classList.remove('border-primary', 'bg-primary-container/10');
+                    r.parentElement.querySelector('.material-symbols-outlined').classList.remove('text-primary');
+                });
+                
+                // Add active style to selected
+                if(e.target.checked) {
+                    e.target.parentElement.classList.add('border-primary', 'bg-primary-container/10');
+                    e.target.parentElement.querySelector('.material-symbols-outlined').classList.add('text-primary');
+                }
+            });
+        });
+
+        // Initialize active state for default checked radio
+        window.onload = () => {
+            const checked = document.querySelector('input[name="payment_type"]:checked');
+            if(checked) {
+                checked.parentElement.classList.add('border-primary', 'bg-primary-container/10');
+                checked.parentElement.querySelector('.material-symbols-outlined').classList.add('text-primary');
+            }
+        };
+    </script>
+</body></html>

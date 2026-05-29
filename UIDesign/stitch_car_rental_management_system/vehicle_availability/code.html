@@ -1,0 +1,304 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tính khả dụng - Hệ thống quản lý thuê ô tô tự lái</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b38d5b",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "primary": "#041638",
+                        "on-primary-fixed": "#081a3d",
+                        "error-container": "#ffdad6",
+                        "secondary": "#505f76",
+                        "on-primary-fixed-variant": "#37466b",
+                        "surface-container-low": "#f5f3f6",
+                        "tertiary-fixed": "#ffddb5",
+                        "secondary-fixed": "#d3e4fe",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "outline": "#75777f",
+                        "inverse-surface": "#303033",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#8393bc",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8fc",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-surface": "#1b1b1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "surface-container-high": "#e9e7eb",
+                        "inverse-primary": "#b6c6f1",
+                        "tertiary": "#251400",
+                        "surface-container-highest": "#e4e2e5",
+                        "surface-tint": "#4e5e84",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-container": "#1b2b4e",
+                        "surface": "#fbf8fc",
+                        "on-tertiary-fixed": "#2a1800"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_md": "16px",
+                        "gutter": "24px",
+                        "stack_lg": "24px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "status-badge": ["12px", { "lineHeight": "12px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar_width bg-primary dark:bg-primary-container shadow-lg flex flex-col py-stack_lg px-stack_sm z-20">
+<div class="flex items-center gap-4 px-4 mb-8">
+<img alt="Company Logo" class="rounded-full w-10 h-10 object-cover" data-alt="A modern, minimalist corporate logo featuring a sleek, stylized car silhouette inside a perfect circle. The logo uses a monochromatic deep navy blue palette on a pure white background, conveying trust, speed, and efficiency typical of enterprise mobility solutions. The design is clean, sharp, and highly professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCs9ZFkiqjdwbqthF-5B-llQvsOi81rzPtzqd2alyTLa2D5BpXDnIvWbelaAtXSHBiboDAyoWeoTm_9bjBoJE2boOvXJyDUyiGqIweQzOU0mMuR3s10XqMPaaZO5ER5A8Ti8rUGVnhJMQfOYNOsScvVoPgqLiTRr4dblHO4hYwUmbQ4CdcMNY_g39KD4bU-zgPxAMvTgBYulqc0z316zlW04y4Qnyd20b7DKJVGwNBjGz8HqXTDfuE3eALej6zPywbZ4nzV18Fg0co">
+<div>
+<h1 class="font-title-sm text-title-sm text-on-primary">Hệ thống quản lý thuê ô tô tự lái</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container opacity-80 mt-1">Trạm quản trị</p>
+</div>
+</div>
+<button class="bg-on-primary text-primary font-title-sm text-title-sm rounded-lg py-3 px-4 mx-2 mb-6 hover:bg-surface-container-low transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="add" style="font-variation-settings: 'FILL' 0;">add</span>
+            Đặt nhanh
+        </button>
+<ul class="flex flex-col gap-1 flex-grow">
+<!-- Inactive -->
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="dashboard">dashboard</span> <span class="font-label-caps text-label-caps">Bảng điều khiển</span></a></li>
+<!-- Active (Semantic match: Fleet / Checking vehicle availability) -->
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg border-l-4 border-secondary-fixed-dim bg-on-primary-fixed-variant text-on-primary cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="directions_car">directions_car</span> <span class="font-label-caps text-label-caps">Đội xe</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span> <span class="font-label-caps text-label-caps">Đặt xe</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="groups">groups</span> <span class="font-label-caps text-label-caps">Khách hàng</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="badge">badge</span> <span class="font-label-caps text-label-caps">Nhân viên</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="analytics">analytics</span> <span class="font-label-caps text-label-caps">Báo cáo</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="settings">settings</span> <span class="font-label-caps text-label-caps">Cài đặt</span></a></li>
+<li><a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="build">build</span> <span class="font-label-caps text-label-caps">Bảo trì</span></a></li>
+</ul>
+<div class="mt-auto border-t border-on-primary-fixed-variant pt-4 mx-2">
+<ul class="flex flex-col gap-1">
+<li><a class="flex items-center gap-3 px-2 py-2 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="help">help</span> <span class="font-label-caps text-label-caps">Hỗ trợ</span></a></li>
+<li><a class="flex items-center gap-3 px-2 py-2 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95" href="#"><span class="material-symbols-outlined" data-icon="logout">logout</span> <span class="font-label-caps text-label-caps">Đăng xuất</span></a></li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-sidebar_width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="w-full h-16 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm flex items-center justify-between px-margin_page z-10 sticky top-0">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold tracking-tight">Quản lý Hệ thống</span>
+<nav class="hidden md:flex gap-6 h-16">
+<a class="flex items-center h-full text-on-surface-variant dark:text-on-secondary-container hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors px-2 cursor-pointer active:opacity-80" href="#"><span class="font-body-md text-body-md">Tổng quan</span></a>
+<!-- Active in TopNav context (Checking Fleet) -->
+<a class="flex items-center h-full text-primary dark:text-primary-fixed font-bold border-b-2 border-primary hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors px-2 cursor-pointer active:opacity-80" href="#"><span class="font-body-md text-body-md">Tính khả dụng</span></a>
+<a class="flex items-center h-full text-on-surface-variant dark:text-on-secondary-container hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors px-2 cursor-pointer active:opacity-80" href="#"><span class="font-body-md text-body-md">Xe đang thuê</span></a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search Bar Placeholder -->
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 border border-outline-variant rounded-full bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface w-64 transition-all" placeholder="Tìm kiếm xe, đặt xe..." type="text">
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover border border-outline-variant cursor-pointer" data-alt="A professional headshot of a middle-aged fleet manager with short hair, wearing a crisp light blue dress shirt. The background is a softly blurred office environment with cool daylight. The lighting is bright and even, casting subtle shadows to emphasize a trustworthy and efficient demeanor perfectly suited for enterprise software UI avatars." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2xLW5eF8BF7fD22g6U8BMeuJR1MgF1AjhcFUb-__yzQmdYY-GbHhQQ4nG2KKZhMrZvIuoU8jTkWGiSE2faF54sdhDzeonjFJxI8uuKSqSXU9GBiTQFkFIFa4LkZoRP-w0LEZxsrKtVnY04AvOs2jQKFTF9ioG35CBpxM_xQQq1pqsCujNGh3_Hx3qbEFAU7d0ofqRp5M-QWmSGHwIvckmIgZgimG4KVeE6E2mcAtShqKA2gV1XojdAreHghZ9XoAyvTWvr3KuNSk">
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-margin_page flex flex-col gap-gutter max-w-container_max_width mx-auto w-full">
+<div class="flex flex-col md:flex-row gap-gutter">
+<!-- Query Form Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] border border-outline-variant p-stack_lg flex-1 md:w-1/3 flex flex-col gap-stack_md">
+<h2 class="font-title-sm text-title-sm text-on-surface">Kiểm tra tính khả dụng</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Nhập chi tiết để xác minh tình trạng đội xe.</p>
+<form class="flex flex-col gap-4 mt-2">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-secondary">Nhóm xe / ID</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="directions_car">directions_car</span>
+<select class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface appearance-none">
+<option>Sedan nhỏ gọn (Hạng B)</option>
+<option>SUV (Hạng F)</option>
+<option>Sedan hạng sang (Hạng L)</option>
+<option>Xe tải chở hàng (Hạng V)</option>
+<option disabled="">--- Xe cụ thể ---</option>
+<option>V-1024 (Toyota Corolla)</option>
+<option>V-2099 (Ford Explorer)</option>
+</select>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex flex-col gap-1 flex-1">
+<label class="font-label-caps text-label-caps text-secondary">Ngày &amp; Giờ bắt đầu</label>
+<input class="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface" type="datetime-local">
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<label class="font-label-caps text-label-caps text-secondary">Ngày &amp; Giờ kết thúc</label>
+<input class="w-full px-3 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface" type="datetime-local">
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-secondary">Địa điểm nhận xe</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="location_on">location_on</span>
+<select class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface appearance-none">
+<option>Trụ sở kho trung tâm</option>
+<option>Ga sân bay 1</option>
+<option>Trạm phía Bắc</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-secondary">Địa điểm trả xe</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="pin_drop">pin_drop</span>
+<select class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-sm text-body-sm text-on-surface appearance-none">
+<option>Giống nơi nhận</option>
+<option>Trụ sở kho trung tâm</option>
+<option>Ga sân bay 1</option>
+<option>Trạm phía Bắc</option>
+</select>
+</div>
+</div>
+<button class="mt-4 bg-primary text-on-primary font-title-sm text-title-sm py-3 rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+                            Kiểm tra
+                        </button>
+</form>
+</div>
+<!-- Results Area Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.1)] border border-outline-variant p-stack_lg flex-[2] flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-title-sm text-title-sm text-on-surface">Trạng thái: V-1024 (Toyota Corolla)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tháng 10 24, 09:00 SA — Tháng 10 26, 05:00 CH</p>
+</div>
+<!-- Status Badge (Not Available) -->
+<div class="bg-error-container text-on-error-container font-status-badge text-status-badge px-3 py-1.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="block">block</span>
+                            KHÔNG CÓ SẴN
+                        </div>
+</div>
+<!-- Conflict Details -->
+<div class="flex-1 flex flex-col justify-center items-center text-center py-8">
+<div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-on-error-container text-3xl" data-icon="event_busy" style="font-variation-settings: 'FILL' 1;">event_busy</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-2">Đã phát hiện xung đột lịch trình</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md">
+                            Xe V-1024 hiện được chỉ định cho Đặt xe #B-88392 trong khung thời gian yêu cầu. Xe dự kiến sẽ được trả tại <strong>Ga sân bay 1</strong> vào <strong>Ngày 25 tháng 10, 02:00 Chiều</strong>.
+                        </p>
+<div class="mt-6 w-full max-w-md border border-outline-variant rounded-lg overflow-hidden">
+<div class="bg-surface-container-low px-4 py-2 border-b border-outline-variant text-left">
+<span class="font-label-caps text-label-caps text-secondary">Các lựa chọn thay thế được đề xuất (Hạng B)</span>
+</div>
+<ul class="divide-y divide-outline-variant">
+<li class="px-4 py-3 flex justify-between items-center hover:bg-surface-container-lowest transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline" data-icon="directions_car">directions_car</span>
+<div class="text-left">
+<p class="font-body-sm text-body-sm text-on-surface font-semibold">V-1028 (Honda Civic)</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Có sẵn tại Trụ sở kho trung tâm</p>
+</div>
+</div>
+<button class="text-primary font-body-sm text-body-sm font-semibold hover:underline">Chọn</button>
+</li>
+<li class="px-4 py-3 flex justify-between items-center hover:bg-surface-container-lowest transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline" data-icon="directions_car">directions_car</span>
+<div class="text-left">
+<p class="font-body-sm text-body-sm text-on-surface font-semibold">V-1031 (Hyundai Elantra)</p>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Có sẵn tại Trụ sở kho trung tâm</p>
+</div>
+</div>
+<button class="text-primary font-body-sm text-body-sm font-semibold hover:underline">Chọn</button>
+</li>
+</ul>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-auto pt-6 border-t border-outline-variant flex justify-end gap-4">
+<button class="bg-surface-container-lowest text-primary border border-primary font-title-sm text-title-sm py-2 px-6 rounded-lg hover:bg-surface-container-low transition-colors shadow-sm">
+                            Xóa biểu mẫu
+                        </button>
+<button class="bg-primary text-on-primary font-title-sm text-title-sm py-2 px-6 rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm opacity-50 cursor-not-allowed" disabled="">
+                            Tạo đơn đặt
+                        </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack_md bg-surface-container-low dark:bg-on-background border-t border-outline-variant flex justify-between items-center px-margin_page mt-auto z-10">
+<div class="flex items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-secondary-container">© 2024 Hệ thống quản lý thuê ô tô tự lái. Đã đăng ký bản quyền.</span>
+</div>
+<div class="flex gap-6">
+<a class="font-label-caps text-label-caps text-primary hover:text-primary underline transition-all cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-primary underline transition-all cursor-pointer" href="#">Điều khoản dịch vụ</a>
+<a class="font-label-caps text-label-caps text-primary hover:text-primary underline transition-all cursor-pointer" href="#">Hỗ trợ</a>
+</div>
+</footer>
+</div>
+</body></html>

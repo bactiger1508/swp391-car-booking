@@ -1,0 +1,562 @@
+<!DOCTYPE html><html class="light" lang="vi" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Đơn thuê của tôi - CarRent Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for better UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f5f3f6",
+                        "surface-dim": "#dbd9dd",
+                        "error": "#ba1a1a",
+                        "primary": "#041638",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-tertiary-container": "#b38d5b",
+                        "tertiary": "#251400",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#081a3d",
+                        "surface": "#fbf8fc",
+                        "on-surface-variant": "#45464e",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "surface-variant": "#e4e2e5",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-fixed-variant": "#37466b",
+                        "background": "#fbf8fc",
+                        "on-primary-container": "#8393bc",
+                        "surface-container-highest": "#e4e2e5",
+                        "secondary-fixed": "#d3e4fe",
+                        "inverse-primary": "#b6c6f1",
+                        "on-background": "#1b1b1e",
+                        "on-secondary": "#ffffff",
+                        "outline": "#75777f",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#303033",
+                        "tertiary-fixed": "#ffddb5",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "primary-container": "#1b2b4e",
+                        "on-tertiary-fixed": "#2a1800",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "secondary": "#505f76",
+                        "surface-tint": "#4e5e84",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-container-high": "#e9e7eb",
+                        "surface-bright": "#fbf8fc",
+                        "primary-fixed": "#d9e2ff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1b1b1e",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#eabf89"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack_lg": "24px",
+                        "sidebar_width": "280px",
+                        "stack_sm": "8px",
+                        "margin_page": "32px",
+                        "container_max_width": "1440px",
+                        "gutter": "24px",
+                        "stack_md": "16px"
+                    },
+                    "fontFamily": {
+                        "title-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "status-badge": ["12px", {"lineHeight": "12px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary dark:bg-primary-container border-r border-outline-variant dark:border-outline shadow-md z-50 flex flex-col h-full">
+<div class="p-8">
+<h1 class="font-display-lg text-display-lg text-on-primary font-bold tracking-tight"><div><span style="letter-spacing: -0.025em;">CarPro</span></div></h1>
+<p class="text-on-primary-container text-xs opacity-80 mt-1">Quản lý đội xe thông minh</p>
+</div>
+<nav class="flex-1 overflow-y-auto mt-4 space-y-1">
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">home</span>Trang chủ
+            </a>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">directions_car</span>Danh sách xe
+            </a>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">person</span>Hồ sơ cá nhân
+            </a>
+<!-- Active Tab: Đơn thuê của tôi -->
+<a class="flex items-center bg-secondary-container text-on-secondary-container border-l-4 border-secondary-fixed-dim py-3 px-6 transition-all font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 1;">receipt_long</span>Đơn thuê của tôi
+            </a>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">payments</span>Thanh toán
+            </a>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">description</span>Hợp đồng
+            </a>
+<div class="pt-4 pb-2 px-6">
+<p class="text-[10px] uppercase font-bold text-on-primary-container opacity-50 tracking-widest">Quản trị</p>
+</div>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">assignment</span>Quản lý đơn thuê
+            </a>
+<a class="flex items-center text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary-container py-3 px-6 transition-colors font-title-sm text-title-sm" href="#">
+<span class="material-symbols-outlined mr-4">insert_chart</span>Báo cáo doanh thu
+            </a>
+</nav>
+<div class="p-6 border-t border-primary-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">JD</div>
+<div class="overflow-hidden">
+<p class="font-bold text-on-primary truncate">Nguyễn Văn A</p>
+<p class="text-xs text-on-primary-container opacity-70">Khách hàng thân thiết</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface dark:bg-surface-container-low border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-8 z-40 ml-[280px]">
+<div class="flex items-center bg-surface-container-high dark:bg-surface-container-highest rounded-full px-4 py-2 w-96 transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none outline-none text-body-md font-body-md w-full focus:ring-0 placeholder:text-on-surface-variant/50" placeholder="Tìm kiếm mã đơn, tên xe..." type="text">
+</div>
+<div class="flex items-center space-x-4">
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">notifications</span>
+</button>
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">help_outline</span>
+</button>
+<button class="hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">dark_mode</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<img alt="Ảnh đại diện người dùng" class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" data-alt="A professional headshot of a smiling Vietnamese man in his early 30s, dressed in business casual attire. The lighting is soft and natural, coming from a window in a modern, clean corporate office setting. The background is softly blurred, showing hints of contemporary interior design with neutral tones. The overall mood is approachable, professional, and trustworthy, perfectly fitting a high-end service application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkQcGlkFyT9MbmGxXioHaIxQImkZ-poj00-c1el9buN-8dh9Pitlc0rWtw-iV3wCCm87wAOEhlST-AlQGgJrfBkdkghKxBunP3mr1Q8cK4mQkBeCzrIPKcwAEDFVjgpiPiNun7tNZYpDhX9B5VvoMMLgPB50CMw1871ODGxM5RE3X49UIF8uXV8kA-NZc7Mk0b2Fi37PHHWGVgJlEiU-WVLcd3OgOgkSYcNzFY_qxrSU8DAt-bStDHHWmsYbesIBGIQRwHkFXAdp0">
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="p-stack_lg lg:p-margin_page max-w-container_max_width mx-auto">
+<!-- Page Header -->
+<div class="mb-stack_lg flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Đơn thuê của tôi</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1">Theo dõi và quản lý lịch sử thuê xe của bạn</p>
+</div>
+<div class="flex gap-stack_sm">
+<button class="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-title-sm text-sm flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span> Thuê xe mới
+                    </button>
+</div>
+</div>
+<!-- Dashboard Quick Stats (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-stack_md mb-stack_lg">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Tổng số đơn</p>
+<p class="text-2xl font-bold text-primary">12</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-[#fef3c7] flex items-center justify-center text-[#92400e]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Đang thuê</p>
+<p class="text-2xl font-bold text-primary">02</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-[#dcfce7] flex items-center justify-center text-[#166534]">
+<span class="material-symbols-outlined">task_alt</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Hoàn tất</p>
+<p class="text-2xl font-bold text-primary">08</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-[#fee2e2] flex items-center justify-center text-[#991b1b]">
+<span class="material-symbols-outlined">cancel</span>
+</div>
+<div>
+<p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">Đã hủy</p>
+<p class="text-2xl font-bold text-primary">02</p>
+</div>
+</div>
+</div>
+<!-- Filters & Actions -->
+<div class="bg-surface-container-lowest p-6 rounded-t-xl border border-outline-variant border-b-0 flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-stack_md">
+<div class="relative">
+<label class="text-[10px] absolute -top-2 left-3 bg-surface-container-lowest px-1 font-bold text-primary uppercase">Trạng thái đơn</label>
+<select class="pl-4 pr-10 py-2 border border-outline-variant rounded-lg text-body-sm font-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>Tất cả trạng thái</option>
+<option>Chờ xử lý</option>
+<option>Đã xác nhận</option>
+<option>Đang thuê</option>
+<option>Hoàn tất</option>
+<option>Đã hủy</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<div class="relative">
+<label class="text-[10px] absolute -top-2 left-3 bg-surface-container-lowest px-1 font-bold text-primary uppercase">Thời gian</label>
+<select class="pl-4 pr-10 py-2 border border-outline-variant rounded-lg text-body-sm font-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>Tất cả thời gian</option>
+<option>Tháng này</option>
+<option>3 tháng gần nhất</option>
+<option>Trong năm 2024</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">calendar_today</span>
+</div>
+</div>
+<div class="flex items-center gap-stack_sm">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors" title="Làm mới">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors" title="Xuất báo cáo">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-b-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Mã đặt xe</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Thông tin xe</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Thời gian thuê</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Trạng thái đơn</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Thanh toán</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Hợp đồng</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Active -->
+<tr class="hover:bg-surface-container-low transition-colors group" style="cursor: pointer;">
+<td class="px-6 py-4">
+<span class="font-bold text-primary font-body-md text-body-md">BK-2024-001</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-10 rounded bg-surface-container-high overflow-hidden flex-shrink-0">
+<img alt="Xe Toyota Camry" class="w-full h-full object-cover" data-alt="A side view of a sleek, deep black modern luxury sedan, specifically a Toyota Camry, parked on a clean, sun-drenched suburban street. The car's polished surface reflects a bright blue sky and soft golden-hour sunlight. The setting is high-end and tranquil, emphasizing the vehicle's clean lines and professional appeal. The color palette is dominated by deep blacks, crisp chrome accents, and warm asphalt tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcDY6UCY6adArkxmyPF7_t5xDwPyjMIYbXiTq14ww2deQwdBBReoPLDDtetYkfD15VtvxH8v9RmcAiXC8btzYSf_hhCP3jvLpJ8tM35IH1OCMr8nS_nFgjj2ci6Z24nLTTrNQmnzNJunx_R9cXCc6wGiTgk0vuPeyfMFdCil7T-jAsWZwgqy7mfvHZM3pNKS6OF_cJPAaMKRfUVjevS0We4uh4iYMh9kQp6BRhNjcm-jZRvdDsWFePP6CjA0H5fsm755nzjgAv5QY">
+</div>
+<div>
+<p class="font-bold text-on-surface">Toyota Camry 2023</p>
+<p class="text-xs text-on-surface-variant">BKS: 51H-123.45</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-body-sm font-body-sm text-on-surface">15/05 - 18/05/2024</p>
+<p class="text-[10px] text-on-surface-variant font-bold">3 NGÀY</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-on-secondary-container mr-1.5"></span>
+                                        Đang thuê
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-green-100 text-green-800">
+                                        Đã thanh toán
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-blue-100 text-blue-800">
+                                        Đã ký kết
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-bold text-body-sm flex items-center justify-end gap-1 w-full transition-all group-hover:translate-x-1">
+                                        Xem chi tiết <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Pending -->
+<tr class="hover:bg-surface-container-low transition-colors group" style="cursor: pointer;">
+<td class="px-6 py-4">
+<span class="font-bold text-primary font-body-md text-body-md">BK-2024-008</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-10 rounded bg-surface-container-high overflow-hidden flex-shrink-0">
+<img alt="Xe Porsche" class="w-full h-full object-cover" data-alt="A front three-quarter view of a metallic silver luxury sports car parked in a bright, minimalist concrete studio with high-key lighting. The car's metallic finish shimmers under the soft, diffused studio lights, creating elegant highlights and soft shadows. The atmosphere is extremely clean, sophisticated, and premium. The dominant colors are silver, cool grays, and bright whites, evoking a sense of high-performance and modern luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAByaZ-2uPs7-I62poEKusSOtdWBJ8O0o4AQUZvy0cDjkWPkX0ZYHKRJ90-B86Lv9UBldCPO2gsblERTEdTauTW-lOg-Q_4m6zPL_J4vvNVBeEXDQwNQYldrqbENjnWwAowjwNHhhC1tv9CSbahSbDMpKwQ8iDd-J-U2dKDImbZ6sO2IR3Cl8iopIW3xkpwaNAzFtqYcS3BCvRCiXLe8M1S_yN_7dBIbCF9O9kDHR-R0bcRrK63Zf5hNpLdB4gmZG0foxZbGdymbpI">
+</div>
+<div>
+<p class="font-bold text-on-surface">Porsche Macan</p>
+<p class="text-xs text-on-surface-variant">BKS: 51K-999.99</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-body-sm font-body-sm text-on-surface">20/05 - 22/05/2024</p>
+<p class="text-[10px] text-on-surface-variant font-bold">2 NGÀY</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-yellow-100 text-yellow-800">
+<span class="w-1.5 h-1.5 rounded-full bg-yellow-600 mr-1.5"></span>
+                                        Chờ xử lý
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-red-100 text-red-800">
+                                        Chưa thanh toán
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-surface-variant text-on-surface-variant">
+                                        Đang chờ ký
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-bold text-body-sm flex items-center justify-end gap-1 w-full transition-all group-hover:translate-x-1">
+                                        Xem chi tiết <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Confirmed -->
+<tr class="hover:bg-surface-container-low transition-colors group" style="cursor: pointer;">
+<td class="px-6 py-4">
+<span class="font-bold text-primary font-body-md text-body-md">BK-2024-005</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-10 rounded bg-surface-container-high overflow-hidden flex-shrink-0">
+<img alt="Xe Mazda 3" class="w-full h-full object-cover" data-alt="A detailed close-up shot of a vibrant red compact sedan parked on a modern urban street at dusk. The city lights are starting to twinkle in the background, creating a soft bokeh effect. The car's crimson paint is rich and saturated, catching the warm evening light. The overall mood is stylish, energetic, and urban. The color palette features deep reds, cool evening blues, and warm streetlamp yellows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzae8rX9Gmn4axAJ1W0zdpt0M1cS09H_tM_ebXSbST0rZrQz3Eu0Vh7xrm3dkS1F1r3U99d1H8ffi0B273rXDVVVaAYh_qn7Pb6upvYPOYi-AGFaP_Ytohw2F6AtP_zFVQeNAcJq0cMGhUe5ZN4j_rnvXH0mNbVj29l348uF8bT05TOsDU72yiP8QtjZBUK9j-2deYCT2_jMDl6xyWYnN8p5JiNf8kvc3WXOxVlxlmq5wgHv2jxMA4VgwO4hJVCZjiDinyzo_URDM">
+</div>
+<div>
+<p class="font-bold text-on-surface">Mazda 3 Premium</p>
+<p class="text-xs text-on-surface-variant">BKS: 30A-678.90</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-body-sm font-body-sm text-on-surface">10/05 - 12/05/2024</p>
+<p class="text-[10px] text-on-surface-variant font-bold">2 NGÀY</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-blue-100 text-blue-800">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
+                                        Đã xác nhận
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-green-100 text-green-800">
+                                        Đã thanh toán
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-blue-100 text-blue-800">
+                                        Đã ký kết
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-bold text-body-sm flex items-center justify-end gap-1 w-full transition-all group-hover:translate-x-1">
+                                        Xem chi tiết <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Completed -->
+<tr class="hover:bg-surface-container-low transition-colors group" style="cursor: pointer;">
+<td class="px-6 py-4">
+<span class="font-bold text-primary font-body-md text-body-md">BK-2024-002</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-10 rounded bg-surface-container-high overflow-hidden flex-shrink-0">
+<img alt="Xe Mercedes" class="w-full h-full object-cover" data-alt="A rear perspective view of a white high-performance electric SUV parked on a mountain road overlooking a scenic valley. The morning light is crisp and bright, highlighting the car's clean white body and aerodynamic shape. The vast landscape in the background provides a sense of freedom and exploration. The mood is fresh, optimistic, and technologically forward. The palette is dominated by pure whites, mountain greens, and sky blues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaD9eH75mSk_zwu2BeQ-VEtC0fvGyPwUVKx7IB4MpTnPNJjoH0tz7lXBA0WKVdbaSbioKcARP07bddacTzrz3Vl4yefE-enum26YntQMF4DQs9x9kMB53yU-8-ffQb_YRy9ubyKPLK9jZF-tSPnxIqH5ZVYgZL2vYe6QmIcMlZPJOm1G0okjg5RlVOtMhz696cOFS5zqIoHhXnI3Vrya5D1kwl_BVl7VRGUHhBoFn2y0wZ4nnjy5RU6sMrVjOlsFgND3Mv5WER3PE">
+</div>
+<div>
+<p class="font-bold text-on-surface">Mercedes GLC 300</p>
+<p class="text-xs text-on-surface-variant">BKS: 51F-112.23</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-body-sm font-body-sm text-on-surface">01/05 - 05/05/2024</p>
+<p class="text-[10px] text-on-surface-variant font-bold">4 NGÀY</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-green-100 text-green-800">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5"></span>
+                                        Hoàn tất
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-green-100 text-green-800">
+                                        Đã thanh toán
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-green-100 text-green-800">
+                                        Đã tất toán
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-bold text-body-sm flex items-center justify-end gap-1 w-full transition-all group-hover:translate-x-1">
+                                        Xem chi tiết <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Cancelled -->
+<tr class="hover:bg-surface-container-low transition-colors group" style="cursor: pointer;">
+<td class="px-6 py-4">
+<span class="font-bold text-primary font-body-md text-body-md">BK-2024-003</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-10 rounded bg-surface-container-high overflow-hidden flex-shrink-0 opacity-60">
+<img alt="Xe Ford Ranger" class="w-full h-full object-cover" data-alt="A rugged dark blue pickup truck parked on a gravel path near a misty forest at dawn. The atmosphere is moody and atmospheric, with fog rolling between the trees in the background. The car's surface is slightly damp from the morning dew, adding texture to the shot. The mood is adventurous yet somber. The color palette features deep navy blues, forest greens, and misty grays." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu-modkWVWXCPHKBQBYIoQBoDrjpCxGImB0J8mbCKp8BtpRSp1BQGlx6OigPgrGLUIB6HD-7EpPDgTpLSNfIxwQOpe-VkO1G810wdKAMeay3Lq_j4Uwiwcsv88JCioqr5Z0OAduT6ZerdDhFS0QeFGm3jp1T3PQVp6g-4uSioyWdI0uOpS9DqRxTYY0wyoXbvjLXOYfuksm3bOnftDnVToTr5p2yDO9X6SQzq4fvYNXe8Ba-AZ2hD1MBgIX2kFHWsMO3MDftFtCXQ">
+</div>
+<div>
+<p class="font-bold text-on-surface opacity-60">Ford Ranger Raptor</p>
+<p class="text-xs text-on-surface-variant">BKS: 60C-555.66</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 opacity-60">
+<p class="text-body-sm font-body-sm text-on-surface">28/04 - 30/04/2024</p>
+<p class="text-[10px] text-on-surface-variant font-bold">2 NGÀY</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-error-container text-on-error-container">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>
+                                        Đã hủy
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-surface-variant text-on-surface-variant">
+                                        Đã hoàn tiền
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-status-badge font-status-badge bg-surface-variant text-on-surface-variant">
+                                        Đã hủy bỏ
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-bold text-body-sm flex items-center justify-end gap-1 w-full transition-all group-hover:translate-x-1">
+                                        Xem chi tiết <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-high flex items-center justify-between">
+<p class="text-body-sm font-body-sm text-on-surface-variant">Hiển thị 1-5 trong tổng số 12 đơn thuê</p>
+<div class="flex items-center gap-1">
+<button class="p-2 hover:bg-surface-container-highest rounded-lg disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-lg font-bold text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-highest rounded-lg text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-highest rounded-lg text-sm">3</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Promotion / Help Card (Asymmetric Layout) -->
+<div class="mt-stack_lg grid grid-cols-1 md:grid-cols-3 gap-stack_lg">
+<div class="md:col-span-2 relative overflow-hidden rounded-2xl bg-primary-container text-on-primary p-8 flex flex-col justify-between min-h-[240px]">
+<div class="z-10 relative">
+<span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full mb-4">ƯU ĐÃI ĐẶC BIỆT</span>
+<h3 class="font-display-lg text-headline-md max-w-md">Giảm ngay 15% cho lần thuê xe tiếp theo của bạn!</h3>
+<p class="mt-2 text-on-primary-container opacity-80 max-w-sm">Cảm ơn bạn đã tin tưởng dịch vụ. Mã giảm giá đã được gửi vào hòm thư cá nhân.</p>
+</div>
+<div class="z-10 relative mt-6">
+<button class="px-6 py-2 bg-secondary-container text-on-secondary-container font-bold rounded-xl active:scale-95 transition-transform">Nhận ưu đãi ngay</button>
+</div>
+<!-- Decorative Element -->
+<div class="absolute right-0 bottom-0 opacity-20 transform translate-x-1/4 translate-y-1/4">
+<span class="material-symbols-outlined text-[300px]" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+</div>
+<div class="bg-surface-container-highest p-8 rounded-2xl flex flex-col items-center text-center justify-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest flex items-center justify-center mb-4 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[32px]">support_agent</span>
+</div>
+<h4 class="font-bold text-primary text-title-sm">Cần hỗ trợ?</h4>
+<p class="text-body-sm text-on-surface-variant mt-2 mb-6">Đội ngũ hỗ trợ của chúng tôi luôn sẵn sàng 24/7 để giải đáp mọi thắc mắc của bạn.</p>
+<a class="text-primary font-bold border-b-2 border-primary pb-0.5 hover:text-on-primary-container transition-colors" href="tel:19001234">1900 1234</a>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future navigation logic
+                console.log('Navigating to details of: ' + row.querySelector('.font-bold').innerText);
+            });
+            row.style.cursor = 'pointer';
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-primary/20', 'bg-white');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20', 'bg-white');
+        });
+    </script>
+
+
+</body></html>

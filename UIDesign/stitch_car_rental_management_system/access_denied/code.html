@@ -1,0 +1,136 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Từ chối truy cập - Hệ thống quản lý thuê ô tô tự lái</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b38d5b",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "primary": "#041638",
+                        "on-primary-fixed": "#081a3d",
+                        "error-container": "#ffdad6",
+                        "secondary": "#505f76",
+                        "on-primary-fixed-variant": "#37466b",
+                        "surface-container-low": "#f5f3f6",
+                        "tertiary-fixed": "#ffddb5",
+                        "secondary-fixed": "#d3e4fe",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "outline": "#75777f",
+                        "inverse-surface": "#303033",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#8393bc",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8fc",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-surface": "#1b1b1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "surface-container-high": "#e9e7eb",
+                        "inverse-primary": "#b6c6f1",
+                        "tertiary": "#251400",
+                        "surface-container-highest": "#e4e2e5",
+                        "surface-tint": "#4e5e84",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-container": "#1b2b4e",
+                        "surface": "#fbf8fc",
+                        "on-tertiary-fixed": "#2a1800"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_md": "16px",
+                        "gutter": "24px",
+                        "stack_lg": "24px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "status-badge": ["12px", { "lineHeight": "12px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf8fc; color: #1b1b1e; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .fill-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center">
+<!-- Suppressed Shell: Linear/Transactional intent (Access Denied / Dead End) -->
+<main class="w-full max-w-2xl px-margin_page flex flex-col items-center justify-center text-center">
+<!-- Error Icon Container -->
+<div class="w-24 h-24 rounded-full bg-error-container flex items-center justify-center mb-stack_lg shadow-sm">
+<span class="material-symbols-outlined text-error fill-icon" data-icon="lock" data-weight="fill" style="font-size: 48px;">lock</span>
+</div>
+<!-- Typography Block -->
+<h1 class="font-display-lg text-display-lg text-primary mb-stack_sm">Quyền truy cập bị hạn chế</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack_lg max-w-lg">
+            Bạn không có đủ quyền để xem học phần này trong Hệ thống quản lý thuê ô tô tự lái. Vui lòng liên hệ với quản trị viên hệ thống của bạn nếu bạn cho rằng đây là lỗi.
+        </p>
+<!-- Actions -->
+<div class="flex flex-col sm:flex-row gap-stack_md w-full sm:w-auto">
+<button class="bg-primary-container text-on-primary font-label-caps text-label-caps px-stack_lg py-stack_sm rounded shadow-sm hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center gap-2 h-12 min-w-[160px]">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+                Quay lại Bảng điều khiển
+            </button>
+<button class="bg-surface text-primary border border-outline-variant font-label-caps text-label-caps px-stack_lg py-stack_sm rounded hover:bg-surface-container-low transition-colors flex items-center justify-center h-12 min-w-[160px]">
+                Liên hệ Hỗ trợ
+            </button>
+</div>
+<!-- Minimal Branding Footer -->
+<div class="mt-12 pt-stack_lg border-t border-outline-variant w-full max-w-md">
+<p class="font-body-sm text-body-sm text-outline flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="directions_car" style="font-size: 16px;">directions_car</span>
+                Hệ thống quản lý thuê ô tô tự lái
+            </p>
+</div>
+</main>
+</body></html>

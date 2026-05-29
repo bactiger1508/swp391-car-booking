@@ -1,0 +1,409 @@
+<!DOCTYPE html><html class="light" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Đặt xe của tôi - Hệ thống quản lý thuê ô tô tự lái</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#b38d5b",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dbd9dd",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-background": "#1b1b1e",
+                        "primary-fixed-dim": "#b6c6f1",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container": "#efedf1",
+                        "primary": "#041638",
+                        "on-primary-fixed": "#081a3d",
+                        "error-container": "#ffdad6",
+                        "secondary": "#505f76",
+                        "on-primary-fixed-variant": "#37466b",
+                        "surface-container-low": "#f5f3f6",
+                        "tertiary-fixed": "#ffddb5",
+                        "secondary-fixed": "#d3e4fe",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#402700",
+                        "on-tertiary-fixed-variant": "#5e4116",
+                        "outline": "#75777f",
+                        "inverse-surface": "#303033",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cf",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-primary-container": "#8393bc",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8fc",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-surface": "#1b1b1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-fixed-dim": "#eabf89",
+                        "surface-container-high": "#e9e7eb",
+                        "inverse-primary": "#b6c6f1",
+                        "tertiary": "#251400",
+                        "surface-container-highest": "#e4e2e5",
+                        "surface-tint": "#4e5e84",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface-variant": "#45464e",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f2f0f3",
+                        "primary-container": "#1b2b4e",
+                        "surface": "#fbf8fc",
+                        "on-tertiary-fixed": "#2a1800"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar_width": "280px",
+                        "margin_page": "32px",
+                        "stack_md": "16px",
+                        "gutter": "24px",
+                        "stack_lg": "24px",
+                        "stack_sm": "8px",
+                        "container_max_width": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "status-badge": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "status-badge": ["12px", { "lineHeight": "12px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbf8fc; /* background */
+            color: #1b1b1e; /* on-background */
+        }
+        /* Hide scrollbar for cleaner sidebar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e4e2e5; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c5c6cf; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-sidebar_width bg-primary dark:bg-primary-container shadow-lg flex flex-col py-stack_lg px-stack_sm z-20 overflow-y-auto">
+<!-- Header -->
+<div class="px-stack_md mb-stack_lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface flex items-center justify-center shrink-0 overflow-hidden">
+<img alt="Company Logo" class="w-full h-full object-cover opacity-90" data-alt="A minimalist, abstract geometric company logo in deep navy blue and crisp white. It features sharp, intersecting lines that suggest forward movement and precision, suitable for a modern corporate fleet management software. The lighting is flat and vector-like, emphasizing clean edges and professional corporate identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB40YfXsc3pFHRfeF4dER2Lnocdcv1EOgOhfGJiO-jMWrEY-VxhKlhnNZjGSfoblTGHv0cNsht0kiqQCcKWPUd2mi93czpdHs8LyzwqjSUst2XzB4FwSc0W2d0L9TTOhRyUOjQchgml_fXVzjCsQd4B8bMwgEpD3uUwnpyFXeu7bQRQc8-S046y11HFiZ0W0EGpINizTidLEpcC5yBnY2V0yDyzTIgEGai8BbjmWYVv0Q2GJiAgX5YT2TY9sp3CSuGU2RNMXfDuhl4">
+</div>
+<div>
+<h2 class="font-display-lg text-display-lg text-on-primary tracking-tight" style="font-size: 16px; line-height: 20px;">Hệ thống quản lý thuê ô tô tự lái</h2>
+<p class="font-label-caps text-label-caps text-on-primary-container opacity-80 mt-1">Thiết bị quản trị</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-stack_md mb-stack_lg">
+<button class="w-full bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-secondary-fixed-dim transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                Đặt xe nhanh
+            </button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 space-y-1">
+<!-- Inactive Tab: Dashboard -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">dashboard</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Bảng điều khiển</span>
+</a>
+<!-- Inactive Tab: Fleet -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">directions_car</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Đội xe</span>
+</a>
+<!-- ACTIVE Tab: Bookings -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-r-lg border-l-4 border-secondary-fixed-dim bg-on-primary-fixed-variant text-on-primary cursor-pointer active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-label-caps text-label-caps">Đặt xe</span>
+</a>
+<!-- Inactive Tab: Customers -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">groups</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Khách hàng</span>
+</a>
+<!-- Inactive Tab: Staff -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">badge</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Nhân viên</span>
+</a>
+<!-- Inactive Tab: Reports -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">analytics</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Báo cáo</span>
+</a>
+<!-- Inactive Tab: Settings -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">settings</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Cài đặt</span>
+</a>
+<!-- Inactive Tab: Maintenance -->
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">build</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Bảo trì</span>
+</a>
+</nav>
+<!-- Footer Tabs -->
+<div class="mt-auto space-y-1 pt-stack_md border-t border-on-primary-fixed-variant">
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">help</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Hỗ trợ</span>
+</a>
+<a class="flex items-center gap-3 px-stack_md py-3 rounded-lg text-on-primary-container opacity-80 hover:bg-on-primary-fixed-variant transition-all cursor-pointer active:scale-95 group" href="#">
+<span class="material-symbols-outlined group-hover:text-on-primary transition-colors">logout</span>
+<span class="font-label-caps text-label-caps group-hover:text-on-primary transition-colors">Đăng xuất</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col min-h-screen ml-sidebar_width">
+<!-- TopNavBar -->
+<header class="w-full h-16 bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm flex items-center justify-between px-margin_page sticky top-0 z-10">
+<!-- Search Bar (on_left) -->
+<div class="flex-1 max-w-md">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Tìm kiếm đặt xe, phương tiện, hoặc khách hàng..." type="text">
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4 ml-4">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors cursor-pointer active:opacity-80 flex items-center justify-center text-on-surface-variant dark:text-on-secondary-container">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-low dark:hover:bg-primary-container transition-colors cursor-pointer active:opacity-80 flex items-center justify-center text-on-surface-variant dark:text-on-secondary-container">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-9 h-9 rounded-full bg-surface-variant border border-outline-variant overflow-hidden cursor-pointer ml-2">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a mature business manager with short grey hair and a warm, confident smile. They are wearing a neat, dark navy tailored suit jacket over a crisp white shirt. The background is a soft, blurred modern office environment with cool daylight illuminating the subject evenly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUchlHqhT4jwQp5NTmkKEDZTY3fmfXtYZzyLxBbV0JFfyLgX5HmBC9PMmUTg7xjQh6CzAK5QlPMAgWOOmI_tQeJSWtucFChax9EkFans6QoSJULLtJDzmOWjVstXlnmleExevIQcZ1R1yGbKIxvVofgLQq5MnJfg1FzpCaCHfsrp_v0Omj-zak5OzCUE2lMiQ9F1xxxAWueN3At0oJhais0ZsHXwQvh4RNvLNR13NnCLewozuA5SYl7wmhKe3zdvHi_thh2IC_3Ts">
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 p-margin_page bg-background">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-stack_lg">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-background">Lịch sử đặt xe</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Quản lý và xem lại tất cả các đặt chỗ phương tiện của bạn.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface border border-outline-variant text-on-surface font-title-sm text-title-sm py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
+                        Bộ lọc
+                    </button>
+<button class="bg-primary-container text-on-primary font-title-sm text-title-sm py-2 px-4 rounded-lg flex items-center gap-2 hover:bg-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                        Xuất
+                    </button>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<!-- Table Header -->
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant h-14">
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold">Mã đặt xe</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold">Phương tiện</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold">Ngày</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold">Trạng thái</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold">Thanh toán</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold text-right">Tổng tiền</th>
+<th class="px-stack_md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider font-semibold text-center">Thao tác</th>
+</tr>
+</thead>
+<!-- Table Body -->
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Active/Confirmed -->
+<tr class="hover:bg-surface-container-lowest transition-colors group h-16">
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-medium">BKG-8472-MX</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface font-medium">2023 Tesla Model 3</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Sedan Điện</div>
+</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface">24 Th10 - 28 Th10</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">4 Ngày</div>
+</td>
+<td class="px-stack_md">
+<span class="inline-flex items-center px-2 py-1 rounded font-status-badge text-status-badge bg-secondary-fixed text-on-secondary-fixed uppercase">Đã xác nhận</span>
+</td>
+<td class="px-stack_md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+<span class="font-body-sm text-body-sm">Đã thanh toán</span>
+</div>
+</td>
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-semibold text-right">$480.00</td>
+<td class="px-stack_md">
+<div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Xem chi tiết">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Sửa đặt xe">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+<button class="p-1.5 rounded text-error hover:bg-error-container transition-colors" title="Hủy đặt xe">
+<span class="material-symbols-outlined" style="font-size: 20px;">cancel</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Pending -->
+<tr class="hover:bg-surface-container-lowest transition-colors group h-16">
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-medium">BKG-9105-TR</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface font-medium">2024 Ford Transit</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Xe Tải Nhỏ</div>
+</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface">02 Th11 - 05 Th11</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">3 Ngày</div>
+</td>
+<td class="px-stack_md">
+<span class="inline-flex items-center px-2 py-1 rounded font-status-badge text-status-badge bg-tertiary-fixed text-on-tertiary-fixed uppercase">Đang chờ</span>
+</td>
+<td class="px-stack_md">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+<span class="font-body-sm text-body-sm">Chờ xác thực</span>
+</div>
+</td>
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-semibold text-right">$315.50</td>
+<td class="px-stack_md">
+<div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Xem chi tiết">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Sửa đặt xe">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+<button class="p-1.5 rounded text-error hover:bg-error-container transition-colors" title="Hủy đặt xe">
+<span class="material-symbols-outlined" style="font-size: 20px;">cancel</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Completed -->
+<tr class="hover:bg-surface-container-lowest transition-colors group h-16 opacity-70">
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-medium">BKG-3321-SU</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface font-medium">2022 Toyota RAV4</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">SUV Cỡ Nhỏ</div>
+</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface">10 Th9 - 15 Th9</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">5 Ngày</div>
+</td>
+<td class="px-stack_md">
+<span class="inline-flex items-center px-2 py-1 rounded font-status-badge text-status-badge bg-surface-variant text-on-surface-variant uppercase">Đã hoàn thành</span>
+</td>
+<td class="px-stack_md">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+<span class="font-body-sm text-body-sm">Đã thanh toán</span>
+</div>
+</td>
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-semibold text-right">$450.00</td>
+<td class="px-stack_md">
+<div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Xem chi tiết">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Cancelled -->
+<tr class="hover:bg-surface-container-lowest transition-colors group h-16 bg-surface-container-low/50">
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-medium line-through decoration-outline-variant">BKG-1198-LX</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface font-medium">2023 BMW 5 Series</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Sedan Hạng Sang</div>
+</td>
+<td class="px-stack_md">
+<div class="font-body-sm text-body-sm text-on-surface">05 Th8 - 07 Th8</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-70">2 Ngày</div>
+</td>
+<td class="px-stack_md">
+<span class="inline-flex items-center px-2 py-1 rounded font-status-badge text-status-badge bg-error-container text-on-error-container uppercase">Đã hủy</span>
+</td>
+<td class="px-stack_md">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined" style="font-size: 16px;">remove_circle</span>
+<span class="font-body-sm text-body-sm">Đã hoàn tiền</span>
+</div>
+</td>
+<td class="px-stack_md font-body-sm text-body-sm text-on-surface font-semibold text-right text-outline line-through">$280.00</td>
+<td class="px-stack_md">
+<div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded text-primary hover:bg-surface-container-low transition-colors" title="Xem chi tiết">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination -->
+<div class="p-stack_md border-t border-outline-variant bg-surface-container-low flex justify-between items-center mt-auto">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Đang hiển thị 1 đến 4 của 24 mục</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-outline hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-body-sm text-body-sm font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low transition-colors font-body-sm text-body-sm font-medium">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low transition-colors font-body-sm text-body-sm font-medium">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack_md bg-surface-container-low dark:bg-on-background border-t border-outline-variant flex justify-between items-center px-margin_page mt-auto">
+<div class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-secondary-container">
+                © 2024 FleetPro Car Rental Systems. Đã đăng ký Bản quyền.
+            </div>
+<div class="flex gap-6">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Điều khoản dịch vụ</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary underline transition-all cursor-pointer" href="#">Hỗ trợ</a>
+</div>
+</footer>
+</div>
+</body></html>
