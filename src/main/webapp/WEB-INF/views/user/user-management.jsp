@@ -9,11 +9,11 @@
             <h3>User Management</h3>
             <button class="btn btn-primary">+ Add User</button>
         </div>
-        <c:if test="${not empty users}">
+        <c:if test="${not empty userList}">
             <table class="table">
                 <thead><tr><th>ID</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
-                    <c:forEach var="u" items="${users}">
+                    <c:forEach var="u" items="${userList}">
                         <tr>
                             <td>${u.userId}</td>
                             <td>${u.fullName}</td>
@@ -26,7 +26,7 @@
                 </tbody>
             </table>
         </c:if>
-        <c:if test="${empty users}">
+        <c:if test="${empty userList}">
             <div class="placeholder-content"><p>No users found.</p></div>
         </c:if>
     </div>
