@@ -84,15 +84,13 @@
                 <div class="bk-form-group">
                     <label class="bk-form-label">Ngày nhận xe</label>
                     <div style="font-size:16px;font-weight:600;color:var(--primary);padding:8px 0;">
-                        <fmt:parseDate value="${booking.startDate}" pattern="yyyy-MM-dd'T'HH:mm" var="sd" type="both"/>
-                        <fmt:formatDate value="${sd}" pattern="dd/MM/yyyy HH:mm"/>
+                        <fmt:formatNumber value="${booking.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${booking.startDate.monthValue}" pattern="00"/>/${booking.startDate.year} <fmt:formatNumber value="${booking.startDate.hour}" pattern="00"/>:<fmt:formatNumber value="${booking.startDate.minute}" pattern="00"/>
                     </div>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Ngày trả xe</label>
                     <div style="font-size:16px;font-weight:600;color:var(--primary);padding:8px 0;">
-                        <fmt:parseDate value="${booking.endDate}" pattern="yyyy-MM-dd'T'HH:mm" var="ed" type="both"/>
-                        <fmt:formatDate value="${ed}" pattern="dd/MM/yyyy HH:mm"/>
+                        <fmt:formatNumber value="${booking.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${booking.endDate.monthValue}" pattern="00"/>/${booking.endDate.year} <fmt:formatNumber value="${booking.endDate.hour}" pattern="00"/>:<fmt:formatNumber value="${booking.endDate.minute}" pattern="00"/>
                     </div>
                 </div>
                 <div class="bk-form-group">

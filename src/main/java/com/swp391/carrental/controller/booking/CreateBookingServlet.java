@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -56,7 +57,9 @@ public class CreateBookingServlet extends HttpServlet {
         }
 
         // Always load available cars for dropdown
-        request.setAttribute("cars", vehicleService.getCarsByStatus("AVAILABLE"));
+        List<Car> availableCars = vehicleService.getCarsByStatus("AVAILABLE");
+        request.setAttribute("cars", availableCars);
+        request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableCars));
 
         String carIdParam = request.getParameter("carId");
         if (carIdParam != null && !carIdParam.isEmpty()) {

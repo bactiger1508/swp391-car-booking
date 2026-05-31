@@ -83,9 +83,11 @@
                                 <c:if test="${empty carMap[b.carId]}">Xe #${b.carId}</c:if>
                             </td>
                             <td>
-                                <fmt:parseDate value="${b.startDate}" pattern="yyyy-MM-dd'T'HH:mm" var="sd" type="both"/>
-                                <fmt:parseDate value="${b.endDate}" pattern="yyyy-MM-dd'T'HH:mm" var="ed" type="both"/>
-                                <div><fmt:formatDate value="${sd}" pattern="dd/MM"/> - <fmt:formatDate value="${ed}" pattern="dd/MM/yyyy"/></div>
+                                <div>
+                                    <fmt:formatNumber value="${b.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.startDate.monthValue}" pattern="00"/>
+                                    -
+                                    <fmt:formatNumber value="${b.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.endDate.monthValue}" pattern="00"/>/${b.endDate.year}
+                                </div>
                             </td>
                             <td>
                                 <c:choose>

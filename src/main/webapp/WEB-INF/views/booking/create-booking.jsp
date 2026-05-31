@@ -49,6 +49,7 @@
                                             data-model="${car.model}"
                                             data-plate="${car.licensePlate}"
                                             data-price="${car.dailyRate}"
+                                            data-image="${primaryImages[car.carId]}"
                                             ${selectedCarId == car.carId ? 'selected' : ''}>
                                         ${car.brand} ${car.model} — ${car.licensePlate}
                                     </option>
@@ -68,7 +69,7 @@
                             <label class="bk-form-label">Ngày bắt đầu</label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">calendar_month</span>
-                                <input type="date" name="startDate" id="startDate" class="bk-form-input" required onchange="calculateCost()">
+                                <input type="date" name="startDate" id="startDate" class="bk-form-input" required onchange="calculateBookingCost()">
                             </div>
                         </div>
                         <div class="bk-form-group">
@@ -82,7 +83,7 @@
                             <label class="bk-form-label">Ngày kết thúc</label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">event</span>
-                                <input type="date" name="endDate" id="endDate" class="bk-form-input" required onchange="calculateCost()">
+                                <input type="date" name="endDate" id="endDate" class="bk-form-input" required onchange="calculateBookingCost()">
                             </div>
                         </div>
                         <div class="bk-form-group">
@@ -174,9 +175,9 @@
 
 <script>
 var carPrices = {};
-var depositPct = ${depositPercentage != null ? depositPercentage : 30};
+var depositPct = parseFloat('${depositPercentage}') || 30;
 <c:forEach var="car" items="${cars}">
-    carPrices[${car.carId}] = ${car.dailyRate};
+    carPrices[${car.carId}] = parseFloat('${car.dailyRate}');
 </c:forEach>
 
 function formatVND(num) {
@@ -194,28 +195,43 @@ function updateCarInfo() {
     var brand = opt.getAttribute('data-brand');
     var model = opt.getAttribute('data-model');
     var plate = opt.getAttribute('data-plate');
-    var price = parseFloat(opt.getAttribute('data-price'));
+    var price = parseFloat(opt.getAttribute('data-price')) || 0;
+    var imgUrl = opt.getAttribute('data-image') || '/assets/images/cars/placeholder.jpg';
+    var contextPath = '${pageContext.request.contextPath}';
+    
     info.innerHTML =
+        '<div style="width:100%;height:140px;background:var(--surface-container-high);border-radius:8px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);">' +
+            '<img src="' + contextPath + imgUrl + '" alt="' + brand + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.src=\'' + contextPath + '/assets/images/cars/placeholder.jpg\';"/>' +
+        '</div>' +
         '<div style="font-size:24px;font-weight:600;color:var(--on-surface);letter-spacing:-0.01em;">' + brand + ' ' + model + '</div>' +
         '<div class="bk-vehicle-specs" style="margin-top:12px;">' +
             '<div><span class="spec-label">Biển số xe</span><div class="spec-value">' + plate + '</div></div>' +
             '<div><span class="spec-label">Giá theo ngày</span><div class="spec-value">' + formatVND(price) + '</div></div>' +
         '</div>';
-    calculateCost();
+    calculateBookingCost();
 }
 
-function calculateCost() {
+function calculateBookingCost() {
     var carId = document.getElementById('carSelect').value;
     var sd = document.getElementById('startDate').value;
     var ed = document.getElementById('endDate').value;
-    if (!carId || !sd || !ed) return;
+    console.log('calculateCost called with:', { carId: carId, startDate: sd, endDate: ed });
+    if (!carId || !sd || !ed) {
+        console.log('calculateCost returned early because inputs are missing');
+        return;
+    }
 
     var start = new Date(sd);
     var end = new Date(ed);
     var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    if (days < 1) days = 1;
+    console.log('Calculated date difference in days:', days);
+    if (days < 1) {
+        days = 1;
+        console.log('Adjusted negative or zero days to minimum: 1 day');
+    }
 
     var price = carPrices[carId] || 0;
+    console.log('Daily price for car:', price);
     var base = price * days;
     var deposit = Math.ceil(base * depositPct / 100);
     var tax = base * 0.1;
@@ -226,16 +242,40 @@ function calculateCost() {
     document.getElementById('taxCost').textContent = formatVND(Math.round(tax));
     document.getElementById('totalCost').textContent = formatVND(Math.round(total));
     document.getElementById('depositCost').textContent = formatVND(deposit);
+    console.log('Cost summary updated successfully on UI:', { base: base, deposit: deposit, tax: tax, total: total });
 }
 
-// Init if car is pre-selected
+// Init and attach listeners robustly
 document.addEventListener('DOMContentLoaded', function() {
     var sel = document.getElementById('carSelect');
-    if (sel.value) { updateCarInfo(); }
+    var sd = document.getElementById('startDate');
+    var ed = document.getElementById('endDate');
+
+    if (sel) {
+        sel.addEventListener('change', function() {
+            updateCarInfo();
+        });
+    }
+
+    [sd, ed].forEach(function(el) {
+        if (el) {
+            ['change', 'input', 'blur', 'keyup'].forEach(function(evt) {
+                el.addEventListener(evt, function() {
+                    console.log('Event triggered: ' + evt + ' on ' + el.id + ' with value: ' + el.value);
+                    calculateBookingCost();
+                });
+            });
+        }
+    });
+
+    if (sel && sel.value) { 
+        updateCarInfo(); 
+    }
+    
     // Set min date to today
     var today = new Date().toISOString().split('T')[0];
-    document.getElementById('startDate').setAttribute('min', today);
-    document.getElementById('endDate').setAttribute('min', today);
+    if (sd) sd.setAttribute('min', today);
+    if (ed) ed.setAttribute('min', today);
 });
 </script>
 

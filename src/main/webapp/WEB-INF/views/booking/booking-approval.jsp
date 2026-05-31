@@ -31,7 +31,7 @@
         </div>
     </div>
 
-    <c:if test="${not empty bookings}">
+    <c:if test="${not empty pendingBookings}">
         <div style="overflow-x:auto;">
             <table class="bk-table" id="bookingTable">
                 <thead>
@@ -45,7 +45,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="b" items="${bookings}">
+                    <c:forEach var="b" items="${pendingBookings}">
                         <tr>
                             <td class="code">BK-${b.bookingId}</td>
                             <td>
@@ -63,9 +63,11 @@
                                 <c:if test="${empty carMap[b.carId]}">Xe #${b.carId}</c:if>
                             </td>
                             <td>
-                                <fmt:parseDate value="${b.startDate}" pattern="yyyy-MM-dd'T'HH:mm" var="sd" type="both"/>
-                                <fmt:parseDate value="${b.endDate}" pattern="yyyy-MM-dd'T'HH:mm" var="ed" type="both"/>
-                                <div><fmt:formatDate value="${sd}" pattern="dd/MM"/> - <fmt:formatDate value="${ed}" pattern="dd/MM/yyyy"/></div>
+                                <div>
+                                    <fmt:formatNumber value="${b.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.startDate.monthValue}" pattern="00"/>
+                                    -
+                                    <fmt:formatNumber value="${b.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.endDate.monthValue}" pattern="00"/>/${b.endDate.year}
+                                </div>
                             </td>
                             <td>
                                 <span class="bk-badge bk-badge-pending"><span class="bk-badge-dot"></span> Chờ duyệt</span>
@@ -92,7 +94,7 @@
             </table>
         </div>
     </c:if>
-    <c:if test="${empty bookings}">
+    <c:if test="${empty pendingBookings}">
         <div class="bk-empty">
             <span class="material-symbols-outlined">task_alt</span>
             <h3>Không có đơn nào cần duyệt</h3>
