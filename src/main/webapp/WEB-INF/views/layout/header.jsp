@@ -76,6 +76,9 @@
                 <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
                     <span class="material-symbols-outlined">description</span> Hợp đồng
                 </a>
+                <a href="${pageContext.request.contextPath}/payments/record" class="bk-sidebar-link ${_cp == '/payments/record' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
+                </a>
                 <a href="${pageContext.request.contextPath}/handovers" class="bk-sidebar-link ${_cp == '/handovers' ? 'active' : ''}">
                     <span class="material-symbols-outlined">key</span> Giao xe
                 </a>
@@ -94,6 +97,9 @@
                 </a>
                 <a href="${pageContext.request.contextPath}/roles" class="bk-sidebar-link ${_cp == '/roles' ? 'active' : ''}">
                     <span class="material-symbols-outlined">security</span> Quyền & Vai trò
+                </a>
+                <a href="${pageContext.request.contextPath}/tax-invoice-settings" class="bk-sidebar-link ${_cp == '/tax-invoice-settings' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">receipt</span> Cấu hình hóa đơn thuế
                 </a>
             </c:if>
         </c:if>

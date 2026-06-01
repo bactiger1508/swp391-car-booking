@@ -1,6 +1,6 @@
 /*
  * Name: BookingService
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Business logic for booking operations including create, view, approve, reject, cancel.

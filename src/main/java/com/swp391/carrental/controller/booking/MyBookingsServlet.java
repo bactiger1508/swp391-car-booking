@@ -1,6 +1,6 @@
 /*
  * Name: MyBookingsServlet
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Displays bookings for the currently logged-in customer with car details.

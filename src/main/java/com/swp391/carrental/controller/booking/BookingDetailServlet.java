@@ -1,6 +1,6 @@
 /*
  * Name: BookingDetailServlet
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 1.0
  * Description: Displays booking detail for Customer (read-only) or Staff/Admin (with approve/reject actions).

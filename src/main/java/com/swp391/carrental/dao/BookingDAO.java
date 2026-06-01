@@ -1,6 +1,6 @@
 /*
  * Name: BookingDAO
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Data access layer for Booking entity. Handles CRUD, overlap checks, approval/rejection.

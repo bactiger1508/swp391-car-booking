@@ -1,6 +1,6 @@
 /*
  * Name: BookingCalendarServlet
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Displays a simple booking calendar for Staff/Admin. Shows active bookings on a monthly grid.
