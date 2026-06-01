@@ -1,9 +1,9 @@
 /*
  * Name: BookingDAO
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles database operations for BookingDAO.
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Data access layer for Booking entity. Handles CRUD, overlap checks, approval/rejection.
  */
 package com.swp391.carrental.dao;
 

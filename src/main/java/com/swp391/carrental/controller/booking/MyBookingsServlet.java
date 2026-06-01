@@ -1,9 +1,9 @@
 /*
  * Name: MyBookingsServlet
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for MyBookingsServlet.
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Displays bookings for the currently logged-in customer with car details.
  */
 package com.swp391.carrental.controller.booking;
 

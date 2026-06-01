@@ -1,9 +1,9 @@
 /*
  * Name: BookingService
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Contains business logic for BookingService.
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Business logic for booking operations including create, view, approve, reject, cancel.
  */
 package com.swp391.carrental.service;
 

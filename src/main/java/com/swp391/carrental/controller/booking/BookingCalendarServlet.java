@@ -1,9 +1,9 @@
 /*
  * Name: BookingCalendarServlet
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for BookingCalendarServlet.
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Displays a simple booking calendar for Staff/Admin. Shows active bookings on a monthly grid.
  */
 package com.swp391.carrental.controller.booking;
 

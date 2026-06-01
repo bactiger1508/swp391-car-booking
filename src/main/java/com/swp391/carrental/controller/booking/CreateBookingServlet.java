@@ -1,9 +1,9 @@
 /*
  * Name: CreateBookingServlet
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for CreateBookingServlet.
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Handles GET (load form) and POST (submit booking) for customer booking creation.
  */
 package com.swp391.carrental.controller.booking;
 
