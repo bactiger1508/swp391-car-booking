@@ -223,9 +223,7 @@ CREATE TABLE vehicle_handovers (
     received_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_handovers_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_handovers_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT FK_handovers_handed_by FOREIGN KEY (handed_by) REFERENCES users(user_id),
     CONSTRAINT FK_handovers_received_by FOREIGN KEY (received_by) REFERENCES users(user_id)
 );
@@ -259,9 +257,7 @@ CREATE TABLE vehicle_returns (
     returned_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_returns_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_returns_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT FK_returns_handover FOREIGN KEY (handover_id) REFERENCES vehicle_handovers(handover_id),
     CONSTRAINT FK_returns_received_by FOREIGN KEY (received_by) REFERENCES users(user_id),
     CONSTRAINT FK_returns_returned_by FOREIGN KEY (returned_by) REFERENCES users(user_id)
