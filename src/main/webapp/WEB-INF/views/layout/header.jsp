@@ -104,6 +104,9 @@
                 <a href="${pageContext.request.contextPath}/tax-invoice-settings" class="bk-sidebar-link ${_cp == '/tax-invoice-settings' ? 'active' : ''}">
                     <span class="material-symbols-outlined">receipt</span> Cấu hình hóa đơn thuế
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/payment-settings" class="bk-sidebar-link ${_cp == '/admin/payment-settings' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">payment</span> Cấu hình thanh toán
+                </a>
             </c:if>
         </c:if>
     </nav>

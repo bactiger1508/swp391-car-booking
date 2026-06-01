@@ -13,6 +13,7 @@ import com.swp391.carrental.exception.AppException;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service for managing policy settings.
@@ -59,6 +60,25 @@ public class PolicyService {
             return policyDAO.updateValue(key, value, updatedBy);
         } catch (SQLException e) {
             throw new AppException("Failed to update policy.", e);
+        }
+    }
+
+    /**
+     * Atomically updates multiple policy key-value pairs in one DB transaction.
+     */
+    public int batchUpdatePolicies(Map<String, String> updates, int updatedBy) {
+        try {
+            return policyDAO.batchUpdateValues(updates, updatedBy);
+        } catch (SQLException e) {
+            throw new AppException("Failed to batch-update policies.", e);
+        }
+    }
+
+    public boolean deletePolicy(int policyId) {
+        try {
+            return policyDAO.delete(policyId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to delete policy.", e);
         }
     }
 }

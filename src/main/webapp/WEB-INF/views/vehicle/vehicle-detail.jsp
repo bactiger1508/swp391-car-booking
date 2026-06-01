@@ -44,6 +44,7 @@
                         <img src="${pageContext.request.contextPath}${images[0].imageUrl}"
                              alt="${car.brand} ${car.model}"
                              id="mainCarImage"
+                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg';"
                              style="width: 100%; height: 100%; object-fit: cover;">
                     </c:when>
                     <c:otherwise>
@@ -66,6 +67,7 @@
                              alt="Thumbnail ${status.index + 1}"
                              class="car-thumb ${status.first ? 'active' : ''}"
                              onclick="changeMainImage('${pageContext.request.contextPath}${img.imageUrl}', this)"
+                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg';"
                              style="width: 96px; height: 64px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid ${status.first ? 'var(--primary)' : 'transparent'}; opacity: ${status.first ? '1' : '0.7'}; transition: all 0.2s;">
                     </c:forEach>
                 </div>
