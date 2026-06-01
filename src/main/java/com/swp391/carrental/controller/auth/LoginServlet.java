@@ -7,17 +7,18 @@
  */
 package com.swp391.carrental.controller.auth;
 
+import java.io.IOException;
+
+import com.swp391.carrental.exception.AppException;
 import com.swp391.carrental.model.User;
 import com.swp391.carrental.service.AuthService;
-import com.swp391.carrental.exception.AppException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import java.io.IOException;
 
 /**
  * Handles user login.
@@ -47,6 +48,13 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         try {
+            if (email.isEmpty() || password == null || password.isEmpty()) {
+                throw new AppException("Please enter your email and password completely.");
+            }
+
+            if (!email.contains("@") || !email.contains(".")) {
+                throw new AppException("The email address is not in the correct format.");
+            }
             User user = authService.login(email, password);
 
             // Store user in session
@@ -60,7 +68,13 @@ public class LoginServlet extends HttpServlet {
             if (redirectUrl != null && !redirectUrl.endsWith("index.html") && !redirectUrl.equals("/")) {
                 response.sendRedirect(request.getContextPath() + redirectUrl);
             } else {
-                response.sendRedirect(request.getContextPath() + "/home");
+                if ("ADMIN".equals(user.getRole())) {
+                    response.sendRedirect(request.getContextPath() + "/users"); 
+                } else if ("STAFF".equals(user.getRole())) {
+                    response.sendRedirect(request.getContextPath() + "/bookings/manage");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/home");
+                }
             }
         } catch (AppException e) {
             request.setAttribute("error", e.getMessage());

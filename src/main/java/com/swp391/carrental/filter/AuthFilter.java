@@ -36,8 +36,13 @@ public class AuthFilter implements Filter {
             "/test-db",
             "/home",
             "/",
+            "",
+            "/index.jsp",
+            "/index.html",
             "/vehicles",
-            "/vehicles/detail"
+            "/vehicles/detail",
+            "/bookings/policy",
+            "/forgot-password"
     );
 
     /**

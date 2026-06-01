@@ -7,16 +7,17 @@
  */
 package com.swp391.carrental.controller.auth;
 
+import java.io.IOException;
+
+import com.swp391.carrental.exception.AppException;
 import com.swp391.carrental.model.User;
 import com.swp391.carrental.service.AuthService;
-import com.swp391.carrental.exception.AppException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
 
 /**
  * Handles user registration.
@@ -43,12 +44,32 @@ public class RegisterServlet extends HttpServlet {
         String confirmPassword = request.getParameter("confirmPassword");
 
         try {
-            // Basic validation
-            if (password == null || !password.equals(confirmPassword)) {
-                throw new AppException("Passwords do not match.");
+            if (email.isEmpty() || fullName.isEmpty() || password == null || password.isEmpty() || confirmPassword == null || confirmPassword.isEmpty()) {
+                throw new AppException("All fields marked with an asterisk (*) must not be left blank.");
             }
-            if (password.length() < 6) {
-                throw new AppException("Password must be at least 6 characters.");
+
+            String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+            if (!email.matches(emailRegex)) {
+                throw new AppException("Invalid email format(Ex: abc@gmail.com).");
+            }
+
+            if (fullName.length() < 2 || fullName.length() > 50) {
+                throw new AppException("The full name must be between 2 and 50 characters long.");
+            }
+
+            if (!phone.isEmpty()) {
+                String phoneRegex = "^(0|\\+84)(\\s|\\.)?[3|5|7|8|9][0-9]{8}$";
+                if (!phone.matches(phoneRegex)) {
+                    throw new AppException("The phone number is not in the correct format(It must consist of 10 digits).");
+                }
+            }
+
+            if (password.length() < 6 || password.length() > 32) {
+                throw new AppException("Passwords must be between 6 and 32 characters long.");
+            }
+
+            if (!password.equals(confirmPassword)) {
+                throw new AppException("The verification password does not match.");
             }
 
             User user = authService.register(email, fullName, phone, password);

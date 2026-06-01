@@ -94,6 +94,29 @@ CREATE TABLE car_images (
 GO
 
 -- ============================================================
+-- 4b. MAINTENANCE_SCHEDULES
+-- Tracks vehicle maintenance schedules
+-- ============================================================
+CREATE TABLE maintenance_schedules (
+    maintenance_id   INT IDENTITY(1,1) PRIMARY KEY,
+    car_id           INT             NOT NULL,
+    maintenance_type NVARCHAR(100)   NOT NULL,
+    scheduled_date   DATE            NOT NULL,
+    completed_date   DATE            NULL,
+    status           NVARCHAR(30)    NOT NULL DEFAULT 'SCHEDULED', -- SCHEDULED, COMPLETED, CANCELLED
+    description      NVARCHAR(500)   NULL,
+    cost             DECIMAL(18,2)   NOT NULL DEFAULT 0,
+    notes            NVARCHAR(MAX)   NULL,
+    created_by       NVARCHAR(100)   NULL,
+    updated_by       NVARCHAR(100)   NULL,
+    created_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
+    updated_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (car_id) REFERENCES cars(car_id)
+);
+GO
+
+-- ============================================================
 -- 5. BOOKINGS
 -- Rental reservations
 -- ============================================================
@@ -200,9 +223,7 @@ CREATE TABLE vehicle_handovers (
     received_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_handovers_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_handovers_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT FK_handovers_handed_by FOREIGN KEY (handed_by) REFERENCES users(user_id),
     CONSTRAINT FK_handovers_received_by FOREIGN KEY (received_by) REFERENCES users(user_id)
 );
@@ -236,9 +257,7 @@ CREATE TABLE vehicle_returns (
     returned_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_returns_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_returns_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
     CONSTRAINT FK_returns_handover FOREIGN KEY (handover_id) REFERENCES vehicle_handovers(handover_id),
     CONSTRAINT FK_returns_received_by FOREIGN KEY (received_by) REFERENCES users(user_id),
     CONSTRAINT FK_returns_returned_by FOREIGN KEY (returned_by) REFERENCES users(user_id)

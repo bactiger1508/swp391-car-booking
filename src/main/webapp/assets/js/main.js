@@ -45,3 +45,53 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 });
+
+// Booking form auto calculation
+function onCarSelected(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const rate = selectedOption.getAttribute('data-rate');
+    const dailyRateInput = document.getElementById('dailyRate');
+    if (dailyRateInput) {
+        dailyRateInput.value = rate || 0;
+        calculateCost();
+    }
+}
+
+function calculateCost() {
+    const startDateStr = document.getElementById('startDate')?.value;
+    const endDateStr = document.getElementById('endDate')?.value;
+    const dailyRateStr = document.getElementById('dailyRate')?.value;
+    const depositPctStr = document.getElementById('depositPercentage')?.value;
+
+    if (startDateStr && endDateStr && dailyRateStr) {
+        const start = new Date(startDateStr);
+        const end = new Date(endDateStr);
+        const rate = parseFloat(dailyRateStr);
+        const depositPct = parseFloat(depositPctStr || '30');
+
+        if (end >= start) {
+            // Calculate days (minimum 1)
+            const diffTime = Math.abs(end - start);
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays < 1) diffDays = 1;
+
+            const totalAmount = rate * diffDays;
+            const depositAmount = (totalAmount * depositPct) / 100;
+
+            document.getElementById('rentalDaysDisplay').innerText = diffDays + ' ngày';
+            document.getElementById('totalAmountDisplay').innerText = formatVND(totalAmount);
+            document.getElementById('depositAmountDisplay').innerText = formatVND(depositAmount);
+        } else {
+            document.getElementById('rentalDaysDisplay').innerText = '0 ngày';
+            document.getElementById('totalAmountDisplay').innerText = '0 VNĐ';
+            document.getElementById('depositAmountDisplay').innerText = '0 VNĐ';
+        }
+    }
+}
+
+function toggleRejectForm() {
+    const form = document.getElementById('rejectForm');
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+}

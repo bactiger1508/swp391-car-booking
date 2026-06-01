@@ -1,9 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-        <footer class="footer">
-            &copy; 2026 Car Rental Management System | SWP391 — Group 2
-        </footer>
-    </div><!-- /.main-content -->
-</div><!-- /.layout -->
+    </div><%-- /.bk-content --%>
+
+    <%-- FOOTER --%>
+    <footer class="bk-footer">
+        <span class="brand">CarPro</span>
+        <span class="copy">&copy; 2026 Hệ thống quản lý thuê ô tô tự lái. Bảo lưu mọi quyền.</span>
+        <div class="links">
+            <a href="${pageContext.request.contextPath}/bookings/policy">Chính sách</a>
+        </div>
+    </footer>
+</div><%-- /.bk-main --%>
+
 <script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
 </body>
 </html>

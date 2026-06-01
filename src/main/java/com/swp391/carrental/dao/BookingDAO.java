@@ -1,9 +1,9 @@
 /*
  * Name: BookingDAO
- * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles database operations for BookingDAO.
+ * @Author: BacBui
+ * Date: 29/05/2026
+ * Version: 2.0
+ * Description: Data access layer for Booking entity. Handles CRUD, overlap checks, approval/rejection.
  */
 package com.swp391.carrental.dao;
 
@@ -73,7 +73,7 @@ public class BookingDAO {
      */
     public boolean hasOverlappingBooking(int carId, Timestamp startDate, Timestamp endDate, Integer excludeBookingId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM bookings WHERE car_id = ? "
-                   + "AND status IN ('CONFIRMED', 'IN_PROGRESS') "
+                   + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
                    + "AND start_date < ? AND end_date > ?";
         if (excludeBookingId != null) {
             sql += " AND booking_id != ?";
@@ -166,6 +166,20 @@ public class BookingDAO {
             ps.setInt(1, rejectedBy);
             ps.setString(2, reason);
             ps.setInt(3, bookingId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Cancel a booking with reason and timestamp.
+     */
+    public boolean cancel(int bookingId, String cancelReason) throws SQLException {
+        String sql = "UPDATE bookings SET status = 'CANCELLED', cancel_reason = ?, "
+                   + "cancelled_at = GETDATE(), updated_at = GETDATE() WHERE booking_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cancelReason);
+            ps.setInt(2, bookingId);
             return ps.executeUpdate() > 0;
         }
     }

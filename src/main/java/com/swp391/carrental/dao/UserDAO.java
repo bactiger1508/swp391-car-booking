@@ -86,6 +86,90 @@ public class UserDAO {
         }
         return users;
     }
+    
+    /**
+     * Advanced Search, Filter and Pagination for User Management UI Dashboard
+     */
+    public List<User> findFilteredUsers(String search, String role, String status, int page, int pageSize) throws SQLException {
+        List<User> users = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
+        
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
+        }
+        if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+            sql.append(" AND role = ?");
+        }
+        if (status != null && !status.trim().isEmpty() && !status.equals("All status")) {
+            if (status.equals("Active")) sql.append(" AND is_active = 1");
+            else if (status.equals("Locked") || status.equals("Inactive")) sql.append(" AND is_active = 0");
+        }
+        
+        sql.append(" ORDER BY user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int pIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String val = "%" + search.trim() + "%";
+                ps.setString(pIndex++, val);
+                ps.setString(pIndex++, val);
+                ps.setString(pIndex++, val);
+            }
+            if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+                ps.setString(pIndex++, role);
+            }
+            
+            ps.setInt(pIndex++, (page - 1) * pageSize);
+            ps.setInt(pIndex++, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    users.add(mapRow(rs));
+                }
+            }
+        }
+        return users;
+    }
+
+    /**
+     * Count total matching users for structural pagination calculation
+     */
+    public int countFilteredUsers(String search, String role, String status) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE 1=1");
+        
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
+        }
+        if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+            sql.append(" AND role = ?");
+        }
+        if (status != null && !status.trim().isEmpty() && !status.equals("All status")) {
+            if (status.equals("Active")) sql.append(" AND is_active = 1");
+            else if (status.equals("Locked") || status.equals("Inactive")) sql.append(" AND is_active = 0");
+        }
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int pIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String val = "%" + search.trim() + "%";
+                ps.setString(pIndex++, val);
+                ps.setString(pIndex++, val);
+                ps.setString(pIndex++, val);
+            }
+            if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+                ps.setString(pIndex++, role);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
 
     /**
      * Insert a new user. Returns the generated user_id.
