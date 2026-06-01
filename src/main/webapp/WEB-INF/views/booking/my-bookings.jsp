@@ -24,28 +24,28 @@
 
 <%-- Stats --%>
 <div class="bk-stats-grid">
-    <div class="bk-stat-card">
-        <span class="label">Tổng số đơn</span>
+    <div id="card-stat-ALL" class="bk-stat-card" onclick="filterByStatus('ALL')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Tổng số đơn</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value">${bookings != null ? bookings.size() : 0}</span>
+            <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${bookings != null ? bookings.size() : 0}</span>
         </div>
     </div>
-    <div class="bk-stat-card">
-        <span class="label">Đang xử lý</span>
+    <div id="card-stat-PENDING" class="bk-stat-card" onclick="filterByStatus('PENDING')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đang xử lý</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value" id="statPending">0</span>
+            <span class="value" id="statPending" style="font-size:28px; font-weight:800; color:var(--primary);">0</span>
         </div>
     </div>
-    <div class="bk-stat-card">
-        <span class="label">Đã xác nhận</span>
+    <div id="card-stat-CONFIRMED" class="bk-stat-card" onclick="filterByStatus('CONFIRMED')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đã xác nhận</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value" id="statConfirmed">0</span>
+            <span class="value" id="statConfirmed" style="font-size:28px; font-weight:800; color:var(--primary);">0</span>
         </div>
     </div>
-    <div class="bk-stat-card">
-        <span class="label">Hoàn tất</span>
+    <div id="card-stat-COMPLETED" class="bk-stat-card" onclick="filterByStatus('COMPLETED')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Hoàn tất</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value" id="statCompleted">0</span>
+            <span class="value" id="statCompleted" style="font-size:28px; font-weight:800; color:var(--primary);">0</span>
         </div>
     </div>
 </div>
@@ -53,14 +53,14 @@
 <%-- Table --%>
 <div class="bk-table-container">
     <div class="bk-table-toolbar">
-        <div class="bk-table-search">
+        <div class="bk-table-search" style="flex: 1; min-width: 250px;">
             <span class="material-symbols-outlined">search</span>
             <input type="text" id="searchInput" placeholder="Tìm kiếm mã đơn, tên xe..." oninput="filterTable()">
         </div>
     </div>
 
     <c:if test="${not empty bookings}">
-        <div style="overflow-x:auto;">
+        <div style="overflow-x:auto;" id="bookingTableContainer">
             <table class="bk-table" id="bookingTable">
                 <thead>
                     <tr>
@@ -111,25 +111,70 @@
             </table>
         </div>
     </c:if>
-    <c:if test="${empty bookings}">
-        <div class="bk-empty">
-            <span class="material-symbols-outlined">directions_car</span>
-            <h3>Chưa có đơn thuê nào</h3>
-            <p>Hãy đặt xe đầu tiên của bạn ngay!</p>
-        </div>
-    </c:if>
+
+    <div class="bk-empty" id="emptyStateMessage" style="display:none; padding: 40px 20px; text-align: center;">
+        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--on-surface-variant); margin-bottom: 12px;">inbox</span>
+        <h3 style="font-size: 18px; font-weight:700; color: var(--on-surface);">Không tìm thấy đơn thuê nào</h3>
+        <p style="color: var(--on-surface-variant); margin-top: 4px; font-size: 13px;">Bạn không có đơn đặt xe nào thuộc trạng thái này hoặc khớp với từ khóa tìm kiếm.</p>
+    </div>
 </div>
 
 <script>
-function filterTable() {
-    var input = document.getElementById('searchInput').value.toLowerCase();
-    var rows = document.querySelectorAll('#bookingTable tbody tr');
-    rows.forEach(function(row) {
-        var text = row.textContent.toLowerCase();
-        row.style.display = text.includes(input) ? '' : 'none';
+let currentStatusFilter = 'ALL';
+
+function filterByStatus(status) {
+    currentStatusFilter = status;
+    
+    // Highlight the selected Stat Card
+    document.querySelectorAll('.bk-stat-card').forEach(card => {
+        card.style.borderColor = 'var(--outline-variant)';
+        card.style.boxShadow = 'none';
+        card.style.background = 'var(--surface)';
     });
+    
+    const activeCard = document.getElementById('card-stat-' + status);
+    if (activeCard) {
+        activeCard.style.borderColor = 'var(--primary)';
+        activeCard.style.boxShadow = '0 6px 20px rgba(10, 25, 47, 0.08)';
+        activeCard.style.background = 'var(--surface-variant)';
+    }
+    
+    filterTable();
 }
-// Count stats
+
+function filterTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#bookingTable tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        const text = row.textContent.toLowerCase();
+        
+        const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
+        const matchesSearch = text.includes(input);
+        
+        if (matchesStatus && matchesSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    const tableContainer = document.getElementById('bookingTableContainer');
+    const emptyState = document.getElementById('emptyStateMessage');
+    
+    if (visibleCount === 0) {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+    } else {
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+    }
+}
+
+// Count stats & check load on DOM load
 document.addEventListener('DOMContentLoaded', function() {
     var rows = document.querySelectorAll('#bookingTable tbody tr');
     var p = 0, c = 0, d = 0;
@@ -142,6 +187,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('statPending').textContent = p;
     document.getElementById('statConfirmed').textContent = c;
     document.getElementById('statCompleted').textContent = d;
+    
+    filterByStatus('ALL');
 });
 </script>
 

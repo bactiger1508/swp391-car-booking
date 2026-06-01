@@ -31,59 +31,66 @@
 
 <%-- Stats Grid --%>
 <div class="bk-stats-grid">
-    <a href="${pageContext.request.contextPath}/bookings/manage?status=PENDING" class="bk-stat-card" style="text-decoration:none;">
-        <span class="label">Chờ Duyệt</span>
+    <div id="card-stat-PENDING" class="bk-stat-card" onclick="filterByStatus('PENDING')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Chờ Duyệt</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value">${pendingCount != null ? pendingCount : 0}</span>
+            <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${pendingCount != null ? pendingCount : 0}</span>
         </div>
-    </a>
-    <a href="${pageContext.request.contextPath}/bookings/manage?status=CONFIRMED" class="bk-stat-card" style="text-decoration:none;">
-        <span class="label">Đã Xác Nhận</span>
+    </div>
+    <div id="card-stat-CONFIRMED" class="bk-stat-card" onclick="filterByStatus('CONFIRMED')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đã Xác Nhận</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value">${confirmedCount != null ? confirmedCount : 0}</span>
+            <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${confirmedCount != null ? confirmedCount : 0}</span>
         </div>
-    </a>
-    <a href="${pageContext.request.contextPath}/bookings/manage?status=IN_PROGRESS" class="bk-stat-card" style="text-decoration:none;">
-        <span class="label">Đang Cho Thuê</span>
+    </div>
+    <div id="card-stat-IN_PROGRESS" class="bk-stat-card" onclick="filterByStatus('IN_PROGRESS')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đang Cho Thuê</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value">${inProgressCount != null ? inProgressCount : 0}</span>
+            <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${inProgressCount != null ? inProgressCount : 0}</span>
         </div>
-    </a>
-    <a href="${pageContext.request.contextPath}/bookings/manage?status=COMPLETED" class="bk-stat-card" style="text-decoration:none;">
-        <span class="label">Hoàn Tất</span>
+    </div>
+    <div id="card-stat-COMPLETED" class="bk-stat-card" onclick="filterByStatus('COMPLETED')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Hoàn Tất</span>
         <div style="display:flex;align-items:baseline;margin-top:8px;">
-            <span class="value">${completedCount != null ? completedCount : 0}</span>
+            <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${completedCount != null ? completedCount : 0}</span>
         </div>
-    </a>
+    </div>
 </div>
 
 <%-- Data Table --%>
 <div class="bk-table-container">
-    <div class="bk-table-toolbar">
-        <div class="bk-table-search">
+    <div class="bk-table-toolbar" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom: 20px;">
+        <div class="bk-table-search" style="flex: 1; min-width: 250px;">
             <span class="material-symbols-outlined">search</span>
             <input type="text" id="searchInput" placeholder="Tìm theo Mã, Khách hàng, hoặc Xe..." oninput="filterTable()">
         </div>
-        <div style="display:flex;gap:8px;">
-            <c:forEach var="st" items="${['PENDING','CONFIRMED','IN_PROGRESS','COMPLETED','REJECTED','CANCELLED']}">
-                <a href="${pageContext.request.contextPath}/bookings/manage?status=${st}"
-                   class="bk-btn bk-btn-sm ${currentFilter == st ? 'bk-btn-primary' : 'bk-btn-outline'}"
-                   style="font-size:11px;padding:4px 10px;">
-                    <c:choose>
-                        <c:when test="${st == 'PENDING'}">Chờ duyệt</c:when>
-                        <c:when test="${st == 'CONFIRMED'}">Đã xác nhận</c:when>
-                        <c:when test="${st == 'IN_PROGRESS'}">Đang thuê</c:when>
-                        <c:when test="${st == 'COMPLETED'}">Hoàn tất</c:when>
-                        <c:when test="${st == 'REJECTED'}">Từ chối</c:when>
-                        <c:when test="${st == 'CANCELLED'}">Đã hủy</c:when>
-                    </c:choose>
-                </a>
-            </c:forEach>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; background: var(--surface-variant); padding: 4px; border-radius: 8px; border: 1px solid var(--outline-variant);">
+            <button onclick="filterByStatus('ALL')" id="btn-filter-ALL" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Tất cả
+            </button>
+            <button onclick="filterByStatus('PENDING')" id="btn-filter-PENDING" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Chờ duyệt
+            </button>
+            <button onclick="filterByStatus('CONFIRMED')" id="btn-filter-CONFIRMED" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Đã xác nhận
+            </button>
+            <button onclick="filterByStatus('IN_PROGRESS')" id="btn-filter-IN_PROGRESS" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Đang thuê
+            </button>
+            <button onclick="filterByStatus('COMPLETED')" id="btn-filter-COMPLETED" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Hoàn tất
+            </button>
+            <button onclick="filterByStatus('REJECTED')" id="btn-filter-REJECTED" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Từ chối
+            </button>
+            <button onclick="filterByStatus('CANCELLED')" id="btn-filter-CANCELLED" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Đã hủy
+            </button>
         </div>
     </div>
 
     <c:if test="${not empty bookings}">
-        <div style="overflow-x:auto;">
+        <div style="overflow-x:auto;" id="bookingTableContainer">
             <table class="bk-table" id="bookingTable">
                 <thead>
                     <tr>
@@ -97,19 +104,19 @@
                 </thead>
                 <tbody>
                     <c:forEach var="b" items="${bookings}">
-                        <tr>
+                        <tr data-status="${b.status}">
                             <td class="code">BK-${b.bookingId}</td>
                             <td>
                                 <c:if test="${not empty userMap[b.customerId]}">
-                                    <div>${userMap[b.customerId].fullName}</div>
-                                    <div class="sub">${userMap[b.customerId].email}</div>
+                                    <div style="font-weight:600;">${userMap[b.customerId].fullName}</div>
+                                    <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${userMap[b.customerId].email}</div>
                                 </c:if>
                                 <c:if test="${empty userMap[b.customerId]}">User #${b.customerId}</c:if>
                             </td>
                             <td>
                                 <c:if test="${not empty carMap[b.carId]}">
-                                    ${carMap[b.carId].brand} ${carMap[b.carId].model}
-                                    <div class="sub">${carMap[b.carId].licensePlate}</div>
+                                    <div style="font-weight:600;">${carMap[b.carId].brand} ${carMap[b.carId].model}</div>
+                                    <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${carMap[b.carId].licensePlate}</div>
                                 </c:if>
                                 <c:if test="${empty carMap[b.carId]}">Xe #${b.carId}</c:if>
                             </td>
@@ -134,19 +141,6 @@
                             <td class="text-right">
                                 <div style="display:flex;justify-content:flex-end;gap:6px;">
                                     <a href="${pageContext.request.contextPath}/bookings/detail?id=${b.bookingId}" class="bk-btn bk-btn-outline bk-btn-sm">Xem</a>
-                                    <c:if test="${b.status == 'PENDING'}">
-                                        <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="display:inline;">
-                                            <input type="hidden" name="bookingId" value="${b.bookingId}"/>
-                                            <input type="hidden" name="action" value="approve"/>
-                                            <button type="submit" class="bk-btn bk-btn-success bk-btn-sm" onclick="return confirm('Duyệt booking #${b.bookingId}?')">Duyệt</button>
-                                        </form>
-                                        <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="display:inline;">
-                                            <input type="hidden" name="bookingId" value="${b.bookingId}"/>
-                                            <input type="hidden" name="action" value="reject"/>
-                                            <input type="hidden" name="reason" value="Không đạt yêu cầu"/>
-                                            <button type="submit" class="bk-btn bk-btn-danger bk-btn-sm" onclick="return confirm('Từ chối booking #${b.bookingId}?')">Từ chối</button>
-                                        </form>
-                                    </c:if>
                                 </div>
                             </td>
                         </tr>
@@ -155,24 +149,93 @@
             </table>
         </div>
     </c:if>
-    <c:if test="${empty bookings}">
-        <div class="bk-empty">
-            <span class="material-symbols-outlined">inbox</span>
-            <h3>Không có booking nào</h3>
-            <p>${not empty currentFilter ? 'Không có booking ở trạng thái đã chọn.' : 'Chưa có dữ liệu đặt xe.'}</p>
-        </div>
-    </c:if>
+
+    <div class="bk-empty" id="emptyStateMessage" style="display:none; padding: 40px 20px; text-align: center;">
+        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--on-surface-variant); margin-bottom: 12px;">inbox</span>
+        <h3 style="font-size: 18px; font-weight:700; color: var(--on-surface);">Không tìm thấy đơn đặt xe</h3>
+        <p style="color: var(--on-surface-variant); margin-top: 4px; font-size: 13px;">Không có dữ liệu đặt xe nào khớp với trạng thái hoặc từ khóa tìm kiếm được chọn.</p>
+    </div>
 </div>
 
 <script>
-function filterTable() {
-    var input = document.getElementById('searchInput').value.toLowerCase();
-    var rows = document.querySelectorAll('#bookingTable tbody tr');
-    rows.forEach(function(row) {
-        var text = row.textContent.toLowerCase();
-        row.style.display = text.includes(input) ? '' : 'none';
+let currentStatusFilter = 'ALL';
+
+function filterByStatus(status) {
+    currentStatusFilter = status;
+    
+    // Update active class on segmented buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--on-surface-variant)';
+        btn.style.boxShadow = 'none';
     });
+    
+    const activeBtn = document.getElementById('btn-filter-' + status);
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--primary)';
+        activeBtn.style.color = 'var(--on-primary)';
+        activeBtn.style.boxShadow = '0 2px 8px rgba(10, 25, 47, 0.15)';
+    }
+    
+    // Highlight the selected Stat Card with a premium glowing border
+    document.querySelectorAll('.bk-stat-card').forEach(card => {
+        card.style.borderColor = 'var(--outline-variant)';
+        card.style.boxShadow = 'none';
+        card.style.background = 'var(--surface)';
+    });
+    
+    const activeCard = document.getElementById('card-stat-' + status);
+    if (activeCard) {
+        activeCard.style.borderColor = 'var(--primary)';
+        activeCard.style.boxShadow = '0 6px 20px rgba(10, 25, 47, 0.08)';
+        activeCard.style.background = 'var(--surface-variant)';
+    }
+    
+    filterTable();
 }
+
+function filterTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#bookingTable tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        const text = row.textContent.toLowerCase();
+        
+        const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
+        const matchesSearch = text.includes(input);
+        
+        if (matchesStatus && matchesSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    const tableContainer = document.getElementById('bookingTableContainer');
+    const emptyState = document.getElementById('emptyStateMessage');
+    
+    if (visibleCount === 0) {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+    } else {
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+    }
+}
+
+// Automatically apply filters on load if deep-linked via status parameter
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    if (statusParam && ['PENDING','CONFIRMED','IN_PROGRESS','COMPLETED','REJECTED','CANCELLED'].includes(statusParam)) {
+        filterByStatus(statusParam);
+    } else {
+        filterByStatus('ALL');
+    }
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

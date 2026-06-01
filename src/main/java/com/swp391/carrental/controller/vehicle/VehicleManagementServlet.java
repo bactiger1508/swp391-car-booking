@@ -27,14 +27,7 @@ public class VehicleManagementServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String status = request.getParameter("status");
-        List<Car> cars;
-        if (status != null && !status.isBlank()) {
-            cars = vehicleService.getCarsByStatus(status);
-            request.setAttribute("selectedStatus", status);
-        } else {
-            cars = vehicleService.getAllCars();
-        }
+        List<Car> cars = vehicleService.getAllCars();
 
         Map<Integer, BigDecimal> depositAmounts = new HashMap<>();
         for (Car car : cars) {

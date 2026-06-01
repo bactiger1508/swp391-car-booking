@@ -34,50 +34,52 @@
 
 <%-- Stats/Summary Grid --%>
 <div class="bk-stats-grid">
-    <div class="bk-stat-card">
-        <span class="label">Tổng Số Xe</span>
-        <span class="value">${totalCars}</span>
+    <div id="card-stat-ALL" class="bk-stat-card" onclick="filterByStatus('ALL')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface);">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Tổng Số Xe</span>
+        <span class="value" style="font-size:28px; font-weight:800; color:var(--primary);">${totalCars}</span>
     </div>
-    <div class="bk-stat-card" style="border-left: 4px solid #2E7D32;">
-        <span class="label">Có Sẵn</span>
-        <span class="value">${availableCars}</span>
+    <div id="card-stat-AVAILABLE" class="bk-stat-card" onclick="filterByStatus('AVAILABLE')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface); border-left: 5px solid #2E7D32;">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Có Sẵn</span>
+        <span class="value" style="font-size:28px; font-weight:800; color:#2E7D32;">${availableCars}</span>
     </div>
-    <div class="bk-stat-card" style="border-left: 4px solid #F57C00;">
-        <span class="label">Đang Bảo Trì</span>
-        <span class="value">${maintenanceCars}</span>
+    <div id="card-stat-MAINTENANCE" class="bk-stat-card" onclick="filterByStatus('MAINTENANCE')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface); border-left: 5px solid #F57C00;">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đang Bảo Trì</span>
+        <span class="value" style="font-size:28px; font-weight:800; color:#F57C00;">${maintenanceCars}</span>
     </div>
-    <div class="bk-stat-card" style="border-left: 4px solid #C62828;">
-        <span class="label">Đã Thuê / Ra Ngoài</span>
-        <span class="value">${rentedCars}</span>
+    <div id="card-stat-RENTED" class="bk-stat-card" onclick="filterByStatus('RENTED')" style="cursor:pointer; transition: all 0.25s ease; border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 18px; background: var(--surface); border-left: 5px solid #C62828;">
+        <span class="label" style="font-weight:600; color:var(--on-surface-variant);">Đã Thuê / Ra Ngoài</span>
+        <span class="value" style="font-size:28px; font-weight:800; color:#C62828;">${rentedCars}</span>
     </div>
 </div>
 
 <%-- Data Table Card --%>
 <div class="bk-table-container">
-    <div class="bk-table-toolbar">
-        <div class="bk-table-search">
+    <div class="bk-table-toolbar" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom: 20px;">
+        <div class="bk-table-search" style="flex: 1; min-width: 250px;">
             <span class="material-symbols-outlined">search</span>
             <input type="text" id="carSearchInput" placeholder="Tìm kiếm xe, biển số..." oninput="filterCarTable()">
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
-            <form method="get" action="${pageContext.request.contextPath}/vehicles/manage" style="display:flex; gap:8px;">
-                <select name="status" class="form-control" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--outline-variant); font-size:14px; outline:none; background: var(--surface-container-lowest);">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="AVAILABLE" ${selectedStatus == 'AVAILABLE' ? 'selected' : ''}>Có sẵn</option>
-                    <option value="RENTED" ${selectedStatus == 'RENTED' ? 'selected' : ''}>Đã thuê</option>
-                    <option value="MAINTENANCE" ${selectedStatus == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
-                    <option value="INACTIVE" ${selectedStatus == 'INACTIVE' ? 'selected' : ''}>Ngưng hoạt động</option>
-                </select>
-                <button type="submit" class="bk-btn bk-btn-outline bk-btn-sm" style="height: 38px;">Lọc</button>
-                <c:if test="${not empty selectedStatus}">
-                    <a href="${pageContext.request.contextPath}/vehicles/manage" class="bk-btn bk-btn-outline bk-btn-sm" style="height: 38px; display:flex; align-items:center; justify-content:center;">Xóa lọc</a>
-                </c:if>
-            </form>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; background: var(--surface-variant); padding: 4px; border-radius: 8px; border: 1px solid var(--outline-variant);">
+            <button onclick="filterByStatus('ALL')" id="btn-filter-ALL" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Tất cả
+            </button>
+            <button onclick="filterByStatus('AVAILABLE')" id="btn-filter-AVAILABLE" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Có sẵn
+            </button>
+            <button onclick="filterByStatus('RENTED')" id="btn-filter-RENTED" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Đã thuê
+            </button>
+            <button onclick="filterByStatus('MAINTENANCE')" id="btn-filter-MAINTENANCE" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Bảo trì
+            </button>
+            <button onclick="filterByStatus('INACTIVE')" id="btn-filter-INACTIVE" class="bk-btn bk-btn-sm filter-btn" style="font-size:12px; padding:6px 12px; border-radius: 6px; border: none; font-weight:600; cursor:pointer;">
+                Ngưng hoạt động
+            </button>
         </div>
     </div>
 
     <c:if test="${not empty cars}">
-        <div style="overflow-x:auto;">
+        <div style="overflow-x:auto;" id="vehicleTableContainer">
             <table class="bk-table" id="vehicleTable">
                 <thead>
                     <tr>
@@ -94,7 +96,7 @@
                 <tbody>
                     <c:forEach var="car" items="${cars}">
                         <c:set var="maintenance" value="${nextMaintenance[car.carId]}"/>
-                        <tr>
+                        <tr data-status="${car.status}">
                             <td class="font-semibold" style="color: var(--primary);">${car.brand} ${car.model} (${car.year})</td>
                             <td class="font-mono" style="font-weight: 600;">${car.licensePlate}</td>
                             <td class="font-semibold"><fmt:formatNumber value="${car.dailyRate}" type="number" groupingUsed="true"/> VND</td>
@@ -143,22 +145,93 @@
             </table>
         </div>
     </c:if>
-    <c:if test="${empty cars}">
-        <div class="bk-empty">
-            <span class="material-symbols-outlined">directions_car</span>
-            <h3>Không có xe nào khớp với bộ lọc</h3>
-        </div>
-    </c:if>
+
+    <div class="bk-empty" id="emptyStateMessage" style="display:none; padding: 40px 20px; text-align: center;">
+        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--on-surface-variant); margin-bottom: 12px;">directions_car</span>
+        <h3 style="font-size: 18px; font-weight:700; color: var(--on-surface);">Không tìm thấy xe phù hợp</h3>
+        <p style="color: var(--on-surface-variant); margin-top: 4px; font-size: 13px;">Không có xe nào khớp với trạng thái hoặc từ khóa tìm kiếm được chọn.</p>
+    </div>
 </div>
 
 <script>
+let currentStatusFilter = 'ALL';
+
+function filterByStatus(status) {
+    currentStatusFilter = status;
+    
+    // Update active class on segmented buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--on-surface-variant)';
+        btn.style.boxShadow = 'none';
+    });
+    
+    const activeBtn = document.getElementById('btn-filter-' + status);
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--primary)';
+        activeBtn.style.color = 'var(--on-primary)';
+        activeBtn.style.boxShadow = '0 2px 8px rgba(10, 25, 47, 0.15)';
+    }
+    
+    // Highlight selected Stat Card
+    document.querySelectorAll('.bk-stat-card').forEach(card => {
+        card.style.borderColor = 'var(--outline-variant)';
+        card.style.boxShadow = 'none';
+        card.style.background = 'var(--surface)';
+    });
+    
+    const activeCard = document.getElementById('card-stat-' + status);
+    if (activeCard) {
+        activeCard.style.borderColor = 'var(--primary)';
+        activeCard.style.boxShadow = '0 6px 20px rgba(10, 25, 47, 0.08)';
+        activeCard.style.background = 'var(--surface-variant)';
+    }
+    
+    filterCarTable();
+}
+
 function filterCarTable() {
     const input = document.getElementById('carSearchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#vehicleTable tbody tr');
+    let visibleCount = 0;
+    
     rows.forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+        const rowStatus = row.getAttribute('data-status');
+        const text = row.textContent.toLowerCase();
+        
+        const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
+        const matchesSearch = text.includes(input);
+        
+        if (matchesStatus && matchesSearch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
     });
+    
+    const tableContainer = document.getElementById('vehicleTableContainer');
+    const emptyState = document.getElementById('emptyStateMessage');
+    
+    if (visibleCount === 0) {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+    } else {
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+    }
 }
+
+// Check on load
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    if (statusParam && ['AVAILABLE','RENTED','MAINTENANCE','INACTIVE'].includes(statusParam)) {
+        filterByStatus(statusParam);
+    } else {
+        filterByStatus('ALL');
+    }
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

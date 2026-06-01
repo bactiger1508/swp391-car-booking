@@ -117,10 +117,7 @@
 <div class="bk-main">
     <%-- TOP HEADER --%>
     <header class="bk-header">
-        <div class="bk-header-search">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Tìm kiếm hệ thống...">
-        </div>
+        <div></div>
         <div class="bk-header-actions">
             <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
             <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>

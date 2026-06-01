@@ -40,20 +40,33 @@ public class BookingManagementServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Get optional status filter
-        String statusFilter = request.getParameter("status");
-        List<Booking> bookings;
-
-        if (statusFilter != null && !statusFilter.isEmpty()) {
-            bookings = bookingService.getBookingsByStatus(statusFilter);
-            request.setAttribute("currentFilter", statusFilter);
-        } else {
-            bookings = bookingService.getAllBookings();
-        }
-
+        List<Booking> bookings = bookingService.getAllBookings();
         request.setAttribute("bookings", bookings);
 
-        // Build user and car info maps for display
+        // Count for stats grid dynamically
+        int pendingCount = 0;
+        int confirmedCount = 0;
+        int inProgressCount = 0;
+        int completedCount = 0;
+
+        for (Booking b : bookings) {
+            if ("PENDING".equals(b.getStatus())) {
+                pendingCount++;
+            } else if ("CONFIRMED".equals(b.getStatus())) {
+                confirmedCount++;
+            } else if ("IN_PROGRESS".equals(b.getStatus())) {
+                inProgressCount++;
+            } else if ("COMPLETED".equals(b.getStatus())) {
+                completedCount++;
+            }
+        }
+
+        request.setAttribute("pendingCount", pendingCount);
+        request.setAttribute("confirmedCount", confirmedCount);
+        request.setAttribute("inProgressCount", inProgressCount);
+        request.setAttribute("completedCount", completedCount);
+
+        // Build user and car info maps for all bookings for display
         Map<Integer, User> userMap = new HashMap<>();
         Map<Integer, Car> carMap = new HashMap<>();
 

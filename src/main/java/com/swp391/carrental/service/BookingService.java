@@ -188,7 +188,46 @@ public class BookingService {
             if (!BookingStatus.PENDING.equals(booking.getStatus())) {
                 throw new AppException("Chỉ có thể duyệt booking đang ở trạng thái Chờ xử lý.");
             }
-            return bookingDAO.approve(bookingId, approvedBy);
+            
+            boolean approved = bookingDAO.approve(bookingId, approvedBy);
+            
+            if (approved) {
+                // Tự động tạo Hợp đồng khi duyệt booking thành công (BR-05)
+                try {
+                    com.swp391.carrental.dao.ContractDAO contractDAO = new com.swp391.carrental.dao.ContractDAO();
+                    if (contractDAO.findByBookingId(bookingId) == null) {
+                        com.swp391.carrental.model.RentalContract contract = new com.swp391.carrental.model.RentalContract();
+                        contract.setBookingId(bookingId);
+                        contract.setCustomerId(booking.getCustomerId());
+                        contract.setCarId(booking.getCarId());
+                        contract.setStartDate(booking.getStartDate());
+                        contract.setEndDate(booking.getEndDate());
+                        
+                        Car car = carDAO.findById(booking.getCarId());
+                        if (car != null) {
+                            contract.setDailyRate(car.getDailyRate());
+                        } else {
+                            contract.setDailyRate(booking.getTotalAmount());
+                        }
+                        
+                        contract.setTotalAmount(booking.getTotalAmount());
+                        contract.setDepositAmount(booking.getDepositAmount());
+                        contract.setStatus(com.swp391.carrental.constant.ContractStatus.ACTIVE);
+                        contract.setTermsAndConditions("Điều khoản thuê xe tự lái mặc định của hệ thống CarPro.");
+                        contract.setCreatedBy(approvedBy);
+                        
+                        String contractNumber = "CTR-"
+                                + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy"))
+                                + "-" + String.format("%04d", bookingId);
+                        contract.setContractNumber(contractNumber);
+                        
+                        contractDAO.insert(contract);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            return approved;
         } catch (SQLException e) {
             throw new AppException("Failed to approve booking.", e);
         }

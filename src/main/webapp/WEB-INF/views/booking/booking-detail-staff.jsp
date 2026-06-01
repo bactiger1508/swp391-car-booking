@@ -154,10 +154,10 @@
             <%-- Staff Actions --%>
             <c:if test="${booking.status == 'PENDING'}">
                 <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
-                    <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="width:100%;">
+                    <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="width:100%;" id="approveForm">
                         <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
                         <input type="hidden" name="action" value="approve"/>
-                        <button type="submit" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;padding:14px;" onclick="return confirm('Duyệt booking này?')">
+                        <button type="button" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;padding:14px;" onclick="handleApproveClick()">
                             <span class="material-symbols-outlined">check_circle</span> Duyệt đơn
                         </button>
                     </form>
@@ -167,14 +167,15 @@
                     </button>
 
                     <div class="bk-reject-form" id="rejectForm">
-                        <form method="post" action="${pageContext.request.contextPath}/bookings/approval">
+                        <form method="post" action="${pageContext.request.contextPath}/bookings/approval" id="rejectFormAction">
                             <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
                             <input type="hidden" name="action" value="reject"/>
                             <div class="bk-form-group" style="margin-bottom:12px;">
                                 <label class="bk-form-label">Lý do từ chối</label>
-                                <textarea name="reason" class="bk-form-textarea" rows="3" required placeholder="Nhập lý do từ chối..."></textarea>
+                                <textarea name="reason" id="rejectReasonTextarea" class="bk-form-textarea" rows="3" required placeholder="Nhập lý do từ chối..."></textarea>
+                                <div id="rejectErrorMsg" style="color:var(--error);font-size:12px;font-weight:600;margin-top:4px;display:none;">Lý do từ chối không được để trống!</div>
                             </div>
-                            <button type="submit" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="return confirm('Xác nhận từ chối?')">
+                            <button type="button" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="handleRejectClick()">
                                 Xác nhận từ chối
                             </button>
                         </form>
@@ -191,11 +192,125 @@
     </div>
 </div>
 
+<%-- BK CUSTOM MODAL POPUP --%>
+<div id="customConfirmModal" class="bk-modal">
+    <div class="bk-modal-content">
+        <div class="bk-modal-header">
+            <h3 id="modalTitle">Tiêu đề</h3>
+            <span class="modal-close-icon" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="bk-modal-body">
+            <p id="modalMessage">Nội dung...</p>
+        </div>
+        <div class="bk-modal-footer">
+            <button type="button" class="bk-btn bk-btn-outline" onclick="closeModal()">Hủy bỏ</button>
+            <button type="button" id="modalConfirmBtn" class="bk-btn bk-btn-primary">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.bk-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(4, 22, 56, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+.bk-modal.open {
+    opacity: 1; pointer-events: auto;
+}
+.bk-modal-content {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: var(--radius-xl);
+    width: 90%; max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    padding: 24px;
+    transform: scale(0.9);
+    transition: transform 0.2s ease-in-out;
+}
+.bk-modal.open .bk-modal-content {
+    transform: scale(1);
+}
+.bk-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--outline-variant);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.bk-modal-header h3 {
+    font-size: 18px; font-weight: 700; color: var(--primary);
+    margin: 0;
+}
+.modal-close-icon {
+    font-size: 24px; font-weight: 700; color: var(--on-surface-variant);
+    cursor: pointer; line-height: 1;
+}
+.modal-close-icon:hover { color: var(--primary); }
+.bk-modal-body {
+    font-size: 14px; color: var(--on-surface-variant);
+    line-height: 1.6; margin-bottom: 24px;
+}
+.bk-modal-footer {
+    display: flex; justify-content: flex-end; gap: 12px;
+    border-top: 1px solid var(--outline-variant);
+    padding-top: 16px;
+}
+</style>
+
 <script>
+var activeForm = null;
+
 function toggleReject() {
     var form = document.getElementById('rejectForm');
     form.classList.toggle('open');
 }
+
+function handleApproveClick() {
+    activeForm = document.getElementById('approveForm');
+    
+    document.getElementById('modalTitle').textContent = "Duyệt Đơn Đặt Xe";
+    document.getElementById('modalMessage').textContent = "Bạn có chắc chắn muốn duyệt và phê duyệt đơn đặt xe #BK-${booking.bookingId} này không? Hệ thống sẽ tự động lập hợp đồng tương ứng cho đơn hàng này.";
+    
+    var confirmBtn = document.getElementById('modalConfirmBtn');
+    confirmBtn.className = "bk-btn bk-btn-primary";
+    
+    document.getElementById('customConfirmModal').classList.add('open');
+}
+
+function handleRejectClick() {
+    var reasonText = document.getElementById('rejectReasonTextarea').value.trim();
+    if (reasonText === "") {
+        document.getElementById('rejectErrorMsg').style.display = 'block';
+        return;
+    }
+    document.getElementById('rejectErrorMsg').style.display = 'none';
+    
+    activeForm = document.getElementById('rejectFormAction');
+    
+    document.getElementById('modalTitle').textContent = "Từ Chối Đơn Đặt Xe";
+    document.getElementById('modalMessage').textContent = "Xác nhận từ chối đơn đặt xe #BK-${booking.bookingId} với lý do: \"" + reasonText + "\"?";
+    
+    var confirmBtn = document.getElementById('modalConfirmBtn');
+    confirmBtn.className = "bk-btn bk-btn-danger";
+    
+    document.getElementById('customConfirmModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('customConfirmModal').classList.remove('open');
+    activeForm = null;
+}
+
+document.getElementById('modalConfirmBtn').onclick = function() {
+    if (!activeForm) return;
+    document.getElementById('customConfirmModal').classList.remove('open');
+    activeForm.submit();
+};
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
