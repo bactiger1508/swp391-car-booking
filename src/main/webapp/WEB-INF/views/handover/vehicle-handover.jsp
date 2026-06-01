@@ -15,6 +15,11 @@
         <h2>Nhật ký Biên bản Bàn giao xe</h2>
         <p>Kiểm soát tình trạng xe (số km, mức nhiên liệu, hư hại ngoại thất/nội thất) trước khi bàn giao chìa khóa cho khách thuê. (BR-06)</p>
     </div>
+    <div>
+        <a href="${pageContext.request.contextPath}/bookings/manage?status=CONFIRMED" class="bk-btn bk-btn-primary">
+            <span class="material-symbols-outlined">add</span> Bàn giao xe mới
+        </a>
+    </div>
 </div>
 
 <div class="bk-table-container">

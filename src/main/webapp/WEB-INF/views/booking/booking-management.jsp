@@ -140,6 +140,9 @@
                             </td>
                             <td class="text-right">
                                 <div style="display:flex;justify-content:flex-end;gap:6px;">
+                                    <c:if test="${b.status == 'CONFIRMED'}">
+                                        <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${b.bookingId}&carId=${b.carId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#2E7D32; border-color:#2E7D32; color:#fff;">Giao xe</a>
+                                    </c:if>
                                     <a href="${pageContext.request.contextPath}/bookings/detail?id=${b.bookingId}" class="bk-btn bk-btn-outline bk-btn-sm">Xem</a>
                                 </div>
                             </td>
