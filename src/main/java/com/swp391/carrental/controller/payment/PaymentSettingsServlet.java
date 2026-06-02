@@ -63,6 +63,14 @@ public class PaymentSettingsServlet extends HttpServlet {
             }
         }
 
+        // Fetch DEPOSIT_PERCENTAGE which is under BOOKING category and put in settingMap
+        try {
+            PolicySetting depositPct = policyService.getPolicyByKey("DEPOSIT_PERCENTAGE");
+            if (depositPct != null) {
+                settingMap.put("DEPOSIT_PERCENTAGE", depositPct);
+            }
+        } catch (Exception ignored) {}
+
         request.setAttribute("methodMap",  methodMap);
         request.setAttribute("settingMap", settingMap);
         request.setAttribute("activeTab",  request.getParameter("tab") != null ? request.getParameter("tab") : "methods");
@@ -90,7 +98,12 @@ public class PaymentSettingsServlet extends HttpServlet {
         String tab    = request.getParameter("tab") != null ? request.getParameter("tab") : "methods";
 
         try {
-            if ("updateMethods".equals(action)) {
+            if ("updateAll".equals(action)) {
+                updateMethodToggles(request, currentUser.getUserId());
+                updateGeneralSettings(request, currentUser.getUserId());
+                request.getSession().setAttribute("paymentSettingsSuccess", "Lưu tất cả cấu hình thanh toán thành công!");
+
+            } else if ("updateMethods".equals(action)) {
                 updateMethodToggles(request, currentUser.getUserId());
                 request.getSession().setAttribute("paymentSettingsSuccess", "Cập nhật phương thức thanh toán thành công!");
 
