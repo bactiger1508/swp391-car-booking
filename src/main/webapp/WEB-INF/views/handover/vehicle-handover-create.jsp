@@ -111,7 +111,7 @@
                         <span>Thông Tin Xe Bàn Giao</span>
                     </div>
                     <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); shrink-0;">
+                        <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
                             <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
                         </div>
                         <div>
@@ -277,7 +277,7 @@
         </div>
 
         <!-- Action Footer -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-t: 1px solid var(--outline-variant); padding-top: 16px;">
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 16px;">
             <c:choose>
                 <c:when test="${not empty contract}">
                     <a href="${pageContext.request.contextPath}/contracts" class="bk-btn bk-btn-outline" style="min-width: 120px; text-align: center;">
