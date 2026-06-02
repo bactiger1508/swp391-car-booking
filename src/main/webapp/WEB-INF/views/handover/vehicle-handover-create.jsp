@@ -75,8 +75,8 @@
 
     <form action="${pageContext.request.contextPath}/handovers/create" method="POST" enctype="multipart/form-data">
         <!-- Hidden Inputs for Booking and Car IDs -->
-        <input type="hidden" name="bookingId" value="${bookingId}">
-        <input type="hidden" name="carId" value="${carId}">
+        <input type="hidden" name="bookingId" value="${bookingId}" />
+        <input type="hidden" name="carId" value="${carId}" />
 
         <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 24px; margin-bottom: 24px; align-items: start;">
             
@@ -148,7 +148,7 @@
                         <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km hiện tại (Odometer) *</label>
                         <div class="bk-form-input-wrap" style="margin-top: 6px;">
                             <span class="material-symbols-outlined">speed</span>
-                            <input type="number" id="currentOdo" name="currentOdo" value="${not empty currentOdo ? currentOdo : (not empty car ? car.mileage : '')}" class="bk-form-input" placeholder="Nhập số liệu công-tơ-mét thực tế" required>
+                            <input type="number" id="currentOdo" name="currentOdo" value="${not empty currentOdo ? currentOdo : (not empty car ? car.mileage : '')}" class="bk-form-input" placeholder="Nhập số liệu công-tơ-mét thực tế" required="required" />
                         </div>
                     </div>
 
@@ -157,23 +157,23 @@
                         <label class="bk-form-label" style="font-weight:600;">Mức Nhiên Liệu Thực Tế *</label>
                         <div style="display: flex; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 8px; overflow: hidden; height: 42px; margin-top: 6px;">
                             <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="E" required class="fuel-radio" ${fuel == 'E' ? 'checked' : ''}>
+                                <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${fuel == 'E' ? 'checked="checked"' : ''} />
                                 <span class="fuel-label">E</span>
                             </label>
                             <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="1/4" required class="fuel-radio" ${fuel == '1/4' ? 'checked' : ''}>
+                                <input type="radio" name="fuel" value="1/4" required="required" class="fuel-radio" ${fuel == '1/4' ? 'checked="checked"' : ''} />
                                 <span class="fuel-label">1/4</span>
                             </label>
                             <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="1/2" required class="fuel-radio" ${empty fuel || fuel == '1/2' ? 'checked' : ''}>
+                                <input type="radio" name="fuel" value="1/2" required="required" class="fuel-radio" ${empty fuel || fuel == '1/2' ? 'checked="checked"' : ''} />
                                 <span class="fuel-label">1/2</span>
                             </label>
                             <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="3/4" required class="fuel-radio" ${fuel == '3/4' ? 'checked' : ''}>
+                                <input type="radio" name="fuel" value="3/4" required="required" class="fuel-radio" ${fuel == '3/4' ? 'checked="checked"' : ''} />
                                 <span class="fuel-label">3/4</span>
                             </label>
                             <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <input type="radio" name="fuel" value="F" required class="fuel-radio" ${fuel == 'F' ? 'checked' : ''}>
+                                <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${fuel == 'F' ? 'checked="checked"' : ''} />
                                 <span class="fuel-label">F</span>
                             </label>
                         </div>
@@ -195,15 +195,15 @@
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">NGOẠI THẤT</div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorScratch" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkExteriorScratch" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Không có vết xước hoặc vết lõm mới</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkWindshield" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkWindshield" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Kính chắn gió nguyên vẹn</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkTires" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkTires" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Lốp xe trong tình trạng tốt</span>
                         </label>
                     </div>
@@ -214,15 +214,15 @@
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">NỘI THẤT</div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkCleanliness" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkCleanliness" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Sạch sẽ và được hút bụi</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkOdor" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkOdor" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Không có mùi hôi</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkMatsAccessories" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkMatsAccessories" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Có đủ thảm và phụ kiện</span>
                         </label>
                     </div>
@@ -233,11 +233,11 @@
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">ĐỘNG CƠ / MÁY MÓC</div>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkEngine" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkEngine" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Động cơ khởi động bình thường</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkDashboardLights" value="true" class="checklist-checkbox" checked>
+                            <input type="checkbox" name="chkDashboardLights" value="true" class="checklist-checkbox" checked="checked" />
                             <span>Không có đèn cảnh báo trên táp-lô</span>
                         </label>
                     </div>
@@ -257,7 +257,7 @@
                 </div>
                 
                 <div style="border: 2px dashed var(--outline-variant); border-radius: 8px; padding: 24px; text-align: center; background: var(--surface-container-low); position: relative; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--surface-container-high)'" onmouseout="this.style.background='var(--surface-container-low)'">
-                    <input type="file" name="evidencePhotos" accept="image/*" multiple style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;">
+                    <input type="file" name="evidencePhotos" accept="image/*" multiple="multiple" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" />
                     <span class="material-symbols-outlined" style="font-size: 42px; color: var(--text-secondary);">upload_file</span>
                     <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả hình ảnh</p>
                     <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Hỗ trợ định dạng JPG, PNG, GIF (Tối đa 10MB)</p>

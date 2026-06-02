@@ -21,7 +21,7 @@
     <div class="bk-table-toolbar">
         <div class="bk-table-search">
             <span class="material-symbols-outlined">search</span>
-            <input type="text" id="searchInput" placeholder="Tìm biên bản nhận xe..." oninput="filterTable()">
+            <input type="text" id="searchInput" placeholder="Tìm biên bản nhận xe..." oninput="filterTable()" />
         </div>
     </div>
 

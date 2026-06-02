@@ -30,7 +30,7 @@
                         <label class="bk-form-label">Số giờ trả xe trễ hạn (Giờ)</label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">schedule</span>
-                            <input type="number" id="lateHours" class="bk-form-input" value="0" min="0" style="padding-left:40px;">
+                            <input type="number" id="lateHours" class="bk-form-input" value="0" min="0" style="padding-left:40px;" />
                         </div>
                         <span style="font-size:12px;color:var(--outline);margin-top:2px;">(Quy định phạt: 100,000đ / giờ)</span>
                     </div>
@@ -39,7 +39,7 @@
                         <label class="bk-form-label">Quãng đường đi vượt định mức (km)</label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">speed</span>
-                            <input type="number" id="overKm" class="bk-form-input" value="0" min="0" style="padding-left:40px;">
+                            <input type="number" id="overKm" class="bk-form-input" value="0" min="0" style="padding-left:40px;" />
                         </div>
                         <span style="font-size:12px;color:var(--outline);margin-top:2px;">(Quy định phạt: 5,000đ / km)</span>
                     </div>
@@ -60,7 +60,7 @@
                         <label class="bk-form-label">Bồi thường hư hỏng linh kiện / mất đồ</label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">handyman</span>
-                            <input type="number" id="damageFee" class="bk-form-input" value="0" min="0" style="padding-left:40px;" placeholder="Nhập số tiền...">
+                            <input type="number" id="damageFee" class="bk-form-input" value="0" min="0" style="padding-left:40px;" placeholder="Nhập số tiền..." />
                         </div>
                     </div>
 
