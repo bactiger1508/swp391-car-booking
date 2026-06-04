@@ -26,6 +26,15 @@ public class PaymentRecordServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
 
+    /**
+     * Handles GET requests.
+     *
+     * Loads:
+     * - All recorded payments
+     * - Enabled payment methods configured in the system
+     *
+     * Forwards data to the payment record management page.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -36,11 +45,19 @@ public class PaymentRecordServlet extends HttpServlet {
                .forward(request, response);
     }
 
+    /**
+     * Handles POST requests.
+     *
+     * Records a new payment transaction submitted by staff/admin.
+     * Validation is performed by PaymentService before saving.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         User currentUser = (User) request.getSession().getAttribute("currentUser");
+        
+        // Require authentication
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
@@ -63,13 +80,13 @@ public class PaymentRecordServlet extends HttpServlet {
         }
     }
 
-    // ─── Helper ───────────────────────────────────────────────────────────────
-
+    //Builds a Payment object from request parameters.
     private Payment buildPaymentFromRequest(HttpServletRequest req, int userId) {
         Payment p = new Payment();
         p.setBookingId(Integer.parseInt(req.getParameter("bookingId")));
 
         String contractIdStr = req.getParameter("contractId");
+        // Contract exist
         if (contractIdStr != null && !contractIdStr.isEmpty()) {
             p.setContractId(Integer.parseInt(contractIdStr));
         }

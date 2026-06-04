@@ -21,14 +21,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Service for rental contract operations.
- * BR-05: Contract can only be created from Confirmed booking.
+ * Service for rental contract operations. BR-05: Contract can only be created
+ * from Confirmed booking.
  */
 public class ContractService {
 
     private final ContractDAO contractDAO = new ContractDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
 
+    // Get contract by id
     public RentalContract getContractById(int contractId) {
         try {
             return contractDAO.findById(contractId);
@@ -37,6 +38,7 @@ public class ContractService {
         }
     }
 
+    // Get contract by booking ID
     public RentalContract getContractByBookingId(int bookingId) {
         try {
             return contractDAO.findByBookingId(bookingId);
@@ -45,6 +47,7 @@ public class ContractService {
         }
     }
 
+    // Get all contracts
     public List<RentalContract> getAllContracts() {
         try {
             return contractDAO.findAll();
@@ -54,8 +57,8 @@ public class ContractService {
     }
 
     /**
-     * Create a contract from a confirmed booking.
-     * BR-05: Contract can only be created from Confirmed booking.
+     * Create a contract from a confirmed booking. BR-05: Contract can only be
+     * created from Confirmed booking.
      */
     public int createContract(RentalContract contract) {
         try {
@@ -81,6 +84,7 @@ public class ContractService {
         }
     }
 
+    // Update contract status
     public boolean updateContractStatus(int contractId, String status) {
         try {
             return contractDAO.updateStatus(contractId, status);

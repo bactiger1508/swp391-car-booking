@@ -19,47 +19,52 @@ import java.util.List;
  */
 public class ContractDAO {
 
+    // Finds a contract by ID.
     public RentalContract findById(int contractId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE contract_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
             }
         }
         return null;
     }
 
+    // Finds a contract by booking ID.
     public RentalContract findByBookingId(int bookingId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE booking_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bookingId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
             }
         }
         return null;
     }
 
+    // Retrieves all contracts ordered by newest first.
     public List<RentalContract> findAll() throws SQLException {
         List<RentalContract> contracts = new ArrayList<>();
         String sql = "SELECT * FROM rental_contracts ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) contracts.add(mapRow(rs));
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                contracts.add(mapRow(rs));
+            }
         }
         return contracts;
     }
 
+    //Inserts a new rental contract.
     public int insert(RentalContract contract) throws SQLException {
         String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, car_id, "
-                   + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
-                   + "terms_and_conditions, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
+                + "terms_and_conditions, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, contract.getBookingId());
             ps.setString(2, contract.getContractNumber());
             ps.setInt(3, contract.getCustomerId());
@@ -74,31 +79,34 @@ public class ContractDAO {
             ps.setInt(12, contract.getCreatedBy());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getInt(1);
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
             }
         }
         return -1;
     }
 
+    // Updates contract status.
     public boolean updateStatus(int contractId, String status) throws SQLException {
         String sql = "UPDATE rental_contracts SET status = ?, updated_at = GETDATE() WHERE contract_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, contractId);
             return ps.executeUpdate() > 0;
         }
     }
 
+    // Deletes a contract.
     public boolean delete(int contractId) throws SQLException {
         String sql = "DELETE FROM rental_contracts WHERE contract_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, contractId);
             return ps.executeUpdate() > 0;
         }
     }
 
+    // Maps a database row to a RentalContract object.
     private RentalContract mapRow(ResultSet rs) throws SQLException {
         RentalContract c = new RentalContract();
         c.setContractId(rs.getInt("contract_id"));
@@ -106,17 +114,32 @@ public class ContractDAO {
         c.setContractNumber(rs.getString("contract_number"));
         c.setCustomerId(rs.getInt("customer_id"));
         c.setCarId(rs.getInt("car_id"));
-        Timestamp sd = rs.getTimestamp("start_date"); if (sd != null) c.setStartDate(sd.toLocalDateTime());
-        Timestamp ed = rs.getTimestamp("end_date"); if (ed != null) c.setEndDate(ed.toLocalDateTime());
+        Timestamp sd = rs.getTimestamp("start_date");
+        if (sd != null) {
+            c.setStartDate(sd.toLocalDateTime());
+        }
+        Timestamp ed = rs.getTimestamp("end_date");
+        if (ed != null) {
+            c.setEndDate(ed.toLocalDateTime());
+        }
         c.setDailyRate(rs.getBigDecimal("daily_rate"));
         c.setTotalAmount(rs.getBigDecimal("total_amount"));
         c.setDepositAmount(rs.getBigDecimal("deposit_amount"));
         c.setStatus(rs.getString("status"));
         c.setTermsAndConditions(rs.getString("terms_and_conditions"));
         c.setCreatedBy(rs.getInt("created_by"));
-        Timestamp sa = rs.getTimestamp("signed_at"); if (sa != null) c.setSignedAt(sa.toLocalDateTime());
-        Timestamp ca = rs.getTimestamp("created_at"); if (ca != null) c.setCreatedAt(ca.toLocalDateTime());
-        Timestamp ua = rs.getTimestamp("updated_at"); if (ua != null) c.setUpdatedAt(ua.toLocalDateTime());
+        Timestamp sa = rs.getTimestamp("signed_at");
+        if (sa != null) {
+            c.setSignedAt(sa.toLocalDateTime());
+        }
+        Timestamp ca = rs.getTimestamp("created_at");
+        if (ca != null) {
+            c.setCreatedAt(ca.toLocalDateTime());
+        }
+        Timestamp ua = rs.getTimestamp("updated_at");
+        if (ua != null) {
+            c.setUpdatedAt(ua.toLocalDateTime());
+        }
         return c;
     }
 }

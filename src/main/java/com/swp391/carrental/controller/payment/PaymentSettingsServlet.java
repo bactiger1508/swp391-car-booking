@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Admin-only servlet for configuring payment methods and payment-related settings.
- * URL: /admin/payment-settings
+ * Admin-only servlet for configuring payment methods and payment-related
+ * settings. URL: /admin/payment-settings
  */
 @WebServlet(name = "PaymentSettingsServlet", urlPatterns = {"/admin/payment-settings"})
 public class PaymentSettingsServlet extends HttpServlet {
@@ -41,6 +41,12 @@ public class PaymentSettingsServlet extends HttpServlet {
         "PAYMENT_METHOD_ZALOPAY_ENABLED"
     };
 
+    /**
+     * Handles GET requests.
+     *
+     * Loads all payment-related policy settings and separates them into: -
+     * Payment method toggles - General payment configuration settings
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -48,53 +54,77 @@ public class PaymentSettingsServlet extends HttpServlet {
         List<PolicySetting> paymentPolicies = policyService.getPoliciesByCategory("PAYMENT");
 
         // Separate method toggles from general settings for easier rendering
-        Map<String, PolicySetting> methodMap  = new LinkedHashMap<>();
+        Map<String, PolicySetting> methodMap = new LinkedHashMap<>();
         Map<String, PolicySetting> settingMap = new LinkedHashMap<>();
 
+        // Loop each payment policy
         for (PolicySetting ps : paymentPolicies) {
             boolean isMethodKey = false;
+            // Loop each payment method in method key list
             for (String mk : METHOD_KEYS) {
-                if (mk.equals(ps.getPolicyKey())) { isMethodKey = true; break; }
+                // current payment policy key is method key
+                if (mk.equals(ps.getPolicyKey())) {
+                    isMethodKey = true;
+                    break;
+                }
             }
+            // Map to methodMap if is method key
             if (isMethodKey) {
                 methodMap.put(ps.getPolicyKey(), ps);
-            } else {
+            }//  Map to settingMap
+            else {
                 settingMap.put(ps.getPolicyKey(), ps);
             }
         }
 
-        request.setAttribute("methodMap",  methodMap);
+        request.setAttribute("methodMap", methodMap);
         request.setAttribute("settingMap", settingMap);
-        request.setAttribute("activeTab",  request.getParameter("tab") != null ? request.getParameter("tab") : "methods");
+        request.setAttribute("activeTab", request.getParameter("tab") != null ? request.getParameter("tab") : "methods");
 
         String success = (String) request.getSession().getAttribute("paymentSettingsSuccess");
-        String error   = (String) request.getSession().getAttribute("paymentSettingsError");
-        if (success != null) { request.setAttribute("successMsg", success); request.getSession().removeAttribute("paymentSettingsSuccess"); }
-        if (error   != null) { request.setAttribute("errorMsg",   error);   request.getSession().removeAttribute("paymentSettingsError"); }
+        String error = (String) request.getSession().getAttribute("paymentSettingsError");
+        if (success != null) {
+            request.setAttribute("successMsg", success);
+            request.getSession().removeAttribute("paymentSettingsSuccess");
+        }
+        if (error != null) {
+            request.setAttribute("errorMsg", error);
+            request.getSession().removeAttribute("paymentSettingsError");
+        }
 
         request.getRequestDispatcher("/WEB-INF/views/payment/payment-settings.jsp")
-               .forward(request, response);
+                .forward(request, response);
     }
 
+    /**
+     * Handles POST requests.
+     *
+     * Admin modify payment settings: - updateMethods : Enable/disable payment
+     * methods - updateSettings : Update general payment configurations
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         User currentUser = (User) request.getSession().getAttribute("currentUser");
+
+        // Require authentication
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         String action = request.getParameter("action");
-        String tab    = request.getParameter("tab") != null ? request.getParameter("tab") : "methods";
+        String tab = request.getParameter("tab") != null ? request.getParameter("tab") : "methods";
 
         try {
+            // Update payment method availability
             if ("updateMethods".equals(action)) {
                 updateMethodToggles(request, currentUser.getUserId());
                 request.getSession().setAttribute("paymentSettingsSuccess", "Cập nhật phương thức thanh toán thành công!");
 
-            } else if ("updateSettings".equals(action)) {
+            } // Update general payment settings 
+            else if ("updateSettings".equals(action)) {
                 updateGeneralSettings(request, currentUser.getUserId());
                 request.getSession().setAttribute("paymentSettingsSuccess", "Cập nhật cài đặt thanh toán thành công!");
 
@@ -111,12 +141,12 @@ public class PaymentSettingsServlet extends HttpServlet {
     // ----------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------
-
     /**
      * Reads checkbox params for each method key and writes true/false to DB.
      */
     private void updateMethodToggles(HttpServletRequest request, int userId) {
         Map<String, String> updates = new LinkedHashMap<>();
+        // Loop each method key to check
         for (String key : METHOD_KEYS) {
             String val = request.getParameter(key);
             updates.put(key, "on".equalsIgnoreCase(val) ? "true" : "false");
@@ -125,22 +155,29 @@ public class PaymentSettingsServlet extends HttpServlet {
     }
 
     /**
-     * Reads all policy_ prefixed POST params that are NOT method toggles and updates DB.
+     * Reads all policy_ prefixed POST params that are NOT method toggles and
+     * updates DB.
      */
     private void updateGeneralSettings(HttpServletRequest request, int userId) {
         Map<String, String> updates = new LinkedHashMap<>();
         Enumeration<String> names = request.getParameterNames();
+        // Read all request parameters
         while (names.hasMoreElements()) {
             String name = names.nextElement();
+            // map into updates map name prefixed with "policy_"
             if (name.startsWith("policy_")) {
-                String key   = name.substring("policy_".length());
+                String key = name.substring("policy_".length());
                 String value = request.getParameter(name);
-                if (value != null) updates.put(key, value.trim());
+                if (value != null) {
+                    updates.put(key, value.trim());
+                }
             }
         }
         // Checkbox for PAYMENT_PARTIAL_ALLOWED is not submitted when unchecked;
         // default to "false" so toggling OFF is properly persisted.
         updates.putIfAbsent("PAYMENT_PARTIAL_ALLOWED", "false");
+
+        // Update policies if changes exist
         if (!updates.isEmpty()) {
             policyService.batchUpdatePolicies(updates, userId);
         }
