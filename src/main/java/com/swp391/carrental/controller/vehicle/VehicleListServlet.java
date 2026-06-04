@@ -25,7 +25,7 @@ public class VehicleListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Car> cars = vehicleService.getCarsByStatus("AVAILABLE");
+        List<Car> cars = vehicleService.getAllCars();
         request.setAttribute("cars", cars);
         request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(cars));
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-list.jsp").forward(request, response);

@@ -129,7 +129,8 @@
 <div class="bk-main">
     <%-- TOP HEADER --%>
     <header class="bk-header">
-        <div></div>
+        <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
+
         <div class="bk-header-actions">
             <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
             <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>

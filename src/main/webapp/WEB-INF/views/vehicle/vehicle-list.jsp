@@ -6,15 +6,19 @@
 </jsp:include>
 
 <div class="bk-page-header">
-    <div>
+    <div class="bk-page-header-text">
         <div class="bk-breadcrumb">
             <a href="${pageContext.request.contextPath}/home">Trang chủ</a>
             <span class="material-symbols-outlined">chevron_right</span>
             <span class="current">Danh mục xe</span>
         </div>
-        <h2>Danh mục Xe tự lái CarPro</h2>
-        <p>Tìm kiếm và lựa chọn dòng xe phù hợp với nhu cầu và ngân sách của bạn.</p>
+        <h2>Xe hiện có</h2>
+        <p>Duyệt và lọc kho xe hiện tại để khách hàng đặt trước.</p>
     </div>
+    <button type="button" class="bk-btn bk-btn-outline bk-page-export-btn" onclick="exportCarList()">
+        <span class="material-symbols-outlined">download</span>
+        Xuất danh sách
+    </button>
 </div>
 
 <%-- BỘ LỌC TÌM KIẾM XE THÔNG MINH --%>
@@ -23,36 +27,69 @@
         <span class="material-symbols-outlined">filter_alt</span> Bộ lọc tìm kiếm xe tự lái
     </div>
     
-    <div class="bk-form-grid" style="grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;">
-        <%-- Tìm theo tên --%>
+    <div class="bk-form-grid" style="grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:12px;margin-bottom:16px;">
+        <%-- Khoảng thời gian --%>
         <div class="bk-form-group">
-            <label class="bk-form-label">Tên xe / Hãng xe</label>
+            <label class="bk-form-label">Khoảng thời gian</label>
             <div class="bk-form-input-wrap">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="filterKeyword" class="bk-form-input" placeholder="Ví dụ: VinFast..." style="padding-left:40px;" oninput="applyFilters()">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <input type="date" id="filterDate" class="bk-form-input" style="padding-left:40px;" onchange="applyFilters()">
             </div>
         </div>
 
-        <%-- Lọc theo Hộp số --%>
+        <%-- Hãng xe --%>
         <div class="bk-form-group">
-            <label class="bk-form-label">Hộp số (Truyền động)</label>
+            <label class="bk-form-label">Hãng xe</label>
             <div class="bk-form-input-wrap">
-                <span class="material-symbols-outlined">settings_input_component</span>
-                <select id="filterTransmission" class="bk-form-select" onchange="applyFilters()">
-                    <option value="">Tất cả hộp số</option>
-                    <option value="AUTOMATIC">Số tự động</option>
-                    <option value="MANUAL">Số sàn</option>
+                <span class="material-symbols-outlined">directions_car</span>
+                <select id="filterBrand" class="bk-form-select" onchange="applyFilters()">
+                    <option value="">Tất cả hãng xe</option>
+                    <option value="Mercedes">Mercedes</option>
+                    <option value="Toyota">Toyota</option>
+                    <option value="Ford">Ford</option>
+                    <option value="Tesla">Tesla</option>
+                    <option value="VinFast">VinFast</option>
                 </select>
             </div>
         </div>
 
-        <%-- Lọc theo Nhiên liệu --%>
+        <%-- Số ghế --%>
+        <div class="bk-form-group">
+            <label class="bk-form-label">Số ghế</label>
+            <div class="bk-form-input-wrap">
+                <span class="material-symbols-outlined">event_seat</span>
+                <select id="filterSeats" class="bk-form-select" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    <option value="4">4 ghế</option>
+                    <option value="5">5 ghế</option>
+                    <option value="7">7 ghế</option>
+                    <option value="9">9 ghế</option>
+                </select>
+            </div>
+        </div>
+
+        <%-- Mức giá --%>
+        <div class="bk-form-group">
+            <label class="bk-form-label">Mức giá</label>
+            <div class="bk-form-input-wrap">
+                <span class="material-symbols-outlined">payments</span>
+                <select id="filterPrice" class="bk-form-select" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    <option value="500000">Dưới 500k</option>
+                    <option value="1000000">500k - 1tr</option>
+                    <option value="1500000">1tr - 1.5tr</option>
+                    <option value="9999999">Trên 1.5tr</option>
+                </select>
+            </div>
+        </div>
+
+        <%-- Loại nhiên liệu --%>
         <div class="bk-form-group">
             <label class="bk-form-label">Loại nhiên liệu</label>
             <div class="bk-form-input-wrap">
                 <span class="material-symbols-outlined">local_gas_station</span>
                 <select id="filterFuel" class="bk-form-select" onchange="applyFilters()">
-                    <option value="">Tất cả nhiên liệu</option>
+                    <option value="">Tất cả</option>
                     <option value="GASOLINE">Xăng</option>
                     <option value="DIESEL">Dầu Diesel</option>
                     <option value="ELECTRIC">Điện</option>
@@ -61,33 +98,23 @@
             </div>
         </div>
 
-        <%-- Lọc theo Số chỗ ngồi --%>
+        <%-- Hộp số --%>
         <div class="bk-form-group">
-            <label class="bk-form-label">Số chỗ ngồi</label>
+            <label class="bk-form-label">Hộp số</label>
             <div class="bk-form-input-wrap">
-                <span class="material-symbols-outlined">group</span>
-                <select id="filterSeats" class="bk-form-select" onchange="applyFilters()">
-                    <option value="">Tất cả số chỗ</option>
-                    <option value="4">4 chỗ</option>
-                    <option value="5">5 chỗ</option>
-                    <option value="7">7 chỗ</option>
+                <span class="material-symbols-outlined">settings</span>
+                <select id="filterTransmission" class="bk-form-select" onchange="applyFilters()">
+                    <option value="">Tất cả</option>
+                    <option value="AUTOMATIC">Số tự động</option>
+                    <option value="MANUAL">Số sàn</option>
                 </select>
             </div>
         </div>
+    </div>
 
-        <%-- Lọc theo Mức giá --%>
-        <div class="bk-form-group">
-            <label class="bk-form-label">Giá thuê (Ngày)</label>
-            <div class="bk-form-input-wrap">
-                <span class="material-symbols-outlined">payments</span>
-                <select id="filterPrice" class="bk-form-select" onchange="applyFilters()">
-                    <option value="">Tất cả mức giá</option>
-                    <option value="1000000">Dưới 1,000,000đ</option>
-                    <option value="1500000">Từ 1tr - 1.5tr</option>
-                    <option value="9999999">Trên 1.5tr</option>
-                </select>
-            </div>
-        </div>
+    <%-- Filter chips / tags --%>
+    <div id="filterChips" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+        <!-- Filter chips sẽ được thêm bằng JavaScript -->
     </div>
 </div>
 
@@ -95,7 +122,6 @@
 <c:if test="${not empty cars}">
     <div id="carGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:24px;">
         <c:forEach var="car" items="${cars}">
-            <%-- Mỗi xe có data- attributes phục vụ bộ lọc thời gian thực --%>
             <div class="bk-card car-item" style="padding:0;overflow:hidden;transition:all 0.3s ease;"
                  data-name="${car.brand} ${car.model}"
                  data-brand="${car.brand}"
@@ -105,7 +131,7 @@
                  data-price="${car.dailyRate}">
                  
                 <%-- Ảnh xe --%>
-                <div style="height:180px;background:var(--surface-container-high);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <div style="height:220px;background:var(--surface-container-high);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
                     <c:set var="thumb" value="${primaryImages[car.carId]}"/>
                     <img src="${pageContext.request.contextPath}${thumb}"
                          alt="${car.brand} ${car.model}"
@@ -129,28 +155,34 @@
                     </p>
 
                     <%-- Bento specs chi tiết --%>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;background:var(--surface-container-low);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;color:var(--on-surface-variant);">
-                        <div style="display:flex;align-items:center;gap:4px;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">group</span> ${car.seats} chỗ
+                    <div style="display:flex;justify-content:space-around;align-items:center;margin-top:12px;background:var(--surface-container-low);padding:12px;border-radius:8px;gap:8px;">
+                        <div style="text-align:center;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:var(--primary);display:block;">group</span>
+                            <div style="font-size:12px;font-weight:600;margin-top:4px;">${car.seats} Chỗ</div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:4px;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">settings_input_component</span>
-                            <c:choose>
-                                <c:when test="${car.transmission == 'AUTOMATIC'}">Số tự động</c:when>
-                                <c:when test="${car.transmission == 'MANUAL'}">Số sàn</c:when>
-                                <c:otherwise>${car.transmission}</c:otherwise>
-                            </c:choose>
+                        <div style="width:1px;height:30px;background:var(--surface);"></div>
+                        <div style="text-align:center;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:var(--primary);display:block;">settings</span>
+                            <div style="font-size:12px;font-weight:600;margin-top:4px;">
+                                <c:choose>
+                                    <c:when test="${car.transmission == 'AUTOMATIC'}">Xự Động</c:when>
+                                    <c:when test="${car.transmission == 'MANUAL'}">Xử Sàn</c:when>
+                                    <c:otherwise>${car.transmission}</c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:4px;grid-column:span 2;">
-                            <span class="material-symbols-outlined" style="font-size:16px;">local_gas_station</span>
-                            Nhiên liệu: 
-                            <c:choose>
-                                <c:when test="${car.fuelType == 'GASOLINE'}">Xăng</c:when>
-                                <c:when test="${car.fuelType == 'DIESEL'}">Dầu Diesel</c:when>
-                                <c:when test="${car.fuelType == 'ELECTRIC'}">Điện</c:when>
-                                <c:when test="${car.fuelType == 'HYBRID'}">Hybrid</c:when>
-                                <c:otherwise>${car.fuelType}</c:otherwise>
-                            </c:choose>
+                        <div style="width:1px;height:30px;background:var(--surface);"></div>
+                        <div style="text-align:center;">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:var(--primary);display:block;">local_gas_station</span>
+                            <div style="font-size:12px;font-weight:600;margin-top:4px;">
+                                <c:choose>
+                                    <c:when test="${car.fuelType == 'GASOLINE'}">Xăng</c:when>
+                                    <c:when test="${car.fuelType == 'DIESEL'}">Dầu Diesel</c:when>
+                                    <c:when test="${car.fuelType == 'ELECTRIC'}">Điện</c:when>
+                                    <c:when test="${car.fuelType == 'HYBRID'}">Hybrid</c:when>
+                                    <c:otherwise>${car.fuelType}</c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
                     </div>
 
@@ -168,11 +200,24 @@
                         </c:choose>
                     </div>
 
-                    <div style="margin-top:16px;">
+                    <div style="margin-top:16px;display:flex;gap:8px;">
                         <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}"
-                           class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;">
+                           class="bk-btn bk-btn-outline" style="flex:1;justify-content:center;">
                            <span class="material-symbols-outlined">visibility</span> Xem Chi Tiết
                         </a>
+                        <c:choose>
+                            <c:when test="${car.status == 'AVAILABLE'}">
+                                <a href="${pageContext.request.contextPath}/bookings/create?carId=${car.carId}"
+                                   class="bk-btn bk-btn-primary" style="flex:1;justify-content:center;">
+                                   <span class="material-symbols-outlined">event</span> Tạo Đặt Xe
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <button class="bk-btn bk-btn-primary" style="flex:1;opacity:0.5;cursor:not-allowed;" disabled>
+                                   <span class="material-symbols-outlined">event</span> Không Khả Dụng
+                                </button>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>
@@ -197,7 +242,7 @@
 
 <script>
 function applyFilters() {
-    var keyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
+    var brand = document.getElementById('filterBrand').value;
     var transmission = document.getElementById('filterTransmission').value;
     var fuel = document.getElementById('filterFuel').value;
     var seats = document.getElementById('filterSeats').value;
@@ -207,13 +252,13 @@ function applyFilters() {
     var visibleCount = 0;
 
     carItems.forEach(function(item) {
-        var name = item.getAttribute('data-name').toLowerCase();
+        var itemBrand = item.getAttribute('data-brand');
         var itemTransmission = item.getAttribute('data-transmission');
         var itemFuel = item.getAttribute('data-fuel');
         var itemSeats = item.getAttribute('data-seats');
         var itemPrice = parseFloat(item.getAttribute('data-price')) || 0;
 
-        var matchKeyword = keyword === "" || name.includes(keyword);
+        var matchBrand = brand === "" || itemBrand === brand;
         var matchTransmission = transmission === "" || itemTransmission === transmission;
         var matchFuel = fuel === "" || itemFuel === fuel;
         var matchSeats = seats === "" || itemSeats === seats;
@@ -221,8 +266,10 @@ function applyFilters() {
         var matchPrice = true;
         if (priceLimit !== "") {
             var limit = parseFloat(priceLimit);
-            if (limit === 1000000) {
-                matchPrice = itemPrice < 1000000;
+            if (limit === 500000) {
+                matchPrice = itemPrice < 500000;
+            } else if (limit === 1000000) {
+                matchPrice = itemPrice >= 500000 && itemPrice <= 1000000;
             } else if (limit === 1500000) {
                 matchPrice = itemPrice >= 1000000 && itemPrice <= 1500000;
             } else if (limit === 9999999) {
@@ -230,7 +277,7 @@ function applyFilters() {
             }
         }
 
-        if (matchKeyword && matchTransmission && matchFuel && matchSeats && matchPrice) {
+        if (matchBrand && matchTransmission && matchFuel && matchSeats && matchPrice) {
             item.style.display = 'block';
             visibleCount++;
         } else {
@@ -247,6 +294,43 @@ function applyFilters() {
             noResults.style.display = 'none';
         }
     }
+    
+    updateFilterChips();
+}
+
+function updateFilterChips() {
+    var chipsContainer = document.getElementById('filterChips');
+    var chips = [];
+    
+    var brand = document.getElementById('filterBrand').value;
+    if (brand) chips.push({label: brand, id: 'filterBrand', value: ''});
+    
+    var transmission = document.getElementById('filterTransmission').value;
+    if (transmission) {
+        var label = transmission === 'AUTOMATIC' ? 'Số tự động' : 'Số sàn';
+        chips.push({label: label, id: 'filterTransmission', value: ''});
+    }
+    
+    var fuel = document.getElementById('filterFuel').value;
+    if (fuel) {
+        var labels = {'GASOLINE': 'Xăng', 'DIESEL': 'Dầu Diesel', 'ELECTRIC': 'Điện', 'HYBRID': 'Hybrid'};
+        chips.push({label: labels[fuel] || fuel, id: 'filterFuel', value: ''});
+    }
+    
+    var seats = document.getElementById('filterSeats').value;
+    if (seats) chips.push({label: seats + ' chỗ', id: 'filterSeats', value: ''});
+    
+    chipsContainer.innerHTML = '';
+    chips.forEach(function(chip) {
+        var chipEl = document.createElement('div');
+        chipEl.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--surface-container-low);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;';
+        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="document.getElementById(\'' + chip.id + '\').value=\'' + chip.value + '\';applyFilters();">close</button>';
+        chipsContainer.appendChild(chipEl);
+    });
+}
+
+function exportCarList() {
+    alert('Tính năng xuất danh sách sắp có!');
 }
 </script>
 
