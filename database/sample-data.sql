@@ -72,6 +72,16 @@ VALUES
 GO
 
 -- ============================================================
+-- MAINTENANCE SCHEDULES
+-- ============================================================
+INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
+VALUES
+    (5, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay dầu động cơ và lọc dầu',           1500000.00, N'Xe đang ở trạng thái bảo trì', N'staff@carrental.com'),
+    (4, N'INSPECTION',   DATEADD(DAY, 14, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ sau chuyến thuê',  500000.00,  NULL, N'staff@carrental.com'),
+    (1, N'TIRE_CHANGE',  DATEADD(DAY, 30, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Thay lốp trước mùa mưa',            3000000.00, NULL, N'staff@carrental.com');
+GO
+
+-- ============================================================
 -- POLICY SETTINGS
 -- ============================================================
 INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by)
