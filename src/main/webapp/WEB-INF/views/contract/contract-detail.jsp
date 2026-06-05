@@ -1,173 +1,267 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    request.setAttribute("dateTimeFormatter", java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+%>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
-    <jsp:param name="pageTitle" value="Chi tiết Hợp đồng"/>
+    <jsp:param name="pageTitle" value="${contract != null ? 'Chi Tiết Hợp Đồng' : 'Soạn Thảo Hợp Đồng'}"/>
 </jsp:include>
 
-<div class="bk-page-header">
-    <div>
-        <div class="bk-breadcrumb">
-            <a href="${pageContext.request.contextPath}/contracts">Quản lý hợp đồng</a>
-            <span class="material-symbols-outlined">chevron_right</span>
-            <span class="current">Chi tiết hợp đồng ${not empty contract ? contract.contractNumber : ''}</span>
+<div class="page-content">
+    <!-- Hiển thị thông báo lỗi nếu có -->
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger" style="margin-bottom: 24px;">
+            <span>${error}</span>
         </div>
-        <h2>Chi tiết Hợp đồng Thuê xe</h2>
-    </div>
+        <div style="margin-top: 20px;">
+            <a href="${pageContext.request.contextPath}/bookings/manage" class="btn btn-outline">Quay lại quản lý đặt xe</a>
+        </div>
+    </c:if>
+
+    <c:if test="${empty error}">
+        <c:choose>
+            <%-- TRƯỜNG HỢP 1: XEM CHI TIẾT HỢP ĐỒNG ĐÃ CÓ --%>
+            <c:when test="${not empty contract}">
+                <div class="card" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">CHI TIẾT HỢP ĐỒNG THUÊ XE</h2>
+                            <p style="font-size: 14px; color: var(--text-secondary);">Số hợp đồng: <strong style="color: var(--primary);">${contract.contractNumber}</strong></p>
+                        </div>
+                        <div>
+                            <c:choose>
+                                <c:when test="${contract.status == 'DRAFT'}">
+                                    <span class="badge badge-pending">Hợp đồng nháp (Draft)</span>
+                                </c:when>
+                                <c:when test="${contract.status == 'ACTIVE'}">
+                                    <span class="badge badge-confirmed">Hiệu lực (Active)</span>
+                                </c:when>
+                                <c:when test="${contract.status == 'COMPLETED'}">
+                                    <span class="badge badge-completed">Hoàn tất (Completed)</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge badge-cancelled">${contract.status}</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                        <!-- Cột trái: Thông tin các bên và tài sản -->
+                        <div>
+                            <div style="margin-bottom: 24px;">
+                                <h4 style="font-size: 16px; font-weight: 700; border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Thông Tin Đặt Xe & Hợp Đồng</h4>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; background: var(--primary-light); padding: 16px; border-radius: var(--radius-sm);">
+                                    <div>
+                                        <p style="font-size: 12px; color: var(--text-secondary);">Mã Đặt Xe</p>
+                                        <p style="font-weight: 600;">#${contract.bookingId}</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-size: 12px; color: var(--text-secondary);">Nhân viên lập</p>
+                                        <p style="font-weight: 600;">${creator != null ? creator.fullName : 'Hệ thống'}</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-size: 12px; color: var(--text-secondary);">Ngày lập hợp đồng</p>
+                                        <p style="font-weight: 600;">${contract.createdAt != null ? contract.createdAt.format(dateTimeFormatter) : ''}</p>
+                                    </div>
+                                    <div>
+                                        <p style="font-size: 12px; color: var(--text-secondary);">Ngày ký kết</p>
+                                        <p style="font-weight: 600;">${contract.signedAt != null ? contract.signedAt.format(dateTimeFormatter) : 'Chưa ký kết'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 24px;">
+                                <h4 style="font-size: 16px; font-weight: 700; border-left: 4px solid var(--success); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Thông Tin Khách Thuê</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; width: 40%; border-bottom: 1px solid var(--border-color);">Họ tên khách hàng</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">${customer.fullName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Số điện thoại</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">${customer.phone != null ? customer.phone : '-'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: none;">Email liên hệ</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: none;">${customer.email}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="margin-bottom: 24px;">
+                                <h4 style="font-size: 16px; font-weight: 700; border-left: 4px solid var(--info); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Thông Tin Phương Tiện</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; width: 40%; border-bottom: 1px solid var(--border-color);">Tên xe</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">${car.brand} ${car.model} (${car.year})</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Biển kiểm soát</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; color: var(--primary); border-bottom: 1px solid var(--border-color);">${car.licensePlate}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: none;">Màu sắc / Số ghế</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: none;">${car.color} / ${car.seats} chỗ</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="margin-bottom: 24px;">
+                                <h4 style="font-size: 16px; font-weight: 700; border-left: 4px solid var(--warning); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Thời Gian & Chi Phí Thuê</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Thời gian thuê</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">
+                                            ${contract.startDate != null ? contract.startDate.format(dateTimeFormatter) : ''} đến ${contract.endDate != null ? contract.endDate.format(dateTimeFormatter) : ''}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Đơn giá thuê ngày</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">
+                                            <fmt:formatNumber value="${contract.dailyRate}" pattern="#,##0"/> VND
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Tiền cọc đặt trước</td>
+                                        <td style="padding: 8px 0; font-weight: 700; text-align: right; color: var(--danger); border-bottom: 1px solid var(--border-color);">
+                                            <fmt:formatNumber value="${contract.depositAmount}" pattern="#,##0"/> VND
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid var(--border-color);">
+                                        <td style="padding: 12px 0 0 0; color: var(--text-primary); font-weight: 700; font-size: 16px;">TỔNG TIỀN HỢP ĐỒNG</td>
+                                        <td style="padding: 12px 0 0 0; font-weight: 700; font-size: 18px; text-align: right; color: var(--primary);">
+                                            <fmt:formatNumber value="${contract.totalAmount}" pattern="#,##0"/> VND
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Cột phải: Các điều khoản điều kiện và thao tác -->
+                        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h4 style="font-size: 16px; font-weight: 700; border-left: 4px solid var(--text-secondary); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Điều Khoản Và Điều Kiện Hợp Đồng</h4>
+                                <div style="background: #FAFBFD; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 20px; font-size: 14px; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap; height: 380px; overflow-y: auto; text-align: left;">${contract.termsAndConditions}</div>
+                            </div>
+
+                            <div style="margin-top: 24px; display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                                <a href="${pageContext.request.contextPath}/contracts" class="btn btn-outline">Quay lại danh sách</a>
+                                <c:if test="${contract.status == 'DRAFT'}">
+                                    <form action="${pageContext.request.contextPath}/contracts" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="action" value="activate"/>
+                                        <input type="hidden" name="contractId" value="${contract.contractId}"/>
+                                        <button type="submit" class="btn btn-success">Ký kết & Kích hoạt</button>
+                                    </form>
+                                </c:if>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </c:when>
+
+            <%-- TRƯỜNG HỢP 2: BIỂU MẪU SOẠN THẢO HỢP ĐỒNG MỚI --%>
+            <c:when test="${not empty booking}">
+                <!-- Định dạng tiền trước để đưa vào ô nhập (readonly) và các điều khoản hợp đồng -->
+                <fmt:formatNumber var="formattedDailyRate" value="${car.dailyRate}" pattern="#,##0"/>
+                <fmt:formatNumber var="formattedDepositAmount" value="${booking.depositAmount}" pattern="#,##0"/>
+                <fmt:formatNumber var="formattedTotalAmount" value="${booking.totalAmount}" pattern="#,##0"/>
+                
+                <div class="card" style="margin-bottom: 24px;">
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px;">
+                        <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">SOẠN THẢO HỢP ĐỒNG THUÊ XE</h2>
+                        <p style="font-size: 14px; color: var(--text-secondary);">Khởi tạo hợp đồng cho đơn đặt xe số: <strong style="color: var(--primary);">#${booking.bookingId}</strong></p>
+                    </div>
+
+                    <form action="${pageContext.request.contextPath}/contracts" method="POST">
+                        <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                            <!-- Cột trái: Tóm tắt thông tin từ Đơn đặt xe (chỉ đọc) -->
+                            <div>
+                                <div style="margin-bottom: 24px; background: var(--primary-light); padding: 20px; border-radius: var(--radius);">
+                                    <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                        <span>&#128196;</span> Thông tin Tóm tắt đơn đặt xe
+                                    </h4>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; text-align: left;">
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Khách hàng</span><br/>
+                                            <strong>${customer.fullName}</strong>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Số điện thoại</span><br/>
+                                            <strong>${customer.phone != null ? customer.phone : '-'}</strong>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Phương tiện</span><br/>
+                                            <strong>${car.brand} ${car.model} (${car.licensePlate})</strong>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Màu sắc / Số ghế</span><br/>
+                                            <strong>${car.color} / ${car.seats} chỗ</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px; text-align: left;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Thời hạn thuê xe</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Bắt đầu nhận xe</span>
+                                            <input type="text" class="form-control" value="${booking.startDate != null ? booking.startDate.format(dateTimeFormatter) : ''}" readonly style="background: var(--bg-body); cursor: not-allowed;"/>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 12px;">Kết thúc thuê trả xe</span>
+                                            <input type="text" class="form-control" value="${booking.endDate != null ? booking.endDate.format(dateTimeFormatter) : ''}" readonly style="background: var(--bg-body); cursor: not-allowed;"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px; text-align: left;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Chi phí tài chính (Tự động tính toán)</label>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 11px;">Đơn giá ngày</span>
+                                            <input type="text" class="form-control" value="${formattedDailyRate} VND" readonly style="background: var(--bg-body); cursor: not-allowed; font-weight:600;"/>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 11px;">Tiền cọc yêu cầu</span>
+                                            <input type="text" class="form-control" value="${formattedDepositAmount} VND" readonly style="background: var(--bg-body); cursor: not-allowed; color: var(--danger); font-weight:700;"/>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-secondary); font-size: 11px;">Tổng cộng tiền thuê</span>
+                                            <input type="text" class="form-control" value="${formattedTotalAmount} VND" readonly style="background: var(--bg-body); cursor: not-allowed; color: var(--primary); font-weight:700;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="padding: 16px; background: rgba(255,206,32,0.1); border-left: 4px solid var(--warning); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; text-align: left;">
+                                    <strong>Lưu ý nghiệp vụ:</strong> Hợp đồng sau khi tạo lập sẽ được lưu ở trạng thái <strong>Nháp (DRAFT)</strong>. Nhân viên cần hoàn tất thủ tục bàn giao thực tế và khách hàng đồng ý ký trước khi chuyển đổi trạng thái sang <strong>Có hiệu lực (ACTIVE)</strong>.
+                                </div>
+                            </div>
+
+                            <!-- Cột phải: Soạn thảo Điều khoản và nút bấm gửi -->
+                            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                                <div class="form-group" style="margin-bottom: 16px; text-align: left;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">Nội dung Điều khoản và Cam kết của Hợp đồng</label>
+                                    
+                                    <c:set var="defaultTerms" value="CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM&#10;Độc lập - Tự do - Hạnh phúc&#10;&#10;HỢP ĐỒNG CHO THUÊ XE TỰ LÁI&#10;&#10;ĐIỀU 1: ĐỐI TƯỢNG VÀ THỜI GIAN THUÊ&#10;- Loại xe thuê: ${car.brand} ${car.model} (Biển kiểm soát: ${car.licensePlate})&#10;- Thời gian thuê: Từ ${booking.startDate != null ? booking.startDate.format(dateTimeFormatter) : ''} đến ${booking.endDate != null ? booking.endDate.format(dateTimeFormatter) : ''}.&#10;&#10;ĐIỀU 2: GIÁ TRỊ HỢP ĐỒNG VÀ PHƯƠNG THỨC THANH TOÁN&#10;- Đơn giá thuê: ${formattedDailyRate} VND/ngày.&#10;- Tổng trị giá hợp đồng: ${formattedTotalAmount} VND.&#10;- Tiền đặt cọc tài sản: ${formattedDepositAmount} VND.&#10;&#10;ĐIỀU 3: NGHĨA VỤ CỦA BÊN THUÊ (BÊN B)&#10;1. Bên B cam kết có giấy phép lái xe hợp lệ và sử dụng xe đúng mục đích, không cho người khác thuê lại hoặc dùng xe vi phạm pháp luật.&#10;2. Thanh toán tiền cọc và tiền thuê đầy đủ, đúng hạn.&#10;3. Hoàn trả xe đúng giờ và đúng tình trạng bàn giao ban đầu.&#10;&#10;ĐIỀU 4: CÁC CHI PHÍ PHÁT SINH KHI TRẢ XE&#10;- Phí trả xe trễ giờ: 100.000 VND/giờ.&#10;- Phí phụ trội km (vượt quá giới hạn): 5.000 VND/km (quá 300 km/ngày).&#10;- Phí rửa xe, dọn vệ sinh nếu xe bị bẩn: 200.000 VND."/>
+                                    
+                                    <textarea class="form-control" name="termsAndConditions" rows="18" style="font-family: inherit; font-size: 13px; line-height: 1.6; padding: 16px; height: 380px; resize: none;">${defaultTerms}</textarea>
+                                </div>
+
+                                <div style="display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                                    <a href="${pageContext.request.contextPath}/bookings/manage" class="btn btn-outline">Hủy bỏ</a>
+                                    <button type="submit" class="btn btn-primary">Xác nhận & Tạo Hợp đồng Nháp</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </c:when>
+        </c:choose>
+    </c:if>
 </div>
-
-<c:if test="${empty contract}">
-    <div class="bk-empty">
-        <span class="material-symbols-outlined">warning</span>
-        <h3>Không tìm thấy dữ liệu hợp đồng</h3>
-        <p>Hợp đồng yêu cầu không tồn tại hoặc đã bị gỡ bỏ khỏi hệ thống.</p>
-        <a href="${pageContext.request.contextPath}/contracts" class="bk-btn bk-btn-primary" style="margin-top:16px;">
-            <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
-        </a>
-    </div>
-</c:if>
-
-<c:if test="${not empty contract}">
-    <div class="bk-detail-grid">
-        <%-- LEFT: Hợp đồng giấy mockup --%>
-        <div>
-            <div class="bk-card" style="background:#fff;border:1px solid #d0d0d0;box-shadow: 0 4px 20px rgba(0,0,0,0.05);padding:40px;position:relative;font-family:'Inter',sans-serif;color:#333;border-radius:12px;">
-                <!-- Dấu mộc/Badge Trạng thái tuyệt đẹp đóng dấu chéo trên góc -->
-                <div style="position:absolute;top:32px;right:32px;border:3px double ${contract.status == 'ACTIVE' ? 'var(--success)' : contract.status == 'COMPLETED' ? 'var(--info)' : 'var(--warning)'};color:${contract.status == 'ACTIVE' ? 'var(--success)' : contract.status == 'COMPLETED' ? 'var(--info)' : 'var(--warning)'};padding:8px 16px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px;border-radius:4px;transform:rotate(5deg);">
-                    ${contract.status == 'ACTIVE' ? 'Đang hiệu lực' : contract.status == 'COMPLETED' ? 'Đã hoàn tất' : 'Bản nháp'}
-                </div>
-
-                <!-- Quốc hiệu -->
-                <div style="text-align:center;margin-bottom:24px;line-height:1.4;">
-                    <div style="font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                    <div style="font-weight:600;font-size:12px;">Độc lập - Tự do - Hạnh phúc</div>
-                    <div style="font-size:11px;margin-top:4px;color:#777;">---o0o---</div>
-                </div>
-
-                <div style="text-align:center;margin-bottom:32px;">
-                    <h3 style="font-size:20px;font-weight:800;color:var(--primary);text-transform:uppercase;margin:0;">HỢP ĐỒNG THUÊ XE TỰ LÁI</h3>
-                    <div style="font-size:13px;color:#666;margin-top:6px;font-weight:600;">Số: ${contract.contractNumber}</div>
-                </div>
-
-                <!-- BÊN A -->
-                <div style="margin-bottom:20px;">
-                    <h4 style="font-size:14px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:6px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">BÊN CHO THUÊ XE (BÊN A): CÔNG TY CỔ PHẦN CARPRO VỆT NAM</h4>
-                    <div style="font-size:13px;line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
-                        <div><strong>Đại diện pháp luật:</strong> Nguyễn Văn Điều Hành</div>
-                        <div><strong>Chức vụ:</strong> Giám Đốc</div>
-                        <div><strong>Địa chỉ trụ sở:</strong> Khu CNC Hòa Lạc, Thạch Thất, Hà Nội</div>
-                        <div><strong>Mã số thuế:</strong> 0109876543</div>
-                    </div>
-                </div>
-
-                <!-- BÊN B -->
-                <div style="margin-bottom:20px;">
-                    <h4 style="font-size:14px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:6px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">BÊN THUÊ XE (BÊN B): KHÁCH HÀNG THUÊ</h4>
-                    <div style="font-size:13px;line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
-                        <div><strong>Mã khách hàng:</strong> KH-${contract.customerId}</div>
-                        <div><strong>Họ và tên:</strong> ${not empty customer ? customer.fullName : 'Chưa cập nhật'}</div>
-                        <div><strong>Email:</strong> ${not empty customer ? customer.email : 'Chưa cập nhật'}</div>
-                        <div><strong>Điện thoại liên hệ:</strong> ${not empty customer ? customer.phone : 'Chưa cập nhật'}</div>
-                    </div>
-                </div>
- 
-                <!-- ĐIỀU KHOẢN XE -->
-                <div style="margin-bottom:20px;">
-                    <h4 style="font-size:14px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:6px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">ĐIỀU 1: THÔNG TIN XE CHO THUÊ</h4>
-                    <div style="font-size:13px;line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
-                        <div><strong>Tên xe:</strong> ${not empty car ? car.brand : ''} ${not empty car ? car.model : 'Xe #' + contract.carId}</div>
-                        <div><strong>Biển kiểm soát:</strong> ${not empty car ? car.licensePlate : 'Chưa cập nhật'}</div>
-                        <div><strong>Thời hạn thuê từ:</strong> <fmt:formatNumber value="${contract.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${contract.startDate.monthValue}" pattern="00"/>/${contract.startDate.year} <fmt:formatNumber value="${contract.startDate.hour}" pattern="00"/>:<fmt:formatNumber value="${contract.startDate.minute}" pattern="00"/></div>
-                        <div><strong>Đến hết ngày:</strong> <fmt:formatNumber value="${contract.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${contract.endDate.monthValue}" pattern="00"/>/${contract.endDate.year} <fmt:formatNumber value="${contract.endDate.hour}" pattern="00"/>:<fmt:formatNumber value="${contract.endDate.minute}" pattern="00"/></div>
-                    </div>
-                </div>
- 
-                <!-- GIÁ TRỊ HỢP ĐỒNG -->
-                <div style="margin-bottom:20px;">
-                    <h4 style="font-size:14px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:6px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">ĐIỀU 2: GIÁ TRỊ HỢP ĐỒNG VÀ THƯƠNG THẢO</h4>
-                    <div style="font-size:13px;line-height:1.8;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;">
-                        <div><strong>Đơn giá thuê theo ngày:</strong> <span style="font-weight:600;color:var(--primary);"><fmt:formatNumber value="${contract.dailyRate}" type="number" groupingUsed="true"/> đ / ngày</span></div>
-                        <div><strong>Tiền cọc thế chấp:</strong> <span style="font-weight:600;color:var(--primary);"><fmt:formatNumber value="${contract.depositAmount}" type="number" groupingUsed="true"/> đ</span></div>
-                        <div style="grid-column: span 2;"><strong>Tổng giá trị hợp đồng ước tính:</strong> <span style="font-size:16px;font-weight:700;color:var(--primary);"><fmt:formatNumber value="${contract.totalAmount}" type="number" groupingUsed="true"/> đ</span></div>
-                    </div>
-                </div>
- 
-                <!-- ĐIỀU KHOẢN CHUNG -->
-                <div style="margin-bottom:32px;">
-                    <h4 style="font-size:14px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:6px;text-transform:uppercase;color:var(--primary);margin-bottom:12px;">ĐIỀU 3: ĐIỀU KHOẢN CHUNG VÀ CAM KẾT</h4>
-                    <p style="font-size:12px;color:#555;line-height:1.6;margin:0;text-align:justify;">
-                        Bên B cam kết tuân thủ luật giao thông đường bộ Việt Nam. Không sử dụng xe thuê vào các hoạt động phi pháp hoặc vận chuyển hàng cấm. Khi trả xe trễ hạn, bên B cam kết đóng các khoản phụ thu phát sinh theo đúng chính sách niêm yết của công ty. Hợp đồng có hiệu lực kể từ khi hai bên ký nhận bàn giao xe trên hệ thống.
-                    </p>
-                </div>
- 
-                <!-- CHỮ KÝ -->
-                <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:24px;border-top:1px dashed #ddd;padding-top:24px;">
-                    <div style="text-align:center;width:45%;">
-                        <div style="font-weight:700;text-transform:uppercase;">ĐẠI DIỆN BÊN A</div>
-                        <div style="font-size:11px;color:#888;margin-top:2px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
-                        <div style="font-family:'Courier New',monospace;color:var(--secondary);font-weight:700;font-size:14px;margin-top:32px;height:40px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--outline-variant);border-radius:4px;background:var(--surface);">
-                            CARPRO DIGITAL SIGNED
-                        </div>
-                        <div style="font-weight:600;margin-top:8px;">Nguyễn Văn Điều Hành</div>
-                    </div>
-                    <div style="text-align:center;width:45%;">
-                        <div style="font-weight:700;text-transform:uppercase;">ĐẠI DIỆN BÊN B</div>
-                        <div style="font-size:11px;color:#888;margin-top:2px;">(Ký và ghi rõ họ tên)</div>
-                        <div style="font-family:'Courier New',monospace;color:var(--secondary);font-weight:700;font-size:14px;margin-top:32px;height:40px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--outline-variant);border-radius:4px;background:var(--surface);">
-                            ${contract.status == 'ACTIVE' || contract.status == 'COMPLETED' ? 'CUSTOMER SECURE SIGNED' : 'CHỜ KÝ ĐIỆN TỬ'}
-                        </div>
-                        <div style="font-weight:600;margin-top:8px;">${not empty customer ? customer.fullName : 'Nguyễn Văn Khách Thuê'}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
- 
-        <%-- RIGHT: Summary / Actions --%>
-        <div>
-            <div class="bk-cost-card" style="position:sticky;top:96px;">
-                <h3><span class="material-symbols-outlined">receipt_long</span> Tóm tắt Hợp đồng</h3>
-                <div class="bk-detail-rows">
-                    <div class="bk-detail-row">
-                        <span class="label">Mã đơn liên kết</span>
-                        <span class="value" style="font-family:monospace;font-size:15px;">#BK-${contract.bookingId}</span>
-                    </div>
-                    <div class="bk-detail-row">
-                        <span class="label">Mã số Hợp đồng</span>
-                        <span class="value" style="font-family:monospace;font-size:15px;">${contract.contractNumber}</span>
-                    </div>
-                    <div class="bk-detail-row">
-                        <span class="label">Ngày lập hợp đồng</span>
-                        <span class="value"><fmt:formatNumber value="${contract.createdAt.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${contract.createdAt.monthValue}" pattern="00"/>/${contract.createdAt.year}</span>
-                    </div>
-                    <div class="bk-detail-row">
-                        <span class="label">Người tạo hợp đồng</span>
-                        <span class="value">${not empty creator ? creator.fullName : 'Nhân viên #' + contract.createdBy}</span>
-                    </div>
-                </div>
-
-                <div class="bk-summary-total">
-                    <span class="label">Tổng số tiền</span>
-                    <span class="value" style="font-size:20px;color:var(--primary);font-weight:700;"><fmt:formatNumber value="${contract.totalAmount}" type="number" groupingUsed="true"/>đ</span>
-                </div>
-
-                <div class="bk-summary-highlight" style="margin-top:16px;">
-                    <div>
-                        <div class="label" style="font-weight:700;color:var(--primary);">Tiền đặt cọc thế chấp</div>
-                    </div>
-                    <span class="value" style="font-weight:700;color:var(--primary);"><fmt:formatNumber value="${contract.depositAmount}" type="number" groupingUsed="true"/>đ</span>
-                </div>
-
-                <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
-                    <button type="button" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;" onclick="window.print()">
-                        <span class="material-symbols-outlined">print</span> In hợp đồng (PDF)
-                    </button>
-                    <a href="${pageContext.request.contextPath}/contracts" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
-                        <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</c:if>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

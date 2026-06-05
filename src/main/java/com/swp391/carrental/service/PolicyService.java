@@ -22,6 +22,7 @@ public class PolicyService {
 
     private final PolicySettingDAO policyDAO = new PolicySettingDAO();
 
+    // Get policy by key
     public PolicySetting getPolicyByKey(String key) {
         try {
             return policyDAO.findByKey(key);
@@ -30,6 +31,7 @@ public class PolicyService {
         }
     }
 
+    // Get policy value with fallback default value 
     public String getPolicyValue(String key, String defaultValue) {
         try {
             PolicySetting setting = policyDAO.findByKey(key);
@@ -39,6 +41,7 @@ public class PolicyService {
         }
     }
 
+    // Get all policy settings
     public List<PolicySetting> getAllPolicies() {
         try {
             return policyDAO.findAll();
@@ -47,6 +50,7 @@ public class PolicyService {
         }
     }
 
+    // Get policies by category
     public List<PolicySetting> getPoliciesByCategory(String category) {
         try {
             return policyDAO.findByCategory(category);
@@ -55,6 +59,7 @@ public class PolicyService {
         }
     }
 
+    // Update a policy setting
     public boolean updatePolicy(String key, String value, int updatedBy) {
         try {
             return policyDAO.updateValue(key, value, updatedBy);
@@ -74,6 +79,7 @@ public class PolicyService {
         }
     }
 
+    // Delete a policy setting 
     public boolean deletePolicy(int policyId) {
         try {
             return policyDAO.delete(policyId);

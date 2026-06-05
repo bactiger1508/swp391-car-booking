@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${param.pageTitle != null ? param.pageTitle : 'CarPro - Quản lý thuê xe'}</title>
     <meta name="description" content="Hệ thống quản lý thuê ô tô tự lái - CarPro">
-    <%-- Load both global styles and booking-style (which contains modern variable tokens) --%>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -69,15 +68,20 @@
                     <span class="material-symbols-outlined">policy</span> Chính sách
                 </a>
 
-                <div class="bk-sidebar-section">Nghiệp vụ</div>
+                <div class="bk-sidebar-section">Nghiệp vụ xe</div>
                 <a href="${pageContext.request.contextPath}/vehicles/manage" class="bk-sidebar-link ${_cp == '/vehicles/manage' ? 'active' : ''}">
                     <span class="material-symbols-outlined">garage</span> Quản lý xe
                 </a>
+                <a href="${pageContext.request.contextPath}/vehicles/availability" class="bk-sidebar-link ${_cp == '/vehicles/availability' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">calendar_today</span> Lịch trình xe
+                </a>
+                <a href="${pageContext.request.contextPath}/maintenance" class="bk-sidebar-link ${_cp == '/maintenance' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">build</span> Lịch bảo dưỡng
+                </a>
+
+                <div class="bk-sidebar-section">Vận hành & Hợp đồng</div>
                 <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
                     <span class="material-symbols-outlined">description</span> Hợp đồng
-                </a>
-                <a href="${pageContext.request.contextPath}/payments/record" class="bk-sidebar-link ${_cp == '/payments/record' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
                 </a>
                 <a href="${pageContext.request.contextPath}/handovers" class="bk-sidebar-link ${_cp == '/handovers' ? 'active' : ''}">
                     <span class="material-symbols-outlined">key</span> Giao xe
@@ -85,8 +89,19 @@
                 <a href="${pageContext.request.contextPath}/returns" class="bk-sidebar-link ${_cp == '/returns' ? 'active' : ''}">
                     <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
                 </a>
+                <a href="${pageContext.request.contextPath}/additional-fees" class="bk-sidebar-link ${_cp == '/additional-fees' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">price_change</span> Phí phát sinh
+                </a>
+
+                <div class="bk-sidebar-section">Báo cáo & Cấu hình</div>
                 <a href="${pageContext.request.contextPath}/reports/revenue" class="bk-sidebar-link ${_cp == '/reports/revenue' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">analytics</span> Báo cáo
+                    <span class="material-symbols-outlined">analytics</span> Báo cáo doanh thu
+                </a>
+                <a href="${pageContext.request.contextPath}/reports/vehicle-utilization" class="bk-sidebar-link ${_cp == '/reports/vehicle-utilization' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">query_stats</span> Hiệu suất sử dụng xe
+                </a>
+                <a href="${pageContext.request.contextPath}/payments/record" class="bk-sidebar-link ${_cp == '/payments/record' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
                 </a>
                 <a href="${pageContext.request.contextPath}/policies" class="bk-sidebar-link ${_cp == '/policies' ? 'active' : ''}">
                     <span class="material-symbols-outlined">settings_suggest</span> Cấu hình chính sách
@@ -129,10 +144,12 @@
 <div class="bk-main">
     <%-- TOP HEADER --%>
     <header class="bk-header">
-        <div></div>
+        <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
+
         <div class="bk-header-actions">
             <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
             <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>
+            
             <c:if test="${sessionScope.currentUser != null}">
                 <div class="bk-header-user">
                     <span>${sessionScope.currentUser.fullName}</span>
@@ -140,6 +157,10 @@
                         ${sessionScope.currentUser.fullName.substring(0,1)}
                     </div>
                 </div>
+            </c:if>
+            
+            <c:if test="${sessionScope.currentUser == null}">
+                <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
             </c:if>
         </div>
     </header>

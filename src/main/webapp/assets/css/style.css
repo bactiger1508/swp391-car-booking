@@ -883,58 +883,54 @@ body.bk-layout {
 
 /* ===== HEADER ===== */
 .bk-header {
-    position: fixed; top: 0; right: 0;
+    position: fixed;
+    top: 0;
+    right: 0;
     width: calc(100% - var(--sidebar-width));
     height: var(--bk-header-height);
     background: var(--surface);
     border-bottom: 1px solid var(--outline-variant);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
     padding: 0 var(--page-margin);
     z-index: 40;
 }
-.bk-header-search {
-    display: flex; align-items: center;
-    background: var(--surface-container-low);
-    border: 1px solid var(--outline-variant);
-    border-radius: 24px;
-    padding: 6px 16px;
-    width: 320px;
-    transition: all 0.2s ease;
+.bk-header-brand {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
 }
-.bk-header-search:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(4, 22, 56, 0.1);
-}
-.bk-header-search input {
-    border: none; outline: none; background: transparent;
-    font-size: 14px; width: 100%; margin-left: 8px;
-    color: var(--on-surface);
-}
-.bk-header-search .material-symbols-outlined {
-    color: var(--on-surface-variant); font-size: 20px;
+.bk-header-brand:hover {
+    color: var(--primary);
+    opacity: 0.85;
 }
 .bk-header-actions { display: flex; align-items: center; gap: 8px; }
-.bk-header-icon {
-    width: 40px; height: 40px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: transparent; border: none; cursor: pointer;
-    color: var(--on-surface-variant);
-    transition: background 0.15s ease;
-}
-.bk-header-icon:hover { background: var(--surface-container-low); }
-.bk-header-user {
-    display: flex; align-items: center; gap: 8px;
-    margin-left: 8px; font-size: 14px; font-weight: 600;
-    color: var(--primary);
-}
-.bk-header-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--secondary-container);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px;
-    color: var(--on-secondary-container);
-}
+    .bk-header-icon {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: transparent; border: none; cursor: pointer;
+        color: var(--on-surface-variant);
+        transition: background 0.15s ease;
+    }
+    .bk-header-icon:hover { background: var(--surface-container-low); }
+    .bk-header-user {
+        display: flex; align-items: center; gap: 8px;
+        margin-left: 8px; font-size: 14px; font-weight: 600;
+        color: var(--primary);
+    }
+    .bk-header-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--secondary-container);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 14px;
+        color: var(--on-secondary-container);
+    }
 
 /* ===== MAIN CONTENT ===== */
 .bk-main {
@@ -954,8 +950,26 @@ body.bk-layout {
 
 /* ===== PAGE HEADER ===== */
 .bk-page-header {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.bk-page-header-text {
+    flex: 1;
+    min-width: 0;
+}
+.bk-page-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 16px;
+    font-weight: 600;
 }
 .bk-page-header h2 {
     font-size: 30px; font-weight: 700; color: var(--on-background);

@@ -72,6 +72,16 @@ VALUES
 GO
 
 -- ============================================================
+-- MAINTENANCE SCHEDULES
+-- ============================================================
+INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
+VALUES
+    (5, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay dầu động cơ và lọc dầu',           1500000.00, N'Xe đang ở trạng thái bảo trì', N'staff@carrental.com'),
+    (4, N'INSPECTION',   DATEADD(DAY, 14, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ sau chuyến thuê',  500000.00,  NULL, N'staff@carrental.com'),
+    (1, N'TIRE_CHANGE',  DATEADD(DAY, 30, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Thay lốp trước mùa mưa',            3000000.00, NULL, N'staff@carrental.com');
+GO
+
+-- ============================================================
 -- POLICY SETTINGS
 -- ============================================================
 INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by)
@@ -99,14 +109,7 @@ INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pic
 VALUES
     (1, 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 6000000.00, 1800000.00, N'IN_PROGRESS', 2, '2026-05-19 14:00:00'),
     (2, 3, 1, '2026-06-01 08:00:00', '2026-06-03 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 1600000.00, 480000.00,  N'CONFIRMED',   2, '2026-05-22 10:00:00'),
-    (3, 4, 2, '2026-06-05 08:00:00', '2026-06-07 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 7', 1800000.00, 540000.00,  N'PENDING',     NULL, NULL),
-    (4, 3, 6, '2026-05-10 08:00:00', '2026-05-12 18:00:00', N'Chi nhánh Thủ Đức', N'Chi nhánh Thủ Đức', 4500000.00, 1350000.00, N'COMPLETED', 2, '2026-05-09 09:00:00'),
-    (5, 4, 3, '2026-05-15 08:00:00', '2026-05-16 08:00:00', N'Chi nhánh Quận 7', N'Chi nhánh Quận 7', 700000.00, 210000.00, N'REJECTED', 2, '2026-05-14 10:00:00'),
-    (6, 4, 7, '2026-06-10 08:00:00', '2026-06-15 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 9000000.00, 2700000.00, N'CANCELLED', NULL, NULL);
-
--- Add reject and cancel reasons
-UPDATE bookings SET cancel_reason = N'Khách hàng chưa đủ giấy tờ xác minh hợp lệ' WHERE booking_id = 5;
-UPDATE bookings SET cancel_reason = N'Khách hàng tự hủy qua hệ thống' WHERE booking_id = 6;
+    (3, 4, 2, '2026-06-05 08:00:00', '2026-06-07 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 7', 1800000.00, 540000.00,  N'PENDING',     NULL, NULL);
 
 SET IDENTITY_INSERT bookings OFF;
 GO
