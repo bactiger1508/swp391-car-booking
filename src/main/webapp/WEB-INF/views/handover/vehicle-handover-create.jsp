@@ -258,7 +258,7 @@
                     <input type="file" id="evidencePhotos" name="evidencePhotos" accept="image/*" multiple="multiple" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" />
                     <span class="material-symbols-outlined" style="font-size: 42px; color: var(--text-secondary);">upload_file</span>
                     <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả</p>
-                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">SVG, PNG, JPG hoặc GIF (tối đa 800x400px)</p>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Định dạng SVG, PNG, JPG hoặc GIF (Tối đa 10MB)</p>
                 </div>
                 <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;"></div>
             </div>
@@ -300,57 +300,39 @@
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-
         const fileInput = document.getElementById("evidencePhotos");
-        const previewContainer =
-                document.getElementById("imagePreviewContainer");
+        const previewContainer = document.getElementById("imagePreviewContainer");
 
         fileInput.addEventListener("change", function () {
-
             previewContainer.innerHTML = "";
+            const files = Array.from(this.files);
 
-            Array.from(this.files).forEach(file => {
-
+            // Filter out non-images and check size
+            const validFiles = files.filter(file => {
                 if (!file.type.startsWith("image/")) {
-                    return;
+                    alert(file.name + " không phải là tệp ảnh hợp lệ.");
+                    return false;
                 }
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    alert(file.name + " vượt quá dung lượng cho phép (10MB).");
+                    return false;
+                }
+                return true;
+            });
 
-                const img = new Image();
-
-                img.onload = function () {
-
-                    if (img.width > 800 || img.height > 400) {
-
-                        alert(
-                                file.name +
-                                " vượt quá kích thước cho phép (800x400px)"
-                                );
-
-                        return;
-                    }
-
-                    const reader = new FileReader();
-
-                    reader.onload = function (e) {
-
-                        const previewImg =
-                                document.createElement("img");
-
-                        previewImg.src = e.target.result;
-
-                        previewImg.style.width = "120px";
-                        previewImg.style.height = "120px";
-                        previewImg.style.objectFit = "cover";
-                        previewImg.style.borderRadius = "8px";
-                        previewImg.style.border = "1px solid #ddd";
-
-                        previewContainer.appendChild(previewImg);
-                    };
-
-                    reader.readAsDataURL(file);
+            validFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const previewImg = document.createElement("img");
+                    previewImg.src = e.target.result;
+                    previewImg.style.width = "120px";
+                    previewImg.style.height = "120px";
+                    previewImg.style.objectFit = "cover";
+                    previewImg.style.borderRadius = "8px";
+                    previewImg.style.border = "1px solid #ddd";
+                    previewContainer.appendChild(previewImg);
                 };
-
-                img.src = URL.createObjectURL(file);
+                reader.readAsDataURL(file);
             });
         });
     });

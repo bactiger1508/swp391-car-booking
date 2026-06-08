@@ -332,6 +332,27 @@ function updateFilterChips() {
 function exportCarList() {
     alert('Tính năng xuất danh sách sắp có!');
 }
+
+// Parse query parameters on load to auto-filter from the quick search
+window.addEventListener('DOMContentLoaded', function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var brand = urlParams.get('brand');
+    var seats = urlParams.get('seats');
+    
+    if (brand) {
+        var brandSelect = document.getElementById('filterBrand');
+        if (brandSelect) {
+            brandSelect.value = brand;
+        }
+    }
+    if (seats) {
+        var seatsSelect = document.getElementById('filterSeats');
+        if (seatsSelect) {
+            seatsSelect.value = seats;
+        }
+    }
+    applyFilters();
+});
 </script>
 
 <style>
