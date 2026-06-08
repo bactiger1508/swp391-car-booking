@@ -49,6 +49,7 @@
                                             data-model="${car.model}"
                                             data-plate="${car.licensePlate}"
                                             data-price="${car.dailyRate}"
+                                            data-location="${car.location}"
                                             data-image="${primaryImages[car.carId]}"
                                             ${selectedCarId == car.carId ? 'selected' : ''}>
                                         ${car.brand} ${car.model} — ${car.licensePlate}
@@ -104,14 +105,14 @@
                             <label class="bk-form-label">Điểm nhận xe</label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">location_on</span>
-                                <input type="text" name="pickupLocation" class="bk-form-input" placeholder="Văn phòng chính" required>
+                                <input type="text" name="pickupLocation" id="pickupLocation" class="bk-form-input" placeholder="Nhập địa điểm nhận xe" required>
                             </div>
                         </div>
                         <div class="bk-form-group">
                             <label class="bk-form-label">Điểm trả xe</label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">pin_drop</span>
-                                <input type="text" name="returnLocation" class="bk-form-input" placeholder="Văn phòng chính" required>
+                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" placeholder="Nhập địa điểm trả xe" required>
                             </div>
                         </div>
                     </div>
@@ -196,8 +197,13 @@ function updateCarInfo() {
     var model = opt.getAttribute('data-model');
     var plate = opt.getAttribute('data-plate');
     var price = parseFloat(opt.getAttribute('data-price')) || 0;
+    var location = opt.getAttribute('data-location') || 'Văn phòng chính';
     var imgUrl = opt.getAttribute('data-image') || '/assets/images/cars/placeholder.jpg';
     var contextPath = '${pageContext.request.contextPath}';
+    
+    // Auto-fill and keep pickup and return location flexible
+    document.getElementById('pickupLocation').value = location;
+    document.getElementById('returnLocation').value = location;
     
     info.innerHTML =
         '<div style="width:100%;height:140px;background:var(--surface-container-high);border-radius:8px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);">' +
