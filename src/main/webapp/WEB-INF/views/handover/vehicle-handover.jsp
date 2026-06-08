@@ -118,13 +118,13 @@
 </div>
 
 <script>
-function filterTable() {
-    var input = document.getElementById('searchInput').value.toLowerCase();
-    var rows = document.querySelectorAll('#handoverTable tbody tr');
-    rows.forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
-    });
-}
+    function filterTable() {
+        var input = document.getElementById('searchInput').value.toLowerCase();
+        var rows = document.querySelectorAll('#handoverTable tbody tr');
+        rows.forEach(function (row) {
+            row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+        });
+    }
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

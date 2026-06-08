@@ -66,7 +66,7 @@
 </div>
 
 <div class="page-content" style="max-width: 1200px; margin: 0 auto; padding-top: 0;">
-    
+
     <c:if test="${not empty error}">
         <div style="background: rgba(211, 47, 47, 0.1); border-left: 5px solid #d32f2f; color: #d32f2f; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
             ${error}
@@ -78,105 +78,103 @@
         <input type="hidden" name="bookingId" value="${bookingId}" />
         <input type="hidden" name="carId" value="${carId}" />
 
-        <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 24px; margin-bottom: 24px; align-items: start;">
-            
-            <%-- Cột bên trái: Chi tiết xe và Booking --%>
-            <div style="display: flex; flex-direction: column; gap: 24px;">
-                <!-- Card Thông tin đặt xe -->
-                <div class="bk-card" style="padding: 24px; margin-bottom: 0;">
-                    <div class="bk-card-title">
-                        <span class="material-symbols-outlined">assignment</span>
-                        <span>Thông Tin Đặt Xe</span>
-                    </div>
-                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
-                        <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--outline-variant); padding-bottom: 6px;">
-                            <span style="color:var(--text-secondary);">Mã đặt xe:</span>
-                            <span style="font-weight:700; color:var(--primary);">#BK-${not empty bookingId ? bookingId : '78291'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--outline-variant); padding-bottom: 6px; margin-top: 4px;">
-                            <span style="color:var(--text-secondary);">Khách hàng:</span>
-                            <span style="font-weight:600; color: var(--text-primary);">${not empty customer ? customer.fullName : 'John Doe'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding-bottom: 2px; margin-top: 4px;">
-                            <span style="color:var(--text-secondary);">Nhân viên lập:</span>
-                            <span style="font-weight:600;">${not empty sessionScope.currentUser ? sessionScope.currentUser.fullName : 'Admin'}</span>
-                        </div>
-                    </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; align-items: stretch;">
+            <%-- Cột bên phải: Thông tin đặt xe --%>
+            <!-- Card Thông tin đặt xe -->
+            <div class="bk-card" style="padding: 24px; margin-bottom: 0; ">
+                <div class="bk-card-title">
+                    <span class="material-symbols-outlined">assignment</span>
+                    <span>Thông Tin Đặt Xe</span>
                 </div>
-
-                <!-- Card Thông tin xe -->
-                <div class="bk-card" style="padding: 24px; margin-bottom: 0;">
-                    <div class="bk-card-title">
-                        <span class="material-symbols-outlined">directions_car</span>
-                        <span>Thông Tin Xe Bàn Giao</span>
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--outline-variant); padding-bottom: 6px;">
+                        <span style="color:var(--text-secondary);">Mã đặt xe:</span>
+                        <span style="font-weight:700; color:var(--primary);">#BK-${not empty bookingId ? bookingId : '78291'}</span>
                     </div>
-                    <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
-                            <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
-                        </div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--primary); font-size: 16px;">
-                                ${not empty car ? car.brand : 'Toyota'} ${not empty car ? car.model : 'Camry'}
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
-                                Biển số: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.licensePlate : 'ABC-1234'}</span>
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 1px;">
-                                Màu sắc: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.color : 'Bạc'}</span>
-                            </div>
-                        </div>
+                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--outline-variant); padding-bottom: 6px; margin-top: 4px;">
+                        <span style="color:var(--text-secondary);">Khách hàng:</span>
+                        <span style="font-weight:600; color: var(--text-primary);">${not empty customer ? customer.fullName : 'John Doe'}</span>
                     </div>
-                    <div style="margin-top: 16px; background: var(--surface-container-low); padding: 12px; border-radius: 8px;">
-                        <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase;">Số km ghi nhận cuối</span>
-                        <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">
-                            ${not empty car ? car.mileage : '45,210'} km
-                        </div>
+                    <div style="display:flex; justify-content:space-between; padding-bottom: 2px; margin-top: 4px;">
+                        <span style="color:var(--text-secondary);">Nhân viên lập:</span>
+                        <span style="font-weight:600;">${not empty sessionScope.currentUser ? sessionScope.currentUser.fullName : 'Admin'}</span>
                     </div>
                 </div>
             </div>
 
-            <%-- Cột bên phải: Chỉ số đo km và nhiên liệu --%>
-            <div class="bk-card" style="padding: 24px; margin-bottom: 0; min-height: 100%; display: flex; flex-direction: column;">
+            <%-- Cột bên phải: Thông tin xe --%>
+            <!-- Card Thông tin xe -->
+            <div class="bk-card" style="padding: 24px; margin-bottom: 0;">
                 <div class="bk-card-title">
-                    <span class="material-symbols-outlined">speed</span>
-                    <span>Chỉ Số Thực Tế Khi Bàn Giao</span>
+                    <span class="material-symbols-outlined">directions_car</span>
+                    <span>Chi tiết xe</span>
                 </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; flex-grow: 1; justify-content: center;">
-                    <!-- Số Odo hiện tại -->
-                    <div class="bk-form-group">
-                        <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km hiện tại (Odometer) *</label>
-                        <div class="bk-form-input-wrap" style="margin-top: 6px;">
-                            <span class="material-symbols-outlined">speed</span>
-                            <input type="number" id="currentOdo" name="currentOdo" value="${not empty currentOdo ? currentOdo : (not empty car ? car.mileage : '')}" class="bk-form-input" placeholder="Nhập số liệu công-tơ-mét thực tế" required="required" />
+                <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
+                        <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--primary); font-size: 16px;">
+                            ${not empty car ? car.brand : 'Toyota'} ${not empty car ? car.model : 'Camry'}
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
+                            Biển số: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.licensePlate : 'ABC-1234'}</span>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 1px;">
+                            Màu sắc: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.color : 'Bạc'}</span>
                         </div>
                     </div>
+                </div>
+                <div style="margin-top: 16px; background: var(--surface-container-low); padding: 12px; border-radius: 8px;">
+                    <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase;">SỐ KM GHI NHẬN CUỐI CÙNG</span>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">
+                        ${not empty car ? car.mileage : '45,210'} km
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Mức nhiên liệu radio segment selector -->
-                    <div class="bk-form-group">
-                        <label class="bk-form-label" style="font-weight:600;">Mức Nhiên Liệu Thực Tế *</label>
-                        <div style="display: flex; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 8px; overflow: hidden; height: 42px; margin-top: 6px;">
-                            <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${fuel == 'E' ? 'checked="checked"' : ''} />
-                                <span class="fuel-label">E</span>
-                            </label>
-                            <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="1/4" required="required" class="fuel-radio" ${fuel == '1/4' ? 'checked="checked"' : ''} />
-                                <span class="fuel-label">1/4</span>
-                            </label>
-                            <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="1/2" required="required" class="fuel-radio" ${empty fuel || fuel == '1/2' ? 'checked="checked"' : ''} />
-                                <span class="fuel-label">1/2</span>
-                            </label>
-                            <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                                <input type="radio" name="fuel" value="3/4" required="required" class="fuel-radio" ${fuel == '3/4' ? 'checked="checked"' : ''} />
-                                <span class="fuel-label">3/4</span>
-                            </label>
-                            <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${fuel == 'F' ? 'checked="checked"' : ''} />
-                                <span class="fuel-label">F</span>
-                            </label>
-                        </div>
+        <%-- Chỉ số đo km và nhiên liệu --%>
+        <div class="bk-card" style="padding: 24px; margin-bottom: 0; display: flex; flex-direction: column; grid-column:1 / span 2;">
+            <div class="bk-card-title">
+                <span class="material-symbols-outlined">speed</span>
+                <span>Chỉ số trạng thái hiện tại</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; flex-grow: 1; justify-content: center;">
+                <!-- Số Odo hiện tại -->
+                <div class="bk-form-group">
+                    <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km hiện tại (km)*</label>
+                    <div class="bk-form-input-wrap" style="margin-top: 6px;">
+                        <span class="material-symbols-outlined">speed</span>
+                        <input type="number" id="currentOdo" name="currentOdo" value="${not empty currentOdo ? currentOdo : (not empty car ? car.mileage : '')}" class="bk-form-input" placeholder="Nhập số liệu hiện tại" required="required" />
+                    </div>
+                </div>
+
+                <!-- Mức nhiên liệu radio segment selector -->
+                <div class="bk-form-group">
+                    <label class="bk-form-label" style="font-weight:600;">Mức nhiên liệu *</label>
+                    <div style="display: flex; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 8px; overflow: hidden; height: 42px; margin-top: 6px;">
+                        <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
+                            <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${fuel == 'E' ? 'checked="checked"' : ''} />
+                            <span class="fuel-label">E</span>
+                        </label>
+                        <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
+                            <input type="radio" name="fuel" value="1/4" required="required" class="fuel-radio" ${fuel == '1/4' ? 'checked="checked"' : ''} />
+                            <span class="fuel-label">1/4</span>
+                        </label>
+                        <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
+                            <input type="radio" name="fuel" value="1/2" required="required" class="fuel-radio" ${empty fuel || fuel == '1/2' ? 'checked="checked"' : ''} />
+                            <span class="fuel-label">1/2</span>
+                        </label>
+                        <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
+                            <input type="radio" name="fuel" value="3/4" required="required" class="fuel-radio" ${fuel == '3/4' ? 'checked="checked"' : ''} />
+                            <span class="fuel-label">3/4</span>
+                        </label>
+                        <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${fuel == 'F' ? 'checked="checked"' : ''} />
+                            <span class="fuel-label">F</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -186,9 +184,9 @@
         <div class="bk-card" style="margin-bottom: 24px; padding: 24px;">
             <div class="bk-card-title" style="border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 16px;">
                 <span class="material-symbols-outlined">fact_check</span>
-                <span>Danh Sách Kiểm Tra Tình Trạng Kỹ Thuật & An Toàn</span>
+                <span>Danh sách kiểm tra tình trạng</span>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
                 <!-- Ngoại thất -->
                 <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -238,7 +236,7 @@
                         </label>
                         <label class="checklist-label">
                             <input type="checkbox" name="chkDashboardLights" value="true" class="checklist-checkbox" checked="checked" />
-                            <span>Không có đèn cảnh báo trên táp-lô</span>
+                            <span>Không có đèn cảnh báo trên bảng điều khiển</span>
                         </label>
                     </div>
                 </div>
@@ -247,21 +245,22 @@
 
         <!-- Bằng chứng hình ảnh & Ghi chú thêm -->
         <div style="display: grid; grid-template-columns: 7fr 5fr; gap: 24px; margin-bottom: 24px;">
-            
+
             <!-- Photo Upload Area -->
             <div class="bk-card" style="padding: 24px; margin-bottom: 0;">
                 <div class="bk-card-title" style="margin-bottom: 14px;">
                     <span class="material-symbols-outlined">add_a_photo</span>
                     <span>Bằng Chứng Bằng Hình Ảnh</span>
-                    <span style="font-size: 12px; font-weight: 400; color: var(--text-secondary); margin-left: auto;">Khuyến nghị đính kèm</span>
+                    <span style="font-size: 12px; font-weight: 400; color: var(--text-secondary); margin-left: auto;">Tùy chọn nhưng được khuyến nghị</span>
                 </div>
-                
-                <div style="border: 2px dashed var(--outline-variant); border-radius: 8px; padding: 24px; text-align: center; background: var(--surface-container-low); position: relative; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--surface-container-high)'" onmouseout="this.style.background='var(--surface-container-low)'">
-                    <input type="file" name="evidencePhotos" accept="image/*" multiple="multiple" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" />
+
+                <div style="border: 2px dashed var(--outline-variant); border-radius: 8px; padding: 24px; text-align: center; background: var(--surface-container-low); position: relative; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background = 'var(--surface-container-high)'" onmouseout="this.style.background = 'var(--surface-container-low)'">
+                    <input type="file" id="evidencePhotos" name="evidencePhotos" accept="image/*" multiple="multiple" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" />
                     <span class="material-symbols-outlined" style="font-size: 42px; color: var(--text-secondary);">upload_file</span>
-                    <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả hình ảnh</p>
-                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Hỗ trợ định dạng JPG, PNG, GIF (Tối đa 10MB)</p>
+                    <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả</p>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">SVG, PNG, JPG hoặc GIF (tối đa 800x400px)</p>
                 </div>
+                <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;"></div>
             </div>
 
             <!-- Ghi chú thêm -->
@@ -271,7 +270,7 @@
                     <span>Ghi Chú Thêm</span>
                 </div>
                 <div style="flex-grow: 1;">
-                    <textarea name="notes" placeholder="Nhập ghi chú chi tiết về tình trạng xe tại thời điểm bàn giao (nếu có)..." style="width: 100%; height: 100%; min-height: 100px; padding: 12px; border: 1.5px solid var(--outline-variant); border-radius: 8px; background: var(--surface); color: var(--text-primary); font-size: 13px; font-family: inherit; resize: none; outline: none;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--outline-variant)'">${notes}</textarea>
+                    <textarea name="notes" placeholder="Nhập ghi chú chi tiết về tình trạng xe tại thời điểm bàn giao (nếu có)..." style="width: 100%; height: 100%; min-height: 100px; padding: 12px; border: 1.5px solid var(--outline-variant); border-radius: 8px; background: var(--surface); color: var(--text-primary); font-size: 13px; font-family: inherit; resize: none; outline: none;" onfocus="this.style.borderColor = 'var(--primary)'" onblur="this.style.borderColor = 'var(--outline-variant)'">${notes}</textarea>
                 </div>
             </div>
         </div>
@@ -299,5 +298,61 @@
         </div>
     </form>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
 
+        const fileInput = document.getElementById("evidencePhotos");
+        const previewContainer =
+                document.getElementById("imagePreviewContainer");
+
+        fileInput.addEventListener("change", function () {
+
+            previewContainer.innerHTML = "";
+
+            Array.from(this.files).forEach(file => {
+
+                if (!file.type.startsWith("image/")) {
+                    return;
+                }
+
+                const img = new Image();
+
+                img.onload = function () {
+
+                    if (img.width > 800 || img.height > 400) {
+
+                        alert(
+                                file.name +
+                                " vượt quá kích thước cho phép (800x400px)"
+                                );
+
+                        return;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+
+                        const previewImg =
+                                document.createElement("img");
+
+                        previewImg.src = e.target.result;
+
+                        previewImg.style.width = "120px";
+                        previewImg.style.height = "120px";
+                        previewImg.style.objectFit = "cover";
+                        previewImg.style.borderRadius = "8px";
+                        previewImg.style.border = "1px solid #ddd";
+
+                        previewContainer.appendChild(previewImg);
+                    };
+
+                    reader.readAsDataURL(file);
+                };
+
+                img.src = URL.createObjectURL(file);
+            });
+        });
+    });
+</script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
