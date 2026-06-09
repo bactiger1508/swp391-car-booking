@@ -29,7 +29,7 @@ public class ContractService {
     private final ContractDAO contractDAO = new ContractDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
 
-    // Get contract by id
+    // Get contract by ID
     public RentalContract getContractById(int contractId) {
         try {
             return contractDAO.findById(contractId);
@@ -56,10 +56,7 @@ public class ContractService {
         }
     }
 
-    /**
-     * Create a contract from a confirmed booking. BR-05: Contract can only be
-     * created from Confirmed booking.
-     */
+    // Create contract from confirmed booking
     public int createContract(RentalContract contract) {
         try {
             // BR-05: Verify booking is CONFIRMED
