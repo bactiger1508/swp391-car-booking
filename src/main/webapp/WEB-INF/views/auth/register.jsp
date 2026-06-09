@@ -51,26 +51,28 @@
             </c:if>
 
             <!-- Form -->
-            <form method="post" action="${pageContext.request.contextPath}/register" class="register-form">
+            <form method="post" action="${pageContext.request.contextPath}/register" class="register-form" id="registerForm" novalidate>
                 <!-- Name Field -->
                 <div class="form-group">
-                    <label for="fullName">Họ và tên</label>
+                    <label for="fullName">Họ và tên <span style="color: var(--error);">*</span></label>
                     <div class="input-relative">
                         <span class="material-symbols-outlined input-icon">person</span>
                         <input type="text" id="fullName" name="fullName" class="form-control"
-                               value="${fullName}" placeholder="vd: Nguyễn Văn A" required>
+                               value="${fullName}" placeholder="vd: Nguyễn Văn A">
                     </div>
+                    <span class="error-msg" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;" id="err-fullName"></span>
                 </div>
 
                 <!-- Email & Phone row -->
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="email">Email</label>
+                        <label for="email">Email <span style="color: var(--error);">*</span></label>
                         <div class="input-relative">
                             <span class="material-symbols-outlined input-icon">mail</span>
                             <input type="email" id="email" name="email" class="form-control"
-                                   value="${email}" placeholder="ten@congty.com" required>
+                                   value="${email}" placeholder="ten@congty.com">
                         </div>
+                        <span class="error-msg" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;" id="err-email"></span>
                     </div>
                     <div class="form-group">
                         <label for="phone">Số điện thoại</label>
@@ -79,27 +81,30 @@
                             <input type="tel" id="phone" name="phone" class="form-control"
                                    value="${phone}" placeholder="+84 900 000 000">
                         </div>
+                        <span class="error-msg" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;" id="err-phone"></span>
                     </div>
                 </div>
 
                 <!-- Password Field -->
                 <div class="form-group">
-                    <label for="password">Mật khẩu</label>
+                    <label for="password">Mật khẩu <span style="color: var(--error);">*</span></label>
                     <div class="input-relative">
                         <span class="material-symbols-outlined input-icon">lock</span>
                         <input type="password" id="password" name="password" class="form-control"
-                               placeholder="••••••••" required minlength="6">
+                               placeholder="••••••••">
                     </div>
+                    <span class="error-msg" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;" id="err-password"></span>
                 </div>
 
                 <!-- Confirm Password Field -->
                 <div class="form-group">
-                    <label for="confirmPassword">Xác nhận mật khẩu</label>
+                    <label for="confirmPassword">Xác nhận mật khẩu <span style="color: var(--error);">*</span></label>
                     <div class="input-relative">
                         <span class="material-symbols-outlined input-icon">lock</span>
                         <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
-                               placeholder="••••••••" required>
+                               placeholder="••••••••">
                     </div>
+                    <span class="error-msg" style="color: var(--error); font-size: 12px; margin-top: 4px; display: none;" id="err-confirmPassword"></span>
                 </div>
 
                 <!-- Form Action Buttons -->
@@ -118,3 +123,83 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('registerForm');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            var hasErrors = false;
+            
+            // Helper function to show error
+            function showError(id, msg) {
+                var el = document.getElementById('err-' + id);
+                if (el) {
+                    el.textContent = msg;
+                    el.style.display = 'block';
+                }
+                hasErrors = true;
+            }
+            
+            // Clear previous errors
+            var errElements = document.querySelectorAll('.error-msg');
+            errElements.forEach(function(el) {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+            
+            // Validate Họ và tên
+            var fullName = document.getElementById('fullName').value.trim();
+            if (!fullName) {
+                showError('fullName', 'Vui lòng nhập họ và tên.');
+            }
+            
+            // Validate Email
+            var email = document.getElementById('email').value.trim();
+            if (!email) {
+                showError('email', 'Vui lòng nhập địa chỉ email.');
+            } else {
+                var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    showError('email', 'Email không đúng định dạng.');
+                }
+            }
+            
+            // Validate Số điện thoại (optional)
+            var phone = document.getElementById('phone').value.trim();
+            if (phone) {
+                var phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+                if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
+                    showError('phone', 'Số điện thoại không đúng định dạng (phải có 10 chữ số).');
+                }
+            }
+            
+            // Validate Mật khẩu
+            var password = document.getElementById('password').value;
+            if (!password) {
+                showError('password', 'Vui lòng nhập mật khẩu.');
+            } else if (password.length < 6) {
+                showError('password', 'Mật khẩu phải từ 6 ký tự trở lên.');
+            }
+            
+            // Validate Xác nhận mật khẩu
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            if (!confirmPassword) {
+                showError('confirmPassword', 'Vui lòng xác nhận mật khẩu.');
+            } else if (password !== confirmPassword) {
+                showError('confirmPassword', 'Mật khẩu xác nhận không khớp.');
+            }
+            
+            if (hasErrors) {
+                event.preventDefault(); // Prevent submit
+                
+                // Scroll to first error
+                var firstError = document.querySelector('.error-msg[style*="display: block"]');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+});
+</script>

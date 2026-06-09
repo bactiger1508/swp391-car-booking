@@ -23,13 +23,7 @@ public class ContractManagementServlet extends HttpServlet {
     private final com.swp391.carrental.service.UserService userService = new com.swp391.carrental.service.UserService();
     private final com.swp391.carrental.service.VehicleService vehicleService = new com.swp391.carrental.service.VehicleService();
 
-    /**
-     * Handles GET requests.
-     *
-     * Supported endpoints: - /contracts : Display all rental contracts. -
-     * /contracts/detail : Display contract detail page or draft contract
-     * information from a booking.
-     */
+    // Handle GET requests for listing and details
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String path = request.getServletPath();
@@ -93,13 +87,7 @@ public class ContractManagementServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Handles POST requests.
-     *
-     * Supported actions:
-     * - activate : Activate an existing contract.
-     * - create : Create a new rental contract from a confirmed booking.
-     */
+    // Handle POST requests for activation and creation
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession(false);

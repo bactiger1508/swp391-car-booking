@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ContractDAO {
 
-    // Finds a contract by ID.
+    // Find contract by ID
     public RentalContract findById(int contractId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -33,7 +33,7 @@ public class ContractDAO {
         return null;
     }
 
-    // Finds a contract by booking ID.
+    // Find contract by booking ID
     public RentalContract findByBookingId(int bookingId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE booking_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -47,7 +47,7 @@ public class ContractDAO {
         return null;
     }
 
-    // Retrieves all contracts ordered by newest first.
+    // Get all contracts
     public List<RentalContract> findAll() throws SQLException {
         List<RentalContract> contracts = new ArrayList<>();
         String sql = "SELECT * FROM rental_contracts ORDER BY created_at DESC";
@@ -59,7 +59,7 @@ public class ContractDAO {
         return contracts;
     }
 
-    //Inserts a new rental contract.
+    // Insert new contract
     public int insert(RentalContract contract) throws SQLException {
         String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, car_id, "
                 + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
@@ -87,7 +87,7 @@ public class ContractDAO {
         return -1;
     }
 
-    // Updates contract status.
+    // Update contract status
     public boolean updateStatus(int contractId, String status) throws SQLException {
         String sql = "UPDATE rental_contracts SET status = ?, updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -97,7 +97,7 @@ public class ContractDAO {
         }
     }
 
-    // Deletes a contract.
+    // Delete contract by ID
     public boolean delete(int contractId) throws SQLException {
         String sql = "DELETE FROM rental_contracts WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -106,7 +106,7 @@ public class ContractDAO {
         }
     }
 
-    // Maps a database row to a RentalContract object.
+    // Map result set to contract object
     private RentalContract mapRow(ResultSet rs) throws SQLException {
         RentalContract c = new RentalContract();
         c.setContractId(rs.getInt("contract_id"));
