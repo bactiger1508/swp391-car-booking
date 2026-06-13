@@ -39,9 +39,7 @@ public class VehicleHandoverCreateServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String carIdStr = request.getParameter("carId");
-
             if (bookingIdStr != null && carIdStr != null) {
-
                 int bookingId = Integer.parseInt(bookingIdStr);
                 int carId = Integer.parseInt(carIdStr);
 
@@ -60,13 +58,10 @@ public class VehicleHandoverCreateServlet extends HttpServlet {
                     request.setAttribute("customer", customer);
                 }
             }
-
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi tải thông tin: " + e.getMessage());
         }
-
-        request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp")
-                .forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
     }
 
     @Override
@@ -76,8 +71,53 @@ public class VehicleHandoverCreateServlet extends HttpServlet {
         try {
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
             int carId = Integer.parseInt(request.getParameter("carId"));
+            String currentOdo = request.getParameter("currentOdo");
+            if (currentOdo == null || currentOdo.isBlank()) {
+                Booking booking = bookingDAO.findById(bookingId);
+                Car car = carDAO.findById(carId);
+                RentalContract contract = contractDAO.findByBookingId(bookingId);
+
+                request.setAttribute("booking", booking);
+                request.setAttribute("car", car);
+                request.setAttribute("contract", contract);
+                request.setAttribute("bookingId", bookingId);
+                request.setAttribute("carId", carId);
+
+                if (booking != null) {
+                    User customer = userDAO.findById(booking.getCustomerId());
+                    request.setAttribute("customer", customer);
+                }
+
+                request.setAttribute("currentOdoError", "Vui lòng không để trống thông tin");
+
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+
+                return;
+            }
 
             int mileage = Integer.parseInt(request.getParameter("currentOdo"));
+            Car car = carDAO.findById(carId);
+            if (mileage < car.getMileage()) {
+                Booking booking = bookingDAO.findById(bookingId);
+                RentalContract contract = contractDAO.findByBookingId(bookingId);
+
+                request.setAttribute("booking", booking);
+                request.setAttribute("car", car);
+                request.setAttribute("contract", contract);
+                request.setAttribute("bookingId", bookingId);
+                request.setAttribute("carId", carId);
+
+                if (booking != null) {
+                    User customer = userDAO.findById(booking.getCustomerId());
+                    request.setAttribute("customer", customer);
+                }
+
+                request.setAttribute("currentOdoError", "Vui lòng nhập số km hợp lệ");
+
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+
+                return;
+            }
             String fuelLevel = request.getParameter("fuel");
 
             // ===== EXTERIOR =====

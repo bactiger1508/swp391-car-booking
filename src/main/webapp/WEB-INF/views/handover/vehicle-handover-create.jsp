@@ -147,8 +147,13 @@
                     <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km hiện tại (km)*</label>
                     <div class="bk-form-input-wrap" style="margin-top: 6px;">
                         <span class="material-symbols-outlined">speed</span>
-                        <input type="number" id="currentOdo" name="currentOdo" value="${not empty currentOdo ? currentOdo : (not empty car ? car.mileage : '')}" class="bk-form-input" placeholder="Nhập số liệu hiện tại" required="required" />
+                        <input type="number" id="currentOdo" name="currentOdo" value="" class="bk-form-input" placeholder="Nhập số liệu hiện tại"/>
                     </div>
+                    <c:if test="${not empty currentOdoError}">
+                        <div style="color:red; margin-top:5px;">
+                            ${currentOdoError}
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Mức nhiên liệu radio segment selector -->
