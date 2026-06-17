@@ -138,7 +138,11 @@
                 <a href="${pageContext.request.contextPath}/bookings/my" class="bk-btn bk-btn-outline" style="justify-content:center;">
                     <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
                 </a>
-                
+
+                <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-outline" style="justify-content:center;">
+                    <span class="material-symbols-outlined"></span> Xem biên bản bàn giao
+                </a>
+
 
 
                 <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">

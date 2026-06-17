@@ -19,14 +19,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
-@WebServlet(name = "VehicleHandoverDetailServlet", urlPatterns = {"/handovers/detail"})
+@WebServlet(name = "HandoverDetailServlet", urlPatterns = {"/handovers/detail"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 1,
         maxFileSize = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 15
 )
 
-public class VehicleHandoverDetailServlet extends HttpServlet {
+public class HandoverDetailServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
     private final HandoverDAO handoverDAO = new HandoverDAO();
@@ -325,7 +325,7 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
             request.setAttribute("chkDashboardLights", request.getParameter("chkDashboardLights") != null);
 
         } catch (SQLException ex) {
-            Logger.getLogger(VehicleHandoverDetailServlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HandoverDetailServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

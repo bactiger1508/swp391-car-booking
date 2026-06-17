@@ -1,9 +1,9 @@
 /*
- * Name: VehicleHandoverServlet
+ * Name: HandoverManagementServlet
  * @Author: TamTTMHE190340
  * Date: 23/05/2026
  * Version: 1.0
- * Description: Handles HTTP requests and responses for VehicleHandoverServlet.
+ * Description: Handles HTTP requests and responses for HandoverManagementServlet.
  */
 package com.swp391.carrental.controller.handover;
 
@@ -15,8 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "VehicleHandoverServlet", urlPatterns = {"/handovers"})
-public class VehicleHandoverServlet extends HttpServlet {
+@WebServlet(name = "HandoverManagementServlet", urlPatterns = {"/handovers"})
+public class HandoverManagementServlet extends HttpServlet {
     private final HandoverService handoverService = new HandoverService();
 
     @Override

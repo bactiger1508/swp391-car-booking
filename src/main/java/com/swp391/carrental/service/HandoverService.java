@@ -78,6 +78,7 @@ public class HandoverService {
     public void updateHandoverVehicle(VehicleHandover handover) {
         try {
             handoverDAO.update(handover);
+            handoverDAO.updateStatus(handover.getHandoverId(), HandoverStatus.IN_PROGRESS);
         } catch (SQLException e) {
             throw new AppException("Failed to update vehicle handover.", e);
         }
