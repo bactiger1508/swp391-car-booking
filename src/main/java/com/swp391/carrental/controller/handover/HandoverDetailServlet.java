@@ -34,7 +34,6 @@ public class HandoverDetailServlet extends HttpServlet {
     private final CarDAO carDAO = new CarDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
-    private static final String UPLOAD_DIR = "assets/images/handover";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

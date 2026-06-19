@@ -21,6 +21,7 @@ public class VehicleReturnServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("doGet");
         request.setAttribute("returns", returnService.getAllReturns());
         request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return.jsp").forward(request, response);
     }

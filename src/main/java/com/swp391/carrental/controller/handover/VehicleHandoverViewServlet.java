@@ -28,8 +28,8 @@ import java.sql.SQLException;
  *
  * @author lenovo
  */
-@WebServlet(name = "VehicleHandoverView", urlPatterns = {"/handover/view"})
-public class VehicleHandoverView extends HttpServlet {
+@WebServlet(name = "VehicleHandoverViewServlet", urlPatterns = {"/handover/view"})
+public class VehicleHandoverViewServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
     private final HandoverDAO handoverDAO = new HandoverDAO();
@@ -88,7 +88,7 @@ public class VehicleHandoverView extends HttpServlet {
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
                 if (handover != null) {
-                    handoverService.updateStatusRequiredUpdate(handover.getHandoverId());
+                    handoverService.updateStatusRequired(handover.getHandoverId());
                 }
 
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);

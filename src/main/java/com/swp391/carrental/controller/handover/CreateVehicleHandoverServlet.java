@@ -30,12 +30,10 @@ import javax.imageio.ImageIO;
 public class CreateVehicleHandoverServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
-    private final HandoverDAO handoverDAO = new HandoverDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final CarDAO carDAO = new CarDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
-    private static final String UPLOAD_DIR = "assets/images/handover";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

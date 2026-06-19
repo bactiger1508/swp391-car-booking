@@ -100,7 +100,7 @@ public class HandoverService {
         }
     }
 
-    public void updateStatusRequiredUpdate(int handoverId) {
+    public void updateStatusRequired(int handoverId) {
         try {
             handoverDAO.updateStatus(handoverId, HandoverStatus.REQUIRED_UPDATE);
         } catch (SQLException e) {

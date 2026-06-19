@@ -25,92 +25,76 @@
         </div>
     </div>
 
-    <c:if test="${not empty returns}">
-        <div style="overflow-x:auto;">
-            <table class="bk-table" id="returnTable">
-                <thead>
+    <%--<c:if test="${not empty returns}">--%>
+    <div style="overflow-x:auto;">
+        <table class="bk-table" id="returnTable">
+            <thead>
+                <tr>
+                    <th>Mã BB</th>
+                    <th>Đơn thuê xe</th>
+                    <th>Mã Xe</th>
+                    <th>Ngày nhận xe</th>
+                    <th>Quãng đường đi</th>
+                    <th>Phụ thu phát sinh</th>
+                    <th>Nhân viên nhận xe</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="r" items="${returns}">
                     <tr>
-                        <th>Mã BB</th>
-                        <th>Đơn thuê xe</th>
-                        <th>Mã Xe</th>
-                        <th>Ngày nhận xe</th>
-                        <th>Quãng đường đi</th>
-                        <th>Phụ thu phát sinh</th>
-                        <th>Nhân viên nhận xe</th>
+                        <td class="code">RT-${r.returnId}</td>
+                        <td><a href="${pageContext.request.contextPath}/bookings/detail?id=${r.bookingId}" style="font-weight:600;color:var(--primary);">#BK-${r.bookingId}</a></td>
+                        <td style="font-weight:500;">Xe #${r.carId}</td>
+                        <td>
+                            <div style="font-size:13px;">
+                                ${r.returnDate.dayOfMonth}/${r.returnDate.monthValue}/${r.returnDate.year} ${r.returnDate.hour}:${r.returnDate.minute}
+                            </div>
+                        </td>
+                        <td><div style="font-weight:600;color:var(--primary);">${r.mileageAtReturn} km</div></td>
+                        <td>
+                            <div style="font-weight:700;color:var(--error);">
+                                <fmt:formatNumber value="${r.totalAdditionalFee}" type="number" groupingUsed="true"/>đ
+                            </div>
+                        </td>
+                        <td>Nhân viên #${r.receivedBy}</td>
+                        <td>
+                            <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&carId=${r.carId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <c:forEach var="r" items="${returns}">
+                </c:forEach>
+            </tbody>
+        </table>
+    </div>
+    <%--</c:if>--%>
+    <%--<c:if test="${empty returns}">--%>
+    <!-- Fallback data to show gorgeous table representation when database is clean -->
+    <!--        <div style="overflow-x:auto;">
+                <table class="bk-table" id="returnTable">
+                    <thead>
                         <tr>
-                            <td class="code">RT-${r.returnId}</td>
-                            <td><a href="${pageContext.request.contextPath}/bookings/detail?id=${r.bookingId}" style="font-weight:600;color:var(--primary);">#BK-${r.bookingId}</a></td>
-                            <td style="font-weight:500;">Xe #${r.carId}</td>
-                            <td>
-                                <div style="font-size:13px;">
-                                    ${r.returnDate.dayOfMonth}/${r.returnDate.monthValue}/${r.returnDate.year} ${r.returnDate.hour}:${r.returnDate.minute}
-                                </div>
-                            </td>
-                            <td><div style="font-weight:600;color:var(--primary);">${r.mileageAtReturn} km</div></td>
-                            <td>
-                                <div style="font-weight:700;color:var(--error);">
-                                    <fmt:formatNumber value="${r.totalAdditionalFee}" type="number" groupingUsed="true"/>đ
-                                </div>
-                            </td>
-                            <td>Nhân viên #${r.receivedBy}</td>
+                            <th>Mã BB</th>
+                            <th>Đơn thuê xe</th>
+                            <th>Mã Xe</th>
+                            <th>Ngày nhận xe</th>
+                            <th>Quãng đường đi</th>
+                            <th>Phụ thu phát sinh</th>
+                            <th>Nhân viên nhận xe</th>
                         </tr>
-                    </c:forEach>
-                </tbody>
-            </table>
-        </div>
-    </c:if>
-    <c:if test="${empty returns}">
-        <!-- Fallback data to show gorgeous table representation when database is clean -->
-        <div style="overflow-x:auto;">
-            <table class="bk-table" id="returnTable">
-                <thead>
-                    <tr>
-                        <th>Mã BB</th>
-                        <th>Đơn thuê xe</th>
-                        <th>Mã Xe</th>
-                        <th>Ngày nhận xe</th>
-                        <th>Quãng đường đi</th>
-                        <th>Phụ thu phát sinh</th>
-                        <th>Nhân viên nhận xe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="code">RT-101</td>
-                        <td><a href="#" style="font-weight:600;color:var(--primary);">#BK-2035</a></td>
-                        <td style="font-weight:500;">Xe #3 (Toyota Camry)</td>
-                        <td><div style="font-size:13px;">30/05/2026 17:30</div></td>
-                        <td><div style="font-weight:600;color:var(--primary);">120 km</div></td>
-                        <td><div style="font-weight:700;color:var(--error);">250,000đ</div></td>
-                        <td>Nhân viên #3</td>
-                    </tr>
-                    <tr>
-                        <td class="code">RT-102</td>
-                        <td><a href="#" style="font-weight:600;color:var(--primary);">#BK-2037</a></td>
-                        <td style="font-weight:500;">Xe #7 (Honda City)</td>
-                        <td><div style="font-size:13px;">31/05/2026 14:00</div></td>
-                        <td><div style="font-weight:600;color:var(--primary);">85 km</div></td>
-                        <td><div style="font-weight:700;color:var(--success);">0đ</div></td>
-                        <td>Nhân viên #3</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </c:if>
+                    </thead>
+                </table>
+            </div>-->
+    <%--</c:if>--%>
 </div>
 
 <script>
-function filterTable() {
-    var input = document.getElementById('searchInput').value.toLowerCase();
-    var rows = document.querySelectorAll('#returnTable tbody tr');
-    rows.forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
-    });
-}
+    function filterTable() {
+        var input = document.getElementById('searchInput').value.toLowerCase();
+        var rows = document.querySelectorAll('#returnTable tbody tr');
+        rows.forEach(function (row) {
+            row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+        });
+    }
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
