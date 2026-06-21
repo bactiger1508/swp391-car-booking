@@ -32,6 +32,9 @@
 <c:if test="${not empty success}">
     <div class="bk-alert bk-alert-success"><span class="material-symbols-outlined">check_circle</span> ${success}</div>
 </c:if>
+<c:if test="${not empty error}">
+    <div class="bk-alert bk-alert-error"><span class="material-symbols-outlined">error</span> ${error}</div>
+</c:if>
 
 <div class="bk-detail-grid">
     <%-- LEFT --%>
@@ -220,10 +223,10 @@
                 </c:if>
 
                 <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
-                    <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;">
+                    <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;" id="cancelForm">
                         <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
-                        <input type="hidden" name="reason" value="Khách hàng tự hủy"/>
-                        <button type="submit" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?')">
+                        <input type="hidden" name="reason" id="cancelReason" value="Khách hàng tự hủy"/>
+                        <button type="button" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="openCancelModal()">
                             <span class="material-symbols-outlined">cancel</span> Hủy đơn thuê
                         </button>
                     </form>
@@ -232,5 +235,115 @@
         </div>
     </div>
 </div>
+
+<%-- BK CUSTOM MODAL POPUP FOR CANCELLATION --%>
+<div id="customCancelModal" class="bk-modal">
+    <div class="bk-modal-content">
+        <div class="bk-modal-header">
+            <h3>Hủy đơn đặt xe #BK-${booking.bookingId}</h3>
+            <span class="modal-close-icon" onclick="closeCancelModal()">&times;</span>
+        </div>
+        <div class="bk-modal-body">
+            <p>Vui lòng nhập lý do hủy đơn thuê xe này. Lưu ý: Lịch trình xe sẽ được giải phóng ngay sau khi hủy.</p>
+            
+            <div style="margin-top:16px;">
+                <label class="bk-form-label" style="margin-bottom:8px;display:block;">Lý do hủy đơn *</label>
+                <textarea id="modalReasonInput" class="bk-form-textarea" rows="3" placeholder="Nhập lý do hủy tại đây..." style="padding-left:12px; width:100%; box-sizing:border-box; border:1px solid var(--outline-variant); border-radius:8px; outline:none; font-family:inherit; font-size:14px;"></textarea>
+                <div id="modalErrorMsg" style="color:var(--error);font-size:12px;font-weight:600;margin-top:4px;display:none;">Lý do hủy không được để trống!</div>
+            </div>
+        </div>
+        <div class="bk-modal-footer">
+            <button type="button" class="bk-btn bk-btn-outline" onclick="closeCancelModal()">Quay lại</button>
+            <button type="button" id="modalConfirmBtn" class="bk-btn bk-btn-danger" onclick="submitCancel()">Xác nhận hủy</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.bk-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(4, 22, 56, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+.bk-modal.open {
+    opacity: 1; pointer-events: auto;
+}
+.bk-modal-content {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    border-radius: 12px;
+    width: 90%; max-width: 480px;
+    box-shadow: var(--shadow);
+    padding: 24px;
+    transform: scale(0.9);
+    transition: transform 0.2s ease-in-out;
+}
+.bk-modal.open .bk-modal-content {
+    transform: scale(1);
+}
+.bk-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--outline-variant);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+.bk-modal-header h3 {
+    font-size: 18px; font-weight: 700; color: var(--primary);
+    margin: 0;
+}
+.modal-close-icon {
+    font-size: 24px; font-weight: 700; color: var(--on-surface-variant);
+    cursor: pointer; line-height: 1;
+}
+.modal-close-icon:hover { color: var(--primary); }
+.bk-modal-body {
+    font-size: 14px; color: var(--on-surface-variant);
+    line-height: 1.6; margin-bottom: 24px;
+}
+.bk-modal-footer {
+    display: flex; justify-content: flex-end; gap: 12px;
+    border-top: 1px solid var(--outline-variant);
+    padding-top: 16px;
+}
+</style>
+
+<script>
+function openCancelModal() {
+    var modal = document.getElementById('customCancelModal');
+    var reasonInput = document.getElementById('modalReasonInput');
+    reasonInput.value = "Khách hàng thay đổi lịch trình";
+    document.getElementById('modalErrorMsg').style.display = 'none';
+    modal.classList.add('open');
+    reasonInput.focus();
+}
+
+function closeCancelModal() {
+    document.getElementById('customCancelModal').classList.remove('open');
+}
+
+function submitCancel() {
+    var reasonInput = document.getElementById('modalReasonInput');
+    var reasonVal = reasonInput.value.trim();
+    if (reasonVal === "") {
+        document.getElementById('modalErrorMsg').style.display = 'block';
+        return;
+    }
+    
+    document.getElementById('cancelReason').value = reasonVal;
+    document.getElementById('cancelForm').submit();
+}
+
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('customCancelModal');
+    if (event.target === modal) {
+        closeCancelModal();
+    }
+});
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

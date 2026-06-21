@@ -91,11 +91,16 @@ public class BookingDetailServlet extends HttpServlet {
                 request.setAttribute("rentalDays", days);
             }
 
-            // Transfer session success message
+            // Transfer session messages
             String successMessage = (String) request.getSession().getAttribute("successMessage");
             if (successMessage != null) {
                 request.setAttribute("success", successMessage);
                 request.getSession().removeAttribute("successMessage");
+            }
+            String errorMessage = (String) request.getSession().getAttribute("errorMessage");
+            if (errorMessage != null) {
+                request.setAttribute("error", errorMessage);
+                request.getSession().removeAttribute("errorMessage");
             }
 
             if (isStaffOrAdmin) {
