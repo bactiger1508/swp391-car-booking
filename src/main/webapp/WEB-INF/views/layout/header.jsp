@@ -21,7 +21,10 @@
     </div>
 
 <%
-    String reqURI = request.getRequestURI();
+    String reqURI = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+    if (reqURI == null) {
+        reqURI = request.getRequestURI();
+    }
     String ctx = request.getContextPath();
     String currentPath = reqURI.startsWith(ctx) ? reqURI.substring(ctx.length()) : reqURI;
     request.setAttribute("_cp", currentPath);
