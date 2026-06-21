@@ -58,7 +58,27 @@ VALUES
     (13, N'51G-555.55', N'Toyota',  N'Vios',       2022, N'Bạc',    5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2022, xe gia đình bền bỉ, tiết kiệm xăng tốt.',                        N'AVAILABLE',   22000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Camera lùi'),
     (14, N'51G-666.66', N'Toyota',  N'Camry',      2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Toyota Camry 2.0Q 2023, sedan hạng D sang trọng, êm ái.',                            N'AVAILABLE',   7000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế điện'),
     (15, N'51G-777.77', N'Hyundai', N'Santa Fe',   2023, N'Trắng',  7, N'AUTOMATIC', N'DIESEL',   1500000.00, N'Hyundai Santa Fe 2023, xe SUV 7 chỗ đa dụng gia đình.',                             N'AVAILABLE',   11000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Ghế sưởi, Camera 360'),
-    (16, N'51G-888.88', N'Kia',     N'Cerato',     2022, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Cerato 2022, kiểu dáng trẻ trung, hiện đại.',                                  N'AVAILABLE',   16000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Cửa sổ trời');
+    (16, N'51G-888.88', N'Kia',     N'Cerato',     2022, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Cerato 2022, kiểu dáng trẻ trung, hiện đại.',                                  N'AVAILABLE',   16000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Cửa sổ trời'),
+    (17, N'51G-999.99', N'Mercedes', N'C200',      2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 2200000.00, N'Mercedes-Benz C200 Avantgarde sang trọng, lịch lãm.',                      N'AVAILABLE',   9500,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế da, Phanh tự động'),
+    (18, N'51H-123.45', N'Mitsubishi', N'Xpander', 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Mitsubishi Xpander 2023, dòng MPV 7 chỗ bán chạy nhất, cực kỳ tiết kiệm.',        N'AVAILABLE',   16000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Apple CarPlay'),
+    (19, N'51H-234.56', N'Suzuki',   N'Ertiga',    2022, N'Bạc',    7, N'AUTOMATIC', N'HYBRID',   850000.00,  N'Suzuki Ertiga Hybrid 2022, MPV 7 chỗ tiết kiệm nhiên liệu tối ưu.',               N'AVAILABLE',   24000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Cảm biến lùi'),
+    (20, N'51H-345.67', N'BMW',      N'320i',      2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 2800000.00, N'BMW 320i Sport Line 2023, sedan hạng sang lái thể thao, đẳng cấp.',             N'AVAILABLE',   6000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Live Cockpit, Ghế da'),
+    (21, N'51H-456.78', N'Kia',      N'Carnival',  2023, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   2200000.00, N'Kia Carnival 2023, xe MPV cỡ lớn cao cấp, siêu rộng rãi cho gia đình.',           N'AVAILABLE',   12000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera 360, Cửa lùa điện, Ghế VIP'),
+    (22, N'51H-567.89', N'Hyundai',  N'Tucson',    2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 1100000.00, N'Hyundai Tucson 2023, thiết kế hiện đại, nhiều tính năng an toàn.',                 N'AVAILABLE',   8000,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Sạc không dây'),
+    (23, N'51H-678.90', N'Mazda',    N'CX-8',      2022, N'Xám',    7, N'AUTOMATIC', N'GASOLINE', 1400000.00, N'Mazda CX-8 2022, SUV 7 chỗ sang trọng, cách âm tốt, động cơ êm ái.',            N'AVAILABLE',   18000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, HUD, Hàng ghế 2 sưởi'),
+    (24, N'51H-789.01', N'Toyota',   N'Innova',    2023, N'Đồng',   7, N'MANUAL',    N'GASOLINE', 900000.00,  N'Toyota Innova 2023, xe 7 chỗ bền bỉ rộng rãi, phù hợp đi tỉnh.',                  N'AVAILABLE',   35000, N'Chi nhánh Thủ Đức', N'Bluetooth, Camera lùi, Điều hòa 2 giàn'),
+    (25, N'51H-890.12', N'Honda',    N'CR-V',      2023, N'Đen',    7, N'AUTOMATIC', N'GASOLINE', 1300000.00, N'Honda CR-V 2023, SUV 7 chỗ linh hoạt với gói an toàn Honda Sensing.',            N'AVAILABLE',   10000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Honda Sensing, Ghế da'),
+    (26, N'51K-111.22', N'VinFast',  N'VF 6',      2024, N'Đỏ',     5, N'AUTOMATIC', N'ELECTRIC', 1100000.00, N'VinFast VF 6 Plus 2024, SUV điện cỡ B thời thượng, thông minh.',                  N'AVAILABLE',   1500,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, ADAS, Trợ lý ảo'),
+    (27, N'51K-222.33', N'Ford',     N'Everest',   2024, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   1800000.00, N'Ford Ranger Everest Titanium 2024, SUV 7 chỗ off-road đỉnh cao.',                 N'AVAILABLE',   3000,  N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera 360, Cửa sổ trời toàn cảnh'),
+    (28, N'51K-333.44', N'Hyundai',  N'Stargazer', 2023, N'Bạc',    7, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Hyundai Stargazer 2023, xe MPV gia đình tiện dụng, giá thuê hợp lý.',             N'AVAILABLE',   14000, N'Chi nhánh Thủ Đức', N'Bluetooth, Apple CarPlay, Camera lùi'),
+    (29, N'51K-444.55', N'Toyota',   N'Veloz',     2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1000000.00, N'Toyota Veloz Cross 2023, xe 7 chỗ đa dụng hiện đại và tiết kiệm.',              N'AVAILABLE',   13000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Sạc không dây, Camera 360'),
+    (30, N'51K-555.66', N'Kia',      N'Seltos',    2023, N'Vàng',   5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Seltos 2023, SUV đô thị cá tính, tầm quan sát tốt.',                          N'AVAILABLE',   17000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Ghế thông gió'),
+    (31, N'51K-666.77', N'Hyundai',  N'Custin',    2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Hyundai Custin 2023, dòng MPV trung cao cấp cửa lùa tự động cực kỳ tiện nghi.',      N'AVAILABLE',   9000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Cửa lùa điện, Hàng ghế 2 thương gia'),
+    (32, N'51K-777.88', N'Mazda',    N'3',         2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Mazda 3 Premium 2023, sedan hạng C sang trọng, thiết kế Kodo quyến rũ.',           N'AVAILABLE',   11000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Ghế da, HUD'),
+    (33, N'51K-888.99', N'VinFast',  N'VF 7',       2024, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 1500000.00, N'VinFast VF 7 Plus 2024, SUV điện phân khúc C thể thao, mạnh mẽ.',                  N'AVAILABLE',   1000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS'),
+    (34, N'51K-999.00', N'Toyota',   N'Cross',     2023, N'Xám',    5, N'AUTOMATIC', N'HYBRID',   1100000.00, N'Toyota Corolla Cross 1.8V 2023, SUV đô thị tiết kiệm xăng và êm ái.',                 N'AVAILABLE',   12000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da'),
+    (35, N'51L-001.23', N'Ford',     N'Explorer',  2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 3000000.00, N'Ford Explorer Limited 2023, SUV cỡ lớn cao cấp nhập Mỹ, đầy uy lực.',                N'AVAILABLE',   15000, N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, Ghế mát-xa, Cửa sổ trời'),
+    (36, N'51L-012.34', N'Mercedes', N'GLC 300',   2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 3500000.00, N'Mercedes GLC 300 4MATIC 2023, SUV sang trọng bán chạy hàng đầu.',                   N'AVAILABLE',   8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Loa Burmester, Ghế da nâng điện');
 
 SET IDENTITY_INSERT cars OFF;
 GO
@@ -84,7 +104,27 @@ VALUES
     (13, N'/assets/images/cars/vios-front2.jpg',   N'Mặt trước',  1, 1),
     (14, N'/assets/images/cars/camry-front.jpg',   N'Mặt trước',  1, 1),
     (15, N'/assets/images/cars/santafe-front.jpg', N'Mặt trước',  1, 1),
-    (16, N'/assets/images/cars/cerato-front.jpg',  N'Mặt trước',  1, 1);
+    (16, N'/assets/images/cars/cerato-front.jpg',  N'Mặt trước',  1, 1),
+    (17, N'/assets/images/cars/c200-front.jpg',    N'Mặt trước',  1, 1),
+    (18, N'/assets/images/cars/xpander-front.jpg', N'Mặt trước',  1, 1),
+    (19, N'/assets/images/cars/ertiga-front.jpg',  N'Mặt trước',  1, 1),
+    (20, N'/assets/images/cars/320i-front.jpg',    N'Mặt trước',  1, 1),
+    (21, N'/assets/images/cars/carnival-front.jpg', N'Mặt trước', 1, 1),
+    (22, N'/assets/images/cars/tucson-front.jpg',  N'Mặt trước',  1, 1),
+    (23, N'/assets/images/cars/cx8-front.jpg',     N'Mặt trước',  1, 1),
+    (24, N'/assets/images/cars/innova-front.jpg',  N'Mặt trước',  1, 1),
+    (25, N'/assets/images/cars/crv-front.jpg',     N'Mặt trước',  1, 1),
+    (26, N'/assets/images/cars/vf6-front.jpg',     N'Mặt trước',  1, 1),
+    (27, N'/assets/images/cars/everest-front.jpg', N'Mặt trước',  1, 1),
+    (28, N'/assets/images/cars/stargazer-front.jpg', N'Mặt trước', 1, 1),
+    (29, N'/assets/images/cars/veloz-front.jpg',   N'Mặt trước',  1, 1),
+    (30, N'/assets/images/cars/seltos-front.jpg',  N'Mặt trước',  1, 1),
+    (31, N'/assets/images/cars/custin-front.jpg',  N'Mặt trước',  1, 1),
+    (32, N'/assets/images/cars/mazda3-front.jpg',  N'Mặt trước',  1, 1),
+    (33, N'/assets/images/cars/vf7-front.jpg',     N'Mặt trước',  1, 1),
+    (34, N'/assets/images/cars/corollacross-front.jpg', N'Mặt trước', 1, 1),
+    (35, N'/assets/images/cars/explorer-front.jpg', N'Mặt trước', 1, 1),
+    (36, N'/assets/images/cars/glc300-front.jpg',  N'Mặt trước',  1, 1);
 GO
 
 -- ============================================================
@@ -94,7 +134,10 @@ INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, sta
 VALUES
     (5, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay dầu động cơ và lọc dầu',           1500000.00, N'Xe đang ở trạng thái bảo trì', N'staff@carrental.com'),
     (4, N'INSPECTION',   DATEADD(DAY, 14, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ sau chuyến thuê',  500000.00,  NULL, N'staff@carrental.com'),
-    (1, N'TIRE_CHANGE',  DATEADD(DAY, 30, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Thay lốp trước mùa mưa',            3000000.00, NULL, N'staff@carrental.com');
+    (1, N'TIRE_CHANGE',  DATEADD(DAY, 30, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Thay lốp trước mùa mưa',            3000000.00, NULL, N'staff@carrental.com'),
+    (17, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay nhớt định kỳ C200',                1800000.00, NULL, N'staff@carrental.com'),
+    (21, N'REPAIR',       DATEADD(DAY, 5, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Bảo dưỡng hệ thống điện và cửa lùa', 2500000.00, NULL, N'staff@carrental.com'),
+    (26, N'INSPECTION',   DATEADD(DAY, 10, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ pin và ADAS',     800000.00,  NULL, N'staff@carrental.com');
 GO
 
 -- ============================================================
@@ -156,7 +199,12 @@ INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pic
 VALUES
     (1, 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 6000000.00, 1800000.00, N'IN_PROGRESS', 2, '2026-05-19 14:00:00'),
     (2, 3, 1, '2026-06-01 08:00:00', '2026-06-03 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 1600000.00, 480000.00,  N'CONFIRMED',   2, '2026-05-22 10:00:00'),
-    (3, 4, 2, '2026-06-05 08:00:00', '2026-06-07 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 7', 1800000.00, 540000.00,  N'PENDING',     NULL, NULL);
+    (3, 4, 2, '2026-06-05 08:00:00', '2026-06-07 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 7', 1800000.00, 540000.00,  N'PENDING',     NULL, NULL),
+    (4, 3, 17, '2026-06-25 08:00:00', '2026-06-28 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 6600000.00, 1980000.00, N'CONFIRMED',   2, '2026-06-20 09:00:00'),
+    (5, 4, 18, '2026-06-28 08:00:00', '2026-06-30 08:00:00', N'Chi nhánh Thủ Đức', N'Chi nhánh Thủ Đức', 1900000.00, 570000.00,  N'PENDING',     NULL, NULL),
+    (6, 3, 21, '2026-07-01 08:00:00', '2026-07-08 08:00:00', N'Chi nhánh Quận 7', N'Chi nhánh Quận 7', 15400000.00, 4620000.00, N'IN_PROGRESS', 2, '2026-06-20 15:30:00'),
+    (7, 4, 26, '2026-06-22 08:00:00', '2026-06-24 08:00:00', N'Chi nhánh Quận 7', N'Chi nhánh Quận 7', 2200000.00, 660000.00,  N'CONFIRMED',   2, '2026-06-20 16:00:00'),
+    (8, 3, 29, '2026-06-15 08:00:00', '2026-06-17 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 2000000.00, 600000.00,  N'CANCELLED',   NULL, NULL);
 
 SET IDENTITY_INSERT bookings OFF;
 GO
