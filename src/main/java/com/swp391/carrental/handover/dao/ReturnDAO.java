@@ -60,7 +60,7 @@ public class ReturnDAO {
                 + "mileage_at_return, fuel_level, exterior_condition, interior_condition, mechanical_condition, "
                 + " damage_description, photos_url, late_fee, extra_km_fee, damage_fee, cleaning_fee, lost_item_fee, "
                 + "total_additional_fee, notes, received_by, returned_by) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, vr.getBookingId());
             if (vr.getContractId() != null) {
@@ -183,7 +183,7 @@ public class ReturnDAO {
         v.setFuelLevel(rs.getString("fuel_level"));
         v.setExteriorCondition(rs.getString("exterior_condition"));
         v.setInteriorCondition(rs.getString("interior_condition"));
-        v.setInteriorCondition(rs.getString("mechanical_condition"));
+        v.setMechanicalCondition(rs.getString("mechanical_condition"));
         v.setDamageDescription(rs.getString("damage_description"));
         v.setPhotosUrl(rs.getString("photos_url"));
         v.setLateFee(rs.getBigDecimal("late_fee"));

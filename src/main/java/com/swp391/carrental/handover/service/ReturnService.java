@@ -4,14 +4,11 @@ import java.sql.SQLException;
 import java.util.List;
 import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.dao.BookingDAO;
-import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.vehicle.constant.CarStatus;
 import com.swp391.carrental.vehicle.dao.CarDAO;
-import java.time.LocalDateTime;
-import static java.time.LocalDateTime.now;
 
 /*
  * Name: ReturnService
@@ -66,19 +63,24 @@ public class ReturnService {
      */
     public int returnVehicle(VehicleReturn vehicleReturn) {
         try {
-            int returnId = returnDAO.insert(vehicleReturn);
+            VehicleReturn existing = returnDAO.findByBookingId(vehicleReturn.getBookingId());
+            int returnId;
 
-            // Update car status back to AVAILABLE
+            if (existing == null) {
+                returnId = returnDAO.insert(vehicleReturn);
+            } else {
+                vehicleReturn.setReturnId(existing.getReturnId());
+                returnDAO.update(vehicleReturn);
+                returnId = existing.getReturnId();
+            }
+
             carDAO.updateStatus(vehicleReturn.getCarId(), CarStatus.AVAILABLE);
 
-            // BR-08: If there are additional fees, set to PENDING_SETTLEMENT
-            if (vehicleReturn.getTotalAdditionalFee() != null
-                    && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
+            if (vehicleReturn.getTotalAdditionalFee() != null && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
                 bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
             } else {
                 bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
             }
-
             return returnId;
         } catch (SQLException e) {
             throw new AppException("Failed to record vehicle return.", e);
