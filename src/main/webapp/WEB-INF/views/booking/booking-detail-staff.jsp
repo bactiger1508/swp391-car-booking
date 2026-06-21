@@ -32,6 +32,9 @@
 <c:if test="${not empty success}">
     <div class="bk-alert bk-alert-success"><span class="material-symbols-outlined">check_circle</span> ${success}</div>
 </c:if>
+<c:if test="${not empty error}">
+    <div class="bk-alert bk-alert-error"><span class="material-symbols-outlined">error</span> ${error}</div>
+</c:if>
 
 <div class="bk-detail-grid">
     <%-- LEFT --%>
@@ -253,7 +256,16 @@
                 </div>
             </c:if>
 
-            <div style="margin-top:16px;">
+            <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+                <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+                    <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;" id="cancelForm">
+                        <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
+                        <input type="hidden" name="reason" id="cancelReason" value="Nhân viên hủy đơn"/>
+                        <button type="button" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="openCancelModal()">
+                            <span class="material-symbols-outlined">cancel</span> Hủy đơn thuê
+                        </button>
+                    </form>
+                </c:if>
                 <a href="${pageContext.request.contextPath}/bookings/manage" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
                     <span class="material-symbols-outlined">arrow_back</span> Quay lại
                 </a>
@@ -381,6 +393,64 @@ document.getElementById('modalConfirmBtn').onclick = function() {
     document.getElementById('customConfirmModal').classList.remove('open');
     activeForm.submit();
 };
+</script>
+
+<%-- BK CUSTOM MODAL POPUP FOR CANCELLATION --%>
+<div id="customCancelModal" class="bk-modal">
+    <div class="bk-modal-content">
+        <div class="bk-modal-header">
+            <h3>Hủy đơn đặt xe #BK-${booking.bookingId}</h3>
+            <span class="modal-close-icon" onclick="closeCancelModal()">&times;</span>
+        </div>
+        <div class="bk-modal-body">
+            <p>Vui lòng nhập lý do hủy đơn thuê xe này. Lưu ý: Lịch trình xe sẽ được giải phóng ngay sau khi hủy.</p>
+            
+            <div style="margin-top:16px;">
+                <label class="bk-form-label" style="margin-bottom:8px;display:block;">Lý do hủy đơn *</label>
+                <textarea id="modalReasonInput" class="bk-form-textarea" rows="3" placeholder="Nhập lý do hủy tại đây..." style="padding-left:12px; width:100%; box-sizing:border-box; border:1px solid var(--outline-variant); border-radius:8px; outline:none; font-family:inherit; font-size:14px;"></textarea>
+                <div id="modalCancelErrorMsg" style="color:var(--error);font-size:12px;font-weight:600;margin-top:4px;display:none;">Lý do hủy không được để trống!</div>
+            </div>
+        </div>
+        <div class="bk-modal-footer">
+            <button type="button" class="bk-btn bk-btn-outline" onclick="closeCancelModal()">Quay lại</button>
+            <button type="button" id="modalConfirmCancelBtn" class="bk-btn bk-btn-danger" onclick="submitCancel()">Xác nhận hủy</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCancelModal() {
+    var modal = document.getElementById('customCancelModal');
+    var reasonInput = document.getElementById('modalReasonInput');
+    reasonInput.value = "Khách hàng yêu cầu hủy";
+    document.getElementById('modalCancelErrorMsg').style.display = 'none';
+    modal.classList.add('open');
+    reasonInput.focus();
+}
+
+function closeCancelModal() {
+    document.getElementById('customCancelModal').classList.remove('open');
+}
+
+function submitCancel() {
+    var reasonInput = document.getElementById('modalReasonInput');
+    var reasonVal = reasonInput.value.trim();
+    if (reasonVal === "") {
+        document.getElementById('modalCancelErrorMsg').style.display = 'block';
+        return;
+    }
+    
+    document.getElementById('cancelReason').value = reasonVal;
+    document.getElementById('cancelForm').submit();
+}
+
+// Support clicking outside to close
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('customCancelModal');
+    if (event.target === modal) {
+        closeCancelModal();
+    }
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
