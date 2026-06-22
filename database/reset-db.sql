@@ -11,6 +11,7 @@ IF OBJECT_ID('dbo.audit_logs', 'U') IS NOT NULL DROP TABLE audit_logs;
 IF OBJECT_ID('dbo.reviews', 'U') IS NOT NULL DROP TABLE reviews;
 IF OBJECT_ID('dbo.vehicle_returns', 'U') IS NOT NULL DROP TABLE vehicle_returns;
 IF OBJECT_ID('dbo.vehicle_handovers', 'U') IS NOT NULL DROP TABLE vehicle_handovers;
+IF OBJECT_ID('dbo.maintenance_schedules', 'U') IS NOT NULL DROP TABLE maintenance_schedules;
 IF OBJECT_ID('dbo.payments', 'U') IS NOT NULL DROP TABLE payments;
 IF OBJECT_ID('dbo.rental_contracts', 'U') IS NOT NULL DROP TABLE rental_contracts;
 IF OBJECT_ID('dbo.bookings', 'U') IS NOT NULL DROP TABLE bookings;

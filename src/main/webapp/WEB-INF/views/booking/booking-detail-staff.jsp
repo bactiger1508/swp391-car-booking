@@ -83,31 +83,80 @@
             </div>
         </div>
 
-        <%-- Schedule --%>
+        <%-- Schedule & Rental Mode --%>
         <div class="bk-card">
             <div class="bk-card-title">
-                <span class="material-symbols-outlined">edit_calendar</span> Lịch trình thuê xe
+                <span class="material-symbols-outlined">edit_calendar</span> Lịch trình thuê xe & Gói thuê
             </div>
-            <div class="bk-form-grid">
+            <div class="bk-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div class="bk-form-group">
+                    <label class="bk-form-label">Hình thức thuê</label>
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
+                        <c:choose>
+                            <c:when test="${booking.rentalMode == 'DAILY'}">Thuê theo ngày</c:when>
+                            <c:when test="${booking.rentalMode == 'TRIP'}">Thuê theo chuyến</c:when>
+                            <c:when test="${booking.rentalMode == 'COMBO'}">
+                                Gói Combo
+                                <c:if test="${booking.pricingPackage == 'COMBO_10_DAYS'}"> 10 ngày (Tết)</c:if>
+                                <c:if test="${booking.pricingPackage == 'COMBO_7_DAYS'}"> 7 ngày (Tuần)</c:if>
+                            </c:when>
+                            <c:otherwise>${booking.rentalMode}</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="bk-form-group">
+                    <label class="bk-form-label">Phương thức nhận xe</label>
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
+                        <c:choose>
+                            <c:when test="${booking.deliveryMethod == 'SHOWROOM'}">Nhận tại showroom</c:when>
+                            <c:when test="${booking.deliveryMethod == 'DELIVERY'}">Giao xe tận nơi</c:when>
+                            <c:otherwise>${booking.deliveryMethod}</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="bk-form-group">
+                    <label class="bk-form-label">Hạn mức số KM</label>
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
+                        <c:choose>
+                            <c:when test="${not empty booking.kmLimit}">${booking.kmLimit} km</c:when>
+                            <c:otherwise>Không giới hạn</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+                <div class="bk-form-group">
+                    <label class="bk-form-label">KM dự kiến đi</label>
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
+                        <c:choose>
+                            <c:when test="${not empty booking.estimatedKm}">${booking.estimatedKm} km</c:when>
+                            <c:otherwise>--</c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Ngày nhận xe</label>
-                    <div style="font-size:16px;font-weight:600;color:var(--primary);padding:8px 0;">
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
                         <fmt:formatNumber value="${booking.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${booking.startDate.monthValue}" pattern="00"/>/${booking.startDate.year} <fmt:formatNumber value="${booking.startDate.hour}" pattern="00"/>:<fmt:formatNumber value="${booking.startDate.minute}" pattern="00"/>
                     </div>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Ngày trả xe</label>
-                    <div style="font-size:16px;font-weight:600;color:var(--primary);padding:8px 0;">
+                    <div style="font-size:15px;font-weight:600;color:var(--primary);padding:8px 0;">
                         <fmt:formatNumber value="${booking.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${booking.endDate.monthValue}" pattern="00"/>/${booking.endDate.year} <fmt:formatNumber value="${booking.endDate.hour}" pattern="00"/>:<fmt:formatNumber value="${booking.endDate.minute}" pattern="00"/>
                     </div>
                 </div>
-                <div class="bk-form-group">
-                    <label class="bk-form-label">Điểm nhận xe</label>
-                    <div style="font-size:14px;padding:8px 0;">${not empty booking.pickupLocation ? booking.pickupLocation : 'Văn phòng chính'}</div>
+                <div class="bk-form-group" style="grid-column: 1 / -1;">
+                    <label class="bk-form-label">Địa điểm nhận xe</label>
+                    <div style="font-size:14px;padding:8px 0;font-weight:500;">${not empty booking.pickupLocation ? booking.pickupLocation : 'Showroom chính'}</div>
                 </div>
-                <div class="bk-form-group">
-                    <label class="bk-form-label">Điểm trả xe</label>
-                    <div style="font-size:14px;padding:8px 0;">${not empty booking.returnLocation ? booking.returnLocation : 'Văn phòng chính'}</div>
+                <c:if test="${booking.deliveryMethod == 'DELIVERY' && not empty booking.deliveryAddress}">
+                    <div class="bk-form-group" style="grid-column: 1 / -1;">
+                        <label class="bk-form-label">Địa chỉ giao xe tận nơi</label>
+                        <div style="font-size:14px;padding:8px 0;font-weight:500;color:var(--secondary);">${booking.deliveryAddress} (Khoảng cách: ${booking.deliveryDistance} km)</div>
+                    </div>
+                </c:if>
+                <div class="bk-form-group" style="grid-column: 1 / -1;">
+                    <label class="bk-form-label">Địa điểm trả xe</label>
+                    <div style="font-size:14px;padding:8px 0;font-weight:500;">${not empty booking.returnLocation ? booking.returnLocation : 'Showroom chính'}</div>
                 </div>
             </div>
 
@@ -181,21 +230,36 @@
     <%-- RIGHT: Summary + Actions --%>
     <div>
         <div class="bk-cost-card" style="position:sticky;top:96px;">
-            <h3><span class="material-symbols-outlined">receipt_long</span> Tóm tắt đơn thuê</h3>
-            <c:if test="${not empty rentalDays && not empty car}">
-                <div class="bk-detail-rows">
+            <h3><span class="material-symbols-outlined">receipt_long</span> Chi tiết hóa đơn</h3>
+            <div class="bk-detail-rows">
+                <div class="bk-detail-row">
+                    <span class="label">Giá thuê cơ bản</span>
+                    <span class="value"><fmt:formatNumber value="${not empty booking.baseAmount ? booking.baseAmount : booking.totalAmount / 1.1}" type="number" groupingUsed="true"/>đ</span>
+                </div>
+                <c:if test="${not empty booking.discountAmount && booking.discountAmount > 0}">
                     <div class="bk-detail-row">
-                        <span class="label">Giá thuê (${rentalDays} ngày)</span>
-                        <span class="value"><fmt:formatNumber value="${car.dailyRate * rentalDays}" type="number" groupingUsed="true"/>đ</span>
+                        <span class="label" style="color:var(--success);">Chiết khấu & Ưu đãi</span>
+                        <span class="value" style="color:var(--success);">-<fmt:formatNumber value="${booking.discountAmount}" type="number" groupingUsed="true"/>đ</span>
                     </div>
-                    <c:set var="taxAndFees" value="${booking.totalAmount - (car.dailyRate * rentalDays)}"/>
-                    <c:if test="${taxAndFees < 0}">
-                        <c:set var="taxAndFees" value="0"/>
-                    </c:if>
+                </c:if>
+                <c:if test="${not empty booking.deliveryFee && booking.deliveryFee > 0}">
                     <div class="bk-detail-row">
-                        <span class="label">Thuế & Phí</span>
-                        <span class="value"><fmt:formatNumber value="${taxAndFees}" type="number" groupingUsed="true"/>đ</span>
+                        <span class="label">Phí giao xe tận nơi</span>
+                        <span class="value"><fmt:formatNumber value="${booking.deliveryFee}" type="number" groupingUsed="true"/>đ</span>
                     </div>
+                </c:if>
+                <div class="bk-detail-row">
+                    <span class="label">Thuế suất VAT (${not empty taxRate ? taxRate : 10}%)</span>
+                    <span class="value">
+                        <c:choose>
+                            <c:when test="${not empty booking.taxAmount}">
+                                <fmt:formatNumber value="${booking.taxAmount}" type="number" groupingUsed="true"/>đ
+                            </c:when>
+                            <c:otherwise>
+                                <fmt:formatNumber value="${(booking.totalAmount / (1.0 + ((not empty taxRate ? taxRate : 10) / 100.0))) * ((not empty taxRate ? taxRate : 10) / 100.0)}" type="number" groupingUsed="true"/>đ
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
                 </div>
                 <div class="bk-summary-total" style="border-bottom: 1px dashed var(--outline-variant); padding-bottom: 12px; margin-bottom: 12px;">
                     <span class="label">Tổng cộng</span>
@@ -205,7 +269,7 @@
                     <span class="label" style="font-weight: 500;">Tiền cọc bắt buộc</span>
                     <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.depositAmount}" type="number" groupingUsed="true"/>đ</span>
                 </div>
-            </c:if>
+            </div>
             
             <h3 style="margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 20px; margin-bottom: 16px;">
                 <span class="material-symbols-outlined">payments</span> Tóm tắt thanh toán
@@ -313,7 +377,16 @@
                 </c:if>
             </div>
 
-            <div style="margin-top:16px;">
+            <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+                <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+                    <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;" id="cancelForm">
+                        <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
+                        <input type="hidden" name="reason" id="cancelReason" value="Nhân viên hủy đơn"/>
+                        <button type="button" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="openCancelModal()">
+                            <span class="material-symbols-outlined">cancel</span> Hủy đơn thuê
+                        </button>
+                    </form>
+                </c:if>
                 <a href="${pageContext.request.contextPath}/bookings/manage" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
                     <span class="material-symbols-outlined">arrow_back</span> Quay lại
                 </a>
@@ -441,6 +514,64 @@ document.getElementById('modalConfirmBtn').onclick = function() {
     document.getElementById('customConfirmModal').classList.remove('open');
     activeForm.submit();
 };
+</script>
+
+<%-- BK CUSTOM MODAL POPUP FOR CANCELLATION --%>
+<div id="customCancelModal" class="bk-modal">
+    <div class="bk-modal-content">
+        <div class="bk-modal-header">
+            <h3>Hủy đơn đặt xe #BK-${booking.bookingId}</h3>
+            <span class="modal-close-icon" onclick="closeCancelModal()">&times;</span>
+        </div>
+        <div class="bk-modal-body">
+            <p>Vui lòng nhập lý do hủy đơn thuê xe này. Lưu ý: Lịch trình xe sẽ được giải phóng ngay sau khi hủy.</p>
+            
+            <div style="margin-top:16px;">
+                <label class="bk-form-label" style="margin-bottom:8px;display:block;">Lý do hủy đơn *</label>
+                <textarea id="modalReasonInput" class="bk-form-textarea" rows="3" placeholder="Nhập lý do hủy tại đây..." style="padding-left:12px; width:100%; box-sizing:border-box; border:1px solid var(--outline-variant); border-radius:8px; outline:none; font-family:inherit; font-size:14px;"></textarea>
+                <div id="modalCancelErrorMsg" style="color:var(--error);font-size:12px;font-weight:600;margin-top:4px;display:none;">Lý do hủy không được để trống!</div>
+            </div>
+        </div>
+        <div class="bk-modal-footer">
+            <button type="button" class="bk-btn bk-btn-outline" onclick="closeCancelModal()">Quay lại</button>
+            <button type="button" id="modalConfirmCancelBtn" class="bk-btn bk-btn-danger" onclick="submitCancel()">Xác nhận hủy</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCancelModal() {
+    var modal = document.getElementById('customCancelModal');
+    var reasonInput = document.getElementById('modalReasonInput');
+    reasonInput.value = "Khách hàng yêu cầu hủy";
+    document.getElementById('modalCancelErrorMsg').style.display = 'none';
+    modal.classList.add('open');
+    reasonInput.focus();
+}
+
+function closeCancelModal() {
+    document.getElementById('customCancelModal').classList.remove('open');
+}
+
+function submitCancel() {
+    var reasonInput = document.getElementById('modalReasonInput');
+    var reasonVal = reasonInput.value.trim();
+    if (reasonVal === "") {
+        document.getElementById('modalCancelErrorMsg').style.display = 'block';
+        return;
+    }
+    
+    document.getElementById('cancelReason').value = reasonVal;
+    document.getElementById('cancelForm').submit();
+}
+
+// Support clicking outside to close
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('customCancelModal');
+    if (event.target === modal) {
+        closeCancelModal();
+    }
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

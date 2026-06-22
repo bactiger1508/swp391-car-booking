@@ -43,6 +43,15 @@ public class BookingService {
         }
     }
 
+    /** Get active bookings for a specific car */
+    public List<Booking> getActiveBookingsByCar(int carId) {
+        try {
+            return bookingDAO.findActiveBookingsByCarId(carId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get active bookings for car.", e);
+        }
+    }
+
     /** Get all bookings in the system */
     public List<Booking> getAllBookings() {
         try {

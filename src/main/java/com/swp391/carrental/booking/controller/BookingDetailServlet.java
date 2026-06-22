@@ -36,6 +36,7 @@ public class BookingDetailServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
     private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
+    private final com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
     private final com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
     private final com.swp391.carrental.contract.service.ContractService contractService = new com.swp391.carrental.contract.service.ContractService();
 
@@ -80,6 +81,7 @@ public class BookingDetailServlet extends HttpServlet {
             Car car = vehicleService.getCarById(booking.getCarId());
             request.setAttribute("booking", booking);
             request.setAttribute("car", car);
+            request.setAttribute("taxRate", policyService.getPolicyValue("TAX_RATE", "10"));
 
             // Fetch payments & contract info
             java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
@@ -120,14 +122,12 @@ public class BookingDetailServlet extends HttpServlet {
                 request.setAttribute("rentalDays", days);
             }
 
-            // Transfer session success message
+            // Transfer session messages
             String successMessage = (String) request.getSession().getAttribute("successMessage");
             if (successMessage != null) {
                 request.setAttribute("success", successMessage);
                 request.getSession().removeAttribute("successMessage");
             }
-
-            // Transfer session error message
             String errorMessage = (String) request.getSession().getAttribute("errorMessage");
             if (errorMessage != null) {
                 request.setAttribute("error", errorMessage);

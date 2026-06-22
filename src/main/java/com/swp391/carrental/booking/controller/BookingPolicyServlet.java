@@ -36,6 +36,8 @@ public class BookingPolicyServlet extends HttpServlet {
         request.setAttribute("bookingPolicies", policyService.getPoliciesByCategory("BOOKING"));
         request.setAttribute("pricingPolicies", policyService.getPoliciesByCategory("PRICING"));
         request.setAttribute("penaltyPolicies", policyService.getPoliciesByCategory("PENALTY"));
+        request.setAttribute("taxRate", policyService.getPolicyValue("TAX_RATE", "10"));
+        request.setAttribute("depositPercentage", policyService.getPolicyValue("DEPOSIT_PERCENTAGE", "30"));
 
         request.getRequestDispatcher("/WEB-INF/views/booking/booking-policy.jsp")
                 .forward(request, response);

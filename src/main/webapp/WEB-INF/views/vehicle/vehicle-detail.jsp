@@ -114,9 +114,9 @@
                             </button>
                         </c:otherwise>
                     </c:choose>
-                    <a href="${pageContext.request.contextPath}/bookings/calendar" class="bk-btn bk-btn-outline" style="text-align: center; justify-content: center; height: 48px; width: 100%;">
-                        Xem lịch đặt xe
-                    </a>
+                    <button type="button" class="bk-btn bk-btn-outline" style="text-align: center; justify-content: center; height: 48px; width: 100%;" onclick="openCalendarModal()">
+                        <span class="material-symbols-outlined">calendar_month</span> Xem lịch bận của xe
+                    </button>
                 </div>
             </div>
         </div>
@@ -195,6 +195,92 @@
             </div>
         </div>
     </div>
+
+    <!-- Active Bookings/Schedule Calendar Modal -->
+    <div id="calendarModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+        <div class="bk-card" style="width:90%; max-width:600px; padding:24px; max-height:85vh; overflow-y:auto; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--outline-variant); padding-bottom:12px; margin-bottom:16px;">
+                <h3 style="margin:0; font-size:18px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                    <span class="material-symbols-outlined">calendar_today</span> Lịch bận của xe
+                </h3>
+                <button type="button" class="bk-btn bk-btn-outline" style="padding:4px; border:none; background:none;" onclick="closeCalendarModal()">
+                    <span class="material-symbols-outlined" style="font-size:24px; color:var(--outline);">close</span>
+                </button>
+            </div>
+            
+            <div style="font-size:14px; color:var(--on-surface-variant); margin-bottom:20px;">
+                Dưới đây là các khoảng thời gian xe <strong>${car.brand} ${car.model} (${car.licensePlate})</strong> bận do có khách đặt hoặc đang bảo trì:
+            </div>
+
+            <!-- Section: Rental Bookings -->
+            <div style="margin-bottom:20px;">
+                <h4 style="margin:0 0 8px 0; font-size:14px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:6px;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">key</span> Lịch thuê xe
+                </h4>
+                <c:choose>
+                    <c:when test="${empty activeBookings}">
+                        <div style="padding:12px; background:var(--surface-container-low); border-radius:8px; font-size:13px; color:var(--success); font-weight:500;">
+                            Không có lịch đặt thuê nào hiện tại.
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <c:forEach var="bk" items="${activeBookings}">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface-container-low); border-radius:8px; border-left:4px solid var(--error);">
+                                    <div>
+                                        <div style="font-size:13px; color:var(--on-surface);">
+                                            Từ: <fmt:parseDate value="${bk.startDate}" pattern="yyyy-MM-dd'T'HH:mm" var="pSt" type="both"/>
+                                            <strong><fmt:formatDate value="${pSt}" pattern="dd/MM/yyyy HH:mm"/></strong>
+                                        </div>
+                                        <div style="font-size:13px; color:var(--on-surface); margin-top:2px;">
+                                            Đến: <fmt:parseDate value="${bk.endDate}" pattern="yyyy-MM-dd'T'HH:mm" var="pEd" type="both"/>
+                                            <strong><fmt:formatDate value="${pEd}" pattern="dd/MM/yyyy HH:mm"/></strong>
+                                        </div>
+                                    </div>
+                                    <span class="bk-badge bk-badge-pending" style="font-size:11px;">Đã đặt</span>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+
+            <!-- Section: Maintenance Schedule -->
+            <div style="margin-bottom:20px;">
+                <h4 style="margin:0 0 8px 0; font-size:14px; font-weight:700; color:var(--secondary); text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:6px;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">build</span> Lịch bảo trì dự kiến
+                </h4>
+                <c:choose>
+                    <c:when test="${empty maintenances}">
+                        <div style="padding:12px; background:var(--surface-container-low); border-radius:8px; font-size:13px; color:var(--on-surface-variant);">
+                            Không có lịch bảo trì dự kiến.
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <c:forEach var="m" items="${maintenances}">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--surface-container-low); border-radius:8px; border-left:4px solid var(--outline);">
+                                    <div>
+                                        <div style="font-size:13px; color:var(--on-surface); font-weight:600;">
+                                            ${m.maintenanceType} - ${m.description}
+                                        </div>
+                                        <div style="font-size:12px; color:var(--on-surface-variant); margin-top:2px;">
+                                            Ngày bảo trì: <strong>${m.scheduledDate}</strong>
+                                        </div>
+                                    </div>
+                                    <span class="bk-badge bk-badge-confirmed" style="font-size:11px; background:#FFF3E0; color:#EF6C00;">Bảo trì</span>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+
+            <div style="margin-top:24px; text-align:right;">
+                <button type="button" class="bk-btn bk-btn-primary" onclick="closeCalendarModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
 </c:if>
 
 <c:if test="${empty car}">
@@ -218,6 +304,22 @@ function changeMainImage(url, thumb) {
     thumb.style.borderColor = 'var(--primary)';
     thumb.style.opacity = '1';
 }
+
+function openCalendarModal() {
+    document.getElementById('calendarModal').style.display = 'flex';
+}
+
+function closeCalendarModal() {
+    document.getElementById('calendarModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('calendarModal');
+    if (event.target === modal) {
+        closeCalendarModal();
+    }
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

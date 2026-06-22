@@ -6,11 +6,10 @@ import java.time.LocalDateTime;
 /*
  * Name: Booking
  * @Author: BacBXHE186736
- * Date: 23/05/2026
- * Version: 1.0
+ * Date: 21/06/2026
+ * Version: 2.0
  * Description: Handles business logic and operations for Booking.
  */
-
 
 /**
  * Represents a rental booking.
@@ -35,6 +34,19 @@ public class Booking {
     private String cancelReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Redesign Fields
+    private String rentalMode;
+    private String pricingPackage;
+    private String deliveryMethod;
+    private String deliveryAddress;
+    private BigDecimal deliveryDistance;
+    private BigDecimal deliveryFee;
+    private Integer kmLimit;
+    private Integer estimatedKm;
+    private BigDecimal baseAmount;
+    private BigDecimal discountAmount;
+    private BigDecimal taxAmount;
 
     public Booking() {
     }
@@ -91,4 +103,40 @@ public class Booking {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // Redesign Getters and Setters
+
+    public String getRentalMode() { return rentalMode; }
+    public void setRentalMode(String rentalMode) { this.rentalMode = rentalMode; }
+
+    public String getPricingPackage() { return pricingPackage; }
+    public void setPricingPackage(String pricingPackage) { this.pricingPackage = pricingPackage; }
+
+    public String getDeliveryMethod() { return deliveryMethod; }
+    public void setDeliveryMethod(String deliveryMethod) { this.deliveryMethod = deliveryMethod; }
+
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+
+    public BigDecimal getDeliveryDistance() { return deliveryDistance; }
+    public void setDeliveryDistance(BigDecimal deliveryDistance) { this.deliveryDistance = deliveryDistance; }
+
+    public BigDecimal getDeliveryFee() { return deliveryFee; }
+    public void setDeliveryFee(BigDecimal deliveryFee) { this.deliveryFee = deliveryFee; }
+
+    public Integer getKmLimit() { return kmLimit; }
+    public void setKmLimit(Integer kmLimit) { this.kmLimit = kmLimit; }
+
+    public Integer getEstimatedKm() { return estimatedKm; }
+    public void setEstimatedKm(Integer estimatedKm) { this.estimatedKm = estimatedKm; }
+
+    public BigDecimal getBaseAmount() { return baseAmount; }
+    public void setBaseAmount(BigDecimal baseAmount) { this.baseAmount = baseAmount; }
+
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+
+    public BigDecimal getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
 }
+

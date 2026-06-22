@@ -21,7 +21,10 @@
     </div>
 
 <%
-    String reqURI = request.getRequestURI();
+    String reqURI = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+    if (reqURI == null) {
+        reqURI = request.getRequestURI();
+    }
     String ctx = request.getContextPath();
     String currentPath = reqURI.startsWith(ctx) ? reqURI.substring(ctx.length()) : reqURI;
     request.setAttribute("_cp", currentPath);
@@ -76,7 +79,7 @@
                     <span class="material-symbols-outlined">garage</span> Quản lý xe
                 </a>
                 <a href="${pageContext.request.contextPath}/vehicles/availability" class="bk-sidebar-link ${_cp == '/vehicles/availability' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">calendar_today</span> Lịch trình xe
+                    <span class="material-symbols-outlined">calendar_today</span> Kiểm tra xe trống
                 </a>
                 <a href="${pageContext.request.contextPath}/maintenance" class="bk-sidebar-link ${_cp == '/maintenance' ? 'active' : ''}">
                     <span class="material-symbols-outlined">build</span> Lịch bảo dưỡng

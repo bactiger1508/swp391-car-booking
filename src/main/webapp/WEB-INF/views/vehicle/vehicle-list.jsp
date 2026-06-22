@@ -42,13 +42,24 @@
             <label class="bk-form-label">Hãng xe</label>
             <div class="bk-form-input-wrap">
                 <span class="material-symbols-outlined">directions_car</span>
-                <select id="filterBrand" class="bk-form-select" onchange="applyFilters()">
+                <select id="filterBrand" class="bk-form-select" onchange="updateModelOptions(); applyFilters()">
                     <option value="">Tất cả hãng xe</option>
                     <option value="Mercedes">Mercedes</option>
                     <option value="Toyota">Toyota</option>
                     <option value="Ford">Ford</option>
                     <option value="Tesla">Tesla</option>
                     <option value="VinFast">VinFast</option>
+                </select>
+            </div>
+        </div>
+
+        <%-- Dòng xe --%>
+        <div class="bk-form-group">
+            <label class="bk-form-label">Dòng xe</label>
+            <div class="bk-form-input-wrap">
+                <span class="material-symbols-outlined">model_training</span>
+                <select id="filterModel" class="bk-form-select" onchange="applyFilters()">
+                    <option value="">Tất cả dòng xe</option>
                 </select>
             </div>
         </div>
@@ -125,6 +136,7 @@
             <div class="bk-card car-item" style="padding:0;overflow:hidden;transition:all 0.3s ease;"
                  data-name="${car.brand} ${car.model}"
                  data-brand="${car.brand}"
+                 data-model="${car.model}"
                  data-transmission="${car.transmission}"
                  data-fuel="${car.fuelType}"
                  data-seats="${car.seats}"
@@ -241,8 +253,36 @@
 </c:if>
 
 <script>
+function updateModelOptions() {
+    var brand = document.getElementById('filterBrand').value;
+    var modelSelect = document.getElementById('filterModel');
+    if (!modelSelect) return;
+    
+    var prevValue = modelSelect.value;
+    modelSelect.innerHTML = '<option value="">Tất cả dòng xe</option>';
+    
+    var models = new Set();
+    var carItems = document.querySelectorAll('.car-item');
+    carItems.forEach(function(item) {
+        var itemBrand = item.getAttribute('data-brand');
+        var itemModel = item.getAttribute('data-model');
+        if (brand === "" || itemBrand === brand) {
+            models.add(itemModel);
+        }
+    });
+    
+    models.forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        if (m === prevValue) opt.selected = true;
+        modelSelect.appendChild(opt);
+    });
+}
+
 function applyFilters() {
     var brand = document.getElementById('filterBrand').value;
+    var model = document.getElementById('filterModel').value;
     var transmission = document.getElementById('filterTransmission').value;
     var fuel = document.getElementById('filterFuel').value;
     var seats = document.getElementById('filterSeats').value;
@@ -253,12 +293,14 @@ function applyFilters() {
 
     carItems.forEach(function(item) {
         var itemBrand = item.getAttribute('data-brand');
+        var itemModel = item.getAttribute('data-model');
         var itemTransmission = item.getAttribute('data-transmission');
         var itemFuel = item.getAttribute('data-fuel');
         var itemSeats = item.getAttribute('data-seats');
         var itemPrice = parseFloat(item.getAttribute('data-price')) || 0;
 
         var matchBrand = brand === "" || itemBrand === brand;
+        var matchModel = model === "" || itemModel === model;
         var matchTransmission = transmission === "" || itemTransmission === transmission;
         var matchFuel = fuel === "" || itemFuel === fuel;
         var matchSeats = seats === "" || itemSeats === seats;
@@ -277,7 +319,7 @@ function applyFilters() {
             }
         }
 
-        if (matchBrand && matchTransmission && matchFuel && matchSeats && matchPrice) {
+        if (matchBrand && matchModel && matchTransmission && matchFuel && matchSeats && matchPrice) {
             item.style.display = 'block';
             visibleCount++;
         } else {
@@ -300,10 +342,14 @@ function applyFilters() {
 
 function updateFilterChips() {
     var chipsContainer = document.getElementById('filterChips');
+    if (!chipsContainer) return;
     var chips = [];
     
     var brand = document.getElementById('filterBrand').value;
     if (brand) chips.push({label: brand, id: 'filterBrand', value: ''});
+
+    var model = document.getElementById('filterModel').value;
+    if (model) chips.push({label: model, id: 'filterModel', value: ''});
     
     var transmission = document.getElementById('filterTransmission').value;
     if (transmission) {
@@ -324,7 +370,7 @@ function updateFilterChips() {
     chips.forEach(function(chip) {
         var chipEl = document.createElement('div');
         chipEl.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--surface-container-low);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;';
-        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="document.getElementById(\'' + chip.id + '\').value=\'' + chip.value + '\';applyFilters();">close</button>';
+        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="document.getElementById(\'' + chip.id + '\').value=\'' + chip.value + '\'; if(\'' + chip.id + '\' === \'filterBrand\') { updateModelOptions(); }; applyFilters();">close</button>';
         chipsContainer.appendChild(chipEl);
     });
 }
@@ -335,14 +381,24 @@ function exportCarList() {
 
 // Parse query parameters on load to auto-filter from the quick search
 window.addEventListener('DOMContentLoaded', function() {
+    updateModelOptions();
+    
     var urlParams = new URLSearchParams(window.location.search);
     var brand = urlParams.get('brand');
     var seats = urlParams.get('seats');
+    var model = urlParams.get('model');
     
     if (brand) {
         var brandSelect = document.getElementById('filterBrand');
         if (brandSelect) {
             brandSelect.value = brand;
+            updateModelOptions();
+        }
+    }
+    if (model) {
+        var modelSelect = document.getElementById('filterModel');
+        if (modelSelect) {
+            modelSelect.value = model;
         }
     }
     if (seats) {

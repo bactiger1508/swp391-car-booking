@@ -226,10 +226,16 @@
                             Đặt lại
                         </button>
                         <button class="flex-[2] bg-primary text-white py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-primary-container transition-colors flex items-center justify-center gap-2" type="submit">
-                            Kiểm tra xe trống
+                            <span class="material-symbols-outlined text-[18px]">search</span> Tìm kiếm
                         </button>
                     </div>
                 </form>
+                
+                <div class="mt-4 pt-4 border-t border-outline-variant/30">
+                    <a href="${pageContext.request.contextPath}/vehicles/availability" class="w-full bg-white border border-primary text-primary py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-[20px]">calendar_today</span> Kiểm tra xe trống
+                    </a>
+                </div>
             </div>
             
             <!-- Rental Process Timeline -->

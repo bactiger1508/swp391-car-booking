@@ -61,6 +61,22 @@ public class BookingDAO {
         return bookings;
     }
 
+    /** Get active bookings (PENDING, CONFIRMED, IN_PROGRESS) for a specific car */
+    public List<Booking> findActiveBookingsByCarId(int carId) throws SQLException {
+        List<Booking> bookings = new ArrayList<>();
+        String sql = "SELECT * FROM bookings WHERE car_id = ? "
+                   + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
+                   + "ORDER BY start_date ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, carId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) bookings.add(mapRow(rs));
+            }
+        }
+        return bookings;
+    }
+
     /** Get bookings filtered by status */
     public List<Booking> findByStatus(String status) throws SQLException {
         List<Booking> bookings = new ArrayList<>();
@@ -101,8 +117,10 @@ public class BookingDAO {
     /** Insert a new booking into the database and return the generated ID */
     public int insert(Booking booking) throws SQLException {
         String sql = "INSERT INTO bookings (customer_id, car_id, start_date, end_date, pickup_location, "
-                   + "return_location, total_amount, deposit_amount, status, notes) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                   + "return_location, total_amount, deposit_amount, status, notes, "
+                   + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
+                   + "delivery_fee, km_limit, estimated_km, base_amount, discount_amount, tax_amount) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, booking.getCustomerId());
@@ -115,6 +133,25 @@ public class BookingDAO {
             ps.setBigDecimal(8, booking.getDepositAmount());
             ps.setString(9, booking.getStatus());
             ps.setString(10, booking.getNotes());
+            ps.setString(11, booking.getRentalMode());
+            ps.setString(12, booking.getPricingPackage());
+            ps.setString(13, booking.getDeliveryMethod());
+            ps.setString(14, booking.getDeliveryAddress());
+            ps.setBigDecimal(15, booking.getDeliveryDistance());
+            ps.setBigDecimal(16, booking.getDeliveryFee());
+            if (booking.getKmLimit() != null) {
+                ps.setInt(17, booking.getKmLimit());
+            } else {
+                ps.setNull(17, Types.INTEGER);
+            }
+            if (booking.getEstimatedKm() != null) {
+                ps.setInt(18, booking.getEstimatedKm());
+            } else {
+                ps.setNull(18, Types.INTEGER);
+            }
+            ps.setBigDecimal(19, booking.getBaseAmount());
+            ps.setBigDecimal(20, booking.getDiscountAmount());
+            ps.setBigDecimal(21, booking.getTaxAmount());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) return keys.getInt(1);
@@ -129,6 +166,9 @@ public class BookingDAO {
     public boolean update(Booking booking) throws SQLException {
         String sql = "UPDATE bookings SET car_id = ?, start_date = ?, end_date = ?, pickup_location = ?, "
                    + "return_location = ?, total_amount = ?, deposit_amount = ?, status = ?, notes = ?, "
+                   + "rental_mode = ?, pricing_package = ?, delivery_method = ?, delivery_address = ?, "
+                   + "delivery_distance = ?, delivery_fee = ?, km_limit = ?, estimated_km = ?, "
+                   + "base_amount = ?, discount_amount = ?, tax_amount = ?, "
                    + "updated_at = GETDATE() WHERE booking_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -141,7 +181,26 @@ public class BookingDAO {
             ps.setBigDecimal(7, booking.getDepositAmount());
             ps.setString(8, booking.getStatus());
             ps.setString(9, booking.getNotes());
-            ps.setInt(10, booking.getBookingId());
+            ps.setString(10, booking.getRentalMode());
+            ps.setString(11, booking.getPricingPackage());
+            ps.setString(12, booking.getDeliveryMethod());
+            ps.setString(13, booking.getDeliveryAddress());
+            ps.setBigDecimal(14, booking.getDeliveryDistance());
+            ps.setBigDecimal(15, booking.getDeliveryFee());
+            if (booking.getKmLimit() != null) {
+                ps.setInt(16, booking.getKmLimit());
+            } else {
+                ps.setNull(16, Types.INTEGER);
+            }
+            if (booking.getEstimatedKm() != null) {
+                ps.setInt(17, booking.getEstimatedKm());
+            } else {
+                ps.setNull(17, Types.INTEGER);
+            }
+            ps.setBigDecimal(18, booking.getBaseAmount());
+            ps.setBigDecimal(19, booking.getDiscountAmount());
+            ps.setBigDecimal(20, booking.getTaxAmount());
+            ps.setInt(21, booking.getBookingId());
             return ps.executeUpdate() > 0;
         }
     }
@@ -243,6 +302,28 @@ public class BookingDAO {
         if (crAt != null) b.setCreatedAt(crAt.toLocalDateTime());
         Timestamp upAt = rs.getTimestamp("updated_at");
         if (upAt != null) b.setUpdatedAt(upAt.toLocalDateTime());
+
+        // Redesign mappings
+        b.setRentalMode(rs.getString("rental_mode"));
+        b.setPricingPackage(rs.getString("pricing_package"));
+        b.setDeliveryMethod(rs.getString("delivery_method"));
+        b.setDeliveryAddress(rs.getString("delivery_address"));
+        b.setDeliveryDistance(rs.getBigDecimal("delivery_distance"));
+        b.setDeliveryFee(rs.getBigDecimal("delivery_fee"));
+        
+        int kmLimit = rs.getInt("km_limit");
+        if (!rs.wasNull()) {
+            b.setKmLimit(kmLimit);
+        }
+        int estKm = rs.getInt("estimated_km");
+        if (!rs.wasNull()) {
+            b.setEstimatedKm(estKm);
+        }
+        
+        b.setBaseAmount(rs.getBigDecimal("base_amount"));
+        b.setDiscountAmount(rs.getBigDecimal("discount_amount"));
+        b.setTaxAmount(rs.getBigDecimal("tax_amount"));
+
         return b;
     }
 }

@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.swp391.carrental.policy.service.PolicyService;
+import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.user.constant.Role;
 
 /*
  * Name: PolicySettingsServlet
@@ -29,7 +31,26 @@ public class PolicySettingsServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO: Update policy values
+        User user = (User) request.getSession().getAttribute("currentUser");
+        if (user == null || (!Role.ADMIN.equals(user.getRole()) && !Role.STAFF.equals(user.getRole()))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            return;
+        }
+
+        String policyKey = request.getParameter("policyKey");
+        String policyValue = request.getParameter("policyValue");
+
+        if (policyKey != null && !policyKey.trim().isEmpty() && policyValue != null && !policyValue.trim().isEmpty()) {
+            try {
+                policyService.updatePolicy(policyKey.trim(), policyValue.trim(), user.getUserId());
+                request.getSession().setAttribute("successMessage", "Cập nhật chính sách '" + policyKey + "' thành công!");
+            } catch (Exception e) {
+                request.getSession().setAttribute("errorMessage", "Lỗi cập nhật: " + e.getMessage());
+            }
+        } else {
+            request.getSession().setAttribute("errorMessage", "Dữ liệu không được để trống.");
+        }
+
         response.sendRedirect(request.getContextPath() + "/policies");
     }
 }

@@ -66,7 +66,10 @@ public class ContractDAO {
     public int insert(RentalContract contract) throws SQLException {
         String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, car_id, "
                 + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
-                + "terms_and_conditions, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "terms_and_conditions, created_by, "
+                + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
+                + "delivery_fee, km_limit, estimated_km, base_amount, discount_amount, tax_amount) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, contract.getBookingId());
             ps.setString(2, contract.getContractNumber());
@@ -80,6 +83,27 @@ public class ContractDAO {
             ps.setString(10, contract.getStatus());
             ps.setString(11, contract.getTermsAndConditions());
             ps.setInt(12, contract.getCreatedBy());
+            
+            ps.setString(13, contract.getRentalMode());
+            ps.setString(14, contract.getPricingPackage());
+            ps.setString(15, contract.getDeliveryMethod());
+            ps.setString(16, contract.getDeliveryAddress());
+            ps.setBigDecimal(17, contract.getDeliveryDistance());
+            ps.setBigDecimal(18, contract.getDeliveryFee());
+            if (contract.getKmLimit() != null) {
+                ps.setInt(19, contract.getKmLimit());
+            } else {
+                ps.setNull(19, Types.INTEGER);
+            }
+            if (contract.getEstimatedKm() != null) {
+                ps.setInt(20, contract.getEstimatedKm());
+            } else {
+                ps.setNull(20, Types.INTEGER);
+            }
+            ps.setBigDecimal(21, contract.getBaseAmount());
+            ps.setBigDecimal(22, contract.getDiscountAmount());
+            ps.setBigDecimal(23, contract.getTaxAmount());
+
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -158,6 +182,28 @@ public class ContractDAO {
         if (ua != null) {
             c.setUpdatedAt(ua.toLocalDateTime());
         }
+
+        // Redesign mappings
+        c.setRentalMode(rs.getString("rental_mode"));
+        c.setPricingPackage(rs.getString("pricing_package"));
+        c.setDeliveryMethod(rs.getString("delivery_method"));
+        c.setDeliveryAddress(rs.getString("delivery_address"));
+        c.setDeliveryDistance(rs.getBigDecimal("delivery_distance"));
+        c.setDeliveryFee(rs.getBigDecimal("delivery_fee"));
+        
+        int kmLimit = rs.getInt("km_limit");
+        if (!rs.wasNull()) {
+            c.setKmLimit(kmLimit);
+        }
+        int estKm = rs.getInt("estimated_km");
+        if (!rs.wasNull()) {
+            c.setEstimatedKm(estKm);
+        }
+        
+        c.setBaseAmount(rs.getBigDecimal("base_amount"));
+        c.setDiscountAmount(rs.getBigDecimal("discount_amount"));
+        c.setTaxAmount(rs.getBigDecimal("tax_amount"));
+
         return c;
     }
 }

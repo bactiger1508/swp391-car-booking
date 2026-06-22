@@ -88,7 +88,7 @@
                 </h4>
                 <ul class="bk-policy-list">
                     <li>Giá thuê tính theo ngày, hiển thị trên trang chi tiết xe.</li>
-                    <li>Thuế & phí dịch vụ: 10% giá thuê cơ bản.</li>
+                    <li>Thuế &amp; phí dịch vụ: ${not empty taxRate ? taxRate : 10}% giá thuê cơ bản.</li>
                     <li>Giá có thể thay đổi theo mùa và nhu cầu.</li>
                 </ul>
             </div>
@@ -123,6 +123,48 @@
                     <li><strong>Mất đồ:</strong> Bồi thường theo giá trị vật phẩm.</li>
                     <li><strong>Nhiên liệu:</strong> Trả xe với mức nhiên liệu tương đương khi nhận.</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <%-- Dynamic System Configuration Section --%>
+    <div class="bk-card" style="margin-top: 8px;">
+        <div class="bk-card-title" style="color:var(--primary); margin-bottom: 16px;">
+            <span class="material-symbols-outlined">settings_suggest</span> Thông số cấu hình hệ thống (Thời gian thực)
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px;">
+            <div>
+                <h4 style="font-weight:600;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--primary-container);padding-bottom:6px;">Quy định đặt xe</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <c:forEach var="p" items="${bookingPolicies}">
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <td style="padding: 8px 0; color: var(--on-surface-variant);">${p.description}</td>
+                            <td style="padding: 8px 0; font-weight: 600; text-align: right; color: var(--primary);">${p.policyValue}</td>
+                        </tr>
+                    </c:forEach>
+                </table>
+            </div>
+            <div>
+                <h4 style="font-weight:600;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--primary-container);padding-bottom:6px;">Biểu phí & Đơn giá</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <c:forEach var="p" items="${pricingPolicies}">
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <td style="padding: 8px 0; color: var(--on-surface-variant);">${p.description}</td>
+                            <td style="padding: 8px 0; font-weight: 600; text-align: right; color: var(--primary);">${p.policyValue}</td>
+                        </tr>
+                    </c:forEach>
+                </table>
+            </div>
+            <div>
+                <h4 style="font-weight:600;color:var(--warning);margin-bottom:12px;border-bottom:2px solid rgba(255, 193, 7, 0.2);padding-bottom:6px;">Chế tài & Phạt vi phạm</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <c:forEach var="p" items="${penaltyPolicies}">
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                            <td style="padding: 8px 0; color: var(--on-surface-variant);">${p.description}</td>
+                            <td style="padding: 8px 0; font-weight: 600; text-align: right; color: var(--warning);">${p.policyValue}</td>
+                        </tr>
+                    </c:forEach>
+                </table>
             </div>
         </div>
     </div>
