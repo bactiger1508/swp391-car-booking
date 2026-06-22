@@ -86,9 +86,49 @@ public class PaymentService {
         validatePaymentMethod(payment.getPaymentMethod());
         validateAmount(payment);
         try {
-            return paymentDAO.insert(payment);
+            int paymentId = paymentDAO.insert(payment);
+            checkAndSettleBooking(payment.getBookingId());
+            return paymentId;
         } catch (SQLException e) {
             throw new AppException("Failed to record payment.", e);
+        }
+    }
+
+    private void checkAndSettleBooking(int bookingId) {
+        try {
+            com.swp391.carrental.booking.dao.BookingDAO bookingDAO = new com.swp391.carrental.booking.dao.BookingDAO();
+            com.swp391.carrental.handover.dao.ReturnDAO returnDAO = new com.swp391.carrental.handover.dao.ReturnDAO();
+            
+            com.swp391.carrental.booking.model.Booking booking = bookingDAO.findById(bookingId);
+            if (booking == null) return;
+            
+            com.swp391.carrental.handover.model.VehicleReturn returns = returnDAO.findByBookingId(bookingId);
+            if (returns == null) {
+                return;
+            }
+            
+            List<Payment> payments = paymentDAO.findByBookingId(bookingId);
+            BigDecimal totalPaid = BigDecimal.ZERO;
+            for (Payment p : payments) {
+                if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                        totalPaid = totalPaid.subtract(p.getAmount());
+                    } else {
+                        totalPaid = totalPaid.add(p.getAmount());
+                    }
+                }
+            }
+            
+            BigDecimal totalRequired = booking.getTotalAmount();
+            if (returns.getTotalAdditionalFee() != null) {
+                totalRequired = totalRequired.add(returns.getTotalAdditionalFee());
+            }
+            
+            if (totalPaid.compareTo(totalRequired) >= 0) {
+                bookingDAO.updateStatus(bookingId, "COMPLETED");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

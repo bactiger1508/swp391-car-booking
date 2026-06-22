@@ -97,6 +97,24 @@
                 </tbody>
             </table>
         </div>
+        <!-- Phân trang -->
+        <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+            <div style="font-size:13px; color:var(--on-surface-variant);">
+                Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> bản ghi
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:13px; color:var(--on-surface-variant);">Số hàng:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface); font-size:13px; outline:none; cursor:pointer;">
+                    <option value="5">5</option>
+                    <option value="10" selected="selected">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
+                    <!-- nút chuyển trang -->
+                </div>
+            </div>
+        </div>
     </c:if>
     <c:if test="${empty pendingBookings}">
         <div class="bk-empty">
@@ -189,13 +207,74 @@
 var activeForm = null;
 var isRejectAction = false;
 
+let currentPage = 1;
+let pageSize = 10;
+let filteredRows = [];
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    applyPagination();
+}
+
 function filterTable() {
     var input = document.getElementById('searchInput').value.toLowerCase();
     var rows = document.querySelectorAll('#bookingTable tbody tr');
+    filteredRows = [];
     rows.forEach(function(row) {
-        row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+        if (row.textContent.toLowerCase().includes(input)) {
+            filteredRows.push(row);
+        } else {
+            row.style.display = 'none';
+        }
     });
+    currentPage = 1;
+    applyPagination();
 }
+
+function applyPagination() {
+    const totalRows = filteredRows.length;
+    const totalPages = Math.ceil(totalRows / pageSize) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const allRows = document.querySelectorAll('#bookingTable tbody tr');
+    allRows.forEach(row => row.style.display = 'none');
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalRows);
+    for (let i = startIdx; i < endIdx; i++) filteredRows[i].style.display = '';
+    const s = document.getElementById('pag-start'); if (s) s.innerText = totalRows > 0 ? startIdx + 1 : 0;
+    const e = document.getElementById('pag-end'); if (e) e.innerText = endIdx;
+    const t = document.getElementById('pag-total'); if (t) t.innerText = totalRows;
+    const btnContainer = document.getElementById('paginationButtons');
+    if (!btnContainer) return;
+    btnContainer.innerHTML = '';
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button'; prevBtn.style.cssText = 'padding:4px 8px; border:1px solid var(--outline-variant); border-radius:6px; cursor:pointer; background:var(--surface);';
+    prevBtn.disabled = (currentPage === 1);
+    prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+    prevBtn.onclick = () => { currentPage--; applyPagination(); };
+    btnContainer.appendChild(prevBtn);
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+    for (let p = startPage; p <= endPage; p++) {
+        if (p < 1) continue;
+        const pBtn = document.createElement('button');
+        pBtn.type = 'button';
+        pBtn.style.cssText = 'padding:4px 10px; border-radius:6px; cursor:pointer; border:1px solid ' + (p === currentPage ? 'var(--primary)' : 'var(--outline-variant)') + '; background:' + (p === currentPage ? 'var(--primary)' : 'var(--surface)') + '; color:' + (p === currentPage ? 'var(--on-primary)' : 'inherit') + ';';
+        pBtn.innerText = p;
+        pBtn.onclick = () => { currentPage = p; applyPagination(); };
+        btnContainer.appendChild(pBtn);
+    }
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button'; nextBtn.style.cssText = 'padding:4px 8px; border:1px solid var(--outline-variant); border-radius:6px; cursor:pointer; background:var(--surface);';
+    nextBtn.disabled = (currentPage === totalPages);
+    nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+    nextBtn.onclick = () => { currentPage++; applyPagination(); };
+    btnContainer.appendChild(nextBtn);
+}
+
+document.addEventListener('DOMContentLoaded', () => { filterTable(); });
 
 function openApproveModal(bookingId) {
     activeForm = document.getElementById('approveForm-' + bookingId);

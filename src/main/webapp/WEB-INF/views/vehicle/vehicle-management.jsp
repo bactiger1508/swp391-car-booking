@@ -179,6 +179,24 @@
                 </tbody>
             </table>
         </div>
+        <!-- Phân trang -->
+        <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+            <div style="font-size:13px; color:var(--on-surface-variant);">
+                Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> bản ghi
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:13px; color:var(--on-surface-variant);">Số hàng:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface); font-size:13px; outline:none; cursor:pointer;">
+                    <option value="5">5</option>
+                    <option value="10" selected="selected">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
+                    <!-- nút chuyển trang -->
+                </div>
+            </div>
+        </div>
     </c:if>
 
     <div class="bk-empty" id="emptyStateMessage" style="display:none; padding: 40px 20px; text-align: center;">
@@ -191,6 +209,15 @@
 <script>
 const contextPath = '${pageContext.request.contextPath}';
 let currentStatusFilter = 'ALL';
+let currentPage = 1;
+let pageSize = 10;
+let filteredRows = [];
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    applyPagination();
+}
 
 function filterByStatus(status) {
     currentStatusFilter = status;
@@ -229,7 +256,7 @@ function filterByStatus(status) {
 function filterCarTable() {
     const input = document.getElementById('carSearchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#vehicleTable tbody tr');
-    let visibleCount = 0;
+    filteredRows = [];
     
     rows.forEach(row => {
         const rowStatus = row.getAttribute('data-status');
@@ -239,22 +266,102 @@ function filterCarTable() {
         const matchesSearch = text.includes(input);
         
         if (matchesStatus && matchesSearch) {
-            row.style.display = '';
-            visibleCount++;
+            filteredRows.push(row);
         } else {
             row.style.display = 'none';
         }
     });
     
+    currentPage = 1;
+    applyPagination();
+}
+
+function applyPagination() {
+    const totalRows = filteredRows.length;
+    const totalPages = Math.ceil(totalRows / pageSize) || 1;
+    
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    
+    const allRows = document.querySelectorAll('#vehicleTable tbody tr');
+    allRows.forEach(row => row.style.display = 'none');
+    
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalRows);
+    
+    for (let i = startIdx; i < endIdx; i++) {
+        filteredRows[i].style.display = '';
+    }
+    
+    const startDisplay = document.getElementById('pag-start');
+    const endDisplay = document.getElementById('pag-end');
+    const totalDisplay = document.getElementById('pag-total');
+    if (startDisplay) startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
+    if (endDisplay) endDisplay.innerText = endIdx;
+    if (totalDisplay) totalDisplay.innerText = totalRows;
+    
     const tableContainer = document.getElementById('vehicleTableContainer');
     const emptyState = document.getElementById('emptyStateMessage');
     
-    if (visibleCount === 0) {
+    if (totalRows === 0) {
         if (tableContainer) tableContainer.style.display = 'none';
         if (emptyState) emptyState.style.display = 'block';
     } else {
         if (tableContainer) tableContainer.style.display = 'block';
         if (emptyState) emptyState.style.display = 'none';
+    }
+    
+    const btnContainer = document.getElementById('paginationButtons');
+    if (btnContainer) {
+        btnContainer.innerHTML = '';
+        
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        prevBtn.style.padding = '4px 8px';
+        prevBtn.style.border = '1px solid var(--outline-variant)';
+        prevBtn.style.borderRadius = '6px';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+        prevBtn.onclick = () => { currentPage--; applyPagination(); };
+        btnContainer.appendChild(prevBtn);
+        
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let p = startPage; p <= endPage; p++) {
+            if (p < 1) continue;
+            const pBtn = document.createElement('button');
+            pBtn.type = 'button';
+            pBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
+            pBtn.style.padding = '4px 10px';
+            pBtn.style.border = '1px solid ' + (p === currentPage ? 'var(--primary)' : 'var(--outline-variant)');
+            pBtn.style.borderRadius = '6px';
+            pBtn.style.cursor = 'pointer';
+            if (p === currentPage) {
+                pBtn.style.background = 'var(--primary)';
+                pBtn.style.color = 'var(--on-primary)';
+            }
+            pBtn.innerText = p;
+            pBtn.onclick = () => { currentPage = p; applyPagination(); };
+            btnContainer.appendChild(pBtn);
+        }
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        nextBtn.style.padding = '4px 8px';
+        nextBtn.style.border = '1px solid var(--outline-variant)';
+        nextBtn.style.borderRadius = '6px';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+        nextBtn.onclick = () => { currentPage++; applyPagination(); };
+        btnContainer.appendChild(nextBtn);
     }
 }
 

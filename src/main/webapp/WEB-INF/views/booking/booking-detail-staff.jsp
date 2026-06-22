@@ -378,6 +378,11 @@
             </div>
 
             <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
+                <c:if test="${booking.status == 'IN_PROGRESS'}">
+                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
+                        <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
+                    </a>
+                </c:if>
                 <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
                     <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;" id="cancelForm">
                         <input type="hidden" name="bookingId" value="${booking.bookingId}"/>

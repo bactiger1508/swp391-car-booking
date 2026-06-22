@@ -20,8 +20,8 @@ import com.swp391.carrental.user.model.User;
  * Name: ProfileServlet
  * @Author: AnhNNHE160896
  * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for ProfileServlet.
+ * Version: 1.1
+ * Description: Handles HTTP requests and responses for ProfileServlet with status reset logic and multi-image uploads.
  */
 
 /**
@@ -38,6 +38,7 @@ public class ProfileServlet extends HttpServlet {
     private final CustomerProfileDAO profileDAO = new CustomerProfileDAO();
     private final UserDAO userDAO = new UserDAO();
 
+    // Handles HTTP GET request to display the user profile page.
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -70,6 +71,7 @@ public class ProfileServlet extends HttpServlet {
         }
     }
 
+    // Handles HTTP POST request to update profile and upload images.
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -89,6 +91,8 @@ public class ProfileServlet extends HttpServlet {
             String driverLicenseNumber = request.getParameter("driverLicenseNumber");
             String driverLicenseExpiryStr = request.getParameter("driverLicenseExpiry");
             Part licenseImagePart = request.getPart("driverLicenseImage");
+            Part idCardFrontPart   = request.getPart("idCardImageFront");
+            Part idCardBackPart    = request.getPart("idCardImageBack");
 
             // Update user core info
             currentUser.setFullName(fullName);
@@ -114,56 +118,26 @@ public class ProfileServlet extends HttpServlet {
             profile.setDriverLicenseNumber(driverLicenseNumber);
             if (driverLicenseExpiryStr != null && !driverLicenseExpiryStr.isEmpty()) {
                 profile.setDriverLicenseExpiry(LocalDate.parse(driverLicenseExpiryStr));
+            } else {
+                profile.setDriverLicenseExpiry(null);
             }
 
-            if (licenseImagePart != null
-                    && licenseImagePart.getSize() > 0) {
+            // Save ID card front image
+            String savedFront = saveUploadedImage(idCardFrontPart, "front", currentUser.getUserId());
+            if (savedFront != null) profile.setIdCardImageFront(savedFront);
 
-                String contentType
-                        = licenseImagePart.getContentType();
+            // Save ID card back image
+            String savedBack = saveUploadedImage(idCardBackPart, "back", currentUser.getUserId());
+            if (savedBack != null) profile.setIdCardImageBack(savedBack);
 
-                if (!"image/png".equals(contentType)
-                        && !"image/jpeg".equals(contentType)) {
+            // Save driver license image
+            String savedLicense = saveUploadedImage(licenseImagePart, "license", currentUser.getUserId());
+            if (savedLicense != null) profile.setDriverLicenseImage(savedLicense);
 
-                    request.setAttribute(
-                            "error",
-                            "Chỉ cho phép upload PNG hoặc JPG");
+            // Automatically reset verification status to PENDING when user updates profile information
+            profile.setVerificationStatus("PENDING");
 
-                    doGet(request, response);
-                    return;
-                }
-
-                String uploadDir
-                        = getServletContext()
-                                .getRealPath("/uploads");
-
-                File dir = new File(uploadDir);
-
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                String originalName
-                        = Paths.get(
-                                licenseImagePart
-                                        .getSubmittedFileName())
-                                .getFileName()
-                                .toString();
-
-                String fileName
-                        = System.currentTimeMillis()
-                        + "_"
-                        + originalName;
-
-                licenseImagePart.write(
-                        uploadDir
-                        + File.separator
-                        + fileName);
-
-                profile.setDriverLicenseImage(
-                        "uploads/" + fileName);
-            }
-
+            // Save changes to database
             profileDAO.update(profile);
 
             response.sendRedirect(request.getContextPath() + "/profile?success=true");
@@ -173,5 +147,25 @@ public class ProfileServlet extends HttpServlet {
             doGet(request, response);
         }
     }
-}
 
+    // Saves uploaded image and returns its relative path or null if no file was uploaded.
+    private String saveUploadedImage(Part part, String prefix, int userId) throws Exception {
+        if (part == null || part.getSize() == 0) return null;
+        String ct = part.getContentType();
+        if (!"image/png".equals(ct) && !"image/jpeg".equals(ct)) return null;
+
+        String uploadDir = getServletContext().getRealPath("/uploads");
+        if (uploadDir == null) {
+            uploadDir = System.getProperty("user.home") + File.separator + "car-rental-uploads";
+        }
+        File dir = new File(uploadDir);
+        if (!dir.exists()) dir.mkdirs();
+
+        String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+        String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".jpg";
+        String fileName = prefix + "_" + userId + "_" + System.currentTimeMillis() + ext;
+
+        part.write(uploadDir + File.separator + fileName);
+        return "uploads/" + fileName;
+    }
+}

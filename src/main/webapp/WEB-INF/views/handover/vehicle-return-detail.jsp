@@ -166,10 +166,10 @@
             <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 16px; flex-grow: 1; justify-content: center;">
                 <!-- Số Odo hiện tại -->
                 <div class="bk-form-group">
-                    <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km hiện tại (km)*</label>
+                    <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km đã đi trong chuyến (km)*</label>
                     <div class="bk-form-input-wrap" style="margin-top: 6px;">
                         <span class="material-symbols-outlined">speed</span>
-                        <input type="number" id="currentOdo" name="currentOdo" value="${returns.mileageAtReturn}" class="bk-form-input" placeholder="Nhập số liệu hiện tại"/>
+                        <input type="number" id="currentOdo" name="currentOdo" value="${not empty distanceDriven ? distanceDriven : 0}" class="bk-form-input" placeholder="Nhập số km đã đi"/>
                     </div>
                     <span
                         class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[12px]">Quãng đường đã đi:
@@ -391,15 +391,16 @@
         const mileageAtHandover = parseFloat("${handover.mileageAtHandover}") || 0;
 
         function updateDistance() {
-            const currentOdo = parseFloat(odoInput.value);
+            const distance = parseFloat(odoInput.value);
 
-            if (!isNaN(currentOdo) && currentOdo >= mileageAtHandover) {
-                const distance = currentOdo - mileageAtHandover;
+            if (!isNaN(distance) && distance >= 0) {
+                const finalOdo = mileageAtHandover + distance;
 
                 distanceDisplay1.innerText = distance.toLocaleString();
                 distanceDisplay1.style.color = "var(--primary)";
 
-                distanceDisplay2.innerText = "";
+                distanceDisplay2.innerText = " (Số Odo lúc trả xe dự kiến: " + finalOdo.toLocaleString() + " km)";
+                distanceDisplay2.style.color = "var(--on-surface-variant)";
             } else if (odoInput.value === "") {
                 distanceDisplay1.innerText = "0";
                 distanceDisplay2.innerText = "";

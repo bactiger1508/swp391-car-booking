@@ -117,7 +117,7 @@ public class PaymentRecordServlet extends HttpServlet {
                     }
                     request.setAttribute("defaultPaymentType", defaultPaymentType);
 
-                    // Financial breakdown for "Tóm tắt đơn thuê" on the right
+                    // Financial breakdown for "Booking Summary" on the right
                     long days = java.time.Duration.between(booking.getStartDate(), booking.getEndDate()).toDays();
                     if (days <= 0) days = 1;
                     request.setAttribute("rentalDays", days);

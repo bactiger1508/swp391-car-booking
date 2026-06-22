@@ -132,7 +132,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
         }
     }
 
-    /* Hiển thị danh sách*/
+    // Display list
     private void showList(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
@@ -165,7 +165,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
 
     }
 
-    /* Xem chi tiết*/
+    // View detail
     private void showDetail(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {

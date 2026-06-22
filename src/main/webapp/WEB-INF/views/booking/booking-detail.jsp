@@ -322,6 +322,12 @@
                     <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao
                 </a>
 
+                <c:if test="${booking.status == 'IN_PROGRESS'}">
+                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1;">
+                        <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
+                    </a>
+                </c:if>
+
                 <c:if test="${booking.status == 'PENDING'}">
                     <a href="${pageContext.request.contextPath}/bookings/edit?id=${booking.bookingId}" class="bk-btn bk-btn-outline" style="justify-content:center;background:var(--primary-container);color:var(--on-primary-container);">
                         <span class="material-symbols-outlined">edit</span> Chỉnh sửa đặt xe

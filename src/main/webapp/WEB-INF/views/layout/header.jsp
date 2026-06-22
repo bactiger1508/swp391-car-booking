@@ -67,6 +67,9 @@
                 <a href="${pageContext.request.contextPath}/bookings/approval" class="bk-sidebar-link ${_cp == '/bookings/approval' ? 'active' : ''}">
                     <span class="material-symbols-outlined">fact_check</span> Duyệt đặt xe
                 </a>
+                <a href="${pageContext.request.contextPath}/user/customer-profiles" class="bk-sidebar-link ${_cp == '/user/customer-profiles' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">id_card</span> Duyệt hồ sơ KH
+                </a>
                 <a href="${pageContext.request.contextPath}/bookings/calendar" class="bk-sidebar-link ${_cp == '/bookings/calendar' ? 'active' : ''}">
                     <span class="material-symbols-outlined">calendar_month</span> Lịch đặt xe
                 </a>

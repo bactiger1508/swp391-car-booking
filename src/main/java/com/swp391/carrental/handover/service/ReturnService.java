@@ -1,9 +1,11 @@
 package com.swp391.carrental.handover.service;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.dao.BookingDAO;
+import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleReturn;
@@ -74,10 +76,36 @@ public class ReturnService {
 
             carDAO.updateStatus(vehicleReturn.getCarId(), CarStatus.AVAILABLE);
 
-            if (vehicleReturn.getTotalAdditionalFee() != null && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
-                bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
+            Booking booking = bookingDAO.findById(vehicleReturn.getBookingId());
+            if (booking != null) {
+                List<Payment> payments = paymentDAO.findByBookingId(vehicleReturn.getBookingId());
+                BigDecimal totalPaid = BigDecimal.ZERO;
+                for (Payment p : payments) {
+                    if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                            totalPaid = totalPaid.subtract(p.getAmount());
+                        } else {
+                            totalPaid = totalPaid.add(p.getAmount());
+                        }
+                    }
+                }
+
+                BigDecimal totalRequired = booking.getTotalAmount();
+                if (vehicleReturn.getTotalAdditionalFee() != null) {
+                    totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
+                }
+
+                if (totalPaid.compareTo(totalRequired) >= 0) {
+                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
+                } else {
+                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
+                }
             } else {
-                bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
+                if (vehicleReturn.getTotalAdditionalFee() != null && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
+                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
+                } else {
+                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
+                }
             }
 
             return returnId;
@@ -89,6 +117,32 @@ public class ReturnService {
     public void updateReturnVehicle(VehicleReturn returns) {
         try {
             returnDAO.update(returns);
+
+            Booking booking = bookingDAO.findById(returns.getBookingId());
+            if (booking != null) {
+                List<Payment> payments = paymentDAO.findByBookingId(returns.getBookingId());
+                BigDecimal totalPaid = BigDecimal.ZERO;
+                for (Payment p : payments) {
+                    if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                            totalPaid = totalPaid.subtract(p.getAmount());
+                        } else {
+                            totalPaid = totalPaid.add(p.getAmount());
+                        }
+                    }
+                }
+
+                BigDecimal totalRequired = booking.getTotalAmount();
+                if (returns.getTotalAdditionalFee() != null) {
+                    totalRequired = totalRequired.add(returns.getTotalAdditionalFee());
+                }
+
+                if (totalPaid.compareTo(totalRequired) >= 0) {
+                    bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.COMPLETED);
+                } else {
+                    bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
+                }
+            }
         } catch (SQLException e) {
             throw new AppException("Failed to update vehicle handover.", e);
         }

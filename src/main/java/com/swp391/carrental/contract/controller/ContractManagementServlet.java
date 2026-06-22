@@ -191,7 +191,7 @@ public class ContractManagementServlet extends HttpServlet {
                     int contractId = Integer.parseInt(contractIdStr);
                     boolean updated = contractService.updateContractStatus(contractId, com.swp391.carrental.contract.constant.ContractStatus.ACTIVE);
                     if (updated) {
-                        // Cập nhật thành công trạng thái ACTIVE
+                        // Successfully updated status to ACTIVE
                     }
                     response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
                     return;
@@ -226,6 +226,13 @@ public class ContractManagementServlet extends HttpServlet {
             // Booking status is not confirmed
             if (!com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
                 throw new com.swp391.carrental.core.exception.AppException("Trạng thái đặt xe phải là Đã xác nhận (Confirmed) để tạo hợp đồng.");
+            }
+
+            // Check if customer profile is verified
+            com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
+            com.swp391.carrental.user.model.CustomerProfile customerProfile = profileDAO.findByUserId(booking.getCustomerId());
+            if (customerProfile == null || !"VERIFIED".equals(customerProfile.getVerificationStatus())) {
+                throw new com.swp391.carrental.core.exception.AppException("Không thể lập hợp đồng: Hồ sơ khách hàng chưa được xác minh (VERIFIED).");
             }
 
             com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());

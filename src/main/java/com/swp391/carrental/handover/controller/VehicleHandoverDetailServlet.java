@@ -309,7 +309,7 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
                 request.setAttribute("customer", customer);
             }
 
-            // Giữ lại dữ liệu form - ghi đè lên handover
+            // Keep form data - overwrite handover
             request.setAttribute("currentOdo", request.getParameter("currentOdo"));
             request.setAttribute("fuel", request.getParameter("fuel"));
             request.setAttribute("notes", request.getParameter("notes"));

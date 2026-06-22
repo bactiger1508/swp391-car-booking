@@ -8,9 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import com.swp391.carrental.booking.model.Booking;
+import com.swp391.carrental.handover.dao.HandoverDAO;
 import com.swp391.carrental.handover.dao.ReturnDAO;
+import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.handover.service.ReturnService;
+import com.swp391.carrental.policy.service.FeeCalculator;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.CarDAO;
@@ -33,6 +36,8 @@ public class AdditionalFeesServlet extends HttpServlet {
     private final BookingDAO bookingDAO = new BookingDAO();
     private final CarDAO carDAO = new CarDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final HandoverDAO handoverDAO = new HandoverDAO();
+    private final FeeCalculator feeCalculator = new FeeCalculator();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -58,6 +63,7 @@ public class AdditionalFeesServlet extends HttpServlet {
                 }
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
+                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
                 if (returns != null) {
                     request.setAttribute("lateHours", returns.getLateHours());
@@ -65,9 +71,55 @@ public class AdditionalFeesServlet extends HttpServlet {
                     request.setAttribute("damageFee", returns.getDamageFee());
                     request.setAttribute("cleaningFee", returns.getCleaningFee());
                     request.setAttribute("lostItemFee", returns.getLostItemFee());
-                    request.setAttribute("deposit", booking.getDepositAmount());
+                    request.setAttribute("deposit", booking != null ? booking.getDepositAmount() : BigDecimal.ZERO);
                     request.setAttribute("totalAdditionalFee", returns.getTotalAdditionalFee());
                     request.setAttribute("returns", returns);
+
+                    // Automatically calculate extra km fee
+                    // Only auto-fill if extraKmFee has not been entered manually (== 0 or null)
+                    boolean extraKmNotSetYet = returns.getExtraKmFee() == null
+                            || returns.getExtraKmFee().compareTo(BigDecimal.ZERO) == 0;
+
+                    if (extraKmNotSetYet && handover != null && booking != null) {
+                        int mileageAtHandover = handover.getMileageAtHandover();
+                        int mileageAtReturn   = returns.getMileageAtReturn();
+                        int actualKm          = Math.max(0, mileageAtReturn - mileageAtHandover);
+
+                        int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
+
+                        // Actual extra km (total)
+                        int actualExtraKm = Math.max(0, actualKm - kmLimit);
+
+                        // Extra km paid in advance during booking (estimatedKm - kmLimit)
+                        int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
+                        int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+
+                        // Only charge the difference
+                        int additionalExtraKm = Math.max(0, actualExtraKm - alreadyPaidExtraKm);
+
+                        request.setAttribute("autoExtraKm", additionalExtraKm);
+                        request.setAttribute("actualKm", actualKm);
+                        request.setAttribute("kmLimit", kmLimit);
+                        request.setAttribute("estimatedKm", estimatedKm);
+                        request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
+                        request.setAttribute("actualExtraKm", actualExtraKm);
+                    } else {
+                        // Already entered manually - pass mileage information for JSP reference
+                        if (handover != null && booking != null) {
+                            int mileageAtHandover = handover.getMileageAtHandover();
+                            int mileageAtReturn   = returns.getMileageAtReturn();
+                            int actualKm          = Math.max(0, mileageAtReturn - mileageAtHandover);
+                            int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
+                            int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
+                            int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+                            int actualExtraKm = Math.max(0, actualKm - kmLimit);
+                            request.setAttribute("actualKm", actualKm);
+                            request.setAttribute("kmLimit", kmLimit);
+                            request.setAttribute("estimatedKm", estimatedKm);
+                            request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
+                            request.setAttribute("actualExtraKm", actualExtraKm);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

@@ -11,6 +11,8 @@ import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.CarDAO;
 import com.swp391.carrental.vehicle.model.Car;
+ 
+import java.math.BigDecimal;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,35 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
+                int distanceDriven = 0;
+                if (returns == null) {
+                    returns = new VehicleReturn();
+                    returns.setBookingId(bookingId);
+                    returns.setCarId(carId);
+                    if (contract != null) {
+                        returns.setContractId(contract.getContractId());
+                    }
+                    if (handover != null) {
+                        returns.setHandoverId(handover.getHandoverId());
+                    }
+                    returns.setExteriorCondition("");
+                    returns.setInteriorCondition("");
+                    returns.setMechanicalCondition("");
+                    returns.setFuelLevel("");
+                    returns.setNotes("");
+                    returns.setPhotosUrl("");
+                    returns.setLateHours(BigDecimal.ZERO);
+                    returns.setExtraKmFee(BigDecimal.ZERO);
+                    returns.setDamageFee(BigDecimal.ZERO);
+                    returns.setCleaningFee(BigDecimal.ZERO);
+                    returns.setLostItemFee(BigDecimal.ZERO);
+                    returns.setTotalAdditionalFee(BigDecimal.ZERO);
+                } else {
+                    int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                    distanceDriven = returns.getMileageAtReturn() - mileageAtHandover;
+                    if (distanceDriven < 0) distanceDriven = 0;
+                }
+
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("contract", contract);
@@ -67,6 +98,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 request.setAttribute("returns", returns);
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("carId", carId);
+                request.setAttribute("distanceDriven", distanceDriven);
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
@@ -86,11 +118,17 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         if ("confirm".equals(action)) {
+            int bookingId = 0;
+            int carId = 0;
             try {
-                int bookingId = Integer.parseInt(request.getParameter("bookingId"));
-                int carId = Integer.parseInt(request.getParameter("carId"));
+                bookingId = Integer.parseInt(request.getParameter("bookingId"));
+                carId = Integer.parseInt(request.getParameter("carId"));
 
                 // ===== VALIDATION =====
+                if (!validateOdo(request, response, bookingId, carId)) {
+                    return;
+                }
+
                 if (!validateFuel(request, response, bookingId, carId)) {
                     return;
                 }
@@ -103,13 +141,45 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
                 if (returns == null) {
-                    request.setAttribute("error", "Không tìm thấy bản ghi nhận lại.");
-                    request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
-                    return;
+                    returns = new VehicleReturn();
+                    returns.setBookingId(bookingId);
+                    returns.setCarId(carId);
+                    
+                    RentalContract contract = contractDAO.findByBookingId(bookingId);
+                    if (contract != null) {
+                        returns.setContractId(contract.getContractId());
+                    }
+                    
+                    VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+                    if (handover != null) {
+                        returns.setHandoverId(handover.getHandoverId());
+                    }
+                    
+                    Booking booking = bookingDAO.findById(bookingId);
+                    if (booking != null) {
+                        returns.setReturnedBy(booking.getCustomerId());
+                    }
+                    
+                    HttpSession session = request.getSession();
+                    User currentUser = (User) session.getAttribute("currentUser");
+                    if (currentUser != null) {
+                        returns.setReceivedBy(currentUser.getUserId());
+                    }
+                    
+                    returns.setReturnDate(java.time.LocalDateTime.now());
+                    returns.setLateHours(BigDecimal.ZERO);
+                    returns.setExtraKmFee(BigDecimal.ZERO);
+                    returns.setDamageFee(BigDecimal.ZERO);
+                    returns.setCleaningFee(BigDecimal.ZERO);
+                    returns.setLostItemFee(BigDecimal.ZERO);
+                    returns.setTotalAdditionalFee(BigDecimal.ZERO);
                 }
 
                 // ===== FORM DATA =====
-                int mileage = Integer.parseInt(request.getParameter("currentOdo"));
+                int distanceDriven = Integer.parseInt(request.getParameter("currentOdo"));
+                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+                int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                int mileage = mileageAtHandover + distanceDriven;
 
                 String fuelLevel = request.getParameter("fuel");
                 if ("F".equals(fuelLevel)) {
@@ -158,6 +228,8 @@ public class VehicleReturnDetailServlet extends HttpServlet {
 
                 response.sendRedirect(request.getContextPath() + "/returns");
             } catch (Exception e) {
+                e.printStackTrace();
+                loadDetailData(request, bookingId, carId);
                 request.setAttribute("error", "Lỗi bàn giao: " + e.getMessage());
                 request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
             }
@@ -234,17 +306,22 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         if (currentOdo == null || currentOdo.isBlank()) {
             loadDetailData(request, bookingId, carId);
             request.setAttribute("currentOdoError", "Vui lòng không để trống thông tin");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
             return false;
         }
 
-        Car car = carDAO.findById(carId);
-        int mileage = Integer.parseInt(currentOdo);
-
-        if (mileage < car.getMileage()) {
+        try {
+            int distanceDriven = Integer.parseInt(currentOdo);
+            if (distanceDriven < 0) {
+                loadDetailData(request, bookingId, carId);
+                request.setAttribute("currentOdoError", "Quãng đường đã đi không được nhỏ hơn 0");
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
+                return false;
+            }
+        } catch (NumberFormatException e) {
             loadDetailData(request, bookingId, carId);
             request.setAttribute("currentOdoError", "Vui lòng nhập số km hợp lệ");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
             return false;
         }
         return true;
@@ -280,7 +357,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                         "Ảnh " + part.getSubmittedFileName() + " vượt quá dung lượng 10MB."
                 );
 
-                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return-detail.jsp").forward(request, response);
                 return false;
             }
         }
@@ -294,6 +371,33 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
+            int distanceDriven = 0;
+            if (returns == null) {
+                returns = new VehicleReturn();
+                returns.setBookingId(bookingId);
+                returns.setCarId(carId);
+                if (contract != null) {
+                    returns.setContractId(contract.getContractId());
+                }
+                returns.setExteriorCondition("");
+                returns.setInteriorCondition("");
+                returns.setMechanicalCondition("");
+                returns.setFuelLevel("");
+                returns.setNotes("");
+                returns.setPhotosUrl("");
+                returns.setLateHours(BigDecimal.ZERO);
+                returns.setExtraKmFee(BigDecimal.ZERO);
+                returns.setDamageFee(BigDecimal.ZERO);
+                returns.setCleaningFee(BigDecimal.ZERO);
+                returns.setLostItemFee(BigDecimal.ZERO);
+                returns.setTotalAdditionalFee(BigDecimal.ZERO);
+            } else {
+                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+                int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                distanceDriven = returns.getMileageAtReturn() - mileageAtHandover;
+                if (distanceDriven < 0) distanceDriven = 0;
+            }
+
             request.setAttribute("booking", booking);
             request.setAttribute("car", car);
             request.setAttribute("contract", contract);
@@ -301,6 +405,13 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             request.setAttribute("returns", returns);
             request.setAttribute("bookingId", bookingId);
             request.setAttribute("carId", carId);
+            
+            String inputOdo = request.getParameter("currentOdo");
+            if (inputOdo != null) {
+                request.setAttribute("distanceDriven", inputOdo);
+            } else {
+                request.setAttribute("distanceDriven", distanceDriven);
+            }
 
             if (booking != null) {
                 User customer = userDAO.findById(booking.getCustomerId());

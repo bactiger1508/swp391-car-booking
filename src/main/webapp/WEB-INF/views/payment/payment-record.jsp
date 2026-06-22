@@ -368,6 +368,24 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Phân trang -->
+                <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+                    <div style="font-size:13px; color:var(--on-surface-variant);">
+                        Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> bản ghi
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-size:13px; color:var(--on-surface-variant);">Số hàng:</label>
+                        <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface); font-size:13px; outline:none; cursor:pointer;">
+                            <option value="5">5</option>
+                            <option value="10" selected="selected">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
+                            <!-- nút chuyển trang -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </c:otherwise>
     </c:choose>
@@ -426,22 +444,29 @@ function prepareSubmit() {
     return true;
 }
 
-// Init on page load
-document.addEventListener('DOMContentLoaded', function() {
-    var hiddenAmt = document.getElementById('amount');
-    var displayAmt = document.getElementById('amountDisplay');
-    if (hiddenAmt && displayAmt && hiddenAmt.value) {
-        displayAmt.value = Number(hiddenAmt.value).toLocaleString('vi-VN') + ' đ';
+let currentPage = 1;
+let pageSize = 10;
+let filteredRows = [];
+
+function changePageSize() {
+    var sizeSelect = document.getElementById('pageSizeSelect');
+    if (sizeSelect) {
+        pageSize = parseInt(sizeSelect.value);
+        currentPage = 1;
+        applyPagination();
     }
-});
+}
 
 function filterTable() {
-    var searchInput = document.getElementById('searchInput').value.toLowerCase();
+    var searchInputEl = document.getElementById('searchInput');
+    var searchInput = searchInputEl ? searchInputEl.value.toLowerCase() : '';
     var filterType = document.getElementById('filterType') ? document.getElementById('filterType').value : 'All';
     var filterMethod = document.getElementById('filterMethod') ? document.getElementById('filterMethod').value : 'All';
     var filterStatus = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'All';
     
     var rows = document.querySelectorAll('#paymentTable tbody tr');
+    filteredRows = [];
+    
     rows.forEach(function(row) {
         var rowText = row.textContent.toLowerCase();
         var type = row.getAttribute('data-type') || '';
@@ -454,12 +479,110 @@ function filterTable() {
         var matchesStatus = (filterStatus === 'All' || status === filterStatus);
         
         if (matchesSearch && matchesType && matchesMethod && matchesStatus) {
-            row.style.display = '';
+            filteredRows.push(row);
         } else {
             row.style.display = 'none';
         }
     });
+    
+    currentPage = 1;
+    applyPagination();
 }
+
+function applyPagination() {
+    var paymentTable = document.getElementById('paymentTable');
+    if (!paymentTable) return; // Exit if not in global log view
+    
+    const totalRows = filteredRows.length;
+    const totalPages = Math.ceil(totalRows / pageSize) || 1;
+    
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    
+    const allRows = document.querySelectorAll('#paymentTable tbody tr');
+    allRows.forEach(row => row.style.display = 'none');
+    
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalRows);
+    
+    for (let i = startIdx; i < endIdx; i++) {
+        filteredRows[i].style.display = '';
+    }
+    
+    const startDisplay = document.getElementById('pag-start');
+    const endDisplay = document.getElementById('pag-end');
+    const totalDisplay = document.getElementById('pag-total');
+    if (startDisplay) startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
+    if (endDisplay) endDisplay.innerText = endIdx;
+    if (totalDisplay) totalDisplay.innerText = totalRows;
+    
+    const btnContainer = document.getElementById('paginationButtons');
+    if (btnContainer) {
+        btnContainer.innerHTML = '';
+        
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        prevBtn.style.padding = '4px 8px';
+        prevBtn.style.border = '1px solid var(--outline-variant)';
+        prevBtn.style.borderRadius = '6px';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+        prevBtn.onclick = () => { currentPage--; applyPagination(); };
+        btnContainer.appendChild(prevBtn);
+        
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let p = startPage; p <= endPage; p++) {
+            if (p < 1) continue;
+            const pBtn = document.createElement('button');
+            pBtn.type = 'button';
+            pBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
+            pBtn.style.padding = '4px 10px';
+            pBtn.style.border = '1px solid ' + (p === currentPage ? 'var(--primary)' : 'var(--outline-variant)');
+            pBtn.style.borderRadius = '6px';
+            pBtn.style.cursor = 'pointer';
+            if (p === currentPage) {
+                pBtn.style.background = 'var(--primary)';
+                pBtn.style.color = 'var(--on-primary)';
+            }
+            pBtn.innerText = p;
+            pBtn.onclick = () => { currentPage = p; applyPagination(); };
+            btnContainer.appendChild(pBtn);
+        }
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        nextBtn.style.padding = '4px 8px';
+        nextBtn.style.border = '1px solid var(--outline-variant)';
+        nextBtn.style.borderRadius = '6px';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+        nextBtn.onclick = () => { currentPage++; applyPagination(); };
+        btnContainer.appendChild(nextBtn);
+    }
+}
+
+// Init on page load
+document.addEventListener('DOMContentLoaded', function() {
+    var hiddenAmt = document.getElementById('amount');
+    var displayAmt = document.getElementById('amountDisplay');
+    if (hiddenAmt && displayAmt && hiddenAmt.value) {
+        displayAmt.value = Number(hiddenAmt.value).toLocaleString('vi-VN') + ' đ';
+    }
+    
+    // Initialize global log pagination if on the global logs view
+    if (document.getElementById('paymentTable')) {
+        filterTable();
+    }
+});
 </script>
 
 <style>

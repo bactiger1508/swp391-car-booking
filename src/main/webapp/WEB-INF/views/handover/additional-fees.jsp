@@ -43,8 +43,20 @@
                         <label class="bk-form-label">Quãng đường đi vượt định mức (km)</label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">speed</span>
-                            <input type="number" id="extraKmFee" name="extraKmFee" class="bk-form-input" value="${returns.extraKmFee}" min="0" style="padding-left:40px;" />
+                            <input type="number" id="extraKmFee" name="extraKmFee"
+                                   class="bk-form-input"
+                                   value="${not empty autoExtraKm ? autoExtraKm : returns.extraKmFee}"
+                                   min="0" style="padding-left:40px;" />
                         </div>
+                        <c:if test="${not empty actualKm}">
+                            <div style="margin-top:8px; padding:10px 12px; background:var(--surface-container); border-radius:8px; border-left:3px solid var(--primary); font-size:12px; line-height:1.7; color:var(--on-surface-variant);">
+                                <strong style="color:var(--primary); font-size:13px;">📊 Phân tích km chuyến đi</strong><br/>
+                                Km thực tế đi: <strong>${actualKm} km</strong> &nbsp;|&nbsp; Định mức: <strong>${kmLimit} km</strong><br/>
+                                Km vượt tổng: <strong>${actualExtraKm} km</strong><br/>
+                                Km vượt đã thu lúc đặt (est. ${estimatedKm} km): <strong style="color:var(--success);">-${alreadyPaidExtraKm} km</strong><br/>
+                                <strong style="color:var(--error);">→ Km vượt cần thu thêm: ${not empty autoExtraKm ? autoExtraKm : actualExtraKm} km</strong>
+                            </div>
+                        </c:if>
                         <span style="font-size:12px;color:var(--outline);margin-top:2px;">(Quy định phạt: 5,000đ / km)</span>
                     </div>
 

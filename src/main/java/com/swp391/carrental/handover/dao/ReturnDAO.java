@@ -82,12 +82,12 @@ public class ReturnDAO {
             ps.setString(10, vr.getMechanicalCondition());
             ps.setString(11, vr.getDamageDescription());
             ps.setString(12, vr.getPhotosUrl());
-            ps.setBigDecimal(13, vr.getLateHours());
-            ps.setBigDecimal(14, vr.getExtraKmFee());
-            ps.setBigDecimal(15, vr.getDamageFee());
-            ps.setBigDecimal(16, vr.getCleaningFee());
-            ps.setBigDecimal(17, vr.getLostItemFee());
-            ps.setBigDecimal(18, vr.getTotalAdditionalFee());
+            ps.setBigDecimal(13, vr.getLateHours() != null ? vr.getLateHours() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(14, vr.getExtraKmFee() != null ? vr.getExtraKmFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(15, vr.getDamageFee() != null ? vr.getDamageFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(16, vr.getCleaningFee() != null ? vr.getCleaningFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(17, vr.getLostItemFee() != null ? vr.getLostItemFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(18, vr.getTotalAdditionalFee() != null ? vr.getTotalAdditionalFee() : java.math.BigDecimal.ZERO);
             ps.setString(19, vr.getNotes());
             ps.setInt(20, vr.getReceivedBy());
             ps.setInt(21, vr.getReturnedBy());
@@ -137,12 +137,12 @@ public class ReturnDAO {
             ps.setString(11, vr.getDamageDescription());
             ps.setString(12, vr.getPhotosUrl());
 
-            ps.setBigDecimal(13, vr.getLateHours());
-            ps.setBigDecimal(14, vr.getExtraKmFee());
-            ps.setBigDecimal(15, vr.getDamageFee());
-            ps.setBigDecimal(16, vr.getCleaningFee());
-            ps.setBigDecimal(17, vr.getLostItemFee());
-            ps.setBigDecimal(18, vr.getTotalAdditionalFee());
+            ps.setBigDecimal(13, vr.getLateHours() != null ? vr.getLateHours() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(14, vr.getExtraKmFee() != null ? vr.getExtraKmFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(15, vr.getDamageFee() != null ? vr.getDamageFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(16, vr.getCleaningFee() != null ? vr.getCleaningFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(17, vr.getLostItemFee() != null ? vr.getLostItemFee() : java.math.BigDecimal.ZERO);
+            ps.setBigDecimal(18, vr.getTotalAdditionalFee() != null ? vr.getTotalAdditionalFee() : java.math.BigDecimal.ZERO);
 
             ps.setString(19, vr.getNotes());
             ps.setInt(20, vr.getReceivedBy());

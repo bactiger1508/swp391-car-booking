@@ -27,7 +27,39 @@
             <tr><th>Địa chỉ thường trú</th><td>${profile.address}</td></tr>
             <tr><th>Số CCCD / Hộ chiếu</th><td>${profile.idCardNumber}</td></tr>
             <tr><th>Số Giấy phép lái xe</th><td>${profile.driverLicenseNumber}</td></tr>
-            <tr><th>Ngày hết hạn Giấy phép lái xe</th><td>${profile.driverLicenseExpiry}</td></tr>
+            <tr>
+                <th>Ngày hết hạn Giấy phép lái xe</th>
+                <td>
+                    <c:choose>
+                        <c:when test="${not empty profile.driverLicenseExpiry}">
+                            ${profile.driverLicenseExpiry}
+                        </c:when>
+                        <c:otherwise>Không thời hạn</c:otherwise>
+                    </c:choose>
+                </td>
+            </tr>
+            <tr>
+                <th>Ảnh CCCD mặt trước</th>
+                <td>
+                    <c:choose>
+                        <c:when test="${not empty profile.idCardImageFront}">
+                            <img src="${pageContext.request.contextPath}/${profile.idCardImageFront}" width="450" style="border-radius:10px; border:1px solid #ccc;">
+                        </c:when>
+                        <c:otherwise><span style="color:red">Không có ảnh</span></c:otherwise>
+                    </c:choose>
+                </td>
+            </tr>
+            <tr>
+                <th>Ảnh CCCD mặt sau</th>
+                <td>
+                    <c:choose>
+                        <c:when test="${not empty profile.idCardImageBack}">
+                            <img src="${pageContext.request.contextPath}/${profile.idCardImageBack}" width="450" style="border-radius:10px; border:1px solid #ccc;">
+                        </c:when>
+                        <c:otherwise><span style="color:red">Không có ảnh</span></c:otherwise>
+                    </c:choose>
+                </td>
+            </tr>
             <tr>
                 <th>Ảnh Giấy phép lái xe</th>
                 <td>

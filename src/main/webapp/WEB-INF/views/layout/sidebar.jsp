@@ -27,6 +27,7 @@
                 <li><a href="${pageContext.request.contextPath}/maintenance">🔧 Lịch Bảo Dưỡng</a></li>
                 <li><a href="${pageContext.request.contextPath}/bookings/manage">📊 Quản Lý Đặt Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/bookings/approval">✅ Duyệt Đặt Xe</a></li>
+                <li><a href="${pageContext.request.contextPath}/user/customer-profiles">🪪 Duyệt Hồ Sơ KH</a></li>
                 <li><a href="${pageContext.request.contextPath}/contracts">📄 Quản Lý Hợp Đồng</a></li>
                 <li><a href="${pageContext.request.contextPath}/handovers">🔑 Giao Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/returns">🔄 Nhận Lại Xe</a></li>

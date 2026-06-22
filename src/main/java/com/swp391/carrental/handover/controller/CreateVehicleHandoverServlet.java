@@ -88,6 +88,9 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 request.setAttribute("contract", contract);
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("carId", carId);
+                if (car != null) {
+                    request.setAttribute("currentOdo", car.getMileage());
+                }
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
@@ -353,7 +356,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 request.setAttribute("customer", customer);
             }
 
-            // Giữ lại dữ liệu form
+            // Keep form data
             request.setAttribute("currentOdo", request.getParameter("currentOdo"));
             request.setAttribute("fuel", request.getParameter("fuel"));
 

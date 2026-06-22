@@ -15,6 +15,8 @@ import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.vehicle.constant.CarStatus;
 import com.swp391.carrental.vehicle.dao.CarDAO;
 import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.user.dao.CustomerProfileDAO;
+import com.swp391.carrental.user.model.CustomerProfile;
 
 /*
  * Name: BookingService
@@ -191,6 +193,13 @@ public class BookingService {
             }
             if (!BookingStatus.PENDING.equals(booking.getStatus())) {
                 throw new AppException("Chỉ có thể duyệt booking đang ở trạng thái Chờ xử lý.");
+            }
+            
+            // Check if customer profile is verified
+            CustomerProfileDAO profileDAO = new CustomerProfileDAO();
+            CustomerProfile profile = profileDAO.findByUserId(booking.getCustomerId());
+            if (profile == null || !"VERIFIED".equals(profile.getVerificationStatus())) {
+                throw new AppException("Không thể duyệt booking: Hồ sơ khách hàng chưa được xác minh (VERIFIED).");
             }
             
             boolean approved = bookingDAO.approve(bookingId, approvedBy);
