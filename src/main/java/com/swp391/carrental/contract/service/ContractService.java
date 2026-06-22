@@ -58,6 +58,15 @@ public class ContractService {
         }
     }
 
+    // Get contracts by customer ID
+    public List<RentalContract> getContractsByCustomerId(int customerId) {
+        try {
+            return contractDAO.findByCustomerId(customerId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get customer contracts.", e);
+        }
+    }
+
     // Create contract from confirmed booking
     public int createContract(RentalContract contract) {
         try {

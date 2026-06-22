@@ -194,7 +194,6 @@ public class BookingService {
             }
             
             boolean approved = bookingDAO.approve(bookingId, approvedBy);
-            
             return approved;
         } catch (SQLException e) {
             throw new AppException("Failed to approve booking.", e);

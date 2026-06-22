@@ -38,6 +38,16 @@ public class ContractManagementServlet extends HttpServlet {
     // Handle GET requests for listing and details
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        com.swp391.carrental.user.model.User currentUser = null;
+        if (session != null) {
+            currentUser = (com.swp391.carrental.user.model.User) session.getAttribute("currentUser");
+        }
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         String path = request.getServletPath();
 
         // Display contract detail page
@@ -53,8 +63,13 @@ public class ContractManagementServlet extends HttpServlet {
                 if (idStr != null && !idStr.isEmpty()) {
                     int contractId = Integer.parseInt(idStr);
                     contract = contractService.getContractById(contractId);
-                    // Contract exsiting
+                    // Contract existing
                     if (contract != null) {
+                        // Authorization check: CUSTOMER can only view their own contract
+                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
+                            return;
+                        }
                         booking = bookingService.getBookingById(contract.getBookingId());
                     }
                 } // Create/View contract from booking ID 
@@ -64,8 +79,18 @@ public class ContractManagementServlet extends HttpServlet {
                     
                     // Booking have a contract
                     if (contract != null) {
+                        // Authorization check: CUSTOMER can only view their own contract
+                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
+                            return;
+                        }
                         booking = bookingService.getBookingById(contract.getBookingId());
                     } else {
+                        // Draft contract - only staff/admin can create a contract
+                        if ("CUSTOMER".equals(currentUser.getRole())) {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hợp đồng mới.");
+                            return;
+                        }
                         booking = bookingService.getBookingById(bookingId);
                         // Only confirmed bookings are eligible for contract creation
                         if (booking != null && !com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
@@ -79,6 +104,21 @@ public class ContractManagementServlet extends HttpServlet {
                     request.setAttribute("booking", booking);
                     request.setAttribute("customer", userService.getUserById(booking.getCustomerId()));
                     request.setAttribute("car", vehicleService.getCarById(booking.getCarId()));
+                    
+                    try {
+                        com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
+                        com.swp391.carrental.user.model.CustomerProfile customerProfile = profileDAO.findByUserId(booking.getCustomerId());
+                        if (customerProfile == null) {
+                            customerProfile = new com.swp391.carrental.user.model.CustomerProfile();
+                            customerProfile.setUserId(booking.getCustomerId());
+                        }
+                        request.setAttribute("customerProfile", customerProfile);
+                    } catch (Exception ex) {
+                        // fallback blank profile on failure
+                        com.swp391.carrental.user.model.CustomerProfile customerProfile = new com.swp391.carrental.user.model.CustomerProfile();
+                        customerProfile.setUserId(booking.getCustomerId());
+                        request.setAttribute("customerProfile", customerProfile);
+                    }
                 }
 
                 // Load contract-related information
@@ -94,7 +134,32 @@ public class ContractManagementServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/contract/contract-detail.jsp").forward(request, response);
         } // Display contract management page
         else {
-            request.setAttribute("contracts", contractService.getAllContracts());
+            java.util.List<com.swp391.carrental.contract.model.RentalContract> contracts;
+            if ("CUSTOMER".equals(currentUser.getRole())) {
+                contracts = contractService.getContractsByCustomerId(currentUser.getUserId());
+            } else {
+                contracts = contractService.getAllContracts();
+            }
+            request.setAttribute("contracts", contracts);
+
+            // Populate userMap and carMap
+            java.util.Map<Integer, com.swp391.carrental.user.model.User> userMap = new java.util.HashMap<>();
+            java.util.Map<Integer, com.swp391.carrental.vehicle.model.Car> carMap = new java.util.HashMap<>();
+            for (com.swp391.carrental.contract.model.RentalContract c : contracts) {
+                try {
+                    if (c.getCustomerId() > 0 && !userMap.containsKey(c.getCustomerId())) {
+                        userMap.put(c.getCustomerId(), userService.getUserById(c.getCustomerId()));
+                    }
+                    if (c.getCarId() > 0 && !carMap.containsKey(c.getCarId())) {
+                        carMap.put(c.getCarId(), vehicleService.getCarById(c.getCarId()));
+                    }
+                } catch (Exception ex) {
+                    // Skip individual lookup errors to avoid 500 on the whole page
+                }
+            }
+            request.setAttribute("userMap", userMap);
+            request.setAttribute("carMap", carMap);
+
             request.getRequestDispatcher("/WEB-INF/views/contract/contract-management.jsp").forward(request, response);
         }
     }

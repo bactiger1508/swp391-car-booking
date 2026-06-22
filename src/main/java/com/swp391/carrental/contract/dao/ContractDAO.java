@@ -133,6 +133,21 @@ public class ContractDAO {
         }
     }
 
+    // Find contracts by customer ID
+    public List<RentalContract> findByCustomerId(int customerId) throws SQLException {
+        List<RentalContract> contracts = new ArrayList<>();
+        String sql = "SELECT * FROM rental_contracts WHERE customer_id = ? ORDER BY created_at DESC";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    contracts.add(mapRow(rs));
+                }
+            }
+        }
+        return contracts;
+    }
+
     // Map result set to contract object
     private RentalContract mapRow(ResultSet rs) throws SQLException {
         RentalContract c = new RentalContract();

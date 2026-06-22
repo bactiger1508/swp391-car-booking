@@ -57,6 +57,37 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 Car car = carDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
 
+                // Enforce Handover Validation Checks: active contract and paid deposit
+                if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
+                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                    response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                    return;
+                }
+
+                com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
+                java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                boolean depositPaid = false;
+                boolean rentalPaid = false;
+                for (com.swp391.carrental.payment.model.Payment p : payments) {
+                    if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
+                            depositPaid = true;
+                        } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
+                            rentalPaid = true;
+                        }
+                    }
+                }
+                if (!depositPaid) {
+                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                    response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                    return;
+                }
+                if (!rentalPaid) {
+                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                    response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                    return;
+                }
+
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("contract", contract);
@@ -80,6 +111,38 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         try {
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
             int carId = Integer.parseInt(request.getParameter("carId"));
+
+            // Enforce Handover Validation Checks in POST
+            RentalContract contract = contractDAO.findByBookingId(bookingId);
+            if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
+                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
+
+            com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
+            java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+            boolean depositPaid = false;
+            boolean rentalPaid = false;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
+                        depositPaid = true;
+                    } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
+                        rentalPaid = true;
+                    }
+                }
+            }
+            if (!depositPaid) {
+                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
+            if (!rentalPaid) {
+                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
 
             // ===== VALIDATION =====
             if (!validateOdo(request, response, bookingId, carId)) {
@@ -121,7 +184,6 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             String status = "CHƯA KÝ NHẬN";
 
             // ===== RELATION DATA =====
-            RentalContract contract = contractDAO.findByBookingId(bookingId);
 
             Integer contractId = contract != null ? contract.getContractId() : null;
 

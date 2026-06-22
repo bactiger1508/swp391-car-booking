@@ -28,11 +28,131 @@ import com.swp391.carrental.user.model.User;
 public class PaymentRecordServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
+    private final com.swp391.carrental.booking.service.BookingService bookingService = new com.swp391.carrental.booking.service.BookingService();
+    private final com.swp391.carrental.vehicle.service.VehicleService vehicleService = new com.swp391.carrental.vehicle.service.VehicleService();
+    private final com.swp391.carrental.user.service.UserService userService = new com.swp391.carrental.user.service.UserService();
+    private final com.swp391.carrental.contract.service.ContractService contractService = new com.swp391.carrental.contract.service.ContractService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Pass all payments + which methods are enabled (for dropdown filtering)
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String bookingIdStr = request.getParameter("bookingId");
+        if (bookingIdStr != null && !bookingIdStr.isEmpty()) {
+            try {
+                int bookingId = Integer.parseInt(bookingIdStr);
+                com.swp391.carrental.booking.model.Booking booking = bookingService.getBookingById(bookingId);
+                
+                if (booking == null) {
+                    request.setAttribute("errorMsg", "Không tìm thấy đơn đặt xe.");
+                } else {
+                    // Security Check: Customer can only view/pay their own bookings
+                    if ("CUSTOMER".equals(currentUser.getRole()) && booking.getCustomerId() != currentUser.getUserId()) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thanh toán cho đơn thuê này.");
+                        return;
+                    }
+
+                    request.setAttribute("booking", booking);
+                    com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
+                    request.setAttribute("car", car);
+                    if (car != null) {
+                        request.setAttribute("carImageUrl", vehicleService.resolvePrimaryImageUrl(car.getCarId()));
+                    }
+                    request.setAttribute("customer", userService.getUserById(booking.getCustomerId()));
+                    
+                    // Contract Info
+                    com.swp391.carrental.contract.model.RentalContract contract = contractService.getContractByBookingId(bookingId);
+                    request.setAttribute("contract", contract);
+
+                    // Compute payment metrics
+                    java.util.List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                    BigDecimal totalPaid = BigDecimal.ZERO;
+                    boolean depositPaid = false;
+                    boolean rentalPaid = false;
+                    for (Payment p : payments) {
+                        if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                            if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                                // Refunds reduce the net paid amount
+                                totalPaid = totalPaid.subtract(p.getAmount());
+                            } else {
+                                totalPaid = totalPaid.add(p.getAmount());
+                            }
+                            if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
+                                depositPaid = true;
+                            } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
+                                rentalPaid = true;
+                            }
+                        }
+                    }
+                    request.setAttribute("totalPaid", totalPaid);
+                    
+                    BigDecimal totalAmount = booking.getTotalAmount();
+                    BigDecimal remainingAmount = totalAmount.subtract(totalPaid);
+                    BigDecimal excessAmount = BigDecimal.ZERO;
+                    if (totalPaid.compareTo(totalAmount) > 0) {
+                        excessAmount = totalPaid.subtract(totalAmount);
+                    }
+                    request.setAttribute("excessAmount", excessAmount);
+
+                    if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
+                        remainingAmount = BigDecimal.ZERO;
+                    }
+                    request.setAttribute("remainingAmount", remainingAmount);
+
+                    // Pre-select payment type based on current payment status
+                    String defaultPaymentType = "DEPOSIT";
+                    if (depositPaid) {
+                        defaultPaymentType = "RENTAL";
+                    }
+                    if (rentalPaid) {
+                        defaultPaymentType = "ADDITIONAL_FEE";
+                    }
+                    if (excessAmount.compareTo(BigDecimal.ZERO) > 0) {
+                        defaultPaymentType = "REFUND";
+                    }
+                    request.setAttribute("defaultPaymentType", defaultPaymentType);
+
+                    // Financial breakdown for "Tóm tắt đơn thuê" on the right
+                    long days = java.time.Duration.between(booking.getStartDate(), booking.getEndDate()).toDays();
+                    if (days <= 0) days = 1;
+                    request.setAttribute("rentalDays", days);
+                    
+                    BigDecimal baseRental = car != null ? car.getDailyRate().multiply(BigDecimal.valueOf(days)) : BigDecimal.ZERO;
+                    BigDecimal extraFees = totalAmount.subtract(baseRental);
+                    
+                    BigDecimal insuranceFee = BigDecimal.ZERO;
+                    BigDecimal serviceFee = BigDecimal.ZERO;
+                    if (extraFees.compareTo(BigDecimal.ZERO) > 0) {
+                        insuranceFee = extraFees.multiply(new BigDecimal("0.7")).setScale(0, java.math.RoundingMode.HALF_UP);
+                        serviceFee = extraFees.subtract(insuranceFee);
+                    }
+                    
+                    request.setAttribute("baseRental", baseRental);
+                    request.setAttribute("insuranceFee", insuranceFee);
+                    request.setAttribute("serviceFee", serviceFee);
+                }
+            } catch (Exception e) {
+                request.setAttribute("errorMsg", "Lỗi: " + e.getMessage());
+            }
+            // Always set enabledMethods for payment method dropdown
+            request.setAttribute("enabledMethods", paymentService.getEnabledMethods());
+            request.getRequestDispatcher("/WEB-INF/views/payment/payment-record.jsp")
+                   .forward(request, response);
+            return;
+        }
+
+        // No bookingId: Customer is not allowed to view the global transactions log
+        if ("CUSTOMER".equals(currentUser.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/bookings/my");
+            return;
+        }
+
+        // Staff/Admin: show global payment log
         request.setAttribute("payments",       paymentService.getAllPayments());
         request.setAttribute("enabledMethods", paymentService.getEnabledMethods());
         request.getRequestDispatcher("/WEB-INF/views/payment/payment-record.jsp")
@@ -54,7 +174,13 @@ public class PaymentRecordServlet extends HttpServlet {
             // recordPayment() now calls validatePaymentMethod() + validateAmount() internally
             paymentService.recordPayment(payment);
             request.getSession().setAttribute("paymentSuccess", "Ghi nhận thanh toán thành công!");
-            response.sendRedirect(request.getContextPath() + "/payments/record");
+            
+            String redirectParam = request.getParameter("redirect");
+            if ("booking".equals(redirectParam)) {
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + payment.getBookingId());
+            } else {
+                response.sendRedirect(request.getContextPath() + "/payments/record?bookingId=" + payment.getBookingId());
+            }
 
         } catch (AppException e) {
             // Validation error — send user back with error message

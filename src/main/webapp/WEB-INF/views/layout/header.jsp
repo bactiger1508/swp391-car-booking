@@ -51,6 +51,9 @@
                 <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
                     <span class="material-symbols-outlined mi-filled">receipt_long</span> Đơn thuê của tôi
                 </a>
+                <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">description</span> Hợp đồng của tôi
+                </a>
                 <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
                     <span class="material-symbols-outlined">policy</span> Chính sách
                 </a>

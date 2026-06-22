@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    request.setAttribute("dateTimeFormatter", java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+%>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Chi Tiết Booking (Staff)"/>
 </jsp:include>
@@ -33,7 +36,9 @@
     <div class="bk-alert bk-alert-success"><span class="material-symbols-outlined">check_circle</span> ${success}</div>
 </c:if>
 <c:if test="${not empty error}">
-    <div class="bk-alert bk-alert-error"><span class="material-symbols-outlined">error</span> ${error}</div>
+    <div class="bk-alert bk-alert-error" style="margin-bottom: 24px;">
+        <span class="material-symbols-outlined">warning</span> ${error}
+    </div>
 </c:if>
 
 <div class="bk-detail-grid">
@@ -163,6 +168,50 @@
             </c:if>
         </div>
 
+        <%-- Lịch sử thanh toán (Staff) --%>
+        <div class="bk-card">
+            <div class="bk-card-title">
+                <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán & Giao dịch
+            </div>
+            <c:if test="${not empty payments}">
+                <table class="bk-table" style="width:100%;font-size:13px;">
+                    <thead>
+                        <tr style="background: var(--surface-container-low); border-bottom: 1px solid var(--outline-variant);">
+                            <th style="padding: 8px 12px;">Mã</th>
+                            <th style="padding: 8px 12px;">Loại</th>
+                            <th style="padding: 8px 12px;">Số tiền</th>
+                            <th style="padding: 8px 12px;">Phương thức</th>
+                            <th style="padding: 8px 12px;">Ngày thanh toán</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="p" items="${payments}">
+                            <tr style="border-bottom: 1px solid var(--outline-variant); ${p.paymentType == 'REFUND' ? 'background: rgba(238,93,80,0.05);' : ''}">
+                                <td style="padding: 8px 12px; font-weight:600; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">PAY-${p.paymentId}</td>
+                                <td style="padding: 8px 12px;">
+                                    <c:choose>
+                                        <c:when test="${p.paymentType == 'DEPOSIT'}"><span style="color:#505F76; font-weight:600;">💵 Đặt cọc</span></c:when>
+                                        <c:when test="${p.paymentType == 'RENTAL'}"><span style="color:#041638; font-weight:600;">🚗 Tiền thuê xe</span></c:when>
+                                        <c:when test="${p.paymentType == 'ADDITIONAL_FEE'}"><span style="color:var(--error); font-weight:600;">⚠ Phụ phí</span></c:when>
+                                        <c:when test="${p.paymentType == 'REFUND'}"><span style="color:#C9392D; font-weight:600;">🔄 Hoàn tiền</span></c:when>
+                                        <c:otherwise>${p.paymentType}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px; font-weight:700; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">
+                                    <c:if test="${p.paymentType == 'REFUND'}">-</c:if><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ
+                                </td>
+                                <td style="padding: 8px 12px;">${p.paymentMethod}</td>
+                                <td style="padding: 8px 12px; color:var(--text-secondary);">${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </c:if>
+            <c:if test="${empty payments}">
+                <p style="font-size:14px;color:var(--text-secondary);margin-top:8px;">Chưa ghi nhận giao dịch thanh toán nào cho đơn này.</p>
+            </c:if>
+        </div>
+
         <%-- Rejection / Cancellation reason --%>
         <c:if test="${booking.status == 'REJECTED' && not empty booking.cancelReason}">
             <div class="bk-card" style="border-left:4px solid var(--error);">
@@ -181,7 +230,7 @@
     <%-- RIGHT: Summary + Actions --%>
     <div>
         <div class="bk-cost-card" style="position:sticky;top:96px;">
-            <h3><span class="material-symbols-outlined">receipt_long</span> Tóm tắt thanh toán</h3>
+            <h3><span class="material-symbols-outlined">receipt_long</span> Chi tiết hóa đơn</h3>
             <div class="bk-detail-rows">
                 <div class="bk-detail-row">
                     <span class="label">Giá thuê cơ bản</span>
@@ -212,21 +261,54 @@
                         </c:choose>
                     </span>
                 </div>
-            </div>
-            <div class="bk-summary-total">
-                <span class="label">Tổng cộng</span>
-                <span class="value"><fmt:formatNumber value="${booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
-            </div>
-            <div class="bk-summary-highlight">
-                <div>
-                    <div class="label">Tiền cọc yêu cầu</div>
+                <div class="bk-summary-total" style="border-bottom: 1px dashed var(--outline-variant); padding-bottom: 12px; margin-bottom: 12px;">
+                    <span class="label">Tổng cộng</span>
+                    <span class="value" style="color: var(--primary);"><fmt:formatNumber value="${booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
                 </div>
-                <span class="value"><fmt:formatNumber value="${booking.depositAmount}" type="number" groupingUsed="true"/>đ</span>
+                <div class="bk-detail-row" style="margin-bottom: 16px;">
+                    <span class="label" style="font-weight: 500;">Tiền cọc bắt buộc</span>
+                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.depositAmount}" type="number" groupingUsed="true"/>đ</span>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 20px; margin-bottom: 16px;">
+                <span class="material-symbols-outlined">payments</span> Tóm tắt thanh toán
+            </h3>
+            <div class="bk-detail-rows">
+                <div class="bk-detail-row">
+                    <span class="label">Tổng cần thu</span>
+                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
+                </div>
+                <div class="bk-detail-row">
+                    <span class="label">Đã thanh toán thực tế</span>
+                    <span class="value" style="color: #039C74; font-weight: 700;">
+                        <fmt:formatNumber value="${totalPaid}" type="number" groupingUsed="true"/>đ
+                    </span>
+                </div>
+                
+                <c:choose>
+                    <c:when test="${totalPaid >= booking.totalAmount}">
+                        <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
+                            <span class="label" style="color: #039C74; font-weight: 600;">Tiền thừa (Hoàn trả)</span>
+                            <span class="value" style="color: #039C74; font-weight: 800; font-size: 16px;">
+                                <fmt:formatNumber value="${totalPaid - booking.totalAmount}" type="number" groupingUsed="true"/>đ
+                            </span>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="bk-summary-highlight" style="background: rgba(238,93,80,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(238,93,80,0.2);">
+                            <span class="label" style="color: #C9392D; font-weight: 600;">Còn lại cần thu</span>
+                            <span class="value" style="color: #C9392D; font-weight: 800; font-size: 16px;">
+                                <fmt:formatNumber value="${booking.totalAmount - totalPaid}" type="number" groupingUsed="true"/>đ
+                            </span>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
 
             <%-- Staff Actions --%>
-            <c:if test="${booking.status == 'PENDING'}">
-                <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
+            <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
+                <c:if test="${booking.status == 'PENDING'}">
                     <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="width:100%;" id="approveForm">
                         <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
                         <input type="hidden" name="action" value="approve"/>
@@ -253,8 +335,47 @@
                             </button>
                         </form>
                     </div>
-                </div>
-            </c:if>
+                </c:if>
+
+                <%-- Contract Actions (Staff/Admin) --%>
+                <c:choose>
+                    <c:when test="${not empty contract}">
+                        <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD; padding:12px;">
+                            <span class="material-symbols-outlined">description</span> Xem hợp đồng (#${contract.contractNumber})
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <c:if test="${booking.status == 'CONFIRMED'}">
+                            <a href="${pageContext.request.contextPath}/contracts/detail?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD; padding:12px;">
+                                <span class="material-symbols-outlined">border_color</span> Soạn thảo hợp đồng
+                            </a>
+                        </c:if>
+                    </c:otherwise>
+                </c:choose>
+
+                <%-- Payment Actions (Staff/Admin) --%>
+                <c:if test="${totalPaid > booking.totalAmount}">
+                    <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
+                        <span>Khách nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - booking.totalAmount}" pattern="#,##0"/> đ</strong>. Cần hoàn trả tiền thừa.</span>
+                    </div>
+                </c:if>
+                <c:if test="${!depositPaid}">
+                    <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#05CD99; border-color:#05CD99; padding:12px;">
+                        <span class="material-symbols-outlined">payments</span> Ghi nhận đặt cọc
+                    </a>
+                </c:if>
+                <c:if test="${depositPaid && !rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS')}">
+                    <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2E7D32; border-color:#2E7D32; padding:12px;">
+                        <span class="material-symbols-outlined">payments</span> Ghi nhận thanh toán thuê
+                    </a>
+                </c:if>
+                <c:if test="${depositPaid && rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'COMPLETED')}">
+                    <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD; padding:12px;">
+                        <span class="material-symbols-outlined">payments</span> Giao dịch mới / Hoàn tiền
+                    </a>
+                </c:if>
+            </div>
 
             <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
                 <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
@@ -356,7 +477,7 @@ function handleApproveClick() {
     activeForm = document.getElementById('approveForm');
     
     document.getElementById('modalTitle').textContent = "Duyệt Đơn Đặt Xe";
-    document.getElementById('modalMessage').textContent = "Bạn có chắc chắn muốn duyệt và phê duyệt đơn đặt xe #BK-${booking.bookingId} này không? Hệ thống sẽ tự động lập hợp đồng tương ứng cho đơn hàng này.";
+    document.getElementById('modalMessage').textContent = "Bạn có chắc chắn muốn duyệt và phê duyệt đơn đặt xe #BK-${booking.bookingId} này không?";
     
     var confirmBtn = document.getElementById('modalConfirmBtn');
     confirmBtn.className = "bk-btn bk-btn-primary";
