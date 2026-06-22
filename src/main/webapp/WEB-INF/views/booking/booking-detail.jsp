@@ -143,20 +143,17 @@
                     <span class="material-symbols-outlined"></span> Xem biên bản bàn giao
                 </a>
 
-                <a href="${pageContext.request.contextPath}/return/view?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-outline" style="justify-content:center;">
-                    <span class="material-symbols-outlined"></span>Thanh toán
 
 
-
-                    <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
-                        <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;">
-                            <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
-                            <input type="hidden" name="reason" value="Khách hàng tự hủy"/>
-                            <button type="submit" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?')">
-                                <span class="material-symbols-outlined">cancel</span> Hủy đơn thuê
-                            </button>
-                        </form>
-                    </c:if>
+                <c:if test="${booking.status == 'PENDING' || booking.status == 'CONFIRMED'}">
+                    <form method="post" action="${pageContext.request.contextPath}/bookings/cancel" style="width:100%;">
+                        <input type="hidden" name="bookingId" value="${booking.bookingId}"/>
+                        <input type="hidden" name="reason" value="Khách hàng tự hủy"/>
+                        <button type="submit" class="bk-btn bk-btn-danger" style="width:100%;justify-content:center;" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?')">
+                            <span class="material-symbols-outlined">cancel</span> Hủy đơn thuê
+                        </button>
+                    </form>
+                </c:if>
             </div>
         </div>
     </div>
