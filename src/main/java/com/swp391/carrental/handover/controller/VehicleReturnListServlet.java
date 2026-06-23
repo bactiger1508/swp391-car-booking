@@ -34,17 +34,20 @@ public class VehicleReturnListServlet extends HttpServlet {
             List<VehicleReturn> returns = returnService.getAllReturns();
 
             Map<Integer, BigDecimal> deposits = new HashMap<>();
+            Map<Integer, Booking> bookings = new HashMap<>();
 
             for (VehicleReturn r : returns) {
                 Booking booking = bookingDAO.findById(r.getBookingId());
 
                 if (booking != null) {
                     deposits.put(r.getBookingId(), booking.getDepositAmount());
+                    bookings.put(r.getBookingId(), booking);
                 }
             }
 
             request.setAttribute("returns", returns);
             request.setAttribute("deposits", deposits);
+            request.setAttribute("bookings", bookings);
 
             request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-return.jsp")
                     .forward(request, response);

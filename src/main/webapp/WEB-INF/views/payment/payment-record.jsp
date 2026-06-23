@@ -66,52 +66,81 @@
                         
                         <input type="hidden" id="selectedPaymentType" name="paymentType" value="${not empty defaultPaymentType ? defaultPaymentType : 'DEPOSIT'}"/>
 
-                        <%-- Loại thanh toán (Segmented Cards) --%>
-                        <div class="bk-form-group" style="margin-bottom: 24px;">
+                                <div class="bk-form-group" style="margin-bottom: 24px;">
                             <label class="bk-form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">Loại thanh toán</label>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
                                 
-                                <%-- Deposit Card --%>
-                                <div class="payment-type-card ${defaultPaymentType == 'DEPOSIT' ? 'active' : ''}" 
-                                     onclick="selectPaymentType('DEPOSIT', ${booking.depositAmount}, ${remainingAmount})"
-                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">account_balance_wallet</span>
-                                        <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
-                                            <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                <c:if test="${!depositPaid}">
+                                    <%-- Deposit Card --%>
+                                    <div class="payment-type-card ${defaultPaymentType == 'DEPOSIT' ? 'active' : ''}" 
+                                         onclick="selectPaymentType('DEPOSIT', ${booking.depositAmount}, ${remainingAmount})"
+                                         style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">account_balance_wallet</span>
+                                            <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
+                                                <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                            </div>
                                         </div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Đặt cọc</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Giữ chỗ & bảo đảm xe</div>
                                     </div>
-                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Đặt cọc</div>
-                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Giữ chỗ & bảo đảm xe</div>
-                                </div>
+                                </c:if>
                                 
-                                <%-- Rental Card --%>
-                                <div class="payment-type-card ${defaultPaymentType == 'RENTAL' ? 'active' : ''}" 
-                                     onclick="selectPaymentType('RENTAL', ${remainingAmount}, ${remainingAmount})"
-                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">directions_car</span>
-                                        <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
-                                            <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                <c:if test="${depositPaid && !rentalPaid}">
+                                    <%-- Rental Card --%>
+                                    <div class="payment-type-card ${defaultPaymentType == 'RENTAL' ? 'active' : ''}" 
+                                         onclick="selectPaymentType('RENTAL', ${remainingAmount}, ${remainingAmount})"
+                                         style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">directions_car</span>
+                                            <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
+                                                <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                            </div>
                                         </div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Thuê xe</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Thanh toán cước thuê</div>
                                     </div>
-                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Thuê xe</div>
-                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Thanh toán cước thuê</div>
-                                </div>
+                                </c:if>
+ 
+                                <c:if test="${rentalPaid && remainingAmount > 0}">
+                                    <%-- Additional Fee Card --%>
+                                    <div class="payment-type-card ${defaultPaymentType == 'ADDITIONAL_FEE' ? 'active' : ''}" 
+                                         onclick="selectPaymentType('ADDITIONAL_FEE', ${remainingAmount}, ${remainingAmount})"
+                                         style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">warning</span>
+                                            <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
+                                                <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                            </div>
+                                        </div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Phụ phí</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Thanh toán phụ phí phát sinh</div>
+                                    </div>
+                                </c:if>
                                 
-                                <%-- Refund/Other Card --%>
-                                <div class="payment-type-card ${defaultPaymentType == 'REFUND' || defaultPaymentType == 'ADDITIONAL_FEE' ? 'active' : ''}" 
-                                     onclick="selectPaymentType('REFUND', ${excessAmount != null ? excessAmount : 0}, ${remainingAmount})"
-                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">keyboard_return</span>
-                                        <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
-                                            <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                <c:if test="${rentalPaid && excessAmount > 0}">
+                                    <%-- Refund Card --%>
+                                    <div class="payment-type-card ${defaultPaymentType == 'REFUND' ? 'active' : ''}" 
+                                         onclick="selectPaymentType('REFUND', ${excessAmount != null ? excessAmount : 0}, ${remainingAmount})"
+                                         style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">keyboard_return</span>
+                                            <div class="radio-dot" style="width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--outline); display: flex; align-items: center; justify-content: center;">
+                                                <div class="radio-inner" style="width: 8px; height: 8px; border-radius: 50%; background: transparent;"></div>
+                                            </div>
                                         </div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Hoàn tiền</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Trả lại tiền thừa/cọc</div>
                                     </div>
-                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Hoàn tiền</div>
-                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Trả lại tiền thừa/cọc</div>
-                                </div>
+                                </c:if>
+                                
+                                <c:if test="${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0}">
+                                    <div style="grid-column: 1 / -1; padding: 24px; text-align: center; background: var(--surface-container-low); border-radius: 12px; border: 1.5px dashed var(--outline-variant); color: var(--text-secondary); width: 100%;">
+                                        <span class="material-symbols-outlined" style="font-size: 32px; color: var(--success); margin-bottom: 8px;">check_circle</span>
+                                        <div style="font-weight: 700; color: var(--text-primary);">Đơn hàng đã quyết toán xong!</div>
+                                        <div style="font-size: 13px; margin-top: 4px;">Đơn đặt xe này đã thanh toán đầy đủ các khoản tiền cọc, tiền thuê và phụ thu phát sinh.</div>
+                                    </div>
+                                </c:if>
                                 
                             </div>
                         </div>
@@ -164,8 +193,18 @@
                         <%-- Submit/Cancel --%>
                         <div style="display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--outline-variant); padding-top: 20px;">
                             <a href="${pageContext.request.contextPath}/bookings/detail?id=${booking.bookingId}" class="bk-btn bk-btn-outline" style="padding: 10px 24px;">Hủy bỏ</a>
-                            <button type="submit" id="paySubmitBtn" class="bk-btn bk-btn-primary" style="padding: 10px 28px; background: #2F5ACD; border-color: #2F5ACD;" onclick="return prepareSubmit()">
-                                <span class="material-symbols-outlined">check</span> Xác nhận thanh toán
+                            <button type="submit" id="paySubmitBtn" class="bk-btn bk-btn-primary" 
+                                    ${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0 ? 'disabled' : ''}
+                                    style="padding: 10px 28px; ${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0 ? 'background: var(--outline-variant); border-color: var(--outline-variant); cursor: not-allowed;' : 'background: #2F5ACD; border-color: #2F5ACD;'}" 
+                                    onclick="return prepareSubmit()">
+                                <c:choose>
+                                    <c:when test="${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0}">
+                                        <span class="material-symbols-outlined">check_circle</span> Đã quyết toán xong
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="material-symbols-outlined">check</span> Xác nhận thanh toán
+                                    </c:otherwise>
+                                </c:choose>
                             </button>
                         </div>
                     </form>
@@ -183,22 +222,38 @@
                         
                         <div class="bk-detail-rows" style="display: flex; flex-direction: column; gap: 12px;">
                             <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
-                                <span class="label" style="color: var(--text-secondary);">Tiền thuê xe (${rentalDays} ngày)</span>
-                                <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${baseRental}" pattern="#,##0"/> đ</span>
+                                <span class="label" style="color: var(--text-secondary);">Tiền thuê gốc (${rentalDays} ngày)</span>
+                                <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.baseAmount}" pattern="#,##0"/> đ</span>
                             </div>
-                            <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
-                                <span class="label" style="color: var(--text-secondary);">Phí bảo hiểm</span>
-                                <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${insuranceFee}" pattern="#,##0"/> đ</span>
-                            </div>
-                            <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
-                                <span class="label" style="color: var(--text-secondary);">Dịch vụ thêm (GPS)</span>
-                                <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${serviceFee}" pattern="#,##0"/> đ</span>
-                            </div>
+                            <c:if test="${not empty booking.deliveryFee && booking.deliveryFee > 0}">
+                                <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
+                                    <span class="label" style="color: var(--text-secondary);">Phí giao xe</span>
+                                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.deliveryFee}" pattern="#,##0"/> đ</span>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty booking.taxAmount && booking.taxAmount > 0}">
+                                <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
+                                    <span class="label" style="color: var(--text-secondary);">Thuế (VAT)</span>
+                                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.taxAmount}" pattern="#,##0"/> đ</span>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty booking.discountAmount && booking.discountAmount > 0}">
+                                <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
+                                    <span class="label" style="color: var(--text-secondary);">Giảm giá</span>
+                                    <span class="value" style="font-weight: 600; color: var(--success);">-<fmt:formatNumber value="${booking.discountAmount}" pattern="#,##0"/> đ</span>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty returns && not empty returns.totalAdditionalFee && returns.totalAdditionalFee > 0}">
+                                <div class="bk-detail-row" style="display: flex; justify-content: space-between; font-size: 14px;">
+                                    <span class="label" style="color: var(--error);">Phụ phí phát sinh (trả xe)</span>
+                                    <span class="value" style="font-weight: 600; color: var(--error);"><fmt:formatNumber value="${returns.totalAdditionalFee}" pattern="#,##0"/> đ</span>
+                                </div>
+                            </c:if>
                         </div>
                         
                         <div class="bk-summary-total" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--outline-variant); padding-top: 16px; margin-top: 16px;">
                             <span style="font-weight: 700; font-size: 15px; color: var(--primary);">Tổng cộng</span>
-                            <span style="font-weight: 800; font-size: 22px; color: #2F5ACD;"><fmt:formatNumber value="${booking.totalAmount}" pattern="#,##0"/> đ</span>
+                            <span style="font-weight: 800; font-size: 22px; color: #2F5ACD;"><fmt:formatNumber value="${not empty totalAmount ? totalAmount : booking.totalAmount}" pattern="#,##0"/> đ</span>
                         </div>
                     </div>
 

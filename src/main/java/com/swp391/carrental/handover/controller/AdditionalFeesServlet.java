@@ -57,10 +57,30 @@ public class AdditionalFeesServlet extends HttpServlet {
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("carId", carId);
 
+                // Calculate total paid so far
+                com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
+                java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                BigDecimal totalPaid = BigDecimal.ZERO;
+                for (com.swp391.carrental.payment.model.Payment p : payments) {
+                    if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                            totalPaid = totalPaid.subtract(p.getAmount());
+                        } else {
+                            totalPaid = totalPaid.add(p.getAmount());
+                        }
+                    }
+                }
+                request.setAttribute("totalPaid", totalPaid);
+
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
                     request.setAttribute("customer", customer);
                 }
+
+                // Load rates dynamically from policy settings
+                com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+                request.setAttribute("extraKmFeeRate", policyService.getPolicyValue("EXTRA_KM_FEE", "4000"));
+                request.setAttribute("lateFeePerHour", policyService.getPolicyValue("LATE_FEE_PER_HOUR", "100000"));
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);

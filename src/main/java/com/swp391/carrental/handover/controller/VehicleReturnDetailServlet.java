@@ -117,7 +117,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        if ("confirm".equals(action)) {
+        if ("confirm".equals(action) || "calculate".equals(action)) {
             int bookingId = 0;
             int carId = 0;
             try {
@@ -224,9 +224,76 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 returns.setInteriorCondition(interior);
                 returns.setMechanicalCondition(mechanical);
 
-                returnService.returnVehicle(returns);
+                // Auto-calculate default return fees (late fee & extra km fee) only during "calculate" step.
+                // This prevents overwriting manual adjustments made in additional-fees page when confirming.
+                if ("calculate".equals(action)) {
+                    Booking booking = bookingDAO.findById(bookingId);
+                    com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
 
-                response.sendRedirect(request.getContextPath() + "/returns");
+                    BigDecimal lateHours = returns.getLateHours();
+                    BigDecimal lateFee = BigDecimal.ZERO;
+                    BigDecimal feePerHour = new BigDecimal(policyService.getPolicyValue("LATE_FEE_PER_HOUR", "100000"));
+
+                    if (lateHours == null || (returns.getReturnId() == 0 && lateHours.compareTo(BigDecimal.ZERO) == 0)) {
+                        if (booking != null && booking.getEndDate() != null) {
+                            java.time.LocalDateTime expectedReturn = booking.getEndDate();
+                            java.time.LocalDateTime actualReturn = returns.getReturnDate() != null ? returns.getReturnDate() : java.time.LocalDateTime.now();
+                            if (actualReturn.isAfter(expectedReturn)) {
+                                long hours = java.time.Duration.between(expectedReturn, actualReturn).toHours();
+                                if (hours < 1) {
+                                    hours = 1;
+                                }
+                                lateHours = BigDecimal.valueOf(hours);
+                            } else {
+                                lateHours = BigDecimal.ZERO;
+                            }
+                        } else {
+                            lateHours = BigDecimal.ZERO;
+                        }
+                    }
+                    lateFee = feePerHour.multiply(lateHours);
+
+                    BigDecimal extraKmFee = BigDecimal.ZERO;
+                    BigDecimal extraKmCost = BigDecimal.ZERO;
+                    if (booking != null) {
+                        int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
+                        int actualExtraKm = Math.max(0, distanceDriven - kmLimit);
+                        int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
+                        int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+                        int additionalExtraKm = Math.max(0, actualExtraKm - alreadyPaidExtraKm);
+                        extraKmFee = BigDecimal.valueOf(additionalExtraKm);
+                        BigDecimal rate = new BigDecimal(policyService.getPolicyValue("EXTRA_KM_FEE", "4000"));
+                        extraKmCost = rate.multiply(extraKmFee);
+                    }
+
+                    BigDecimal damageFee = returns.getDamageFee() != null ? returns.getDamageFee() : BigDecimal.ZERO;
+                    BigDecimal cleaningFee = returns.getCleaningFee() != null ? returns.getCleaningFee() : BigDecimal.ZERO;
+                    BigDecimal lostItemFee = returns.getLostItemFee() != null ? returns.getLostItemFee() : BigDecimal.ZERO;
+                    BigDecimal totalAdditionalFee = lateFee.add(extraKmCost).add(damageFee).add(cleaningFee).add(lostItemFee);
+
+                    returns.setLateHours(lateHours);
+                    returns.setExtraKmFee(extraKmFee);
+                    returns.setTotalAdditionalFee(totalAdditionalFee);
+
+                    if (returns.getReturnId() == 0) {
+                        int returnIdVal = returnDAO.insert(returns);
+                        returns.setReturnId(returnIdVal);
+                    } else {
+                        returnDAO.update(returns);
+                    }
+                    response.sendRedirect(request.getContextPath() + "/additional-fees?bookingId=" + bookingId + "&carId=" + carId);
+                    return;
+                } else {
+                    // For "confirm" action, update the check details and proceed to finalize without modifying fees
+                    if (returns.getReturnId() == 0) {
+                        int returnIdVal = returnDAO.insert(returns);
+                        returns.setReturnId(returnIdVal);
+                    } else {
+                        returnDAO.update(returns);
+                    }
+                    returnService.returnVehicle(returns);
+                    response.sendRedirect(request.getContextPath() + "/returns");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 loadDetailData(request, bookingId, carId);

@@ -483,9 +483,9 @@
 
         <!-- Action Footer -->
         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 16px;">
-            <button type="submit" name="action" value="confirm" class="bk-btn bk-btn-primary" style="display: inline-flex; align-items: center; gap: 8px; font-weight:600;">
-                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span> Xác nhận trả xe & Thanh toán
-            </button>
+            <a href="${pageContext.request.contextPath}/bookings/detail?id=${bookingId}" class="bk-btn bk-btn-outline" style="display: inline-flex; align-items: center; gap: 8px; font-weight:600; text-decoration:none;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Quay lại
+            </a>
         </div>
     </form>
 </div>
@@ -545,3 +545,4 @@
     document.getElementById('lostItemFee').addEventListener('input', recalculateFees);
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+</content>

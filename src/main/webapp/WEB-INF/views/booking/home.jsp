@@ -312,7 +312,7 @@
                 <c:if test="${not empty featuredCars}">
                     <c:forEach var="car" items="${featuredCars}">
                         <!-- Vehicle Bento Card -->
-                        <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/40 flex flex-col sm:flex-row gap-6 items-center hover:shadow-md car-card-hover duration-300">
+                        <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/40 flex flex-col sm:flex-row gap-6 items-center hover:shadow-md car-card-hover duration-300 car-card-item">
                             <!-- Image Section -->
                             <div class="w-full sm:w-48 h-32 bg-slate-100 rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center">
                                 <c:set var="thumb" value="${primaryImages[car.carId]}"/>
@@ -383,9 +383,125 @@
                         <p class="text-sm text-on-surface-variant">Hiện tại tất cả xe đều đang được thuê hoặc đang bảo dưỡng.</p>
                     </div>
                 </c:if>
+                
+                <!-- Phân trang xe nổi bật -->
+                <div class="flex items-center justify-between border-t border-outline-variant/40 bg-white px-4 py-3 sm:px-6 mt-2 rounded-xl shadow-sm" id="homePagination" style="display: none;">
+                    <div class="flex flex-1 justify-between sm:hidden">
+                        <button onclick="prevHomePage()" class="relative inline-flex items-center rounded-md border border-outline-variant bg-white px-4 py-2 text-xs font-semibold text-on-surface-variant hover:bg-slate-50">Trước</button>
+                        <button onclick="nextHomePage()" class="relative ml-3 inline-flex items-center rounded-md border border-outline-variant bg-white px-4 py-2 text-xs font-semibold text-on-surface-variant hover:bg-slate-50">Sau</button>
+                    </div>
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-xs text-on-surface-variant">
+                                Hiển thị <span class="font-bold" id="homePageStart">0</span> đến <span class="font-bold" id="homePageEnd">0</span> trong số <span class="font-bold" id="homePageTotal">0</span> xe nổi bật
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination" id="homePageButtons">
+                                <!-- Nút chuyển trang sinh bằng JS -->
+                            </nav>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    let homeCurrentPage = 1;
+    const homePageSize = 5;
+
+    function applyHomePagination() {
+        const cars = document.querySelectorAll('.car-card-item');
+        const totalCars = cars.length;
+        const pagContainer = document.getElementById('homePagination');
+        
+        if (!pagContainer) return;
+        if (totalCars <= homePageSize) {
+            pagContainer.style.display = 'none';
+            cars.forEach(car => car.style.display = 'flex');
+            return;
+        } else {
+            pagContainer.style.display = 'flex';
+        }
+
+        const totalPages = Math.ceil(totalCars / homePageSize) || 1;
+        if (homeCurrentPage > totalPages) homeCurrentPage = totalPages;
+        if (homeCurrentPage < 1) homeCurrentPage = 1;
+
+        cars.forEach((car, index) => {
+            if (index >= (homeCurrentPage - 1) * homePageSize && index < homeCurrentPage * homePageSize) {
+                car.style.display = 'flex';
+            } else {
+                car.style.display = 'none';
+            }
+        });
+
+        const startIdx = (homeCurrentPage - 1) * homePageSize;
+        const endIdx = Math.min(startIdx + homePageSize, totalCars);
+
+        document.getElementById('homePageStart').innerText = totalCars > 0 ? (startIdx + 1) : 0;
+        document.getElementById('homePageEnd').innerText = endIdx;
+        document.getElementById('homePageTotal').innerText = totalCars;
+
+        const btnContainer = document.getElementById('homePageButtons');
+        if (btnContainer) {
+            btnContainer.innerHTML = '';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
+            prevBtn.disabled = (homeCurrentPage === 1);
+            prevBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] vertical-align-middle">chevron_left</span>';
+            prevBtn.onclick = () => { homeCurrentPage--; applyHomePagination(); };
+            btnContainer.appendChild(prevBtn);
+
+            let startPage = Math.max(1, homeCurrentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+                const pageBtn = document.createElement('button');
+                if (p === homeCurrentPage) {
+                    pageBtn.className = 'relative z-10 inline-flex items-center bg-[#041638] text-white px-3 py-1.5 text-xs font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#041638] rounded-md mx-1';
+                } else {
+                    pageBtn.className = 'relative inline-flex items-center px-3 py-1.5 text-xs font-semibold text-gray-950 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 rounded-md mx-1';
+                }
+                pageBtn.innerText = p;
+                pageBtn.onclick = () => { homeCurrentPage = p; applyHomePagination(); };
+                btnContainer.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
+            nextBtn.disabled = (homeCurrentPage === totalPages);
+            nextBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] vertical-align-middle">chevron_right</span>';
+            nextBtn.onclick = () => { homeCurrentPage++; applyHomePagination(); };
+            btnContainer.appendChild(nextBtn);
+        }
+    }
+
+    function prevHomePage() {
+        if (homeCurrentPage > 1) {
+            homeCurrentPage--;
+            applyHomePagination();
+        }
+    }
+
+    function nextHomePage() {
+        const cars = document.querySelectorAll('.car-card-item');
+        const totalPages = Math.ceil(cars.length / homePageSize) || 1;
+        if (homeCurrentPage < totalPages) {
+            homeCurrentPage++;
+            applyHomePagination();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyHomePagination();
+    });
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

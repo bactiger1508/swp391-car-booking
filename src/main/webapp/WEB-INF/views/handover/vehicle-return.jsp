@@ -66,7 +66,16 @@
                         <td>Nhân viên #${r.receivedBy}</td>
                         <td>
                             <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&carId=${r.carId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
-                            <a href="${pageContext.request.contextPath}/payments/record?bookingId=${r.bookingId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#2E7D32; border-color:#2E7D32; color:#fff;">Quyết toán</a>
+                            <c:choose>
+                                <c:when test="${bookings[r.bookingId].status == 'COMPLETED'}">
+                                    <span style="font-size:12px; color:#039C74; font-weight:600; padding: 4px 8px; background:#EAF9F5; border:1px solid rgba(5,205,153,0.2); border-radius:6px; margin-left:4px; display:inline-block; vertical-align:middle;">
+                                        ✓ Đã quyết toán
+                                    </span>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/payments/record?bookingId=${r.bookingId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#2E7D32; border-color:#2E7D32; color:#fff; vertical-align:middle; margin-left:4px;">Quyết toán</a>
+                                </c:otherwise>
+                            </c:choose>
                         </td>
                     </tr>
                 </c:forEach>

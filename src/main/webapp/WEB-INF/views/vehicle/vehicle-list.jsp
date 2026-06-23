@@ -236,6 +236,25 @@
         </c:forEach>
     </div>
 
+    <!-- Phân trang cho Danh sách xe -->
+    <div class="bk-pagination-container" id="carPagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+        <div style="font-size:13px; color:var(--on-surface-variant);">
+            Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> xe hiện có
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:13px; color:var(--on-surface-variant);">Số xe mỗi trang:</label>
+            <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface); font-size:13px; outline:none; cursor:pointer;">
+                <option value="8" selected="selected">8</option>
+                <option value="12">12</option>
+                <option value="16">16</option>
+                <option value="24">24</option>
+            </select>
+            <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
+                <!-- nút chuyển trang sinh bằng JS -->
+            </div>
+        </div>
+    </div>
+
     <%-- Thông báo không tìm thấy kết quả lọc --%>
     <div id="noResults" class="bk-empty" style="display:none;margin-top:24px;">
         <span class="material-symbols-outlined">search_off</span>
@@ -253,6 +272,16 @@
 </c:if>
 
 <script>
+let currentPage = 1;
+let pageSize = 8;
+let filteredCars = [];
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    applyPagination();
+}
+
 function updateModelOptions() {
     var brand = document.getElementById('filterBrand').value;
     var modelSelect = document.getElementById('filterModel');
@@ -289,7 +318,7 @@ function applyFilters() {
     var priceLimit = document.getElementById('filterPrice').value;
 
     var carItems = document.querySelectorAll('.car-item');
-    var visibleCount = 0;
+    filteredCars = [];
 
     carItems.forEach(function(item) {
         var itemBrand = item.getAttribute('data-brand');
@@ -320,8 +349,7 @@ function applyFilters() {
         }
 
         if (matchBrand && matchModel && matchTransmission && matchFuel && matchSeats && matchPrice) {
-            item.style.display = 'block';
-            visibleCount++;
+            filteredCars.push(item);
         } else {
             item.style.display = 'none';
         }
@@ -329,15 +357,99 @@ function applyFilters() {
 
     var grid = document.getElementById('carGrid');
     var noResults = document.getElementById('noResults');
+    var pagContainer = document.getElementById('carPagination');
     if (grid) {
-        if (visibleCount === 0) {
+        if (filteredCars.length === 0) {
             noResults.style.display = 'flex';
+            if (pagContainer) pagContainer.style.display = 'none';
         } else {
             noResults.style.display = 'none';
+            if (pagContainer) pagContainer.style.display = 'flex';
         }
     }
     
+    currentPage = 1;
+    applyPagination();
     updateFilterChips();
+}
+
+function applyPagination() {
+    const totalCars = filteredCars.length;
+    const totalPages = Math.ceil(totalCars / pageSize) || 1;
+    
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    
+    const carItems = document.querySelectorAll('.car-item');
+    carItems.forEach(item => item.style.display = 'none');
+    
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalCars);
+    
+    for (let i = startIdx; i < endIdx; i++) {
+        filteredCars[i].style.display = 'block';
+    }
+    
+    const startDisplay = document.getElementById('pag-start');
+    const endDisplay = document.getElementById('pag-end');
+    const totalDisplay = document.getElementById('pag-total');
+    if (startDisplay) startDisplay.innerText = totalCars > 0 ? (startIdx + 1) : 0;
+    if (endDisplay) endDisplay.innerText = endIdx;
+    if (totalDisplay) totalDisplay.innerText = totalCars;
+    
+    const btnContainer = document.getElementById('paginationButtons');
+    if (btnContainer) {
+        btnContainer.innerHTML = '';
+        
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        prevBtn.style.padding = '4px 8px';
+        prevBtn.style.border = '1px solid var(--outline-variant)';
+        prevBtn.style.borderRadius = '6px';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+        prevBtn.onclick = () => { currentPage--; applyPagination(); };
+        btnContainer.appendChild(prevBtn);
+        
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let p = startPage; p <= endPage; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
+            pageBtn.style.padding = '4px 10px';
+            pageBtn.style.minWidth = '28px';
+            pageBtn.style.borderRadius = '6px';
+            pageBtn.style.cursor = 'pointer';
+            pageBtn.style.fontWeight = '600';
+            pageBtn.style.fontSize = '12px';
+            if (p === currentPage) {
+                pageBtn.style.background = 'var(--primary)';
+                pageBtn.style.color = 'var(--on-primary)';
+                pageBtn.style.border = 'none';
+            } else {
+                pageBtn.style.border = '1px solid var(--outline-variant)';
+            }
+            pageBtn.innerText = p;
+            pageBtn.onclick = () => { currentPage = p; applyPagination(); };
+            btnContainer.appendChild(pageBtn);
+        }
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+        nextBtn.style.padding = '4px 8px';
+        nextBtn.style.border = '1px solid var(--outline-variant)';
+        nextBtn.style.borderRadius = '6px';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+        nextBtn.onclick = () => { currentPage++; applyPagination(); };
+        btnContainer.appendChild(nextBtn);
+    }
 }
 
 function updateFilterChips() {

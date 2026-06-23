@@ -24,6 +24,7 @@
             <c:when test="${booking.status == 'PENDING'}"><span class="bk-badge bk-badge-pending"><span class="bk-badge-dot"></span> Chờ xử lý</span></c:when>
             <c:when test="${booking.status == 'CONFIRMED'}"><span class="bk-badge bk-badge-confirmed"><span class="bk-badge-dot"></span> Đã xác nhận</span></c:when>
             <c:when test="${booking.status == 'IN_PROGRESS'}"><span class="bk-badge bk-badge-progress"><span class="bk-badge-dot"></span> Đang thuê</span></c:when>
+            <c:when test="${booking.status == 'PENDING_SETTLEMENT'}"><span class="bk-badge bk-badge-pending" style="background:#FFF4F2; color:#C9392D; border:1px solid rgba(238,93,80,0.2);"><span class="bk-badge-dot" style="background:#EE5D50;"></span> Chờ quyết toán</span></c:when>
             <c:when test="${booking.status == 'COMPLETED'}"><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Hoàn tất</span></c:when>
             <c:when test="${booking.status == 'REJECTED'}"><span class="bk-badge bk-badge-rejected"><span class="bk-badge-dot"></span> Đã từ chối</span></c:when>
             <c:when test="${booking.status == 'CANCELLED'}"><span class="bk-badge bk-badge-cancelled"><span class="bk-badge-dot"></span> Đã hủy</span></c:when>
@@ -167,6 +168,7 @@
                                     <c:choose>
                                         <c:when test="${p.paymentType == 'DEPOSIT'}">Đặt cọc</c:when>
                                         <c:when test="${p.paymentType == 'RENTAL'}">Tiền thuê xe</c:when>
+                                        <c:when test="${p.paymentType == 'ADDITIONAL_FEE'}">Phụ phí</c:when>
                                         <c:otherwise>${p.paymentType}</c:otherwise>
                                     </c:choose>
                                 </td>
@@ -236,9 +238,15 @@
                         </c:choose>
                     </span>
                 </div>
+                <c:if test="${not empty returns && not empty returns.totalAdditionalFee && returns.totalAdditionalFee > 0}">
+                    <div class="bk-detail-row">
+                        <span class="label" style="color:var(--error);">Phụ phí phát sinh (trả xe)</span>
+                        <span class="value" style="color:var(--error); font-weight:600;"><fmt:formatNumber value="${returns.totalAdditionalFee}" type="number" groupingUsed="true"/>đ</span>
+                    </div>
+                </c:if>
                 <div class="bk-summary-total" style="border-bottom: 1px dashed var(--outline-variant); padding-bottom: 12px; margin-bottom: 12px;">
                     <span class="label">Tổng cộng</span>
-                    <span class="value" style="color: var(--primary);"><fmt:formatNumber value="${booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
+                    <span class="value" style="color: var(--primary);"><fmt:formatNumber value="${not empty totalRequired ? totalRequired : booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
                 </div>
                 <div class="bk-detail-row" style="margin-bottom: 16px;">
                     <span class="label" style="font-weight: 500;">Tiền cọc bắt buộc</span>
@@ -252,7 +260,7 @@
             <div class="bk-detail-rows">
                 <div class="bk-detail-row">
                     <span class="label">Tổng cần thanh toán</span>
-                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
+                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${not empty totalRequired ? totalRequired : booking.totalAmount}" type="number" groupingUsed="true"/>đ</span>
                 </div>
                 <div class="bk-detail-row">
                     <span class="label">Đã thanh toán thực tế</span>
@@ -261,12 +269,13 @@
                     </span>
                 </div>
                 
+                <c:set var="finalRequired" value="${not empty totalRequired ? totalRequired : booking.totalAmount}"/>
                 <c:choose>
-                    <c:when test="${totalPaid >= booking.totalAmount}">
+                    <c:when test="${totalPaid >= finalRequired}">
                         <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
                             <span class="label" style="color: #039C74; font-weight: 600;">Tiền thừa (Hoàn trả)</span>
                             <span class="value" style="color: #039C74; font-weight: 800; font-size: 16px;">
-                                <fmt:formatNumber value="${totalPaid - booking.totalAmount}" type="number" groupingUsed="true"/>đ
+                                <fmt:formatNumber value="${totalPaid - finalRequired}" type="number" groupingUsed="true"/>đ
                             </span>
                         </div>
                     </c:when>
@@ -274,7 +283,7 @@
                         <div class="bk-summary-highlight" style="background: rgba(238,93,80,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(238,93,80,0.2);">
                             <span class="label" style="color: #C9392D; font-weight: 600;">Còn lại cần thanh toán</span>
                             <span class="value" style="color: #C9392D; font-weight: 800; font-size: 16px;">
-                                <fmt:formatNumber value="${booking.totalAmount - totalPaid}" type="number" groupingUsed="true"/>đ
+                                <fmt:formatNumber value="${finalRequired - totalPaid}" type="number" groupingUsed="true"/>đ
                             </span>
                         </div>
                     </c:otherwise>
@@ -292,10 +301,10 @@
                 </c:if>
 
                 <%-- Payment Buttons (Customer) --%>
-                <c:if test="${totalPaid > booking.totalAmount}">
+                <c:if test="${totalPaid > finalRequired}">
                     <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
                         <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
-                        <span>Đã nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - booking.totalAmount}" pattern="#,##0"/> đ</strong>. Vui lòng liên hệ quầy để hoàn tiền.</span>
+                        <span>Đã nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Vui lòng liên hệ quầy để hoàn tiền.</span>
                     </div>
                 </c:if>
                 <c:if test="${!depositPaid}">
@@ -303,12 +312,12 @@
                         <span class="material-symbols-outlined">payments</span> Thanh toán tiền cọc
                     </a>
                 </c:if>
-                <c:if test="${depositPaid && !rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS')}">
+                <c:if test="${depositPaid && !rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'PENDING_SETTLEMENT')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2E7D32; border-color:#2E7D32;">
                         <span class="material-symbols-outlined">payments</span> Thanh toán tiền thuê xe
                     </a>
                 </c:if>
-                <c:if test="${depositPaid && rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'COMPLETED')}">
+                <c:if test="${depositPaid && rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'COMPLETED' || booking.status == 'PENDING_SETTLEMENT')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD;">
                         <span class="material-symbols-outlined">payments</span> Xem giao dịch / Hoàn tiền
                     </a>
@@ -322,9 +331,9 @@
                     <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao
                 </a>
 
-                <c:if test="${booking.status == 'IN_PROGRESS'}">
-                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1;">
-                        <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
+                <c:if test="${not empty returns}">
+                    <a href="${pageContext.request.contextPath}/return/view?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-outline" style="justify-content:center;">
+                        <span class="material-symbols-outlined">assignment_return</span> Xem biên bản nhận lại xe
                     </a>
                 </c:if>
 

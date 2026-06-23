@@ -370,11 +370,17 @@
         </div>
 
         <!-- Action Footer -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 16px;">
-            <a href="${pageContext.request.contextPath}/additional-fees?bookingId=${bookingId}&carId=${carId}" class="bk-btn bk-btn-outline" style="text-align: center;">
-                Tính phí
-            </a>
-            <button type="submit" name="action" value="confirm" class="bk-btn bk-btn-primary" style="display: inline-flex; align-items: center; gap: 8px; font-weight:600;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px; border-top: 1px solid var(--outline-variant); padding-top: 16px;">
+            <div id="calc-warning" style="color: var(--error); font-size: 13px; font-weight: 500; display: none; margin-right: auto; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">warning</span>
+                Thông tin thay đổi. Vui lòng bấm "Tính phí" trước khi xác nhận!
+            </div>
+            <button type="submit" name="action" value="calculate" class="bk-btn bk-btn-outline" style="display: inline-flex; align-items: center; gap: 8px; font-weight:600;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">calculate</span> Tính phí
+            </button>
+            <button type="submit" id="btnConfirmReturn" name="action" value="confirm" class="bk-btn bk-btn-primary" 
+                    ${(empty returns || returns.mileageAtReturn == 0) ? 'disabled="disabled"' : ''}
+                    style="display: inline-flex; align-items: center; gap: 8px; font-weight:600; ${(empty returns || returns.mileageAtReturn == 0) ? 'opacity:0.5; cursor:not-allowed;' : ''}">
                 <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span> Xác nhận trả xe
             </button>
         </div>
@@ -412,8 +418,37 @@
                 distanceDisplay2.style.color = "red";
             }
         }
-        odoInput.addEventListener("input", updateDistance);
+        function triggerChange() {
+            const btn = document.getElementById('btnConfirmReturn');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+            const warning = document.getElementById('calc-warning');
+            if (warning) {
+                warning.style.display = 'inline-flex';
+            }
+        }
+
+        odoInput.addEventListener("input", function() {
+            updateDistance();
+            triggerChange();
+        });
         updateDistance();
+
+        document.querySelectorAll('.checklist-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', triggerChange);
+        });
+
+        document.querySelectorAll('.fuel-radio').forEach(function(rad) {
+            rad.addEventListener('change', triggerChange);
+        });
+
+        const notesTextarea = document.querySelector('textarea[name="notes"]');
+        if (notesTextarea) {
+            notesTextarea.addEventListener('input', triggerChange);
+        }
 
         const fileInput = document.getElementById("evidencePhotos");
         const previewContainer = document.getElementById("imagePreviewContainer");
@@ -446,6 +481,7 @@
             });
 
             updateFileInput();
+            triggerChange();
         });
 
         function previewNewImage(file) {
@@ -478,6 +514,7 @@
                     wrapper.remove();
 
                     updateFileInput();
+                    triggerChange();
                 };
 
                 wrapper.appendChild(img);
@@ -515,6 +552,7 @@
                 remainingPhotosInput.value = existingPhotos.join(",");
 
                 wrapper.remove();
+                triggerChange();
             });
         });
 

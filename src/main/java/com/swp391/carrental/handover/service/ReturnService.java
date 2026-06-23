@@ -74,7 +74,13 @@ public class ReturnService {
                 returnId = existing.getReturnId();
             }
 
-            carDAO.updateStatus(vehicleReturn.getCarId(), CarStatus.AVAILABLE);
+            // Update car status to AVAILABLE and update its mileage to match return mileage
+            com.swp391.carrental.vehicle.model.Car car = carDAO.findById(vehicleReturn.getCarId());
+            if (car != null) {
+                car.setStatus(CarStatus.AVAILABLE);
+                car.setMileage(vehicleReturn.getMileageAtReturn());
+                carDAO.update(car);
+            }
 
             Booking booking = bookingDAO.findById(vehicleReturn.getBookingId());
             if (booking != null) {

@@ -52,7 +52,7 @@ public class CustomerProfileDAO {
     public boolean update(CustomerProfile profile) throws SQLException {
         String sql = "UPDATE customer_profiles SET date_of_birth = ?, address = ?, id_card_number = ?, "
                 + "id_card_image_front = ?, id_card_image_back = ?, driver_license_number = ?, "
-                + "driver_license_image = ?, driver_license_expiry = ?, updated_at = GETDATE() "
+                + "driver_license_image = ?, driver_license_expiry = ?, verification_status = ?, updated_at = GETDATE() "
                 + "WHERE profile_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, profile.getDateOfBirth() != null ? Date.valueOf(profile.getDateOfBirth()) : null);
@@ -63,7 +63,8 @@ public class CustomerProfileDAO {
             ps.setString(6, profile.getDriverLicenseNumber());
             ps.setString(7, profile.getDriverLicenseImage());
             ps.setDate(8, profile.getDriverLicenseExpiry() != null ? Date.valueOf(profile.getDriverLicenseExpiry()) : null);
-            ps.setInt(9, profile.getProfileId());
+            ps.setString(9, profile.getVerificationStatus());
+            ps.setInt(10, profile.getProfileId());
             return ps.executeUpdate() > 0;
         }
     }

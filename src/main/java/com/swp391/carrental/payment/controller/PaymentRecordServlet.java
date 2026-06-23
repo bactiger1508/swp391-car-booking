@@ -90,8 +90,23 @@ public class PaymentRecordServlet extends HttpServlet {
                         }
                     }
                     request.setAttribute("totalPaid", totalPaid);
+                    request.setAttribute("depositPaid", depositPaid);
+                    request.setAttribute("rentalPaid", rentalPaid);
                     
+                    // Fetch vehicle return and include its totalAdditionalFee in totalAmount
+                    com.swp391.carrental.handover.model.VehicleReturn vehicleReturn = null;
+                    try {
+                        vehicleReturn = new com.swp391.carrental.handover.dao.ReturnDAO().findByBookingId(bookingId);
+                    } catch (Exception e) {
+                        // ignore error
+                    }
                     BigDecimal totalAmount = booking.getTotalAmount();
+                    if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+                        totalAmount = totalAmount.add(vehicleReturn.getTotalAdditionalFee());
+                    }
+                    request.setAttribute("totalAmount", totalAmount);
+                    request.setAttribute("returns", vehicleReturn);
+
                     BigDecimal remainingAmount = totalAmount.subtract(totalPaid);
                     BigDecimal excessAmount = BigDecimal.ZERO;
                     if (totalPaid.compareTo(totalAmount) > 0) {
@@ -121,20 +136,6 @@ public class PaymentRecordServlet extends HttpServlet {
                     long days = java.time.Duration.between(booking.getStartDate(), booking.getEndDate()).toDays();
                     if (days <= 0) days = 1;
                     request.setAttribute("rentalDays", days);
-                    
-                    BigDecimal baseRental = car != null ? car.getDailyRate().multiply(BigDecimal.valueOf(days)) : BigDecimal.ZERO;
-                    BigDecimal extraFees = totalAmount.subtract(baseRental);
-                    
-                    BigDecimal insuranceFee = BigDecimal.ZERO;
-                    BigDecimal serviceFee = BigDecimal.ZERO;
-                    if (extraFees.compareTo(BigDecimal.ZERO) > 0) {
-                        insuranceFee = extraFees.multiply(new BigDecimal("0.7")).setScale(0, java.math.RoundingMode.HALF_UP);
-                        serviceFee = extraFees.subtract(insuranceFee);
-                    }
-                    
-                    request.setAttribute("baseRental", baseRental);
-                    request.setAttribute("insuranceFee", insuranceFee);
-                    request.setAttribute("serviceFee", serviceFee);
                 }
             } catch (Exception e) {
                 request.setAttribute("errorMsg", "Lỗi: " + e.getMessage());
@@ -173,12 +174,13 @@ public class PaymentRecordServlet extends HttpServlet {
             Payment payment = buildPaymentFromRequest(request, currentUser.getUserId());
             // recordPayment() now calls validatePaymentMethod() + validateAmount() internally
             paymentService.recordPayment(payment);
-            request.getSession().setAttribute("paymentSuccess", "Ghi nhận thanh toán thành công!");
             
             String redirectParam = request.getParameter("redirect");
             if ("booking".equals(redirectParam)) {
+                request.getSession().setAttribute("successMessage", "Ghi nhận thanh toán thành công!");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + payment.getBookingId());
             } else {
+                request.getSession().setAttribute("paymentSuccess", "Ghi nhận thanh toán thành công!");
                 response.sendRedirect(request.getContextPath() + "/payments/record?bookingId=" + payment.getBookingId());
             }
 

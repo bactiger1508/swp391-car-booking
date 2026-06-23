@@ -47,7 +47,7 @@
 
             <c:if test="${not empty userList}">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" id="userTable">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -83,6 +83,25 @@
                             </c:forEach>
                         </tbody>
                     </table>
+                    
+                    <!-- Phân trang cho Danh sách thành viên -->
+                    <div class="bk-pagination-container" id="userPagination" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+                        <div style="font-size:13px; color:var(--text-secondary);">
+                            Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> thành viên
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label style="font-size:13px; color:var(--text-secondary);">Số hàng:</label>
+                            <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--bg-card); color:var(--text-main); font-size:13px; outline:none; cursor:pointer;">
+                                <option value="5">5</option>
+                                <option value="10" selected="selected">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
+                                <!-- nút chuyển trang sinh bằng JS -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </c:if>
             <c:if test="${empty userList}">
@@ -197,6 +216,106 @@ function closeForm() {
         window.location.href = "${pageContext.request.contextPath}/users";
     }
 }
+
+let currentPage = 1;
+let pageSize = 10;
+let tableRows = [];
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    applyPagination();
+}
+
+function initPagination() {
+    tableRows = Array.from(document.querySelectorAll('#userTable tbody tr'));
+    applyPagination();
+}
+
+function applyPagination() {
+    const totalRows = tableRows.length;
+    const totalPages = Math.ceil(totalRows / pageSize) || 1;
+    const pagContainer = document.getElementById('userPagination');
+    
+    if (!pagContainer) return;
+    if (totalRows <= pageSize && currentPage === 1) {
+        pagContainer.style.display = 'none';
+        tableRows.forEach(row => row.style.display = '');
+        return;
+    } else {
+        pagContainer.style.display = 'flex';
+    }
+    
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    
+    tableRows.forEach(row => row.style.display = 'none');
+    
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalRows);
+    
+    for (let i = startIdx; i < endIdx; i++) {
+        tableRows[i].style.display = '';
+    }
+    
+    const startDisplay = document.getElementById('pag-start');
+    const endDisplay = document.getElementById('pag-end');
+    const totalDisplay = document.getElementById('pag-total');
+    if (startDisplay) startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
+    if (endDisplay) endDisplay.innerText = endIdx;
+    if (totalDisplay) totalDisplay.innerText = totalRows;
+    
+    const btnContainer = document.getElementById('paginationButtons');
+    if (btnContainer) {
+        btnContainer.innerHTML = '';
+        
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'btn btn-outline';
+        prevBtn.style.padding = '4px 8px';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.disabled = (currentPage === 1);
+        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+        prevBtn.onclick = () => { currentPage--; applyPagination(); };
+        btnContainer.appendChild(prevBtn);
+        
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let p = startPage; p <= endPage; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = p === currentPage ? 'btn btn-primary' : 'btn btn-outline';
+            pageBtn.style.padding = '4px 10px';
+            pageBtn.style.minWidth = '28px';
+            pageBtn.style.cursor = 'pointer';
+            pageBtn.style.fontWeight = '600';
+            pageBtn.style.fontSize = '12px';
+            if (p === currentPage) {
+                pageBtn.style.background = 'var(--primary)';
+                pageBtn.style.color = '#fff';
+                pageBtn.style.border = 'none';
+            }
+            pageBtn.innerText = p;
+            pageBtn.onclick = () => { currentPage = p; applyPagination(); };
+            btnContainer.appendChild(pageBtn);
+        }
+        
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'btn btn-outline';
+        nextBtn.style.padding = '4px 8px';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.disabled = (currentPage === totalPages);
+        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+        nextBtn.onclick = () => { currentPage++; applyPagination(); };
+        btnContainer.appendChild(nextBtn);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initPagination();
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

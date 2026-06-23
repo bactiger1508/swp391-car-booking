@@ -107,7 +107,20 @@ public class BookingDetailServlet extends HttpServlet {
             request.setAttribute("depositPaid", depositPaid);
             request.setAttribute("rentalPaid", rentalPaid);
             request.setAttribute("totalPaid", totalPaid);
-            request.setAttribute("remainingAmount", booking.getTotalAmount().subtract(totalPaid));
+            // Fetch return details and calculate total required amount including additional fees
+            com.swp391.carrental.handover.model.VehicleReturn vehicleReturn = null;
+            try {
+                vehicleReturn = new com.swp391.carrental.handover.dao.ReturnDAO().findByBookingId(bookingId);
+            } catch (Exception e) {
+                // ignore error
+            }
+            java.math.BigDecimal totalRequired = booking.getTotalAmount();
+            if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+                totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
+            }
+            request.setAttribute("returns", vehicleReturn);
+            request.setAttribute("totalRequired", totalRequired);
+            request.setAttribute("remainingAmount", totalRequired.subtract(totalPaid));
 
             com.swp391.carrental.contract.model.RentalContract contract = contractService.getContractByBookingId(bookingId);
             request.setAttribute("contract", contract);
