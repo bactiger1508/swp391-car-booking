@@ -108,6 +108,13 @@ public class VehicleManagementServlet extends HttpServlet {
                 request.setAttribute("error", e.getMessage());
                 doGet(request, response);
             }
+        } catch (Exception e) {
+            if (isAjax) {
+                sendJsonResponse(response, false, "Lỗi hệ thống: " + e.getMessage());
+            } else {
+                request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
+                doGet(request, response);
+            }
         }
     }
 
@@ -138,7 +145,13 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));
         car.setStatus(request.getParameter("status") != null ? request.getParameter("status") : "AVAILABLE");
-        car.setMileage(Integer.parseInt(request.getParameter("mileage") != null ? request.getParameter("mileage") : "0"));
+        
+        String mileageStr = request.getParameter("mileage");
+        int mileage = 0;
+        if (mileageStr != null && !mileageStr.trim().isEmpty()) {
+            mileage = Integer.parseInt(mileageStr.trim());
+        }
+        car.setMileage(mileage);
 
         int carId = vehicleService.addCar(car);
 
@@ -149,9 +162,6 @@ public class VehicleManagementServlet extends HttpServlet {
         } catch (Exception e) {
             // Continue even if image upload fails
         }
-
-        request.setAttribute("success", "Tạo xe thành công!");
-        response.sendRedirect(request.getContextPath() + "/vehicles/manage");
     }
 
     private void handleUpdateCar(HttpServletRequest request, HttpServletResponse response)
@@ -189,7 +199,13 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));
         car.setStatus(request.getParameter("status"));
-        car.setMileage(Integer.parseInt(request.getParameter("mileage")));
+
+        String mileageStr = request.getParameter("mileage");
+        int mileage = car.getMileage();
+        if (mileageStr != null && !mileageStr.trim().isEmpty()) {
+            mileage = Integer.parseInt(mileageStr.trim());
+        }
+        car.setMileage(mileage);
 
         boolean updated = vehicleService.updateCar(car);
 
@@ -200,11 +216,6 @@ public class VehicleManagementServlet extends HttpServlet {
         } catch (Exception e) {
             // Continue even if image upload fails
         }
-
-        if (updated) {
-            request.setAttribute("success", "Cập nhật xe thành công!");
-        }
-        response.sendRedirect(request.getContextPath() + "/vehicles/manage");
     }
 
     private void handleDeleteCar(HttpServletRequest request, HttpServletResponse response)
