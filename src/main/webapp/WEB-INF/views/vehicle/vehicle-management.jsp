@@ -577,6 +577,122 @@ window.onclick = function(event) {
         editModal.style.display = 'none';
     }
 };
+
+// AJAX form submission for create and edit vehicle
+document.addEventListener('DOMContentLoaded', function() {
+    const createForm = document.getElementById('createForm');
+    if (createForm) {
+        createForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('action', 'create');
+
+    try {
+        const response = await fetch('${pageContext.request.contextPath}/vehicles/manage', {
+            method: 'POST',
+            body: formData
+        });
+
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch {
+            // If not JSON, it's a redirect (success) - reload the page
+            location.reload();
+            return;
+        }
+
+        if (result.success) {
+            showSuccessAlert(result.message || 'Tạo xe thành công!');
+            setTimeout(() => {
+                closeCreateModal();
+                location.reload();
+            }, 1500);
+        } else {
+            showErrorAlert(result.error || 'Có lỗi xảy ra');
+        }
+        } catch (err) {
+            showErrorAlert('Lỗi kết nối: ' + err.message);
+        }
+        });
+    }
+
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('action', 'update');
+
+            try {
+                const response = await fetch('${pageContext.request.contextPath}/vehicles/manage', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch {
+                    // If not JSON, it's a redirect (success) - reload the page
+                    location.reload();
+                    return;
+                }
+
+                if (result.success) {
+                    showSuccessAlert(result.message || 'Cập nhật xe thành công!');
+                    setTimeout(() => {
+                        closeEditModal();
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showErrorAlert(result.error || 'Có lỗi xảy ra');
+                }
+            } catch (err) {
+                showErrorAlert('Lỗi kết nối: ' + err.message);
+            }
+        });
+    }
+});
+
+function showErrorAlert(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f44336;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 4px;
+        z-index: 2000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    `;
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 4000);
+}
+
+function showSuccessAlert(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 4px;
+        z-index: 2000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    `;
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+}
 </script>
 
 <!-- CREATE VEHICLE MODAL -->
@@ -629,7 +745,7 @@ window.onclick = function(event) {
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Giá Thuê (VND/ngày) *</label>
-                    <input type="number" name="dailyRate" class="bk-form-input" step="100000" required>
+                    <input type="number" name="dailyRate" class="bk-form-input" min="1" required>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Trạng Thái *</label>
@@ -697,8 +813,8 @@ window.onclick = function(event) {
             <input type="hidden" name="carId" id="editCarId">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
                 <div class="bk-form-group">
-                    <label class="bk-form-label">Biển Số (không thay đổi)</label>
-                    <input type="text" id="editLicensePlate" class="bk-form-input" disabled>
+                    <label class="bk-form-label">Biển Số *</label>
+                    <input type="text" id="editLicensePlate" name="licensePlate" class="bk-form-input" required>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Hãng Xe *</label>
@@ -738,7 +854,7 @@ window.onclick = function(event) {
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Giá Thuê (VND/ngày) *</label>
-                    <input type="number" id="editDailyRate" name="dailyRate" class="bk-form-input" step="100000" required>
+                    <input type="number" id="editDailyRate" name="dailyRate" class="bk-form-input" min="1" required>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Trạng Thái *</label>

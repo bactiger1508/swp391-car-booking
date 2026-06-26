@@ -75,12 +75,23 @@ public class VehicleManagementServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
+        boolean isAjax = "create".equals(action) || "update".equals(action);
 
         try {
             if ("create".equals(action)) {
                 handleCreateCar(request, response);
+                if (isAjax) {
+                    sendJsonResponse(response, true, "Tạo xe thành công!");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/vehicles/manage");
+                }
             } else if ("update".equals(action)) {
                 handleUpdateCar(request, response);
+                if (isAjax) {
+                    sendJsonResponse(response, true, "Cập nhật xe thành công!");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/vehicles/manage");
+                }
             } else if ("delete".equals(action)) {
                 handleDeleteCar(request, response);
             } else if ("deleteImage".equals(action)) {
@@ -91,15 +102,30 @@ public class VehicleManagementServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/vehicles/manage");
             }
         } catch (AppException e) {
-            request.setAttribute("error", e.getMessage());
-            doGet(request, response);
+            if (isAjax) {
+                sendJsonResponse(response, false, e.getMessage());
+            } else {
+                request.setAttribute("error", e.getMessage());
+                doGet(request, response);
+            }
         }
     }
 
     private void handleCreateCar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String licensePlate = request.getParameter("licensePlate");
+
+        if (licensePlate == null || licensePlate.trim().isEmpty()) {
+            throw new AppException("Biển số xe không được trống.");
+        }
+
+        Car existingCar = vehicleService.getCarByLicensePlate(licensePlate.trim());
+        if (existingCar != null) {
+            throw new AppException("Biển số xe '" + licensePlate + "' đã tồn tại. Vui lòng sử dụng biển số khác.");
+        }
+
         Car car = new Car();
-        car.setLicensePlate(request.getParameter("licensePlate"));
+        car.setLicensePlate(licensePlate.trim());
         car.setBrand(request.getParameter("brand"));
         car.setModel(request.getParameter("model"));
         car.setYear(Integer.parseInt(request.getParameter("year")));
@@ -137,6 +163,20 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Xe không tồn tại.");
         }
 
+        String licensePlate = request.getParameter("licensePlate");
+        if (licensePlate == null || licensePlate.trim().isEmpty()) {
+            throw new AppException("Biển số xe không được trống.");
+        }
+
+        licensePlate = licensePlate.trim();
+        if (!licensePlate.equals(car.getLicensePlate())) {
+            Car existingCar = vehicleService.getCarByLicensePlate(licensePlate);
+            if (existingCar != null) {
+                throw new AppException("Biển số xe '" + licensePlate + "' đã tồn tại. Vui lòng sử dụng biển số khác.");
+            }
+        }
+
+        car.setLicensePlate(licensePlate);
         car.setBrand(request.getParameter("brand"));
         car.setModel(request.getParameter("model"));
         car.setYear(Integer.parseInt(request.getParameter("year")));
@@ -302,5 +342,14 @@ public class VehicleManagementServlet extends HttpServlet {
                    .replace("\n", "\\n")
                    .replace("\r", "\\r")
                    .replace("\t", "\\t");
+    }
+
+    private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        String json = "{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}";
+        if (!success) {
+            json = json.replace("\"message\"", "\"error\"");
+        }
+        response.getWriter().write(json);
     }
 }

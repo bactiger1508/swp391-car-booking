@@ -44,6 +44,14 @@ public class VehicleService {
         }
     }
 
+    public Car getCarByLicensePlate(String licensePlate) {
+        try {
+            return carDAO.findByLicensePlate(licensePlate);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get car by license plate.", e);
+        }
+    }
+
     public List<Car> getAllCars() {
         try {
             return carDAO.findAll();

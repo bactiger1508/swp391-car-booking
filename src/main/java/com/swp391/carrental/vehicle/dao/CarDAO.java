@@ -58,6 +58,18 @@ public class CarDAO {
         return cars;
     }
 
+    public Car findByLicensePlate(String licensePlate) throws SQLException {
+        String sql = "SELECT * FROM cars WHERE license_plate = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, licensePlate);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapRow(rs);
+            }
+        }
+        return null;
+    }
+
     /**
      * Find cars available for a given date range (no overlapping CONFIRMED/IN_PROGRESS bookings).
      */
