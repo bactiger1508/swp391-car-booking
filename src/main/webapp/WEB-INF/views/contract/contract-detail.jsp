@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%
@@ -6,12 +6,29 @@
     request.setAttribute("hourFormatter", java.time.format.DateTimeFormatter.ofPattern("HH"));
     request.setAttribute("minuteFormatter", java.time.format.DateTimeFormatter.ofPattern("mm"));
     request.setAttribute("dateOnlyFormatter", java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    request.setAttribute("htmlDateTimeFormatter", java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
 %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
-    <jsp:param name="pageTitle" value="${contract != null ? 'Chi Tiết Hợp Đồng' : 'Soạn Thảo Hợp Đồng'}"/>
+    <jsp:param name="pageTitle" value="${contract != null ? (editMode == true ? 'Chỉnh Sửa Hợp Đồng' : 'Chi Tiết Hợp Đồng') : 'Soạn Thảo Hợp Đồng'}"/>
 </jsp:include>
 
 <div class="page-content">
+    <!-- Hiển thị thông báo thành công/lỗi từ session -->
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="alert alert-success" style="margin-bottom: 24px; background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); color: #4caf50; padding: 12px 16px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>${sessionScope.successMessage}</span>
+        </div>
+        <c:remove var="successMessage" scope="session"/>
+    </c:if>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="alert alert-danger" style="margin-bottom: 24px; background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.3); color: #f44336; padding: 12px 16px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined">error</span>
+            <span>${sessionScope.errorMessage}</span>
+        </div>
+        <c:remove var="errorMessage" scope="session"/>
+    </c:if>
+
     <!-- Hiển thị thông báo lỗi nếu có -->
     <c:if test="${not empty error}">
         <div class="alert alert-danger" style="margin-bottom: 24px;">
@@ -127,6 +144,20 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Thành tiền cơ bản</td>
+                                        <td style="padding: 8px 0; font-weight: 600; text-align: right; border-bottom: 1px solid var(--border-color);">
+                                            <fmt:formatNumber value="${contract.baseAmount != null ? contract.baseAmount : (contract.totalAmount + (contract.discountAmount != null ? contract.discountAmount : 0))}" pattern="#,##0"/> VND
+                                        </td>
+                                    </tr>
+                                    <c:if test="${contract.discountAmount != null && contract.discountAmount > 0}">
+                                        <tr>
+                                            <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Giảm giá (Discount)</td>
+                                            <td style="padding: 8px 0; font-weight: 600; text-align: right; color: #e67e22; border-bottom: 1px solid var(--border-color);">
+                                                - <fmt:formatNumber value="${contract.discountAmount}" pattern="#,##0"/> VND
+                                            </td>
+                                        </tr>
+                                    </c:if>
+                                    <tr>
                                         <td style="padding: 8px 0; color: var(--text-secondary); font-size: 14px; border-bottom: 1px solid var(--border-color);">Tiền cọc đặt trước</td>
                                         <td style="padding: 8px 0; font-weight: 700; text-align: right; color: var(--danger); border-bottom: 1px solid var(--border-color);">
                                             <fmt:formatNumber value="${contract.depositAmount}" pattern="#,##0"/> VND
@@ -159,7 +190,12 @@
                     <button type="button" class="btn btn-outline" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 8px;">
                         <span class="material-symbols-outlined" style="font-size: 20px; vertical-align: middle;">print</span> In hợp đồng
                     </button>
-                    <c:if test="${contract.status == 'DRAFT'}">
+                    <c:if test="${contract.status == 'DRAFT' && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
+                        <c:if test="${editMode != true}">
+                            <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}&edit=true" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">edit</span> Cập nhật hợp đồng
+                            </a>
+                        </c:if>
                         <form action="${pageContext.request.contextPath}/contracts" method="POST" style="margin: 0;">
                             <input type="hidden" name="action" value="activate"/>
                             <input type="hidden" name="contractId" value="${contract.contractId}"/>
@@ -168,7 +204,99 @@
                     </c:if>
                 </div>
 
-                <%-- Legally formalized printable A4 contract document layout — placed OUTSIDE .card so it is not hidden by @media print rules targeting .card --%>
+                <%-- EDIT FORM: Displayed when editMode is true --%>
+                <c:if test="${editMode == true}">
+                    <div class="card no-print" style="margin-bottom: 24px; border: 2px solid var(--primary); position: relative;">
+                        <div style="position: absolute; top: -12px; left: 20px; background: var(--primary); color: #fff; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;">
+                           ĐANG CHỈNH SỬA
+                        </div>
+                        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px; margin-top: 8px;">
+                            <h2 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 28px;">edit_note</span>
+                                CẬP NHẬT HỢP ĐỒNG
+                            </h2>
+                            <p style="font-size: 14px; color: var(--text-secondary);">Hợp đồng: <strong style="color: var(--primary);">${contract.contractNumber}</strong> (Trạng thái: Nháp)</p>
+                        </div>
+
+                        <form id="updateContractForm" action="${pageContext.request.contextPath}/contracts" method="POST" onsubmit="return validateUpdateForm()">
+                            <input type="hidden" name="action" value="update"/>
+                            <input type="hidden" name="contractId" value="${contract.contractId}"/>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                                <div>
+                                    <h4 style="font-size: 15px; font-weight: 700; border-left: 4px solid var(--warning); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Thời Hạn Thuê</h4>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Ngày nhận xe <span style="color:var(--danger);">*</span></label>
+                                            <input type="datetime-local" id="editStartDate" name="startDate" class="form-control" value="${contract.startDate.format(htmlDateTimeFormatter)}" required style="font-weight: 600;" onchange="recalculateTotal()"/>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Ngày trả xe <span style="color:var(--danger);">*</span></label>
+                                            <input type="datetime-local" id="editEndDate" name="endDate" class="form-control" value="${contract.endDate.format(htmlDateTimeFormatter)}" required style="font-weight: 600;" onchange="recalculateTotal()"/>
+                                        </div>
+                                    </div>
+                                    <div style="background: var(--primary-light); padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 20px; font-size: 13px; color: var(--text-secondary);">
+                                        Số ngày thuê: <strong id="editRentalDays" style="color: var(--primary);">0</strong> ngày
+                                    </div>
+
+                                    <h4 style="font-size: 15px; font-weight: 700; border-left: 4px solid var(--success); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Chi Phí Thuê</h4>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Đơn giá ngày (VND) <span style="color:var(--danger);">*</span></label>
+                                            <input type="text" id="editDailyRateDisplay" class="form-control" autocomplete="off" style="font-weight: 700; color: var(--primary);" oninput="syncMoneyField(this, 'editDailyRate'); recalculateTotal()"/>
+                                            <input type="hidden" id="editDailyRate" name="dailyRate"/>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Tiền cọc (40%) (VND) <span style="color:var(--danger);">*</span></label>
+                                            <input type="text" id="editDepositAmountDisplay" class="form-control" autocomplete="off" style="font-weight: 700; color: var(--danger); background-color: #f1f3f5;" readonly/>
+                                            <input type="hidden" id="editDepositAmount" name="depositAmount"/>
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Giảm giá / Discount (VND)</label>
+                                        <input type="text" id="editDiscountAmountDisplay" class="form-control" autocomplete="off" style="font-weight: 600; color: #e67e22;" oninput="syncMoneyField(this, 'editDiscountAmount'); recalculateTotal()"/>
+                                        <input type="hidden" id="editDiscountAmount" name="discountAmount"/>
+                                    </div>
+
+                                    <%-- Auto-calculated summary --%>
+                                    <div style="background: #f8f9fa; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-top: 8px;">
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                            <tr>
+                                                <td style="padding: 6px 0; color: var(--text-secondary);">Thành tiền cơ bản</td>
+                                                <td id="editBaseAmountLabel" style="padding: 6px 0; text-align: right; font-weight: 600;">0 VND</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; color: #e67e22;">Giảm giá</td>
+                                                <td id="editDiscountLabel" style="padding: 6px 0; text-align: right; font-weight: 600; color: #e67e22;">- 0 VND</td>
+                                            </tr>
+                                            <tr style="border-top: 2px solid var(--border-color);">
+                                                <td style="padding: 10px 0 0 0; font-weight: 700; font-size: 16px; color: var(--text-primary);">TỔNG TIỀN HỢP ĐỒNG</td>
+                                                <td id="editTotalAmountLabel" style="padding: 10px 0 0 0; text-align: right; font-weight: 700; font-size: 18px; color: var(--primary);">0 VND</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <input type="hidden" id="editTotalAmount" name="totalAmount"/>
+                                    <input type="hidden" id="editBaseAmount" name="baseAmount"/>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column;">
+                                    <h4 style="font-size: 15px; font-weight: 700; border-left: 4px solid var(--info); padding-left: 10px; margin-bottom: 16px; color: var(--text-primary);">Điều khoản bổ sung</h4>
+                                    <textarea name="termsAndConditions" class="form-control" rows="12" style="font-family: inherit; font-size: 13px; line-height: 1.6; padding: 16px; resize: none; flex: 1;">${contract.termsAndConditions}</textarea>
+                                </div>
+                            </div>
+
+                            <div id="editValidationError" style="display: none; margin-top: 16px; padding: 12px 16px; background: rgba(244,67,54,0.1); border: 1px solid rgba(244,67,54,0.3); color: #f44336; border-radius: 8px; font-weight: 500; font-size: 14px;"></div>
+
+                            <div style="display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 24px;">
+                                <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}" class="btn btn-outline">Hủy bỏ</a>
+                                <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">save</span> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </c:if>
+
                 <div class="print-contract-document">
                                     <!-- Page 1 -->
                                     <div class="print-page">
@@ -282,16 +410,20 @@
                                             <h3 class="clause-title">ĐIỀU 3: GIÁ TRỊ HỢP ĐỒNG, HÌNH THỨC THANH TOÁN</h3>
                                             <h4 class="clause-subtitle">3.1 Giá trị Hợp đồng:</h4>
                                             <p style="margin-left: 10px;">- Đơn giá thuê xe: <strong><fmt:formatNumber value="${contract.dailyRate}" pattern="#,##0"/></strong> VND/ngày</p>
-                                            <p style="margin-left: 10px;">- Giá trị Hợp đồng: <strong><fmt:formatNumber value="${contract.totalAmount}" pattern="#,##0"/></strong> VND</p>
+                                            <c:if test="${contract.discountAmount != null && contract.discountAmount > 0}">
+                                                <p style="margin-left: 10px;">- Thành tiền cơ bản: <strong><fmt:formatNumber value="${contract.baseAmount != null ? contract.baseAmount : (contract.totalAmount + (contract.discountAmount != null ? contract.discountAmount : 0))}" pattern="#,##0"/></strong> VND</p>
+                                                <p style="margin-left: 10px;">- Giảm giá (Discount): <strong>- <fmt:formatNumber value="${contract.discountAmount}" pattern="#,##0"/></strong> VND</p>
+                                            </c:if>
+                                            <p style="margin-left: 10px;">- Giá trị Hợp đồng (Tổng tiền): <strong><fmt:formatNumber value="${contract.totalAmount}" pattern="#,##0"/></strong> VND</p>
                                             <p class="note" style="margin-left: 10px; font-style: italic;">(Giá trị Hợp đồng chưa bao gồm các khoản phụ phí phát sinh. Phụ phí được Bên B thanh toán cho Bên A khi kết thúc chuyến đi)</p>
 
                                             <h4 class="clause-subtitle" style="margin-top: 10px;">3.2 Chọn 1 trong 2 hình thức thanh toán mà các Bên đã thỏa thuận dưới đây:</h4>
                                             <p style="margin-left: 10px; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-                                                <span class="checkbox-box">[ ]</span>
+                                                <span class="checkbox-box">☐</span>
                                                 Bên B thanh toán trước 40% giá trị Hợp đồng khi kết nối thành công với Bên A thông qua ứng dụng CarPro. Ngay sau khi ký Hợp đồng này, Bên B thanh toán 60% giá trị Hợp đồng bằng tiền mặt/chuyển khoản cho Bên A.
                                             </p>
                                             <p style="margin-left: 10px; display: flex; align-items: flex-start; gap: 8px;">
-                                                <span class="checkbox-box">[ ]</span>
+                                                <span class="checkbox-box">☐</span>
                                                 Bên B thanh toán 100% giá trị Hợp đồng khi kết nối thành công với Bên A thông qua ứng dụng CarPro.
                                             </p>
                                         </div>
@@ -630,6 +762,8 @@
         font-family: monospace;
         font-weight: bold;
         font-size: 12pt;
+        white-space: nowrap;
+        display: inline-block;
     }
     .print-contract-document .page-footer-num {
         margin-top:auto;
@@ -729,5 +863,155 @@
         }
     }
 </style>
+
+<script>
+// Format a number to VND style: 1.200.000
+function formatContractVND(num) {
+    if (isNaN(num) || num === null) return '0';
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Parse a VND formatted string back to number, stripping any non-digit characters (such as 'đ' or 'VND')
+function parseVND(str) {
+    if (!str) return 0;
+    var cleanStr = str.toString().replace(/[^\d]/g, '');
+    return parseInt(cleanStr, 10) || 0;
+}
+
+// Sync a formatted display field to its hidden raw field while preserving cursor position
+function syncMoneyField(displayEl, hiddenId) {
+    var cursorPosition = displayEl.selectionStart;
+    var oldVal = displayEl.value;
+    var raw = parseVND(oldVal);
+    document.getElementById(hiddenId).value = raw;
+    
+    var newVal = formatContractVND(raw);
+    if (raw === 0 && (oldVal === '' || oldVal === '0')) {
+        newVal = '';
+    }
+    
+    if (oldVal !== newVal) {
+        displayEl.value = newVal;
+        var diff = newVal.length - oldVal.length;
+        var newCursor = cursorPosition + diff;
+        displayEl.setSelectionRange(newCursor, newCursor);
+    }
+}
+
+// Calculate rental days between two datetime-local values
+function getRentalDays() {
+    var startVal = document.getElementById('editStartDate') ? document.getElementById('editStartDate').value : '';
+    var endVal = document.getElementById('editEndDate') ? document.getElementById('editEndDate').value : '';
+    if (!startVal || !endVal) return 0;
+    var start = new Date(startVal);
+    var end = new Date(endVal);
+    var diffMs = end - start;
+    if (diffMs <= 0) return 0;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+// Recalculate total amount based on dailyRate * days - discount
+function recalculateTotal() {
+    var days = getRentalDays();
+    var dailyRate = parseVND(document.getElementById('editDailyRateDisplay') ? document.getElementById('editDailyRateDisplay').value : '0');
+    var discount = parseVND(document.getElementById('editDiscountAmountDisplay') ? document.getElementById('editDiscountAmountDisplay').value : '0');
+
+    var baseAmount = dailyRate * days;
+    var total = baseAmount - discount;
+    if (total < 0) total = 0;
+
+    // Auto-calculate deposit as 40% of total amount
+    var deposit = Math.round(total * 0.4);
+
+    // Update labels
+    var daysEl = document.getElementById('editRentalDays');
+    if (daysEl) daysEl.textContent = days;
+
+    var baseEl = document.getElementById('editBaseAmountLabel');
+    if (baseEl) baseEl.textContent = formatContractVND(baseAmount) + ' VND';
+
+    var discountEl = document.getElementById('editDiscountLabel');
+    if (discountEl) discountEl.textContent = '- ' + formatContractVND(discount) + ' VND';
+
+    var totalEl = document.getElementById('editTotalAmountLabel');
+    if (totalEl) totalEl.textContent = formatContractVND(total) + ' VND';
+
+    // Update hidden fields
+    var totalHidden = document.getElementById('editTotalAmount');
+    if (totalHidden) totalHidden.value = total;
+
+    var baseHidden = document.getElementById('editBaseAmount');
+    if (baseHidden) baseHidden.value = baseAmount;
+
+    // Update deposit inputs
+    var depositDisplay = document.getElementById('editDepositAmountDisplay');
+    if (depositDisplay) depositDisplay.value = formatContractVND(deposit);
+
+    var depositHidden = document.getElementById('editDepositAmount');
+    if (depositHidden) depositHidden.value = deposit;
+}
+
+// Initialize edit form values on page load
+(function() {
+    var dailyRateDisplay = document.getElementById('editDailyRateDisplay');
+    if (dailyRateDisplay) {
+        var rawDailyRate = Math.round(${contract != null && contract.dailyRate != null ? contract.dailyRate.longValue() : 0});
+        dailyRateDisplay.value = formatContractVND(rawDailyRate);
+        document.getElementById('editDailyRate').value = rawDailyRate;
+
+        var rawDeposit = Math.round(${contract != null && contract.depositAmount != null ? contract.depositAmount.longValue() : 0});
+        document.getElementById('editDepositAmountDisplay').value = formatContractVND(rawDeposit);
+        document.getElementById('editDepositAmount').value = rawDeposit;
+
+        var rawDiscount = Math.round(${contract != null && contract.discountAmount != null ? contract.discountAmount.longValue() : 0});
+        document.getElementById('editDiscountAmountDisplay').value = formatContractVND(rawDiscount);
+        document.getElementById('editDiscountAmount').value = rawDiscount;
+
+        recalculateTotal();
+    }
+})();
+
+function validateUpdateForm() {
+    var startDateVal = document.getElementById('editStartDate').value;
+    var endDateVal = document.getElementById('editEndDate').value;
+    var dailyRate = parseVND(document.getElementById('editDailyRateDisplay').value);
+    var deposit = parseVND(document.getElementById('editDepositAmountDisplay').value);
+    var errorDiv = document.getElementById('editValidationError');
+
+    errorDiv.style.display = 'none';
+    errorDiv.innerHTML = '';
+
+    if (!startDateVal || !endDateVal) {
+        errorDiv.innerHTML = 'Thời hạn thuê xe không được để trống.';
+        errorDiv.style.display = 'block';
+        return false;
+    }
+
+    var start = new Date(startDateVal);
+    var end = new Date(endDateVal);
+
+    if (end <= start) {
+        errorDiv.innerHTML = 'Ngày trả xe phải sau ngày nhận xe.';
+        errorDiv.style.display = 'block';
+        return false;
+    }
+
+    if (isNaN(dailyRate) || dailyRate <= 0) {
+        errorDiv.innerHTML = 'Đơn giá thuê ngày phải lớn hơn 0.';
+        errorDiv.style.display = 'block';
+        return false;
+    }
+
+    if (isNaN(deposit) || deposit < 0) {
+        errorDiv.innerHTML = 'Tiền đặt cọc không hợp lệ.';
+        errorDiv.style.display = 'block';
+        return false;
+    }
+
+    // Final sync before submit
+    recalculateTotal();
+    return true;
+}
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
