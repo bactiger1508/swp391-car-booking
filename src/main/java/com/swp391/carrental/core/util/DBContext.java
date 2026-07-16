@@ -37,13 +37,13 @@ public class DBContext {
             }
             props.load(input);
 
-            String server = props.getProperty("db.server", "localhost");
-            String port   = props.getProperty("db.port", "1433");
-            String dbName = props.getProperty("db.name", "CarRentalDB");
-            String user   = props.getProperty("db.user", "car_rental_user");
-            String pass   = props.getProperty("db.password", "");
-            String encrypt = props.getProperty("db.encrypt", "true");
-            String trustCert = props.getProperty("db.trustServerCertificate", "true");
+            String server = System.getenv("DB_SERVER") != null ? System.getenv("DB_SERVER") : props.getProperty("db.server", "localhost");
+            String port   = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : props.getProperty("db.port", "1433");
+            String dbName = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : props.getProperty("db.name", "CarRentalDB");
+            String user   = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : props.getProperty("db.user", "sa");
+            String pass   = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : props.getProperty("db.password", "123");
+            String encrypt = System.getenv("DB_ENCRYPT") != null ? System.getenv("DB_ENCRYPT") : props.getProperty("db.encrypt", "true");
+            String trustCert = System.getenv("DB_TRUST_CERT") != null ? System.getenv("DB_TRUST_CERT") : props.getProperty("db.trustServerCertificate", "true");
 
             connectionUrl = "jdbc:sqlserver://" + server + ":" + port
                     + ";databaseName=" + dbName
