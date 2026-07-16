@@ -79,6 +79,14 @@ public class VehicleManagementServlet extends HttpServlet {
 
         try {
             if ("create".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "ADD_VEHICLE")) {
+                    if (isAjax) {
+                        sendJsonResponse(response, false, "Bạn không có quyền thêm xe mới.");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                    return;
+                }
                 handleCreateCar(request, response);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Tạo xe thành công!");
@@ -86,6 +94,14 @@ public class VehicleManagementServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("update".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    if (isAjax) {
+                        sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa thông tin xe.");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                    return;
+                }
                 handleUpdateCar(request, response);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Cập nhật xe thành công!");
@@ -93,10 +109,22 @@ public class VehicleManagementServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("delete".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "DELETE_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleDeleteCar(request, response);
             } else if ("deleteImage".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleDeleteImage(request, response);
             } else if ("setPrimaryImage".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleSetPrimaryImage(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/vehicles/manage");
