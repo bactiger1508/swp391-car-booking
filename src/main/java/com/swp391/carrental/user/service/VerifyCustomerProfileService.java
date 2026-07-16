@@ -8,6 +8,14 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
+/*
+ * Name: VerifyCustomerProfileService
+ * @Author: AnhNNHE160896
+ * Date: 23/05/2026
+ * Version: 1.0
+ * Description: Contains business logic for VerifyCustomerProfileService.
+ */
+
 // Business logic for Verify Customer Profile
 public class VerifyCustomerProfileService {
 
