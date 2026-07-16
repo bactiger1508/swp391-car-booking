@@ -91,6 +91,11 @@
                                 <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán
                             </a>
                         </c:if>
+                        <c:if test="${hasCheckAvailability}">
+                            <a href="${pageContext.request.contextPath}/vehicles/availability" class="bk-sidebar-link ${_cp == '/vehicles/availability' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">calendar_today</span> Kiểm tra xe trống
+                            </a>
+                        </c:if>
                         <c:if test="${hasViewContract}">
                             <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">description</span> Hợp đồng của tôi
