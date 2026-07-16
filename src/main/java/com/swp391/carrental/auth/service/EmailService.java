@@ -31,10 +31,10 @@ public class EmailService {
             String toEmail,
             String newPassword) throws Exception {
 
-        String fromEmail = config.getProperty("mail.username");
-        String appPassword = config.getProperty("mail.password");
-        String smtpHost = config.getProperty("mail.smtp.host");
-        String smtpPort = config.getProperty("mail.smtp.port");
+        String fromEmail = System.getenv("MAIL_USERNAME") != null ? System.getenv("MAIL_USERNAME") : config.getProperty("mail.username");
+        String appPassword = System.getenv("MAIL_PASSWORD") != null ? System.getenv("MAIL_PASSWORD") : config.getProperty("mail.password");
+        String smtpHost = System.getenv("MAIL_SMTP_HOST") != null ? System.getenv("MAIL_SMTP_HOST") : config.getProperty("mail.smtp.host", "smtp.gmail.com");
+        String smtpPort = System.getenv("MAIL_SMTP_PORT") != null ? System.getenv("MAIL_SMTP_PORT") : config.getProperty("mail.smtp.port", "587");
 
         Properties props = new Properties();
 
