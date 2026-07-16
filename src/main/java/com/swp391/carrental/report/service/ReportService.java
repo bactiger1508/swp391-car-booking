@@ -18,6 +18,8 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.CarDAO;
 import com.swp391.carrental.vehicle.model.Car;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -389,4 +391,379 @@ public class ReportService {
         }
         return transactions;
     }
+
+    public Map<String, Integer> getUsageBySegment(LocalDateTime from,
+            LocalDateTime to) throws SQLException {
+
+        Map<String, Integer> result = new LinkedHashMap<>();
+
+        result.put("Sedan", 0);
+        result.put("SUV / Crossover", 0);
+        result.put("MPV gia đình", 0);
+        result.put("Xe bán tải / Pickup", 0);
+        result.put("Xe điện", 0);
+
+        List<Car> cars = carDAO.findAll();
+        List<Booking> bookings = bookingDAO.findAll();
+
+        for (Booking b : bookings) {
+
+            if (!"COMPLETED".equals(b.getStatus())
+                    && !"IN_PROGRESS".equals(b.getStatus())) {
+                continue;
+            }
+
+            LocalDateTime start = b.getStartDate();
+            LocalDateTime end = b.getEndDate();
+
+            if (end.isBefore(from) || start.isAfter(to)) {
+                continue;
+            }
+
+            LocalDateTime actualStart = start.isBefore(from)
+                    ? from
+                    : start;
+
+            LocalDateTime actualEnd = end.isAfter(to)
+                    ? to
+                    : end;
+
+            int days = (int) ChronoUnit.DAYS.between(actualStart, actualEnd) + 1;
+
+            Car car = cars.stream()
+                    .filter(c -> c.getCarId() == b.getCarId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (car == null) {
+                continue;
+            }
+
+            String segment = classifyCar(car);
+
+            result.put(segment,
+                    result.get(segment) + days);
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> getVehicleUsage(
+            LocalDateTime from,
+            LocalDateTime to) throws SQLException {
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        List<Car> cars = carDAO.findAll();
+        List<Booking> bookings = bookingDAO.findAll();
+
+        long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
+
+        for (Car car : cars) {
+
+            int usedDays = 0;
+
+            for (Booking b : bookings) {
+
+                if (b.getCarId() != car.getCarId()) {
+                    continue;
+                }
+
+                if (!"COMPLETED".equals(b.getStatus())
+                        && !"IN_PROGRESS".equals(b.getStatus())) {
+                    continue;
+                }
+
+                LocalDateTime start = b.getStartDate();
+                LocalDateTime end = b.getEndDate();
+
+                if (end.isBefore(from) || start.isAfter(to)) {
+                    continue;
+                }
+
+                LocalDateTime actualStart = start.isBefore(from)
+                        ? from
+                        : start;
+
+                LocalDateTime actualEnd = end.isAfter(to)
+                        ? to
+                        : end;
+
+                usedDays += ChronoUnit.DAYS.between(actualStart, actualEnd) + 1;
+            }
+
+            double percent = totalDays == 0
+                    ? 0
+                    : usedDays * 100.0 / totalDays;
+
+            Map<String, Object> row = new HashMap<>();
+
+            row.put("car", car);
+            row.put("usedDays", usedDays);
+            row.put("percent", percent);
+
+            result.add(row);
+        }
+
+        result.sort((a, b) -> Double.compare(
+                (Double) b.get("percent"),
+                (Double) a.get("percent")));
+
+        return result;
+    }
+
+    public double getAverageUsage(LocalDateTime from,
+            LocalDateTime to) throws SQLException {
+
+        List<Map<String, Object>> list
+                = getVehicleUsage(from, to);
+
+        if (list.isEmpty()) {
+            return 0;
+        }
+
+        double total = 0;
+
+        for (Map<String, Object> row : list) {
+            total += (Double) row.get("percent");
+        }
+
+        return total / list.size();
+    }
+
+    public int getTotalUsedDays(LocalDateTime from, LocalDateTime to) throws SQLException {
+        int total = 0;
+        List<Booking> bookings = bookingDAO.findAll();
+        for (Booking b : bookings) {
+            if (!"COMPLETED".equals(b.getStatus())
+                    && !"IN_PROGRESS".equals(b.getStatus())) {
+                continue;
+            }
+            LocalDateTime start = b.getStartDate();
+            LocalDateTime end = b.getEndDate();
+
+            if (end.isBefore(from) || start.isAfter(to)) {
+                continue;
+            }
+
+            LocalDateTime actualStart
+                    = start.isBefore(from) ? from : start;
+
+            LocalDateTime actualEnd
+                    = end.isAfter(to) ? to : end;
+
+            total += ChronoUnit.DAYS.between(actualStart, actualEnd) + 1;
+        }
+
+        return total;
+    }
+
+    public Map<String, Object> getMostUsedCar(
+            LocalDateTime from,
+            LocalDateTime to) throws SQLException {
+
+        List<Map<String, Object>> list
+                = getVehicleUsage(from, to);
+
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        return list.get(0);
+    }
+
+    public List<Map<String, Object>> getUsageChart(
+            LocalDateTime from,
+            LocalDateTime to,
+            String type) throws SQLException {
+
+        List<Map<String, Object>> chart = new ArrayList<>();
+
+        if (type.equals("MONTH")) {
+
+            for (int week = 1; week <= 5; week++) {
+
+                LocalDateTime start
+                        = from.plusDays((week - 1) * 7);
+
+                LocalDateTime end
+                        = start.plusDays(6);
+
+                if (end.isAfter(to)) {
+                    end = to;
+                }
+
+                int days = 0;
+
+                for (Booking b : bookingDAO.findAll()) {
+
+                    if (!"COMPLETED".equals(b.getStatus())
+                            && !"IN_PROGRESS".equals(b.getStatus())) {
+                        continue;
+                    }
+
+                    LocalDateTime bs = b.getStartDate();
+                    LocalDateTime be = b.getEndDate();
+
+                    if (be.isBefore(start)
+                            || bs.isAfter(end)) {
+                        continue;
+                    }
+
+                    LocalDateTime s
+                            = bs.isBefore(start) ? start : bs;
+
+                    LocalDateTime e
+                            = be.isAfter(end) ? end : be;
+
+                    days += ChronoUnit.DAYS
+                            .between(s, e) + 1;
+
+                }
+
+                Map<String, Object> item = new HashMap<>();
+
+                item.put("label", "T" + week);
+                item.put("usage", days);
+
+                chart.add(item);
+            }
+
+        } // QUARTER
+        else if (type.equals("QUARTER")) {
+
+            for (int i = 0; i < 3; i++) {
+
+                LocalDateTime start
+                        = from.plusMonths(i)
+                                .withDayOfMonth(1)
+                                .toLocalDate()
+                                .atStartOfDay();
+
+                LocalDateTime end
+                        = start.plusMonths(1)
+                                .minusSeconds(1);
+
+                int days = calculateUsedDays(
+                        start, end);
+
+                Map<String, Object> item = new HashMap<>();
+
+                item.put("label",
+                        "T" + start.getMonthValue());
+
+                item.put("usage", days);
+
+                chart.add(item);
+
+            }
+
+        } // YEAR
+        else {
+
+            for (int m = 1; m <= 12; m++) {
+
+                LocalDateTime start
+                        = LocalDate.of(
+                                from.getYear(),
+                                m,
+                                1)
+                                .atStartOfDay();
+
+                LocalDateTime end
+                        = start.plusMonths(1)
+                                .minusSeconds(1);
+
+                int days
+                        = calculateUsedDays(start, end);
+
+                Map<String, Object> item
+                        = new HashMap<>();
+
+                item.put(
+                        "label",
+                        "T" + m);
+
+                item.put(
+                        "usage",
+                        days);
+
+                chart.add(item);
+
+            }
+
+        }
+
+        int max = 1;
+
+        for (Map<String, Object> c : chart) {
+
+            int v = (int) c.get("usage");
+
+            if (v > max) {
+                max = v;
+            }
+        }
+
+        for (Map<String, Object> c : chart) {
+
+            int v = (int) c.get("usage");
+
+            double height
+                    = v * 100.0 / max;
+
+            c.put(
+                    "height",
+                    height);
+
+        }
+
+        return chart;
+
+    }
+    
+    private int calculateUsedDays(
+        LocalDateTime from,
+        LocalDateTime to)
+        throws SQLException{
+
+
+    int total=0;
+
+
+    for(Booking b:bookingDAO.findAll()){
+
+
+        if(!"COMPLETED".equals(b.getStatus())
+           &&
+           !"IN_PROGRESS".equals(b.getStatus())){
+            continue;
+        }
+
+
+        if(b.getEndDate().isBefore(from)
+          ||
+          b.getStartDate().isAfter(to)){
+            continue;
+        }
+
+
+        LocalDateTime start =
+            b.getStartDate().isBefore(from)
+            ?from:b.getStartDate();
+
+
+        LocalDateTime end =
+            b.getEndDate().isAfter(to)
+            ?to:b.getEndDate();
+
+
+        total += ChronoUnit.DAYS
+                .between(start,end)+1;
+
+    }
+
+
+    return total;
+}
 }
