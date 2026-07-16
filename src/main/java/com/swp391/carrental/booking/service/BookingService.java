@@ -81,6 +81,18 @@ public class BookingService {
         }
     }
 
+    /** Get bookings overlapping with a date range (for calendar view) */
+    public List<Booking> getBookingsByDateRange(java.time.LocalDateTime rangeStart, java.time.LocalDateTime rangeEnd) {
+        try {
+            return bookingDAO.findByDateRange(
+                    Timestamp.valueOf(rangeStart),
+                    Timestamp.valueOf(rangeEnd)
+            );
+        } catch (SQLException e) {
+            throw new AppException("Failed to get bookings by date range.", e);
+        }
+    }
+
     /** Create a new booking with date, car status, and overlapping checks */
     public int createBooking(Booking booking) {
         try {

@@ -35,12 +35,14 @@ public class AuthFilter implements Filter {
             "/login",
             "/register",
             "/logout",
+            "/forgot-password",
             "/test-db",
             "/home",
             "/",
             "/index.jsp",
             "/vehicles",
-            "/vehicles/detail"
+            "/vehicles/detail",
+            "/bookings/policy"
     );
 
     /**

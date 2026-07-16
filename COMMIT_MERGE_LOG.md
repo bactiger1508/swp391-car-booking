@@ -1,0 +1,30 @@
+# LỊCH SỬ COMMIT VÀ MERGE CODE
+**Hệ thống Quản lý Thuê xe Ô tô Tự lái (Car Rental Management System)**  
+**Môn học:** SWP391  
+**Học viên:** Bùi Xuân Bắc (Mã số SV: HE186736 / Account: BacBXHE186736)  
+**Vai trò:** Developer phụ trách Phân hệ Đặt Xe (Booking Module)  
+
+---
+
+## 1. Thông tin chi tiết các đợt Commit & Merge Code (bacdev branch)
+
+| STT | Người Thực Hiện | Ngày Thực Hiện | Loại Giao Dịch | Nhánh (Branch) | Chi Tiết Nội Dung Thực Hiện / Các Tính Năng & Module | Mã Commit / PR |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | Bùi Xuân Bắc | 23/05/2026 | Commit | bacdev | Khởi tạo khung (Skeleton) cấu trúc cho phân hệ Đặt Xe; thiết lập Package `com.swp391.carrental.booking`, viết khung Servlet và DAO cơ bản, cấu hình Javadocs tuân thủ quy tắc dự án. | `4d1ac1d`<br>`c0f739a` |
+| **2** | Bùi Xuân Bắc | 29/05/2026 | Commit | bacdev | Tích hợp giao diện mẫu & Thiết kế UI chi tiết: Cấu hình mẫu CSS, tạo các file JSP cơ bản phục vụ quy trình đặt xe (`create-booking.jsp`, `my-bookings.jsp`), hoàn thiện giao diện xem danh sách xe và đặt xe. | `2187a62`<br>`263b738` |
+| **3** | Bùi Xuân Bắc | 30/05/2026 - 31/05/2026 | Commit / Merge | bacdev | **Phát triển toàn bộ Backend và sửa đổi UI Bento cao cấp:**<br>1. Hoàn thiện Servlet `CreateBookingServlet` (xử lý đặt xe mới, ghép ngày + giờ sang `LocalDateTime` tránh lỗi crash 500, tính toán giá trị đặt cọc & tổng tiền dựa trên số ngày thuê thực tế).<br>2. Xây dựng Servlet `BookingEditServlet` và `BookingCancelServlet` phục vụ thay đổi thời gian thuê hoặc hủy đơn đặt xe (`/bookings/edit`, `/bookings/cancel`).<br>3. Tạo giao diện sửa đổi đặt xe `booking-edit.jsp` với bảng màu Indigo / Bento tinh tế.<br>4. Sửa lỗi logic model `pricePerDay` -> `dailyRate` và `rejectionReason` -> `cancelReason` trên tất cả các trang JSP để tránh lỗi runtime 500.<br>5. Đóng gói đầy đủ mã nguồn và biên dịch bằng Maven thành công không lỗi.<br>6. Merge nhánh `bacdev` vào nhánh `dev` để bàn giao và kiểm thử chung. | `f379027`<br>`c2b6b8a`<br>`232655b`<br>`f41a514` |
+| **4** | Bùi Xuân Bắc | 01/06/2026 - 02/06/2026 | Commit / Merge | bacdev | **Đồng bộ hóa, chuẩn hóa mã nguồn & sửa lỗi JSP/CSS:**<br>1. Đồng bộ hóa menu sidebar và sửa lỗi active highlight (`fix(sidebar)`).<br>2. Bổ sung dữ liệu mẫu test (`data(seed)`) gồm 20 xe mới, lịch bảo dưỡng và đơn đặt xe mẫu.<br>3. Sửa lỗi cú pháp CSS nội tuyến và thẻ tự đóng trong các file JSP để vượt qua kiểm tra validation của NetBeans.<br>4. Viết tài liệu Javadocs và comment tiếng Anh ngắn gọn cho các hàm của `BookingDAO` và `BookingService`.<br>5. Loại bỏ các file Model cũ không sử dụng (`Vehicle.java`, `VehicleDAO.java`) để chuẩn hóa cấu trúc thư mục.<br>6. Merge PR nhánh `bacdev` vào `main` và `dev` để đồng bộ hóa tài nguyên của cả nhóm. | `1b5c533`<br>`94c9313`<br>`98e74b1`<br>`6055ad7`<br>`3979a13`<br>`0511010`<br>`14b29b8`<br>`4cdb822`<br>`67bf1a5`<br>`d4154cc`<br>`13f96c6`<br>`47a3471`<br>`e7c1147`<br>`3ab13f6` |
+| **5** | Bùi Xuân Bắc | 08/06/2026 - 09/06/2026 | Commit / Merge | bacdev | **Cải tiến trải nghiệm người dùng (UX) và tối ưu hóa tính năng:**<br>1. Tự động điền (`auto-fill`) địa điểm nhận và trả xe dựa trên địa chỉ thực tế của xe được chọn.<br>2. Thiết kế lại trang chủ (`home.jsp`) thành giao diện Bento UI hiện đại với bộ lọc tìm kiếm động.<br>3. Thêm chức năng xác thực đăng ký (`Register validation`) cả ở phía Client (JS) và Server để nâng cao bảo mật.<br>4. Merge PR từ `bacdev` vào `main` để tích hợp các tính năng đặt xe mới nhất. | `7b27235`<br>`e258b5f`<br>`d6c30bf`<br>`c70fbdc`<br>`beb68a5`<br>`e7ac200`<br>`28e6b8e`<br>`beb8a96` |
+| **6** | Bùi Xuân Bắc | 19/06/2026 - 23/06/2026 | Commit / Merge | bacdev | **Phát triển nâng cao cấu hình chính sách, quản lý hủy đơn & Tái cấu trúc (Refactoring) Iteration 2:**<br>1. Hỗ trợ cấu hình các gói Combo thuê xe (7 ngày, 10 ngày, 30 ngày), phụ thu Tết Nguyên Đán (`Tet Surcharge`) động và quản lý chính sách hệ thống.<br>2. Phát triển tính năng tìm kiếm lịch xe trống (`vehicle-availability`) và chỉnh sửa thông tin đơn đặt xe.<br>3. Nâng cấp tính năng hủy đơn đặt xe với lý do hủy tùy chọn (`cancel reason modal`) và hạn chế Khách hàng tự hủy các đơn đã Xác nhận (`CONFIRMED`).<br>4. Tái cấu trúc toàn bộ mã nguồn sang mô hình lai **Package-by-Feature** với cấu trúc thư mục lồng nhau (`com.swp391.carrental.booking`, `com.swp391.carrental.vehicle`, v.v.) tuân thủ quy tắc dự án.<br>5. Tích hợp tính năng phân trang (Pagination) cho trang chủ, danh sách xe và quản lý thành viên.<br>6. Merge PR giải quyết xung đột với nhánh TungDev và TamDev để bàn giao code Iteration 2 thành công. | `915eafa`<br>`82ac0f4`<br>`120fc28`<br>`85798f3`<br>`ad1bd4b`<br>`8d3d1e6`<br>`b0867c3`<br>`ad2e3bb`<br>`7381222`<br>`1ba5201`<br>`a21b16e`<br>`5d5f04e`<br>`d3f563b`<br>`43c9f09` |
+| **7** | Bùi Xuân Bắc | 26/06/2026 | Commit | main | **Sửa lỗi vận hành & Tối ưu hóa giao diện ảnh:**<br>1. Giải quyết lỗi `IllegalStateException` khi Servlet chuyển hướng bằng AJAX cho các chức năng Create/Update.<br>2. Sửa lỗi parse trường `mileage` tùy chọn bị trống tránh lỗi crash 500.<br>3. Cập nhật 37 ảnh xe thực tế, sắc nét, không trùng lặp đại diện cho từng dòng xe thay thế ảnh placeholder cũ. | `f83331b` |
+
+---
+
+## 2. Tổng kết đóng góp của học viên
+*   **Tổng số commit cá nhân thực hiện:** Hơn 35 commit trên nhánh `bacdev` và `main`.
+*   **Các Module chính hoàn thành:**
+    *   **Đặt xe (Create Booking):** Xử lý luồng tạo đơn, tính giá, chiết khấu, giao xe tận nơi, phụ thu Tết.
+    *   **Quản lý Đặt xe (My Bookings & Booking Management):** Giao diện quản lý cho khách hàng và nhân viên duyệt/từ chối đơn đặt.
+    *   **Tìm kiếm lịch xe trống (Vehicle Availability Calendar & Check):** Giao diện lịch biểu đặt xe trực quan theo tháng cho Staff và Form tra cứu ngày trống cho Khách hàng.
+    *   **Phân trang (Pagination):** Triển khai phân trang mượt mà tích hợp bộ lọc tìm kiếm cho toàn bộ hệ thống.
+*   **Tuân thủ quy chuẩn:** Code sạch, toàn bộ Javadocs dịch nghĩa và comment tuân thủ chính xác quy tắc dự án.
