@@ -1,5 +1,6 @@
 package com.swp391.carrental.auth.controller;
 
+import com.swp391.carrental.auth.service.EmailService;
 import java.io.IOException;
 import java.sql.SQLException;
 import jakarta.servlet.ServletException;
@@ -10,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
+import org.mindrot.jbcrypt.BCrypt;
+import java.util.Random;
 
 /*
  * Name: ForgotPasswordServlet
@@ -18,18 +21,14 @@ import com.swp391.carrental.user.model.User;
  * Version: 1.0
  * Description: Handles password recovery requests.
  */
-
-
-
-
 /**
- * Handles forgot password recovery.
- * URL: /forgot-password
+ * Handles forgot password recovery. URL: /forgot-password
  */
 @WebServlet(name = "ForgotPasswordServlet", urlPatterns = {"/forgot-password"})
 public class ForgotPasswordServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
+    private static final Random RANDOM = new Random();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -54,6 +53,7 @@ public class ForgotPasswordServlet extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(request, response);
                 return;
             }
+            email = email.trim();
 
             if (!email.contains("@") || !email.contains(".")) {
                 request.setAttribute("error", "Định dạng email không hợp lệ.");
@@ -69,16 +69,32 @@ public class ForgotPasswordServlet extends HttpServlet {
             }
 
             // Mock reset password to "123456" for ease of testing
-            String defaultPassword = "123456";
-            String passwordHash = org.mindrot.jbcrypt.BCrypt.hashpw(defaultPassword, org.mindrot.jbcrypt.BCrypt.gensalt());
+            String newPassword = generateRandomPassword();
+            String passwordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
             userDAO.updatePassword(user.getUserId(), passwordHash);
-
-            request.setAttribute("success", "Đặt lại mật khẩu thành công! Mật khẩu mới là: <strong>" + defaultPassword + "</strong>. Vui lòng đăng nhập lại và đổi mật khẩu ngay.");
+            try {
+                EmailService.sendForgotPasswordEmail(email,newPassword);
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error","Không thể gửi email đặt lại mật khẩu.");
+                request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(request, response);
+                return;
+            }
+            request.setAttribute("success","Mật khẩu mới đã được gửi tới email của bạn. " + "Vui lòng kiểm tra hộp thư để đăng nhập.");
             request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(request, response);
 
         } catch (SQLException e) {
             request.setAttribute("error", "Lỗi hệ thống khi đặt lại mật khẩu: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp").forward(request, response);
         }
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789";
+        StringBuilder password = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            password.append(chars.charAt(RANDOM.nextInt(chars.length())));
+        }
+        return password.toString();
     }
 }

@@ -6,6 +6,14 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.user.model.CustomerProfile;
 
+/*
+ * Name: CustomerProfileDAO
+ * @Author: AnhNNHE160896
+ * Date: 23/05/2026
+ * Version: 1.0
+ * Description: Handles database operations for CustomerProfileDAO.
+ */
+
 /**
  * Data Access Object for CustomerProfile entities.
  */

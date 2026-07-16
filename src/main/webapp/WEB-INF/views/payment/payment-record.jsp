@@ -189,36 +189,61 @@
                         </div>
 
                         <%-- Phương thức thanh toán --%>
-                        <input type="hidden" id="paymentMethod" name="paymentMethod" value="BANK_TRANSFER"/>
+                        <c:if test="${sessionScope.currentUser.role == 'CUSTOMER'}">
+                            <input type="hidden" id="paymentMethod" name="paymentMethod" value="BANK_TRANSFER"/>
+                        </c:if>
                         <div class="bk-form-group" style="margin-bottom: 20px; text-align: left;">
                             <label class="bk-form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">Phương thức thanh toán</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-
-                                <%-- Cash Card — always shown --%>
-                                <div id="method-card-cash" class="payment-method-card ${not empty defaultPaymentType ? '' : 'active'}"
-                                     onclick="selectPaymentMethod('CASH')"
-                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                                        <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">payments</span>
-                                        <span style="font-weight: 700; font-size: 14px;">Tiền mặt</span>
+                            <c:choose>
+                                <c:when test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">
+                                    <div class="bk-form-input-wrap">
+                                        <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">credit_card</span>
+                                        <select id="paymentMethod" name="paymentMethod" class="bk-form-select" required style="padding-left: 40px; font-size: 15px;">
+                                            <c:if test="${enabledMethods['CASH']}">
+                                                <option value="CASH">Tiền mặt</option>
+                                            </c:if>
+                                            <c:if test="${enabledMethods['BANK_TRANSFER']}">
+                                                <option value="BANK_TRANSFER" selected>Chuyển khoản</option>
+                                            </c:if>
+                                            <c:if test="${enabledMethods['VNPAY']}">
+                                                <option value="VNPAY">VNPay</option>
+                                            </c:if>
+                                            <c:if test="${enabledMethods['MOMO']}">
+                                                <option value="MOMO">Momo</option>
+                                            </c:if>
+                                            <c:if test="${enabledMethods['ZALOPAY']}">
+                                                <option value="ZALOPAY">ZaloPay</option>
+                                            </c:if>
+                                        </select>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Thanh toán trực tiếp tại quầy<br>Nhân viên xác nhận sau khi nhận tiền</div>
-                                </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <%-- Cash Card — always shown --%>
+                                        <div id="method-card-cash" class="payment-method-card ${not empty defaultPaymentType ? '' : 'active'}"
+                                             onclick="selectPaymentMethod('CASH')"
+                                             style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                                <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">payments</span>
+                                                <span style="font-weight: 700; font-size: 14px;">Tiền mặt</span>
+                                            </div>
+                                            <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Thanh toán trực tiếp tại quầy<br>Nhân viên xác nhận sau khi nhận tiền</div>
+                                        </div>
 
-                                <%-- Bank Transfer Card — hidden for REFUND --%>
-                                <c:if test="${sessionScope.currentUser.role != 'STAFF' && sessionScope.currentUser.role != 'ADMIN'}">
-                                <div id="method-card-bank" class="payment-method-card"
-                                     onclick="selectPaymentMethod('BANK_TRANSFER')"
-                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                                        <span class="material-symbols-outlined" style="font-size: 22px; color: #2F5ACD;">qr_code_2</span>
-                                        <span style="font-weight: 700; font-size: 14px;">Chuyển khoản QR</span>
+                                        <%-- Bank Transfer Card — hidden for REFUND --%>
+                                        <div id="method-card-bank" class="payment-method-card"
+                                             onclick="selectPaymentMethod('BANK_TRANSFER')"
+                                             style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                                <span class="material-symbols-outlined" style="font-size: 22px; color: #2F5ACD;">qr_code_2</span>
+                                                <span style="font-weight: 700; font-size: 14px;">Chuyển khoản QR</span>
+                                            </div>
+                                            <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Quét mã QR để chuyển khoản<br>Tự động nhận diện qua nội dung CK</div>
+                                        </div>
                                     </div>
-                                    <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Quét mã QR để chuyển khoản<br>Tự động nhận diện qua nội dung CK</div>
-                                </div>
-                                </c:if>
-
-                            </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
 
                             <%-- Cash Instructions Panel --%>
                             <div id="cash-instructions-panel" style="display:none; margin-top: 16px; background: #F0FFF4; border: 1px solid #9AE6B4; border-radius: 12px; padding: 16px;">

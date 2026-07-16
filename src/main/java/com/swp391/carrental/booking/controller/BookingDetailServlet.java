@@ -67,9 +67,14 @@ public class BookingDetailServlet extends HttpServlet {
                 return;
             }
 
-            // Security: Customer can only view own bookings
-            boolean isStaffOrAdmin = Role.STAFF.equals(currentUser.getRole())
-                    || Role.ADMIN.equals(currentUser.getRole());
+            if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "VIEW_BOOKING")
+                    && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST")) {
+                request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST");
 
             if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
                 request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")

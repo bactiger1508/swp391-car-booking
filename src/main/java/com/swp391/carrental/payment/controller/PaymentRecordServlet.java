@@ -99,11 +99,12 @@ public class PaymentRecordServlet extends HttpServlet {
                 if (booking == null) {
                     request.setAttribute("errorMsg", "Không tìm thấy đơn đặt xe.");
                 } else {
-                    // Security Check: Customer can only view/pay their own bookings
-                    if ("CUSTOMER".equals(currentUser.getRole()) && booking.getCustomerId() != currentUser.getUserId()) {
+                    boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT");
+                    if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thanh toán cho đơn thuê này.");
                         return;
                     }
+                    request.setAttribute("isStaffOrAdmin", isStaffOrAdmin);
 
                     request.setAttribute("booking", booking);
                     com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
@@ -246,8 +247,9 @@ public class PaymentRecordServlet extends HttpServlet {
             return;
         }
 
+        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT");
         // No bookingId: Customer is not allowed to view the global transactions log
-        if ("CUSTOMER".equals(currentUser.getRole())) {
+        if (!isStaffOrAdmin) {
             response.sendRedirect(request.getContextPath() + "/payments/my");
             return;
         }
@@ -266,6 +268,11 @@ public class PaymentRecordServlet extends HttpServlet {
         User currentUser = (User) request.getSession().getAttribute("currentUser");
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
             return;
         }
 

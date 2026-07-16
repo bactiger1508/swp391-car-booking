@@ -34,6 +34,7 @@ public class AuthFilter implements Filter {
     private static final List<String> PUBLIC_URLS = Arrays.asList(
             "/login",
             "/register",
+            "/forgot-password",
             "/logout",
             "/forgot-password",
             "/test-db",

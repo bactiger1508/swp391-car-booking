@@ -10,8 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.swp391.carrental.payment.model.Payment;
-import com.swp391.carrental.user.constant.Role;
+import com.swp391.carrental.core.util.SecurityUtils;
 import com.swp391.carrental.user.model.User;
 
 /*
@@ -22,40 +21,45 @@ import com.swp391.carrental.user.model.User;
  * Description: Handles business logic and operations for AuthorizationFilter.
  */
 
-
-
 /**
  * Authorization filter.
- * Checks if the logged-in user's role is allowed to access certain URLs.
- * Redirects to access-denied page if role is insufficient.
+ * Checks if the logged-in user has the required permission to access certain
+ * URLs.
+ * Redirects to access-denied page if permission is insufficient.
  */
-@WebFilter(filterName = "AuthorizationFilter", urlPatterns = {"/*"})
+@WebFilter(filterName = "AuthorizationFilter", urlPatterns = { "/*" })
 public class AuthorizationFilter implements Filter {
 
     /**
-     * Maps URL prefixes to the list of allowed roles.
+     * Maps URL prefixes to the required permission key.
      */
-    private static final Map<String, List<String>> ROLE_RESTRICTIONS = new HashMap<>();
+    private static final Map<String, String> PATH_PERMISSIONS = new HashMap<>();
 
     static {
-        // Admin-only pages
-        ROLE_RESTRICTIONS.put("/users", Arrays.asList(Role.ADMIN));
-        ROLE_RESTRICTIONS.put("/roles", Arrays.asList(Role.ADMIN));
+        PATH_PERMISSIONS.put("/users", "VIEW_USER_LIST");
+        PATH_PERMISSIONS.put("/roles", "VIEW_USER_LIST"); // only admins can manage roles
+        PATH_PERMISSIONS.put("/user/customer-profiles", "VERIFY_CUSTOMER_PROFILE");
 
-        // Staff and Admin pages
-        ROLE_RESTRICTIONS.put("/vehicles/manage", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/maintenance", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/bookings/manage", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/bookings/approval", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/contracts", Arrays.asList(Role.ADMIN, Role.STAFF, Role.CUSTOMER));
-        ROLE_RESTRICTIONS.put("/payments/record", Arrays.asList(Role.ADMIN, Role.STAFF, Role.CUSTOMER));
-        ROLE_RESTRICTIONS.put("/policies", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/tax-invoice-settings", Arrays.asList(Role.ADMIN));
-        ROLE_RESTRICTIONS.put("/admin/payment-settings", Arrays.asList(Role.ADMIN));
-        ROLE_RESTRICTIONS.put("/handovers", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/returns", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/additional-fees", Arrays.asList(Role.ADMIN, Role.STAFF));
-        ROLE_RESTRICTIONS.put("/reports", Arrays.asList(Role.ADMIN, Role.STAFF));
+        PATH_PERMISSIONS.put("/vehicles/manage", "VIEW_VEHICLE_DETAIL_STAFF");
+        PATH_PERMISSIONS.put("/vehicles/availability", "CHECK_VEHICLE_AVAILABILITY");
+        PATH_PERMISSIONS.put("/maintenance", "RECORD_VEHICLE_MAINTENANCE");
+        PATH_PERMISSIONS.put("/bookings/manage", "PROCESS_BOOKING_REQUEST");
+        PATH_PERMISSIONS.put("/bookings/approval", "PROCESS_BOOKING_REQUEST");
+        PATH_PERMISSIONS.put("/bookings/calendar", "VIEW_BOOKINGS_CALENDAR");
+        PATH_PERMISSIONS.put("/bookings/create", "CREATE_BOOKING");
+        PATH_PERMISSIONS.put("/bookings/edit", "UPDATE_BOOKING");
+        PATH_PERMISSIONS.put("/contracts", "VIEW_CONTRACT");
+        PATH_PERMISSIONS.put("/payments/record", "RECORD_PAYMENT");
+        PATH_PERMISSIONS.put("/policies", "CONFIGURE_RENTAL_POLICY");
+        PATH_PERMISSIONS.put("/tax-invoice-settings", "EXPORT_VAT_INVOICE");
+        PATH_PERMISSIONS.put("/admin/payment-settings", "CONFIGURE_PAYMENT_METHOD");
+        PATH_PERMISSIONS.put("/handovers", "PROCESS_HANDOVER");
+        PATH_PERMISSIONS.put("/handover/view", "VIEW_BOOKING");
+        PATH_PERMISSIONS.put("/returns", "PROCESS_RETURN");
+        PATH_PERMISSIONS.put("/return/view", "VIEW_BOOKING");
+        PATH_PERMISSIONS.put("/additional-fees", "RECORD_ADDITIONAL_FEE");
+        PATH_PERMISSIONS.put("/reports", "VIEW_REVENUE_REPORT");
+        PATH_PERMISSIONS.put("/change-password", "CHANGE_PASSWORD");
     }
 
     @Override
@@ -71,14 +75,20 @@ public class AuthorizationFilter implements Filter {
 
         String path = httpRequest.getServletPath();
 
-        // Check if this path has role restrictions
-        for (Map.Entry<String, List<String>> entry : ROLE_RESTRICTIONS.entrySet()) {
-            if (path.startsWith(entry.getKey())) {
+        // Sort prefixes by length descending to match most specific prefix first
+        java.util.List<String> sortedPrefixes = PATH_PERMISSIONS.keySet().stream()
+                .sorted((a, b) -> Integer.compare(b.length(), a.length()))
+                .toList();
+
+        // Check if this path has permission restrictions
+        for (String prefix : sortedPrefixes) {
+            if (path.startsWith(prefix)) {
+                String requiredPerm = PATH_PERMISSIONS.get(prefix);
                 HttpSession session = httpRequest.getSession(false);
                 if (session != null) {
                     User user = (User) session.getAttribute("currentUser");
-                    if (user != null && !entry.getValue().contains(user.getRole())) {
-                        // User doesn't have the required role
+                    if (user != null && !SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
+                        // User doesn't have the required permission
                         httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                                 .forward(httpRequest, httpResponse);
                         return;
