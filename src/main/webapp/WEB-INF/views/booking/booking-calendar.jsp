@@ -239,7 +239,8 @@
 </style>
 
 <script>
-// ===== Calendar State =====
+// ===== Context Path and Calendar State =====
+var contextPath = '${pageContext.request.contextPath}';
 var calState = {
     month: ${calMonth},
     year: ${calYear},
@@ -429,7 +430,6 @@ function renderGantt() {
 }
 
 // ===== Helper functions =====
-var contextPath = '${pageContext.request.contextPath}';
 
 function parseDate(str) {
     if (!str) return new Date();

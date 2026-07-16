@@ -4,16 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - Server Error</title>
+    <title>500 - Lỗi Máy Chủ - CarPro</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="auth-body">
 <div class="auth-container">
-    <div class="auth-card" style="text-align:center;">
-        <div style="font-size:64px;margin-bottom:16px;">&#9888;</div>
-        <h1>Server Error</h1>
-        <p class="subtitle">An internal server error occurred. Please try again later.</p>
-        <a href="${pageContext.request.contextPath}/home" class="btn btn-primary" style="margin-top:24px;">Back to Home</a>
+    <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-accent" style="background: var(--warning, #FFCE20);"></div>
+        <div class="auth-card-body" style="text-align:center; padding: 48px 40px;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 206, 32, 0.15); color: #d97706; margin-bottom: 24px;">
+                <span class="material-symbols-outlined" style="font-size: 40px; font-variation-settings: 'FILL' 1;">warning</span>
+            </div>
+            <h1 style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 12px; letter-spacing: -0.02em;">500 - Lỗi hệ thống</h1>
+            <p style="font-size: 15px; color: var(--on-surface-variant); line-height: 1.6; margin-bottom: 28px;">
+                Đã xảy ra lỗi xử lý bên trong máy chủ. Vui lòng thử lại sau hoặc liên hệ ban quản trị để được hỗ trợ.
+            </p>
+            <a href="${pageContext.request.contextPath}/home" class="btn btn-primary" style="width: auto; padding: 12px 32px; border-radius: 10px; font-weight: 600; margin: 0 auto; display: inline-flex;">
+                Quay về Trang chủ
+            </a>
+        </div>
+        <div class="auth-card-footer" style="padding: 16px;">
+            <span style="font-size: 13px; color: var(--on-surface-variant); opacity: 0.8;">Hệ thống quản lý xe tự lái CarPro</span>
+        </div>
     </div>
 </div>
 </body>
