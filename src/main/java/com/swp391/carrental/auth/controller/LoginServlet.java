@@ -55,6 +55,15 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("currentUser", user);
 
+            // Load user permissions and store in session
+            try {
+                com.swp391.carrental.user.dao.PermissionDAO permissionDAO = new com.swp391.carrental.user.dao.PermissionDAO();
+                java.util.List<String> permKeys = permissionDAO.getPermissionsByRole(user.getRole());
+                session.setAttribute("userPermissions", new java.util.HashSet<>(permKeys));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             // Redirect to saved URL or home
             String redirectUrl = (String) session.getAttribute("redirectUrl");
             session.removeAttribute("redirectUrl");
