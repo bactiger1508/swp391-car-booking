@@ -127,12 +127,45 @@
         </div>
     </div>
 
+    <%-- No-show Policy Card --%>
+    <div class="bk-card" style="position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;opacity:0.04;">
+            <span class="material-symbols-outlined" style="font-size:180px;">person_off</span>
+        </div>
+        <div class="bk-card-title" style="color:#c62828;">
+            <span class="material-symbols-outlined">person_off</span> Chính sách No-show (Không đến nhận xe)
+        </div>
+        <div class="bk-policy-grid" style="position:relative;z-index:1;">
+            <div>
+                <h4 style="font-weight:600;color:#c62828;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#c62828;"></span> Định nghĩa No-show
+                </h4>
+                <ul class="bk-policy-list">
+                    <li>Khách hàng <strong>không đến nhận xe</strong> trong vòng <strong>2 giờ</strong> kể từ thời điểm nhận xe theo hợp đồng mà không có thông báo trước.</li>
+                    <li>Booking sẽ tự động chuyển sang trạng thái <strong>"No-show"</strong> sau thời gian quy định.</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="font-weight:600;color:#c62828;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#c62828;"></span> Hậu quả No-show
+                </h4>
+                <ul class="bk-policy-list">
+                    <li><strong>Mất toàn bộ tiền cọc</strong> — Tiền cọc đã thanh toán sẽ không được hoàn lại.</li>
+                    <li><strong>Hạn chế đặt xe:</strong> Tài khoản có thể bị đánh dấu cảnh báo nếu vi phạm No-show nhiều lần.</li>
+                    <li><strong>Liên hệ hỗ trợ:</strong> Nếu có lý do bất khả kháng, vui lòng liên hệ hotline trước giờ nhận xe.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <%-- Dynamic System Configuration Section --%>
+    <c:if test="${not empty bookingPolicies || not empty pricingPolicies || not empty penaltyPolicies}">
     <div class="bk-card" style="margin-top: 8px;">
         <div class="bk-card-title" style="color:var(--primary); margin-bottom: 16px;">
             <span class="material-symbols-outlined">settings_suggest</span> Thông số cấu hình hệ thống (Thời gian thực)
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px;">
+            <c:if test="${not empty bookingPolicies}">
             <div>
                 <h4 style="font-weight:600;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--primary-container);padding-bottom:6px;">Quy định đặt xe</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -144,6 +177,8 @@
                     </c:forEach>
                 </table>
             </div>
+            </c:if>
+            <c:if test="${not empty pricingPolicies}">
             <div>
                 <h4 style="font-weight:600;color:var(--primary);margin-bottom:12px;border-bottom:2px solid var(--primary-container);padding-bottom:6px;">Biểu phí & Đơn giá</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -155,6 +190,8 @@
                     </c:forEach>
                 </table>
             </div>
+            </c:if>
+            <c:if test="${not empty penaltyPolicies}">
             <div>
                 <h4 style="font-weight:600;color:var(--warning);margin-bottom:12px;border-bottom:2px solid rgba(255, 193, 7, 0.2);padding-bottom:6px;">Chế tài & Phạt vi phạm</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -166,8 +203,20 @@
                     </c:forEach>
                 </table>
             </div>
+            </c:if>
         </div>
     </div>
+    </c:if>
+
+    <%-- Empty State: No policy data --%>
+    <c:if test="${empty bookingPolicies && empty pricingPolicies && empty penaltyPolicies}">
+    <div class="bk-card" style="text-align: center; padding: 40px;">
+        <span class="material-symbols-outlined" style="font-size: 64px; color: var(--on-surface-variant); opacity: 0.5;">info</span>
+        <h3 style="margin: 16px 0 8px; color: var(--on-surface);">Chưa có thông số cấu hình</h3>
+        <p style="color: var(--on-surface-variant);">Thông tin cấu hình chính sách hệ thống tạm thời không khả dụng. Vui lòng quay lại sau.</p>
+    </div>
+    </c:if>
 </div>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
+

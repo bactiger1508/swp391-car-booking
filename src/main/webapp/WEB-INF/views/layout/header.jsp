@@ -87,6 +87,9 @@
                             <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
                                 <span class="material-symbols-outlined mi-filled">receipt_long</span> Đơn thuê của tôi
                             </a>
+                            <a href="${pageContext.request.contextPath}/payments/my" class="bk-sidebar-link ${_cp == '/payments/my' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán
+                            </a>
                         </c:if>
                         <c:if test="${hasViewContract}">
                             <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">

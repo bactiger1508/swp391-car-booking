@@ -97,9 +97,9 @@ public class BookingDetailServlet extends HttpServlet {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
                         // Refunds reduce the net paid amount
-                        totalPaid = totalPaid.subtract(p.getAmount());
+                        totalPaid = totalPaid.subtract(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
                     } else {
-                        totalPaid = totalPaid.add(p.getAmount());
+                        totalPaid = totalPaid.add(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
                     }
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
                         depositPaid = true;

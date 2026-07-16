@@ -18,6 +18,7 @@
                 <li class="menu-section">Đặt Xe</li>
                 <li><a href="${pageContext.request.contextPath}/bookings/create">📝 Đặt Xe Mới</a></li>
                 <li><a href="${pageContext.request.contextPath}/bookings/my">📋 Chuyến Đi Của Tôi</a></li>
+                <li><a href="${pageContext.request.contextPath}/payments/my">💳 Lịch Sử Thanh Toán</a></li>
             </c:if>
 
             <c:if test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">

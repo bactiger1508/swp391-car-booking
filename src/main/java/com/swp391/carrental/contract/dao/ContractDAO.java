@@ -114,6 +114,23 @@ public class ContractDAO {
         return -1;
     }
 
+    // Update contract editable fields
+    public boolean update(RentalContract contract) throws SQLException {
+        String sql = "UPDATE rental_contracts SET start_date = ?, end_date = ?, daily_rate = ?, total_amount = ?, deposit_amount = ?, terms_and_conditions = ?, base_amount = ?, discount_amount = ?, updated_at = GETDATE() WHERE contract_id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(contract.getStartDate()));
+            ps.setTimestamp(2, Timestamp.valueOf(contract.getEndDate()));
+            ps.setBigDecimal(3, contract.getDailyRate());
+            ps.setBigDecimal(4, contract.getTotalAmount());
+            ps.setBigDecimal(5, contract.getDepositAmount());
+            ps.setString(6, contract.getTermsAndConditions());
+            ps.setBigDecimal(7, contract.getBaseAmount());
+            ps.setBigDecimal(8, contract.getDiscountAmount());
+            ps.setInt(9, contract.getContractId());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     // Update contract status
     public boolean updateStatus(int contractId, String status) throws SQLException {
         String sql = "UPDATE rental_contracts SET status = ?, updated_at = GETDATE() WHERE contract_id = ?";
