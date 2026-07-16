@@ -19,14 +19,13 @@ public class PaymentWebhookService {
     private final PolicyService policyService = new PolicyService();
 
     /**
-     * Verifies that the webhook request is authentic and comes from the payment provider.
+     * Verifies that the webhook request is authentic and comes from SePay.
      *
      * @param request the http request
      * @param payload the request payload body
      * @return true if verified, false otherwise
      */
     public boolean verifyWebhook(HttpServletRequest request, String payload) {
-        String provider = policyService.getPolicyValue("WEBHOOK_PROVIDER", "SEPAY").toUpperCase();
         String configuredSecret = policyService.getPolicyValue("WEBHOOK_SECRET", "");
 
         // Deny verification if secret is not set
@@ -34,34 +33,16 @@ public class PaymentWebhookService {
             return false;
         }
 
-        if ("SEPAY".equals(provider)) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.contains(configuredSecret)) {
-                return true;
-            }
-            String apiKeyHeader = request.getHeader("x-api-key");
-            return configuredSecret.equals(apiKeyHeader);
-        } else if ("CASSO".equals(provider)) {
-            String secureToken = request.getHeader("Secure-Token");
-            return configuredSecret.equals(secureToken);
-        } else if ("PAYOS".equals(provider)) {
-            String apiKey = request.getHeader("x-api-key");
-            if (configuredSecret.equals(apiKey)) {
-                return true;
-            }
-            String sig = request.getHeader("x-signature");
-            return sig != null && !sig.trim().isEmpty();
-        }
-
-        // Generic fallback verification
-        String apiKey = request.getHeader("x-api-key");
-        if (configuredSecret.equals(apiKey)) return true;
         String authHeader = request.getHeader("Authorization");
-        return authHeader != null && authHeader.contains(configuredSecret);
+        if (authHeader != null && authHeader.contains(configuredSecret)) {
+            return true;
+        }
+        String apiKeyHeader = request.getHeader("x-api-key");
+        return configuredSecret.equals(apiKeyHeader);
     }
 
     /**
-     * Parses the webhook request body and maps it to unified WebhookTransaction objects.
+     * Parses the SePay webhook request body and maps it to unified WebhookTransaction objects.
      *
      * @param request the http request
      * @param payload the request payload body
@@ -69,56 +50,20 @@ public class PaymentWebhookService {
      */
     public List<WebhookTransaction> parseWebhook(HttpServletRequest request, String payload) {
         List<WebhookTransaction> txs = new ArrayList<>();
-        String provider = policyService.getPolicyValue("WEBHOOK_PROVIDER", "SEPAY").toUpperCase();
 
         try {
-            if ("SEPAY".equals(provider)) {
-                BigDecimal amount = getJsonNumericValue(payload, "transferAmount");
-                if (amount == null) amount = getJsonNumericValue(payload, "amount");
-                String content = getJsonStringValue(payload, "content");
-                if (content == null) content = getJsonStringValue(payload, "description");
-                String ref = getJsonStringValue(payload, "referenceCode");
-                if (ref == null) ref = getJsonStringValue(payload, "id");
-                
-                String dateStr = getJsonStringValue(payload, "transactionDate");
-                LocalDateTime paidAt = parseDateTime(dateStr);
+            BigDecimal amount = getJsonNumericValue(payload, "transferAmount");
+            if (amount == null) amount = getJsonNumericValue(payload, "amount");
+            String content = getJsonStringValue(payload, "content");
+            if (content == null) content = getJsonStringValue(payload, "description");
+            String ref = getJsonStringValue(payload, "referenceCode");
+            if (ref == null) ref = getJsonStringValue(payload, "id");
+            
+            String dateStr = getJsonStringValue(payload, "transactionDate");
+            LocalDateTime paidAt = parseDateTime(dateStr);
 
-                if (content != null && amount != null) {
-                    txs.add(new WebhookTransaction(content, amount, ref, paidAt));
-                }
-            } else if ("CASSO".equals(provider)) {
-                Pattern p = Pattern.compile("\\{[^\\}]*\"amount\"[^\\}]*\\}");
-                Matcher m = p.matcher(payload);
-                while (m.find()) {
-                    String block = m.group();
-                    BigDecimal amount = getJsonNumericValue(block, "amount");
-                    String desc = getJsonStringValue(block, "description");
-                    String tid = getJsonStringValue(block, "tid");
-                    String whenStr = getJsonStringValue(block, "when");
-                    LocalDateTime paidAt = parseDateTime(whenStr);
-                    if (desc != null && amount != null) {
-                        txs.add(new WebhookTransaction(desc, amount, tid, paidAt));
-                    }
-                }
-            } else if ("PAYOS".equals(provider)) {
-                BigDecimal amount = getJsonNumericValue(payload, "amount");
-                String desc = getJsonStringValue(payload, "description");
-                String ref = getJsonStringValue(payload, "reference");
-                String dateStr = getJsonStringValue(payload, "transactionDateTime");
-                LocalDateTime paidAt = parseDateTime(dateStr);
-                if (desc != null && amount != null) {
-                    txs.add(new WebhookTransaction(desc, amount, ref, paidAt));
-                }
-            } else {
-                BigDecimal amount = getJsonNumericValue(payload, "amount");
-                String desc = getJsonStringValue(payload, "description");
-                String ref = getJsonStringValue(payload, "transactionRef");
-                if (ref == null) ref = getJsonStringValue(payload, "reference");
-                String dateStr = getJsonStringValue(payload, "paidAt");
-                LocalDateTime paidAt = parseDateTime(dateStr);
-                if (desc != null && amount != null) {
-                    txs.add(new WebhookTransaction(desc, amount, ref, paidAt));
-                }
+            if (content != null && amount != null) {
+                txs.add(new WebhookTransaction(content, amount, ref, paidAt));
             }
         } catch (Exception e) {
             e.printStackTrace();
