@@ -126,6 +126,29 @@ public class ContractManagementServlet extends HttpServlet {
                     request.setAttribute("contract", contract);
                     request.setAttribute("creator", userService.getUserById(contract.getCreatedBy()));
                     
+                    // Load VAT Invoice and total completed payment amount
+                    try {
+                        com.swp391.carrental.payment.dao.VatInvoiceDAO vatInvoiceDAO = new com.swp391.carrental.payment.dao.VatInvoiceDAO();
+                        com.swp391.carrental.payment.model.VatInvoice vatInvoice = vatInvoiceDAO.findByContractId(contract.getContractId());
+                        request.setAttribute("vatInvoice", vatInvoice);
+                        
+                        com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
+                        java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(contract.getBookingId());
+                        java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
+                        for (com.swp391.carrental.payment.model.Payment p : payments) {
+                            if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                                if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                                    totalPaid = totalPaid.subtract(p.getAmount());
+                                } else {
+                                    totalPaid = totalPaid.add(p.getAmount());
+                                }
+                            }
+                        }
+                        request.setAttribute("totalPaid", totalPaid);
+                    } catch (Exception ex) {
+                        // ignore or log
+                    }
+
                     // Handle edit mode
                     String editParam = request.getParameter("edit");
                     if ("true".equals(editParam)) {
