@@ -76,7 +76,7 @@
                     <c:set var="hasPaymentSetting" value="${isAdmin || (not empty sessionScope.userPermissions && sessionScope.userPermissions.contains('CONFIGURE_PAYMENT_METHOD'))}" />
 
                     <%-- Section: Đặt Xe (Customer) --%>
-                    <c:if test="${hasCreateBooking || hasViewBooking || hasViewContract}">
+                    <c:if test="${sessionScope.currentUser.role == 'CUSTOMER'}">
                         <div class="bk-sidebar-section">Đặt Xe</div>
                         <c:if test="${hasCreateBooking}">
                             <a href="${pageContext.request.contextPath}/bookings/create" class="bk-sidebar-link ${_cp == '/bookings/create' ? 'active' : ''}">

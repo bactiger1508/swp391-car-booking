@@ -28,12 +28,21 @@
     </div>
     
     <div class="bk-form-grid" style="grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:12px;margin-bottom:16px;">
-        <%-- Khoảng thời gian --%>
+        <%-- Ngày nhận --%>
         <div class="bk-form-group">
-            <label class="bk-form-label">Khoảng thời gian</label>
+            <label class="bk-form-label">Ngày nhận</label>
             <div class="bk-form-input-wrap">
                 <span class="material-symbols-outlined">calendar_today</span>
-                <input type="date" id="filterDate" class="bk-form-input" style="padding-left:40px;" onchange="applyFilters()">
+                <input type="date" id="filterStartDate" class="bk-form-input" style="padding-left:40px;" value="${startDate}" onchange="applyDateFilter()">
+            </div>
+        </div>
+
+        <%-- Ngày trả --%>
+        <div class="bk-form-group">
+            <label class="bk-form-label">Ngày trả</label>
+            <div class="bk-form-input-wrap">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <input type="date" id="filterEndDate" class="bk-form-input" style="padding-left:40px;" value="${endDate}" onchange="applyDateFilter()">
             </div>
         </div>
 
@@ -265,9 +274,18 @@
 
 <c:if test="${empty cars}">
     <div class="bk-empty">
-        <span class="material-symbols-outlined">directions_car</span>
-        <h3>Không có xe nào sẵn sàng phục vụ</h3>
-        <p>Hệ thống hiện tại chưa có xe ô tô nào khả dụng cho thuê. Vui lòng quay lại sau.</p>
+        <c:choose>
+            <c:when test="${not empty startDate && not empty endDate}">
+                <span class="material-symbols-outlined">search_off</span>
+                <h3>Không có xe nào trống trong khoảng thời gian này</h3>
+                <p>Tất cả xe đã được đặt trước hoặc bận bảo trì. Vui lòng <a href="${pageContext.request.contextPath}/vehicles" style="color:var(--primary);text-decoration:underline;font-weight:700;">đặt lại bộ lọc ngày</a> hoặc chọn thời gian khác.</p>
+            </c:when>
+            <c:otherwise>
+                <span class="material-symbols-outlined">directions_car</span>
+                <h3>Không có xe nào sẵn sàng phục vụ</h3>
+                <p>Hệ thống hiện tại chưa có xe ô tô nào khả dụng cho thuê. Vui lòng quay lại sau.</p>
+            </c:otherwise>
+        </c:choose>
     </div>
 </c:if>
 
@@ -452,11 +470,48 @@ function applyPagination() {
     }
 }
 
+function applyDateFilter() {
+    var start = document.getElementById('filterStartDate').value;
+    var end = document.getElementById('filterEndDate').value;
+    
+    if (start && end) {
+        if (new Date(start) > new Date(end)) {
+            alert("Ngày nhận xe phải trước hoặc bằng ngày trả xe!");
+            return;
+        }
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('startDate', start);
+        urlParams.set('endDate', end);
+        
+        var brand = document.getElementById('filterBrand').value;
+        var model = document.getElementById('filterModel').value;
+        var transmission = document.getElementById('filterTransmission').value;
+        var fuel = document.getElementById('filterFuel').value;
+        var seats = document.getElementById('filterSeats').value;
+        var price = document.getElementById('filterPrice').value;
+        
+        if (brand) urlParams.set('brand', brand); else urlParams.delete('brand');
+        if (model) urlParams.set('model', model); else urlParams.delete('model');
+        if (transmission) urlParams.set('transmission', transmission); else urlParams.delete('transmission');
+        if (fuel) urlParams.set('fuel', fuel); else urlParams.delete('fuel');
+        if (seats) urlParams.set('seats', seats); else urlParams.delete('seats');
+        if (price) urlParams.set('price', price); else urlParams.delete('price');
+        
+        window.location.search = urlParams.toString();
+    }
+}
+
 function updateFilterChips() {
     var chipsContainer = document.getElementById('filterChips');
     if (!chipsContainer) return;
     var chips = [];
     
+    var start = document.getElementById('filterStartDate').value;
+    var end = document.getElementById('filterEndDate').value;
+    if (start && end) {
+        chips.push({label: 'Lịch: ' + start + ' -> ' + end, id: 'clearDate', value: ''});
+    }
+
     var brand = document.getElementById('filterBrand').value;
     if (brand) chips.push({label: brand, id: 'filterBrand', value: ''});
 
@@ -482,7 +537,12 @@ function updateFilterChips() {
     chips.forEach(function(chip) {
         var chipEl = document.createElement('div');
         chipEl.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--surface-container-low);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;';
-        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="document.getElementById(\'' + chip.id + '\').value=\'' + chip.value + '\'; if(\'' + chip.id + '\' === \'filterBrand\') { updateModelOptions(); }; applyFilters();">close</button>';
+        
+        var clickHandler = (chip.id === 'clearDate')
+            ? "var up = new URLSearchParams(window.location.search); up.delete('startDate'); up.delete('endDate'); window.location.search = up.toString();"
+            : "document.getElementById('" + chip.id + "').value='" + chip.value + "'; if('" + chip.id + "' === 'filterBrand') { updateModelOptions(); }; applyFilters();";
+        
+        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="' + clickHandler + '">close</button>';
         chipsContainer.appendChild(chipEl);
     });
 }
@@ -499,6 +559,9 @@ window.addEventListener('DOMContentLoaded', function() {
     var brand = urlParams.get('brand');
     var seats = urlParams.get('seats');
     var model = urlParams.get('model');
+    var transmission = urlParams.get('transmission');
+    var fuel = urlParams.get('fuel');
+    var price = urlParams.get('price');
     
     if (brand) {
         var brandSelect = document.getElementById('filterBrand');
@@ -518,6 +581,18 @@ window.addEventListener('DOMContentLoaded', function() {
         if (seatsSelect) {
             seatsSelect.value = seats;
         }
+    }
+    if (transmission) {
+        var tSelect = document.getElementById('filterTransmission');
+        if (tSelect) tSelect.value = transmission;
+    }
+    if (fuel) {
+        var fSelect = document.getElementById('filterFuel');
+        if (fSelect) fSelect.value = fuel;
+    }
+    if (price) {
+        var pSelect = document.getElementById('filterPrice');
+        if (pSelect) pSelect.value = price;
     }
     applyFilters();
 });
