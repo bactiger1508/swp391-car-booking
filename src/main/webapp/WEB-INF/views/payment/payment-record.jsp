@@ -35,6 +35,12 @@
     </div>
     <c:remove var="paymentSuccess" scope="session"/>
 </c:if>
+<c:if test="${not empty sessionScope.paymentError}">
+    <div class="bk-alert bk-alert-error" style="margin-bottom: 24px;">
+        <span class="material-symbols-outlined">warning</span> ${sessionScope.paymentError}
+    </div>
+    <c:remove var="paymentError" scope="session"/>
+</c:if>
 <c:if test="${not empty errorMsg}">
     <div class="bk-alert bk-alert-error" style="margin-bottom: 24px;">
         <span class="material-symbols-outlined">warning</span> ${errorMsg}
@@ -44,8 +50,31 @@
 <div class="page-content" style="max-width: 1200px; margin: 0 auto; padding-top: 0;">
     
     <c:choose>
-        <%-- CASE 1: SPECIFIC BOOKING TRANSACTION RECORDING (Image 2 style) --%>
+        <%-- CASE 1: SPECIFIC BOOKING TRANSACTION RECORDING --%>
         <c:when test="${not empty booking}">
+            <%-- Overpayment alert --%>
+            <c:if test="${excessAmount > 0}">
+                <div class="bk-alert bk-alert-warning" style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px; background: #FFF5F5; border: 1.5px solid #FC8181; border-radius: 12px; padding: 16px; color: #C53030;">
+                    <span class="material-symbols-outlined" style="font-size: 24px; color: #E53E3E;">warning</span>
+                    <div style="font-size: 14px; line-height: 1.5;">
+                        <strong>Thông báo chuyển thừa:</strong> Hệ thống ghi nhận bạn đã chuyển thừa số tiền <strong><fmt:formatNumber value="${excessAmount}" pattern="#,##0"/> đ</strong>. Vui lòng liên hệ quầy giao dịch hoặc nhân viên để nhận lại tiền hoàn.
+                    </div>
+                </div>
+            </c:if>
+
+            <%-- Underpayment / Partial payment alert:
+                 Only show to CUSTOMER when in the RENTAL stage and there is a partial rental payment.
+                 Staff/Admin do not need this banner — they see the full payment summary on the right.
+            --%>
+            <c:if test="${sessionScope.currentUser.role == 'CUSTOMER' && depositPaid && !rentalPaid && totalPaid > booking.depositAmount && remainingAmount > 0}">
+                <div class="bk-alert bk-alert-warning" style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px; background: #FFF9E6; border: 1.5px solid #FCD34D; border-radius: 12px; padding: 16px; color: #B45309;">
+                    <span class="material-symbols-outlined" style="font-size: 24px; color: #D97706;">info</span>
+                    <div style="font-size: 14px; line-height: 1.5;">
+                        <strong>Thông báo chuyển thiếu:</strong> Bạn đã thanh toán một phần tiền thuê (Đã nhận: <strong><fmt:formatNumber value="${totalPaid}" pattern="#,##0"/> đ</strong>). Vui lòng thanh toán thêm <strong><fmt:formatNumber value="${remainingAmount}" pattern="#,##0"/> đ</strong> còn lại để hoàn thành đơn thuê.
+                    </div>
+                </div>
+            </c:if>
+
             <div class="bk-booking-grid" style="display: grid; grid-template-columns: 7fr 5fr; gap: 28px; align-items: start;">
                 
                 <%-- Left Column: Payment Form --%>
@@ -66,14 +95,14 @@
                         
                         <input type="hidden" id="selectedPaymentType" name="paymentType" value="${not empty defaultPaymentType ? defaultPaymentType : 'DEPOSIT'}"/>
 
-                                <div class="bk-form-group" style="margin-bottom: 24px;">
+                        <div class="bk-form-group" style="margin-bottom: 24px;">
                             <label class="bk-form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">Loại thanh toán</label>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
                                 
                                 <c:if test="${!depositPaid}">
                                     <%-- Deposit Card --%>
                                     <div class="payment-type-card ${defaultPaymentType == 'DEPOSIT' ? 'active' : ''}" 
-                                         onclick="selectPaymentType('DEPOSIT', ${booking.depositAmount}, ${remainingAmount})"
+                                         onclick="selectPaymentType('DEPOSIT', ${remainingDeposit}, ${remainingAmount}, this)"
                                          style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                             <span class="material-symbols-outlined" style="font-size: 20px;">account_balance_wallet</span>
@@ -89,7 +118,7 @@
                                 <c:if test="${depositPaid && !rentalPaid}">
                                     <%-- Rental Card --%>
                                     <div class="payment-type-card ${defaultPaymentType == 'RENTAL' ? 'active' : ''}" 
-                                         onclick="selectPaymentType('RENTAL', ${remainingAmount}, ${remainingAmount})"
+                                         onclick="selectPaymentType('RENTAL', ${remainingAmount}, ${remainingAmount}, this)"
                                          style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                             <span class="material-symbols-outlined" style="font-size: 20px;">directions_car</span>
@@ -101,11 +130,11 @@
                                         <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3;">Thanh toán cước thuê</div>
                                     </div>
                                 </c:if>
- 
+
                                 <c:if test="${rentalPaid && remainingAmount > 0}">
                                     <%-- Additional Fee Card --%>
                                     <div class="payment-type-card ${defaultPaymentType == 'ADDITIONAL_FEE' ? 'active' : ''}" 
-                                         onclick="selectPaymentType('ADDITIONAL_FEE', ${remainingAmount}, ${remainingAmount})"
+                                         onclick="selectPaymentType('ADDITIONAL_FEE', ${remainingAmount}, ${remainingAmount}, this)"
                                          style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                             <span class="material-symbols-outlined" style="font-size: 20px;">warning</span>
@@ -118,10 +147,10 @@
                                     </div>
                                 </c:if>
                                 
-                                <c:if test="${rentalPaid && excessAmount > 0}">
+                                 <c:if test="${(sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN') && rentalPaid && excessAmount > 0}">
                                     <%-- Refund Card --%>
                                     <div class="payment-type-card ${defaultPaymentType == 'REFUND' ? 'active' : ''}" 
-                                         onclick="selectPaymentType('REFUND', ${excessAmount != null ? excessAmount : 0}, ${remainingAmount})"
+                                         onclick="selectPaymentType('REFUND', ${excessAmount != null ? excessAmount : 0}, ${remainingAmount}, this)"
                                          style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                             <span class="material-symbols-outlined" style="font-size: 20px;">keyboard_return</span>
@@ -153,40 +182,118 @@
                                 <input type="text" id="amountDisplay" class="bk-form-input" required
                                        placeholder="0 đ"
                                        oninput="syncAmount(this)"
-                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary);">
-                                <input type="hidden" id="amount" name="amount" value="${defaultPaymentType == 'DEPOSIT' ? booking.depositAmount : (defaultPaymentType == 'REFUND' ? excessAmount : remainingAmount)}">
+                                       ${sessionScope.currentUser.role == 'CUSTOMER' ? 'readonly' : ''}
+                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary); ${sessionScope.currentUser.role == 'CUSTOMER' ? 'background-color: var(--surface-container-low);' : ''}">
+                                <input type="hidden" id="amount" name="amount" value="${defaultPaymentType == 'DEPOSIT' ? remainingDeposit : (defaultPaymentType == 'REFUND' ? excessAmount : remainingAmount)}">
                             </div>
                         </div>
 
                         <%-- Phương thức thanh toán --%>
+                        <input type="hidden" id="paymentMethod" name="paymentMethod" value="BANK_TRANSFER"/>
                         <div class="bk-form-group" style="margin-bottom: 20px; text-align: left;">
-                            <label class="bk-form-label" for="paymentMethod" style="font-weight: 700; margin-bottom: 8px;">Phương thức thanh toán</label>
+                            <label class="bk-form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">Phương thức thanh toán</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+                                <%-- Cash Card — always shown --%>
+                                <div id="method-card-cash" class="payment-method-card ${not empty defaultPaymentType ? '' : 'active'}"
+                                     onclick="selectPaymentMethod('CASH')"
+                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <span class="material-symbols-outlined" style="font-size: 22px; color: var(--primary);">payments</span>
+                                        <span style="font-weight: 700; font-size: 14px;">Tiền mặt</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Thanh toán trực tiếp tại quầy<br>Nhân viên xác nhận sau khi nhận tiền</div>
+                                </div>
+
+                                <%-- Bank Transfer Card — hidden for REFUND --%>
+                                <c:if test="${sessionScope.currentUser.role != 'STAFF' && sessionScope.currentUser.role != 'ADMIN'}">
+                                <div id="method-card-bank" class="payment-method-card"
+                                     onclick="selectPaymentMethod('BANK_TRANSFER')"
+                                     style="border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 16px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <span class="material-symbols-outlined" style="font-size: 22px; color: #2F5ACD;">qr_code_2</span>
+                                        <span style="font-weight: 700; font-size: 14px;">Chuyển khoản QR</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">Quét mã QR để chuyển khoản<br>Tự động nhận diện qua nội dung CK</div>
+                                </div>
+                                </c:if>
+
+                            </div>
+
+                            <%-- Cash Instructions Panel --%>
+                            <div id="cash-instructions-panel" style="display:none; margin-top: 16px; background: #F0FFF4; border: 1px solid #9AE6B4; border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #276749;">info</span>
+                                    <strong style="color: #276749; font-size: 14px;">Hướng dẫn thanh toán tiền mặt</strong>
+                                </div>
+                                <p style="font-size: 13px; color: #2F855A; margin: 0; line-height: 1.6;">
+                                    <c:choose>
+                                        <c:when test="${sessionScope.currentUser.role == 'CUSTOMER'}">
+                                            Vui lòng mang đúng số tiền đến quầy giao dịch.<br>
+                                            Nhân viên sẽ xác nhận và ghi nhận thanh toán của bạn.
+                                        </c:when>
+                                        <c:otherwise>
+                                            Nhận trực tiếp tiền mặt từ khách hàng.<br>
+                                            Vui lòng kiểm tra kỹ số tiền nhận được trước khi nhấn xác nhận.
+                                        </c:otherwise>
+                                    </c:choose>
+                                </p>
+                            </div>
+
+                            <%-- Bank Transfer Info Panel — same card style as cash instructions --%>
+                            <c:if test="${sessionScope.currentUser.role != 'STAFF' && sessionScope.currentUser.role != 'ADMIN'}">
+                            <div id="qr-panel" style="display:none; margin-top: 16px; background: #EBF8FF; border: 1px solid #90CDF4; border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #2B6CB0;">info</span>
+                                    <strong style="color: #2B6CB0; font-size: 14px;">Hướng dẫn thanh toán chuyển khoản</strong>
+                                </div>
+                                <p style="font-size: 13px; color: #2C5282; margin: 0 0 12px 0; line-height: 1.6;">
+                                    Nhấn <strong>"Xác nhận thanh toán"</strong> để hệ thống tạo mã giao dịch.<br>
+                                    Bạn sẽ được chuyển đến trang QR — quét mã để thanh toán tự động.
+                                </p>
+                                <c:if test="${not empty bankAccountNumber}">
+                                <div style="border-top: 1px dashed #90CDF4; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+                                    <div style="display:flex; justify-content:space-between; gap:8px;">
+                                        <span style="color:#4A5568; white-space:nowrap;">Ngân hàng:</span>
+                                        <span style="font-weight:600; text-align:right; color:#1A365D;">${not empty bankName ? bankName : '—'} <c:if test="${not empty bankBranch}">(${bankBranch})</c:if></span>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; gap:8px;">
+                                        <span style="color:#4A5568; white-space:nowrap;">Số tài khoản:</span>
+                                        <span style="font-weight:700; color:var(--primary); font-family:monospace; font-size:14px;">${bankAccountNumber}</span>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; gap:8px;">
+                                        <span style="color:#4A5568; white-space:nowrap;">Chủ tài khoản:</span>
+                                        <span style="font-weight:600; color:#1A365D;">${bankAccountName}</span>
+                                    </div>
+                                </div>
+                                </c:if>
+                            </div>
+                            </c:if>
+
+                        </div>
+
+                        <%-- Số tiền thực nhận (Staff/Admin only — for overpayment tracking) --%>
+                        <c:if test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">
+                        <div class="bk-form-group" style="margin-bottom: 20px; text-align: left;">
+                            <label class="bk-form-label" for="amountPaidDisplay" style="font-weight: 700; margin-bottom: 8px;">
+                                Số tiền thực nhận (VNĐ)
+                                <span style="font-size: 11px; color: var(--text-secondary); font-weight: 400;"> — để trống nếu bằng số tiền yêu cầu</span>
+                            </label>
                             <div class="bk-form-input-wrap">
-                                <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">credit_card</span>
-                                <select id="paymentMethod" name="paymentMethod" class="bk-form-select" required style="padding-left: 40px; font-size: 15px;">
-                                    <c:if test="${sessionScope.currentUser.role != 'CUSTOMER' && enabledMethods['CASH']}">
-                                        <option value="CASH">Tiền mặt</option>
-                                    </c:if>
-                                    <c:if test="${enabledMethods['BANK_TRANSFER']}">
-                                        <option value="BANK_TRANSFER" selected>Chuyển khoản</option>
-                                    </c:if>
-                                    <c:if test="${enabledMethods['VNPAY']}">
-                                        <option value="VNPAY">VNPay</option>
-                                    </c:if>
-                                    <c:if test="${enabledMethods['MOMO']}">
-                                        <option value="MOMO">Momo</option>
-                                    </c:if>
-                                    <c:if test="${enabledMethods['ZALOPAY']}">
-                                        <option value="ZALOPAY">ZaloPay</option>
-                                    </c:if>
-                                </select>
+                                <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">price_check</span>
+                                <input type="text" id="amountPaidDisplay" class="bk-form-input"
+                                       placeholder="Nhập số tiền thực nhận từ khách..."
+                                       oninput="syncAmountPaid(this)"
+                                       style="padding-left: 40px; font-size: 15px; font-weight: 600;"/>
+                                <input type="hidden" id="amountPaid" name="amountPaid" value=""/>
                             </div>
                         </div>
+                        </c:if>
 
                         <%-- Ghi chú giao dịch --%>
                         <div class="bk-form-group" style="margin-bottom: 24px; text-align: left;">
                             <label class="bk-form-label" for="notes" style="font-weight: 700; margin-bottom: 8px;">Ghi chú giao dịch</label>
-                            <textarea id="notes" name="notes" class="bk-form-textarea" rows="4" 
+                            <textarea id="notes" name="notes" class="bk-form-textarea" rows="3" 
                                       placeholder="Nhập chi tiết về giao dịch này..." style="padding: 12px; font-size: 15px; font-family: inherit; resize: none;"></textarea>
                         </div>
 
@@ -194,8 +301,8 @@
                         <div style="display: flex; gap: 16px; justify-content: flex-end; border-top: 1px solid var(--outline-variant); padding-top: 20px;">
                             <a href="${pageContext.request.contextPath}/bookings/detail?id=${booking.bookingId}" class="bk-btn bk-btn-outline" style="padding: 10px 24px;">Hủy bỏ</a>
                             <button type="submit" id="paySubmitBtn" class="bk-btn bk-btn-primary" 
-                                    ${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0 ? 'disabled' : ''}
-                                    style="padding: 10px 28px; ${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0 ? 'background: var(--outline-variant); border-color: var(--outline-variant); cursor: not-allowed;' : 'background: #2F5ACD; border-color: #2F5ACD;'}" 
+                                    ${(depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0) || (sessionScope.currentUser.role == 'CUSTOMER' && remainingAmount <= 0) ? 'disabled' : ''}
+                                    style="padding: 10px 28px; ${(depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0) || (sessionScope.currentUser.role == 'CUSTOMER' && remainingAmount <= 0) ? 'background: var(--outline-variant); border-color: var(--outline-variant); cursor: not-allowed;' : 'background: #2F5ACD; border-color: #2F5ACD;'}" 
                                     onclick="return prepareSubmit()">
                                 <c:choose>
                                     <c:when test="${depositPaid && rentalPaid && remainingAmount <= 0 && excessAmount <= 0}">
@@ -283,6 +390,35 @@
                                     <div style="font-size: 18px; font-weight: 800; color: #C9392D; margin-top: 2px;"><fmt:formatNumber value="${remainingAmount}" pattern="#,##0"/> đ</div>
                                 </div>
                             </div>
+
+                            <%-- Overpayment warning (Staff/Admin only) --%>
+                            <c:if test="${(sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN') && excessAmount > 0}">
+                            <div style="background: #FFF5F5; border: 1.5px solid #FC8181; border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #C53030;">warning</span>
+                                    <strong style="color: #C53030; font-size: 13px;">Phát hiện thanh toán thừa!</strong>
+                                </div>
+                                <div style="font-size: 12px; color: #742A2A; line-height: 1.6;">
+                                    Khách đã trả dư <strong><fmt:formatNumber value="${excessAmount}" pattern="#,##0"/> đ</strong><br>
+                                    Vui lòng hoàn tiền mặt cho khách hàng.
+                                </div>
+                            </div>
+                            </c:if>
+
+                            <%-- Dynamic overpayment panel (JS-driven, shown when Staff enters amountPaid > amount) --%>
+                            <div id="overpayment-warning" style="display:none; background: #FFF5F5; border: 1.5px solid #FC8181; border-radius: 12px; padding: 16px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px; color: #C53030;">warning</span>
+                                    <strong style="color: #C53030; font-size: 13px;">Số tiền nhận vượt yêu cầu!</strong>
+                                </div>
+                                <div style="font-size: 12px; color: #742A2A; line-height: 1.8;">
+                                    Yêu cầu: <strong id="ow-required">—</strong><br>
+                                    Đã nhận: <strong id="ow-paid">—</strong><br>
+                                    Cần hoàn: <strong id="ow-refund" style="color:#C53030;">—</strong><br>
+                                    <span style="font-size:11px;">→ Xử lý bằng giao dịch Hoàn tiền (Tiền mặt)</span>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -311,53 +447,25 @@
             </div>
         </c:when>
 
-        <%-- CASE 2: GLOBAL TRANSACTION LOGS FOR STAFF/ADMIN ONLY --%>
         <c:otherwise>
-            <div class="bk-card">
-                <div class="bk-card-title" style="margin-bottom: 20px;">
-                    <span class="material-symbols-outlined">history</span>
-                    <span>Nhật Ký Giao Dịch Thanh Toán Hệ Thống</span>
-                </div>
-                
-                <div class="bk-table-toolbar" style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                    <div class="bk-table-search" style="width: 320px;">
-                        <span class="material-symbols-outlined">search</span>
-                        <input type="text" id="searchInput" placeholder="Tìm kiếm theo mã, số tiền, ngày thanh toán,..." oninput="filterTable()">
+
+            <%-- CASE 2: GLOBAL TRANSACTION LOG --%>
+            <div class="bk-card" style="padding: 24px; margin-top: 28px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined" style="color: var(--primary);">history</span>
+                        <span style="font-size: 16px; font-weight: 700; color: var(--primary);">Lịch sử thanh toán & Giao dịch</span>
                     </div>
-                    
-                    <select id="filterType" onchange="filterTable()" class="bk-form-select" style="width: 200px; height: 42px; border-radius: 8px; font-size: 14px; border: 1px solid var(--outline-variant); padding: 0 12px; background: var(--bg-white);">
-                        <option value="All">Tất cả loại giao dịch</option>
-                        <option value="DEPOSIT">Đặt cọc (DEPOSIT)</option>
-                        <option value="RENTAL">Tiền thuê xe (RENTAL)</option>
-                        <option value="ADDITIONAL_FEE">Phụ phí (ADDITIONAL_FEE)</option>
-                        <option value="REFUND">Hoàn tiền (REFUND)</option>
-                    </select>
-                    
-                    <select id="filterMethod" onchange="filterTable()" class="bk-form-select" style="width: 200px; height: 42px; border-radius: 8px; font-size: 14px; border: 1px solid var(--outline-variant); padding: 0 12px; background: var(--bg-white);">
-                        <option value="All">Tất cả phương thức</option>
-                        <option value="CASH">Tiền mặt (CASH)</option>
-                        <option value="BANK_TRANSFER">Chuyển khoản (BANK_TRANSFER)</option>
-                        <option value="VNPAY">VNPay</option>
-                        <option value="MOMO">Momo</option>
-                        <option value="ZALOPAY">ZaloPay</option>
-                    </select>
-                    
-                    <select id="filterStatus" onchange="filterTable()" class="bk-form-select" style="width: 200px; height: 42px; border-radius: 8px; font-size: 14px; border: 1px solid var(--outline-variant); padding: 0 12px; background: var(--bg-white);">
-                        <option value="All">Tất cả trạng thái</option>
-                        <option value="COMPLETED">Thành công (COMPLETED)</option>
-                        <option value="PENDING">Chờ xử lý (PENDING)</option>
-                        <option value="FAILED">Thất bại (FAILED)</option>
-                    </select>
                 </div>
 
-                <div class="bk-table-container">
-                    <table class="bk-table" id="paymentTable" style="width: 100%; border-collapse: collapse;">
+                <div class="bk-table-responsive">
+                    <table class="bk-table" id="paymentTable">
                         <thead>
-                            <tr style="background: var(--surface-container-low); border-bottom: 1px solid var(--outline-variant);">
-                                <th style="padding: 12px 16px;">Mã GD</th>
-                                <th style="padding: 12px 16px;">Đơn Hàng & Hợp Đồng</th>
+                            <tr style="border-bottom: 2px solid var(--outline-variant); text-align: left;">
+                                <th style="padding: 12px 16px;">Mã Giao Dịch</th>
+                                <th style="padding: 12px 16px;">Đơn Thuê</th>
                                 <th style="padding: 12px 16px;">Số Tiền</th>
-                                <th style="padding: 12px 16px;">Loại Giao Dịch</th>
+                                <th style="padding: 12px 16px;">Loại</th>
                                 <th style="padding: 12px 16px;">Phương Thức</th>
                                 <th style="padding: 12px 16px;">Trạng Thái</th>
                                 <th style="padding: 12px 16px;">Ngày Thanh Toán</th>
@@ -400,11 +508,8 @@
                                     </td>
                                     <td style="padding: 12px 16px; font-weight: 500;">
                                         <c:choose>
-                                            <c:when test="${p.paymentMethod == 'CASH'}">Tiền mặt</c:when>
-                                            <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">Chuyển khoản</c:when>
-                                            <c:when test="${p.paymentMethod == 'VNPAY'}">VNPay</c:when>
-                                            <c:when test="${p.paymentMethod == 'MOMO'}">Momo</c:when>
-                                            <c:when test="${p.paymentMethod == 'ZALOPAY'}">ZaloPay</c:when>
+                                            <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
+                                            <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
                                             <c:otherwise>${p.paymentMethod}</c:otherwise>
                                         </c:choose>
                                     </td>
@@ -423,6 +528,7 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Phân trang -->
                 <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
                     <div style="font-size:13px; color:var(--on-surface-variant);">
@@ -444,7 +550,6 @@
             </div>
         </c:otherwise>
     </c:choose>
-
 </div>
 
 <script>
@@ -456,37 +561,119 @@ function formatVND(val) {
 
 // Sync display input -> hidden amount field
 function syncAmount(input) {
-    // Remove all non-digit chars
     var raw = input.value.replace(/[^\d]/g, '');
-    // Update hidden field with plain number
     document.getElementById('amount').value = raw;
-    // Re-format display
     if (raw) {
         input.value = Number(raw).toLocaleString('vi-VN') + ' đ';
-        // Keep caret at end
         setTimeout(function() {
             input.setSelectionRange(input.value.length - 2, input.value.length - 2);
         }, 0);
     } else {
         input.value = '';
     }
+    updateQrAmount();
 }
 
-function selectPaymentType(type, val, remain) {
+// Sync amountPaid display -> hidden field + show overpayment warning
+function syncAmountPaid(input) {
+    var raw = input.value.replace(/[^\d]/g, '');
+    var hiddenField = document.getElementById('amountPaid');
+    if (hiddenField) hiddenField.value = raw;
+    if (raw) {
+        input.value = Number(raw).toLocaleString('vi-VN') + ' đ';
+        setTimeout(function() {
+            input.setSelectionRange(input.value.length - 2, input.value.length - 2);
+        }, 0);
+    } else {
+        input.value = '';
+    }
+    checkOverpayment();
+}
+
+function checkOverpayment() {
+    var required = Number(document.getElementById('amount').value) || 0;
+    var paidField = document.getElementById('amountPaid');
+    if (!paidField) return;
+    var paid = Number(paidField.value) || 0;
+    var panel = document.getElementById('overpayment-warning');
+    if (!panel) return;
+    if (paid > 0 && paid > required) {
+        document.getElementById('ow-required').textContent = formatVND(required);
+        document.getElementById('ow-paid').textContent = formatVND(paid);
+        document.getElementById('ow-refund').textContent = formatVND(paid - required);
+        panel.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function updateQrAmount() {
+    var raw = document.getElementById('amount').value;
+    var display = document.getElementById('qrAmountDisplay');
+    if (display) {
+        display.textContent = raw ? formatVND(Number(raw)) : '—';
+    }
+    // Rebuild QR image URL if bankBin is available
+    var qrImg = document.getElementById('qrImage');
+    if (qrImg && raw) {
+        var src = qrImg.src.replace(/amount=[0-9]*/g, 'amount=' + raw);
+        qrImg.src = src;
+    }
+}
+
+// Payment method selection
+function selectPaymentMethod(method) {
+    document.getElementById('paymentMethod').value = method;
+    var cards = document.querySelectorAll('.payment-method-card');
+    cards.forEach(function(c) { c.classList.remove('active'); });
+    var target = document.getElementById('method-card-' + method.toLowerCase().replace('_', '-'));
+    if (!target) target = document.getElementById('method-card-bank');
+    if (target) target.classList.add('active');
+
+    var cashPanel = document.getElementById('cash-instructions-panel');
+    var qrPanel   = document.getElementById('qr-panel');
+    if (method === 'CASH') {
+        if (cashPanel) cashPanel.style.display = 'block';
+        if (qrPanel)   qrPanel.style.display   = 'none';
+    } else {
+        if (cashPanel) cashPanel.style.display = 'none';
+        if (qrPanel)   qrPanel.style.display   = 'block';
+        updateQrAmount();
+    }
+}
+
+function selectPaymentType(type, val, remain, element) {
     document.getElementById('selectedPaymentType').value = type;
     
-    // Toggle active visual class
     var cards = document.querySelectorAll('.payment-type-card');
-    cards.forEach(function(card) {
-        card.classList.remove('active');
-    });
-    
-    var clickedCard = event.currentTarget;
+    cards.forEach(function(card) { card.classList.remove('active'); });
+    var clickedCard = element || event.currentTarget;
     clickedCard.classList.add('active');
     
-    // Set formatted value in display input and raw value in hidden field
     document.getElementById('amount').value = val;
     document.getElementById('amountDisplay').value = val ? Number(val).toLocaleString('vi-VN') + ' đ' : '';
+
+    // For REFUND: hide Bank Transfer option, force CASH
+    var bankCard = document.getElementById('method-card-bank');
+    var isStaffOrAdmin = ${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'};
+    if (type === 'REFUND' || isStaffOrAdmin) {
+        if (bankCard) bankCard.style.display = 'none';
+        selectPaymentMethod('CASH');
+    } else {
+        if (bankCard) bankCard.style.display = 'block';
+    }
+
+    updateQrAmount();
+}
+
+function copyTransferDesc() {
+    var code = document.getElementById('transferDescDisplay');
+    if (code) {
+        navigator.clipboard.writeText(code.textContent.trim()).then(function() {
+            var btn = code.nextElementSibling;
+            if (btn) { var orig = btn.textContent; btn.textContent = '✓ Đã sao chép'; setTimeout(function(){ btn.textContent = orig; }, 1500); }
+        });
+    }
 }
 
 // Validate before submit
@@ -637,6 +824,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('paymentTable')) {
         filterTable();
     }
+
+    // Trigger click on the active payment type card to initialize inputs
+    var activeCard = document.querySelector('.payment-type-card.active');
+    if (activeCard) {
+        activeCard.click();
+    }
+
+    // Initialize payment method display based on default payment type
+    var defaultType = '${defaultPaymentType}';
+    var isStaffOrAdmin = ${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'};
+    if (defaultType === 'REFUND' || isStaffOrAdmin) {
+        selectPaymentMethod('CASH');
+    } else {
+        selectPaymentMethod('BANK_TRANSFER');
+    }
 });
 </script>
 
@@ -650,6 +852,18 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .payment-type-card.active .radio-inner {
     background: #2F5ACD !important;
+}
+.payment-method-card {
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+.payment-method-card:hover {
+    border-color: var(--primary) !important;
+    background: #F4F7FE;
+}
+.payment-method-card.active {
+    border-color: #2F5ACD !important;
+    background: #F4F7FE;
 }
 </style>
 

@@ -182,7 +182,9 @@
                             <th style="padding: 8px 12px;">Loại</th>
                             <th style="padding: 8px 12px;">Số tiền</th>
                             <th style="padding: 8px 12px;">Phương thức</th>
+                            <th style="padding: 8px 12px;">Trạng thái</th>
                             <th style="padding: 8px 12px;">Ngày thanh toán</th>
+                            <th style="padding: 8px 12px;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -201,8 +203,33 @@
                                 <td style="padding: 8px 12px; font-weight:700; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">
                                     <c:if test="${p.paymentType == 'REFUND'}">-</c:if><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ
                                 </td>
-                                <td style="padding: 8px 12px;">${p.paymentMethod}</td>
-                                <td style="padding: 8px 12px; color:var(--text-secondary);">${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>
+                                <td style="padding: 8px 12px;">
+                                    <c:choose>
+                                        <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
+                                        <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
+                                        <c:otherwise>${p.paymentMethod}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px;">
+                                    <c:choose>
+                                        <c:when test="${p.status == 'COMPLETED'}"><span class="bk-badge bk-badge-progress" style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(5,205,153,0.1); color: #039C74;"><span class="bk-badge-dot" style="width:6px; height:6px; border-radius:50%; background:#039C74;"></span> Thành công</span></c:when>
+                                        <c:when test="${p.status == 'PENDING'}"><span class="bk-badge bk-badge-pending" style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(245,158,11,0.1); color: #D97706;"><span class="bk-badge-dot" style="width:6px; height:6px; border-radius:50%; background:#D97706;"></span> Chờ xử lý</span></c:when>
+                                        <c:otherwise><span class="bk-badge bk-badge-rejected" style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(239,68,68,0.1); color: #DC2626;"><span class="bk-badge-dot" style="width:6px; height:6px; border-radius:50%; background:#DC2626;"></span> Thất bại</span></c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px; color:var(--text-secondary);">${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : '—'}</td>
+                                <td style="padding: 8px 12px;">
+                                    <c:if test="${p.status == 'PENDING' && p.paymentMethod == 'CASH'}">
+                                        <button type="button"
+                                                onclick="openApproveModal('${p.paymentId}', '${p.bookingId}', '${p.amount}')"
+                                                class="bk-btn bk-btn-sm" style="padding: 4px 8px; font-size: 11px; font-weight: 600; background: #05CD99; border-color: #05CD99; color: #fff; border-radius:4px; cursor:pointer;">
+                                            Duyệt
+                                        </button>
+                                    </c:if>
+                                    <c:if test="${p.status == 'PENDING' && p.paymentMethod == 'BANK_TRANSFER'}">
+                                        <span style="font-size:11px; color: var(--text-secondary); font-style:italic;">Chờ webhook</span>
+                                    </c:if>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>
@@ -557,6 +584,25 @@ document.getElementById('modalConfirmBtn').onclick = function() {
     </div>
 </div>
 
+<%-- Custom Approve Modal --%>
+<div id="approvePaymentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background: var(--surface); border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position:relative;">
+        <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 16px;">
+            <span class="material-symbols-outlined" style="font-size:28px; color: #05CD99;">payments</span>
+            <strong style="font-size: 16px; color: var(--text-primary);">Xác nhận nhận tiền mặt</strong>
+        </div>
+        <p id="approveModalDesc" style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;"></p>
+        <form id="approvePaymentForm" method="POST" action="${pageContext.request.contextPath}/payments/approve">
+            <input type="hidden" id="approvePaymentId" name="paymentId" value=""/>
+            <input type="hidden" id="approveBookingId" name="bookingId" value=""/>
+            <div style="display:flex; gap: 12px; justify-content:flex-end;">
+                <button type="button" onclick="closeApproveModal()" class="bk-btn bk-btn-outline" style="padding: 8px 20px;">Hủy bỏ</button>
+                <button type="submit" class="bk-btn" style="padding: 8px 20px; background: #05CD99; border-color: #05CD99; color: #fff; font-weight: 700;">Xác nhận đã nhận tiền</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openCancelModal() {
     var modal = document.getElementById('customCancelModal');
@@ -583,11 +629,29 @@ function submitCancel() {
     document.getElementById('cancelForm').submit();
 }
 
+function openApproveModal(paymentId, bookingId, amount) {
+    var formatted = Number(amount).toLocaleString('vi-VN') + ' đ';
+    document.getElementById('approveModalDesc').textContent =
+        'Xác nhận bạn đã nhận đủ tiền mặt ' + formatted + ' từ khách hàng cho giao dịch PAY-' + paymentId + '? Hành động này không thể hoàn tác.';
+    document.getElementById('approvePaymentId').value = paymentId;
+    document.getElementById('approveBookingId').value = bookingId;
+    var modal = document.getElementById('approvePaymentModal');
+    modal.style.display = 'flex';
+}
+
+function closeApproveModal() {
+    document.getElementById('approvePaymentModal').style.display = 'none';
+}
+
 // Support clicking outside to close
 window.addEventListener('click', function(event) {
-    var modal = document.getElementById('customCancelModal');
-    if (event.target === modal) {
+    var cancelModal = document.getElementById('customCancelModal');
+    if (event.target === cancelModal) {
         closeCancelModal();
+    }
+    var approveModal = document.getElementById('approvePaymentModal');
+    if (event.target === approveModal) {
+        closeApproveModal();
     }
 });
 </script>

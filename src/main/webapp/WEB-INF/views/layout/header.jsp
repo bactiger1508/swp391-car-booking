@@ -57,6 +57,9 @@
                 <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
                     <span class="material-symbols-outlined">policy</span> Chính sách
                 </a>
+                <a href="${pageContext.request.contextPath}/payments/my" class="bk-sidebar-link ${_cp == '/payments/my' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán
+                </a>
             </c:if>
 
             <c:if test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">

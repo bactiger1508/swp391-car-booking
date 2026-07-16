@@ -75,6 +75,12 @@ public class AuthFilter implements Filter {
             }
         }
 
+        // Allow public API endpoints (e.g. payment webhooks)
+        if (path.startsWith("/api/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // Allow public URLs
         if (PUBLIC_URLS.contains(path)) {
             chain.doFilter(request, response);
