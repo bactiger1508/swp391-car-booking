@@ -12,22 +12,28 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+/*
+ * Name: VerifyCustomerProfileServlet
+ * @Author: AnhNNHE160896
+ * Date: 23/05/2026
+ * Version: 1.0
+ * Description: Handles HTTP requests and responses for VerifyCustomerProfileServlet.
+ */
+
 /**
  * Verify Customer Profile Controller
  */
 @WebServlet("/user/customer-profiles")
 public class VerifyCustomerProfileServlet extends HttpServlet {
 
-    private final VerifyCustomerProfileService service
-            = new VerifyCustomerProfileService();
+    private final VerifyCustomerProfileService service = new VerifyCustomerProfileService();
 
     @Override
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        User currentUser
-                = (User) request.getSession().getAttribute("currentUser");
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
 
         if (currentUser == null) {
 
@@ -81,8 +87,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        User currentUser
-                = (User) request.getSession().getAttribute("currentUser");
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
 
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -91,8 +96,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
 
         String action = request.getParameter("action");
 
-        int profileId
-                = Integer.parseInt(request.getParameter("profileId"));
+        int profileId = Integer.parseInt(request.getParameter("profileId"));
 
         try {
 
@@ -104,7 +108,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/user/customer-profiles?success=verified");
+                                + "/user/customer-profiles?success=verified");
 
             } else if ("reject".equals(action)) {
 
@@ -114,7 +118,7 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
 
                 response.sendRedirect(
                         request.getContextPath()
-                        + "/user/customer-profiles?success=rejected");
+                                + "/user/customer-profiles?success=rejected");
 
             }
 
@@ -125,7 +129,8 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
                 request.setAttribute("customerName", service.getCustomerName(profile.getUserId()));
                 request.setAttribute("customerEmail", service.getCustomerEmail(profile.getUserId()));
                 request.setAttribute("error", e.getMessage());
-                request.getRequestDispatcher("/WEB-INF/views/user/customer-profile-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/user/customer-profile-detail.jsp").forward(request,
+                        response);
             } catch (Exception ex) {
                 response.sendRedirect(request.getContextPath() + "/user/customer-profiles?error=SystemError");
             }
@@ -170,11 +175,9 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        int profileId
-                = Integer.parseInt(request.getParameter("id"));
+        int profileId = Integer.parseInt(request.getParameter("id"));
 
-        CustomerProfile profile
-                = service.getProfile(profileId);
+        CustomerProfile profile = service.getProfile(profileId);
 
         request.setAttribute("profile", profile);
 
