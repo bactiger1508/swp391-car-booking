@@ -7,6 +7,7 @@ USE CarRentalDB;
 GO
 
 -- Drop tables in reverse dependency order
+IF OBJECT_ID('dbo.notifications', 'U') IS NOT NULL DROP TABLE notifications;
 IF OBJECT_ID('dbo.audit_logs', 'U') IS NOT NULL DROP TABLE audit_logs;
 IF OBJECT_ID('dbo.reviews', 'U') IS NOT NULL DROP TABLE reviews;
 IF OBJECT_ID('dbo.vehicle_returns', 'U') IS NOT NULL DROP TABLE vehicle_returns;

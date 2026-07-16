@@ -355,6 +355,26 @@ CREATE TABLE audit_logs (
 GO
 
 -- ============================================================
+-- 15. NOTIFICATIONS
+-- System notifications for users (bookings, payments, etc.)
+-- ============================================================
+CREATE TABLE notifications (
+    notification_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id         INT             NOT NULL,
+    title           NVARCHAR(200)   NOT NULL,
+    message         NVARCHAR(1000)  NOT NULL,
+    notification_type VARCHAR(30)   NOT NULL,  -- BOOKING, PAYMENT, CONTRACT, HANDOVER, SYSTEM
+    reference_type  VARCHAR(30)     NULL,      -- BOOKING, PAYMENT, CONTRACT, RENTAL_RECORD
+    reference_id    INT             NULL,      -- ID of related record
+    is_read         BIT             NOT NULL DEFAULT 0,
+    read_at         DATETIME2       NULL,
+    created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+GO
+
+-- ============================================================
 -- INDEXES for performance
 -- ============================================================
 CREATE INDEX IX_bookings_customer ON bookings(customer_id);
@@ -365,6 +385,9 @@ CREATE INDEX IX_cars_status ON cars(status);
 CREATE INDEX IX_payments_booking ON payments(booking_id);
 CREATE INDEX IX_audit_logs_user ON audit_logs(user_id);
 CREATE INDEX IX_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IX_notifications_user ON notifications(user_id);
+CREATE INDEX IX_notifications_is_read ON notifications(is_read);
+CREATE INDEX IX_notifications_created ON notifications(created_at);
 GO
 
 PRINT 'Schema created successfully!';
