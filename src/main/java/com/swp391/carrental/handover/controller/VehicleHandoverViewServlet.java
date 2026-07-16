@@ -36,6 +36,15 @@ public class VehicleHandoverViewServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_HANDOVER");
+        boolean isCustomer = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "VIEW_BOOKING");
+
+        if (!isStaffOrAdmin && !isCustomer) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String carIdStr = request.getParameter("carId");
@@ -44,6 +53,12 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                 int carId = Integer.parseInt(carIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
+                if (booking != null) {
+                    if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    }
+                }
                 Car car = carDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
