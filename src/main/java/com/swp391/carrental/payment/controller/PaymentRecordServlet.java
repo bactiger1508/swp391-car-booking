@@ -19,12 +19,11 @@ import com.swp391.carrental.user.model.User;
 /*
  * Name: PaymentRecordServlet
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.1
+ * Date: 17/07/2026
+ * Version: 1.2
  * Description: Handles HTTP requests and responses for PaymentRecordServlet.
- *              v1.1 — loads bank config from PolicyService for QR generation;
- *                     reads amountPaid from form for overpayment tracking;
- *                     enforces REFUND=CASH rule before service call.
+ *              v1.1 — loads bank config from PolicyService for QR generation.
+ *              v1.2 — integrates amountPaid overpayment tracking and dynamic permission-based access checks.
  */
 
 

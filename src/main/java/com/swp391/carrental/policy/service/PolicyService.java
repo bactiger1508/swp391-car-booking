@@ -10,9 +10,9 @@ import com.swp391.carrental.policy.model.PolicySetting;
 /*
  * Name: PolicyService
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Contains business logic for PolicyService.
+ * Date: 17/07/2026
+ * Version: 1.1
+ * Description: Contains business logic for PolicyService with thread-safe volatile static cache implementation.
  */
 
 

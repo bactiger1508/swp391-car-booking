@@ -13,9 +13,9 @@ import com.swp391.carrental.user.constant.Role;
 /*
  * Name: PolicySettingsServlet
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for PolicySettingsServlet.
+ * Date: 17/07/2026
+ * Version: 1.1
+ * Description: Handles HTTP requests and responses for PolicySettingsServlet, supporting dynamic policy creation and updates.
  */
 
 @WebServlet(name = "PolicySettingsServlet", urlPatterns = { "/policies" })

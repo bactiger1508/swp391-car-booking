@@ -8,6 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/*
+ * Name: EmailService
+ * @Author: AnhNNHE160896
+ * Date: 17/07/2026
+ * Version: 1.1
+ * Description: Email sending utility supporting forgotten password verification emails and environment variable configs.
+ */
 public class EmailService {
     private static final Properties config = new Properties();
 

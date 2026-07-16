@@ -26,9 +26,9 @@ import com.swp391.carrental.payment.model.Payment;
 /*
  * Name: BookingService
  * @Author: BacBXHE186736
- * Date: 29/05/2026
- * Version: 2.0
- * Description: Business logic for booking operations including create, view, approve, reject, cancel.
+ * Date: 17/07/2026
+ * Version: 2.1
+ * Description: Business logic for booking operations including create, view, approve, reject, and cancellation deposit refund.
  */
 
 
