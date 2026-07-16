@@ -18,6 +18,11 @@ import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.user.dao.CustomerProfileDAO;
 import com.swp391.carrental.user.model.CustomerProfile;
 
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import com.swp391.carrental.payment.dao.PaymentDAO;
+import com.swp391.carrental.payment.model.Payment;
+
 /*
  * Name: BookingService
  * @Author: BacBXHE186736
@@ -35,6 +40,7 @@ public class BookingService {
 
     private final BookingDAO bookingDAO = new BookingDAO();
     private final CarDAO carDAO = new CarDAO();
+    private final PaymentDAO paymentDAO = new PaymentDAO();
 
     /** Get a single booking by ID */
     public Booking getBookingById(int bookingId) {
@@ -171,10 +177,6 @@ public class BookingService {
         }
     }
 
-    /**
-     * Cancel a booking.
-     * Only PENDING or CONFIRMED bookings can be cancelled.
-     */
     public boolean cancelBooking(int bookingId, String reason) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
@@ -185,6 +187,51 @@ public class BookingService {
             String status = booking.getStatus();
             if (!BookingStatus.PENDING.equals(status) && !BookingStatus.CONFIRMED.equals(status)) {
                 throw new AppException("Không thể hủy booking đang ở trạng thái " + status + ".");
+            }
+
+            // Check if there are any completed deposit payments to calculate refund
+            List<Payment> payments = paymentDAO.findByBookingId(bookingId);
+            Payment completedDeposit = null;
+            for (Payment p : payments) {
+                if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType()) && "COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    completedDeposit = p;
+                    break;
+                }
+            }
+
+            if (completedDeposit != null) {
+                // Calculate hours between now and start date
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime startDate = booking.getStartDate();
+                long hours = ChronoUnit.HOURS.between(now, startDate);
+
+                BigDecimal refundAmount = BigDecimal.ZERO;
+                int refundPercent = 0;
+
+                if (hours >= 48) {
+                    refundPercent = 100;
+                    refundAmount = completedDeposit.getAmount();
+                } else if (hours >= 24) {
+                    refundPercent = 50;
+                    refundAmount = completedDeposit.getAmount().multiply(new BigDecimal("0.5"));
+                } else {
+                    refundPercent = 0;
+                    refundAmount = BigDecimal.ZERO;
+                }
+
+                // If a refund is applicable, create a PENDING REFUND payment record
+                if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    Payment refundPayment = new Payment();
+                    refundPayment.setBookingId(bookingId);
+                    refundPayment.setAmount(refundAmount);
+                    refundPayment.setPaymentType("REFUND");
+                    refundPayment.setStatus("PENDING");
+                    refundPayment.setNotes("Hoàn tiền cọc " + refundPercent + "% do hủy đơn trước " + hours + " giờ. Lý do: " + reason);
+                    paymentDAO.insert(refundPayment);
+                    
+                    // Mark the original deposit as REFUNDED to represent it clearly in payment lists
+                    paymentDAO.updateStatus(completedDeposit.getPaymentId(), "REFUNDED");
+                }
             }
 
             return bookingDAO.cancel(bookingId, reason);
