@@ -66,7 +66,8 @@ public class ContractManagementServlet extends HttpServlet {
                     // Contract existing
                     if (contract != null) {
                         // Authorization check: CUSTOMER can only view their own contract
-                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin && contract.getCustomerId() != currentUser.getUserId()) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
                             return;
                         }
@@ -80,14 +81,16 @@ public class ContractManagementServlet extends HttpServlet {
                     // Booking have a contract
                     if (contract != null) {
                         // Authorization check: CUSTOMER can only view their own contract
-                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin && contract.getCustomerId() != currentUser.getUserId()) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
                             return;
                         }
                         booking = bookingService.getBookingById(contract.getBookingId());
                     } else {
                         // Draft contract - only staff/admin can create a contract
-                        if ("CUSTOMER".equals(currentUser.getRole())) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hợp đồng mới.");
                             return;
                         }
@@ -135,7 +138,8 @@ public class ContractManagementServlet extends HttpServlet {
         } // Display contract management page
         else {
             java.util.List<com.swp391.carrental.contract.model.RentalContract> contracts;
-            if ("CUSTOMER".equals(currentUser.getRole())) {
+            boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+            if (!isStaffOrAdmin) {
                 contracts = contractService.getContractsByCustomerId(currentUser.getUserId());
             } else {
                 contracts = contractService.getAllContracts();
@@ -178,6 +182,12 @@ public class ContractManagementServlet extends HttpServlet {
         // Require authentication
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT")
+                && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "UPDATE_CONTRACT")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
             return;
         }
 
