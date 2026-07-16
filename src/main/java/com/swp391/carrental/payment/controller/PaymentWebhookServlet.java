@@ -26,6 +26,14 @@ public class PaymentWebhookServlet extends HttpServlet {
     private final PaymentService paymentService = new PaymentService();
 
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json; charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().write("{\"success\":true,\"message\":\"Payment Webhook endpoint is active (Use POST to send webhook payloads)\"}");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
