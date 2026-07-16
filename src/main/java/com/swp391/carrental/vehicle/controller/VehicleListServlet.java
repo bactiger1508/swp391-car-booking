@@ -27,7 +27,30 @@ public class VehicleListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Car> cars = vehicleService.getAllCars();
+        String startParam = request.getParameter("startDate");
+        String endParam = request.getParameter("endDate");
+        List<Car> cars;
+
+        if (startParam != null && !startParam.isEmpty() && endParam != null && !endParam.isEmpty()) {
+            try {
+                java.time.LocalDate startDate = java.time.LocalDate.parse(startParam);
+                java.time.LocalDate endDate = java.time.LocalDate.parse(endParam);
+                
+                com.swp391.carrental.vehicle.service.AvailabilityService availabilityService = 
+                    new com.swp391.carrental.vehicle.service.AvailabilityService();
+                
+                // Fetch cars available in this period
+                cars = availabilityService.getAvailableCars(startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+                
+                request.setAttribute("startDate", startParam);
+                request.setAttribute("endDate", endParam);
+            } catch (Exception e) {
+                cars = vehicleService.getAllCars();
+            }
+        } else {
+            cars = vehicleService.getAllCars();
+        }
+
         request.setAttribute("cars", cars);
         request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(cars));
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-list.jsp").forward(request, response);
