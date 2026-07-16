@@ -18,19 +18,20 @@ import com.swp391.carrental.user.constant.Role;
  * Description: Handles HTTP requests and responses for PolicySettingsServlet.
  */
 
-
-@WebServlet(name = "PolicySettingsServlet", urlPatterns = {"/policies"})
+@WebServlet(name = "PolicySettingsServlet", urlPatterns = { "/policies" })
 public class PolicySettingsServlet extends HttpServlet {
     private final PolicyService policyService = new PolicyService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         request.setAttribute("policies", policyService.getAllPolicies());
         request.getRequestDispatcher("/WEB-INF/views/policy/policy-settings.jsp").forward(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute("currentUser");
         if (user == null || (!Role.ADMIN.equals(user.getRole()) && !Role.STAFF.equals(user.getRole()))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
@@ -43,7 +44,8 @@ public class PolicySettingsServlet extends HttpServlet {
         if (policyKey != null && !policyKey.trim().isEmpty() && policyValue != null && !policyValue.trim().isEmpty()) {
             try {
                 policyService.updatePolicy(policyKey.trim(), policyValue.trim(), user.getUserId());
-                request.getSession().setAttribute("successMessage", "Cập nhật chính sách '" + policyKey + "' thành công!");
+                request.getSession().setAttribute("successMessage",
+                        "Cập nhật chính sách '" + policyKey + "' thành công!");
             } catch (Exception e) {
                 request.getSession().setAttribute("errorMessage", "Lỗi cập nhật: " + e.getMessage());
             }
@@ -54,4 +56,3 @@ public class PolicySettingsServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/policies");
     }
 }
-
