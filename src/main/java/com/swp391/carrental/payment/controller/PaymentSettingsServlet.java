@@ -38,11 +38,7 @@ public class PaymentSettingsServlet extends HttpServlet {
     // Policy keys for payment methods (toggle on/off)
     private static final String[] METHOD_KEYS = {
         "PAYMENT_METHOD_CASH_ENABLED",
-        "PAYMENT_METHOD_BANK_TRANSFER_ENABLED",
-        "PAYMENT_METHOD_CARD_ENABLED",
-        "PAYMENT_METHOD_MOMO_ENABLED",
-        "PAYMENT_METHOD_VNPAY_ENABLED",
-        "PAYMENT_METHOD_ZALOPAY_ENABLED"
+        "PAYMENT_METHOD_BANK_TRANSFER_ENABLED"
     };
 
     @Override

@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%
@@ -190,6 +190,26 @@
                     <button type="button" class="btn btn-outline" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 8px;">
                         <span class="material-symbols-outlined" style="font-size: 20px; vertical-align: middle;">print</span> In hợp đồng
                     </button>
+                    
+                    <%-- VAT Invoice Actions --%>
+                    <c:if test="${contract.status == 'COMPLETED' && totalPaid >= contract.totalAmount}">
+                        <c:choose>
+                            <c:when test="${not empty vatInvoice}">
+                                <a href="${pageContext.request.contextPath}/contracts/vat-invoice/detail?contractId=${contract.contractId}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; background-color: var(--info, #17a2b8); border-color: var(--info, #17a2b8);">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">receipt</span> Xem hóa đơn VAT
+                                </a>
+                            </c:when>
+                            <c:when test="${empty vatInvoice && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
+                                <form action="${pageContext.request.contextPath}/contracts/vat-invoice/create" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="contractId" value="${contract.contractId}"/>
+                                    <button type="submit" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <span class="material-symbols-outlined" style="font-size: 20px;">description</span> Tạo hóa đơn VAT
+                                    </button>
+                                </form>
+                            </c:when>
+                        </c:choose>
+                    </c:if>
+
                     <c:if test="${contract.status == 'DRAFT' && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
                         <c:if test="${editMode != true}">
                             <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}&edit=true" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
