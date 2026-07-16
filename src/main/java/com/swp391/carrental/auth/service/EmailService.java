@@ -23,14 +23,14 @@ public class EmailService {
                 .getClassLoader()
                 .getResourceAsStream("mail.properties")) {
 
-            if (input == null) {
-                throw new RuntimeException("Cannot find mail.properties");
+            if (input != null) {
+                config.load(input);
+            } else {
+                System.out.println("Warning: mail.properties not found on classpath, relying entirely on Environment Variables.");
             }
 
-            config.load(input);
-
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load mail.properties", e);
+            System.err.println("Warning: Failed to load mail.properties: " + e.getMessage());
         }
     }
 

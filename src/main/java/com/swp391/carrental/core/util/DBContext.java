@@ -30,12 +30,11 @@ public class DBContext {
     static {
         try (InputStream input = DBContext.class.getClassLoader()
                 .getResourceAsStream("db.properties")) {
-            if (input == null) {
-                throw new RuntimeException(
-                        "Cannot find db.properties on classpath. "
-                        + "Make sure src/main/resources/db.properties exists.");
+            if (input != null) {
+                props.load(input);
+            } else {
+                System.out.println("Warning: db.properties not found on classpath, relying entirely on Environment Variables.");
             }
-            props.load(input);
 
             String server = System.getenv("DB_SERVER") != null ? System.getenv("DB_SERVER") : props.getProperty("db.server", "localhost");
             String port   = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : props.getProperty("db.port", "1433");
@@ -56,11 +55,9 @@ public class DBContext {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load db.properties: " + e.getMessage(), e);
+            System.err.println("Warning: Failed to load db.properties: " + e.getMessage());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(
-                    "SQL Server JDBC driver not found. "
-                    + "Make sure mssql-jdbc is in pom.xml dependencies.", e);
+            throw new RuntimeException("SQL Server JDBC Driver not found.", e);
         }
     }
 
