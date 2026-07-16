@@ -30,6 +30,12 @@ public class BookingCancelServlet extends HttpServlet {
             return;
         }
 
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CANCEL_BOOKING")
+                && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
         String bookingIdStr = request.getParameter("bookingId");
         String reason = request.getParameter("reason");
 
@@ -43,8 +49,7 @@ public class BookingCancelServlet extends HttpServlet {
             if (booking == null) {
                 request.getSession().setAttribute("errorMessage", "Đơn đặt xe không tồn tại.");
             } else {
-                boolean isStaffOrAdmin = com.swp391.carrental.user.constant.Role.STAFF.equals(currentUser.getRole())
-                        || com.swp391.carrental.user.constant.Role.ADMIN.equals(currentUser.getRole());
+                boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST");
                 
                 if (!isStaffOrAdmin) {
                     if (booking.getCustomerId() != currentUser.getUserId()) {
