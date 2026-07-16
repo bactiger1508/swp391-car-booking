@@ -52,7 +52,7 @@ public class CreateBookingServlet extends HttpServlet {
             throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("currentUser");
-        if (user == null || !Role.CUSTOMER.equals(user.getRole())) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_BOOKING")) {
             request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                     .forward(request, response);
             return;
@@ -115,7 +115,7 @@ public class CreateBookingServlet extends HttpServlet {
             throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("currentUser");
-        if (user == null || !Role.CUSTOMER.equals(user.getRole())) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_BOOKING")) {
             request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                     .forward(request, response);
             return;
