@@ -164,7 +164,7 @@
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">credit_card</span>
                                 <select id="paymentMethod" name="paymentMethod" class="bk-form-select" required style="padding-left: 40px; font-size: 15px;">
-                                    <c:if test="${sessionScope.currentUser.role != 'CUSTOMER' && enabledMethods['CASH']}">
+                                    <c:if test="${isStaffOrAdmin && enabledMethods['CASH']}">
                                         <option value="CASH">Tiền mặt</option>
                                     </c:if>
                                     <c:if test="${enabledMethods['BANK_TRANSFER']}">
