@@ -11,9 +11,13 @@ import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.vehicle.dao.CarDAO;
 import com.swp391.carrental.vehicle.dao.CarImageDAO;
 import com.swp391.carrental.vehicle.dao.MaintenanceDAO;
+import com.swp391.carrental.vehicle.dao.VehicleBrandDAO;
+import com.swp391.carrental.vehicle.dao.VehicleModelDAO;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.model.CarImage;
 import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
+import com.swp391.carrental.vehicle.model.VehicleBrand;
+import com.swp391.carrental.vehicle.model.VehicleModel;
 
 /*
  * Name: VehicleService
@@ -33,8 +37,91 @@ public class VehicleService {
     private final CarDAO carDAO = new CarDAO();
     private final CarImageDAO carImageDAO = new CarImageDAO();
     private final MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
+    private final VehicleBrandDAO vehicleBrandDAO = new VehicleBrandDAO();
+    private final VehicleModelDAO vehicleModelDAO = new VehicleModelDAO();
     private final FeeCalculator feeCalculator = new FeeCalculator();
     private final PolicyService policyService = new PolicyService();
+
+    public List<VehicleBrand> getAllBrands() {
+        try {
+            return vehicleBrandDAO.findAll();
+        } catch (SQLException e) {
+            throw new AppException("Failed to get vehicle brands.", e);
+        }
+    }
+
+    public List<VehicleModel> getModelsByBrandId(int brandId) {
+        try {
+            return vehicleModelDAO.findByBrandId(brandId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get vehicle models.", e);
+        }
+    }
+
+    public List<VehicleBrand> getAllBrandsIncludingInactive() {
+        try {
+            return vehicleBrandDAO.findAllIncludingInactive();
+        } catch (SQLException e) {
+            throw new AppException("Failed to get vehicle brands.", e);
+        }
+    }
+
+    public List<VehicleModel> getModelsByBrandIdIncludingInactive(int brandId) {
+        try {
+            return vehicleModelDAO.findByBrandIdIncludingInactive(brandId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get vehicle models.", e);
+        }
+    }
+
+    public int addBrand(String brandName) {
+        try {
+            if (brandName == null || brandName.trim().isEmpty()) {
+                throw new AppException("Tên hãng xe không được trống.");
+            }
+            String trimmed = brandName.trim();
+            if (vehicleBrandDAO.findByName(trimmed) != null) {
+                throw new AppException("Hãng xe '" + trimmed + "' đã tồn tại.");
+            }
+            return vehicleBrandDAO.insert(trimmed);
+        } catch (SQLException e) {
+            throw new AppException("Failed to add vehicle brand.", e);
+        }
+    }
+
+    public void setBrandActive(int brandId, boolean active) {
+        try {
+            vehicleBrandDAO.updateActive(brandId, active);
+        } catch (SQLException e) {
+            throw new AppException("Failed to update vehicle brand.", e);
+        }
+    }
+
+    public int addModel(int brandId, String modelName) {
+        try {
+            if (modelName == null || modelName.trim().isEmpty()) {
+                throw new AppException("Tên model không được trống.");
+            }
+            if (vehicleBrandDAO.findById(brandId) == null) {
+                throw new AppException("Hãng xe không tồn tại.");
+            }
+            String trimmed = modelName.trim();
+            if (vehicleModelDAO.findByBrandAndName(brandId, trimmed) != null) {
+                throw new AppException("Model '" + trimmed + "' đã tồn tại cho hãng xe này.");
+            }
+            return vehicleModelDAO.insert(brandId, trimmed);
+        } catch (SQLException e) {
+            throw new AppException("Failed to add vehicle model.", e);
+        }
+    }
+
+    public void setModelActive(int modelId, boolean active) {
+        try {
+            vehicleModelDAO.updateActive(modelId, active);
+        } catch (SQLException e) {
+            throw new AppException("Failed to update vehicle model.", e);
+        }
+    }
 
     public Car getCarById(int carId) {
         try {
@@ -104,8 +191,14 @@ public class VehicleService {
     public boolean deleteCar(int carId) {
         try {
             carImageDAO.deleteByCarId(carId);
+            maintenanceDAO.deleteByCarId(carId);
             return carDAO.delete(carId);
         } catch (SQLException e) {
+            if (e.getErrorCode() == 547) {
+                // SQL Server FK violation: car still referenced by bookings/contracts/handovers/returns/reviews
+                throw new AppException("Không thể xóa xe này vì đã có lịch sử đặt xe, hợp đồng hoặc giao/nhận xe. "
+                        + "Vui lòng chuyển trạng thái xe sang 'Ngừng hoạt động' thay vì xóa.", e);
+            }
             throw new AppException("Failed to delete car.", e);
         }
     }
@@ -202,7 +295,12 @@ public class VehicleService {
 
     public int addMaintenanceSchedule(MaintenanceSchedule schedule) {
         try {
-            return maintenanceDAO.createMaintenance(schedule);
+            int maintenanceId = maintenanceDAO.createMaintenance(schedule);
+            if (maintenanceId > 0) {
+                // Vehicle goes into maintenance as soon as a job is scheduled for it.
+                carDAO.updateStatus(schedule.getVehicleId(), "MAINTENANCE");
+            }
+            return maintenanceId;
         } catch (SQLException e) {
             throw new AppException("Failed to add maintenance schedule.", e);
         }
@@ -213,6 +311,46 @@ public class VehicleService {
             return maintenanceDAO.updateMaintenance(schedule);
         } catch (SQLException e) {
             throw new AppException("Failed to update maintenance schedule.", e);
+        }
+    }
+
+    /**
+     * Transition a maintenance job's status (SCHEDULED -> IN_PROGRESS -> COMPLETED, or -> CANCELLED)
+     * and keep the vehicle's status in sync: COMPLETED/CANCELLED releases the vehicle back to
+     * AVAILABLE only if no other job for that vehicle is still SCHEDULED/IN_PROGRESS.
+     */
+    public void updateMaintenanceStatus(int maintenanceId, String newStatus, String updatedBy) {
+        try {
+            MaintenanceSchedule schedule = maintenanceDAO.getMaintenanceById(maintenanceId);
+            if (schedule == null) {
+                throw new AppException("Bản ghi bảo trì không tồn tại.");
+            }
+
+            boolean updated;
+            if ("COMPLETED".equals(newStatus)) {
+                updated = maintenanceDAO.completeMaintenance(maintenanceId, updatedBy);
+            } else if ("CANCELLED".equals(newStatus)) {
+                updated = maintenanceDAO.cancelMaintenance(maintenanceId, updatedBy);
+            } else {
+                updated = maintenanceDAO.updateStatus(maintenanceId, newStatus, updatedBy);
+            }
+
+            if (!updated) {
+                throw new AppException("Không thể cập nhật trạng thái bảo trì.");
+            }
+
+            if ("COMPLETED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
+                boolean hasOtherActiveJob = maintenanceDAO.getMaintenanceByVehicle(schedule.getVehicleId()).stream()
+                        .anyMatch(m -> m.getMaintenanceId() != maintenanceId
+                                && ("SCHEDULED".equals(m.getStatus()) || "IN_PROGRESS".equals(m.getStatus())));
+                if (!hasOtherActiveJob) {
+                    carDAO.updateStatus(schedule.getVehicleId(), "AVAILABLE");
+                }
+            } else if ("IN_PROGRESS".equals(newStatus)) {
+                carDAO.updateStatus(schedule.getVehicleId(), "MAINTENANCE");
+            }
+        } catch (SQLException e) {
+            throw new AppException("Failed to update maintenance status.", e);
         }
     }
 
