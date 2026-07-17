@@ -179,13 +179,32 @@ public class MaintenanceDAO {
     public boolean cancelMaintenance(int maintenanceId, String cancelledBy) throws SQLException {
         String sql = "UPDATE maintenance_schedules SET status = 'CANCELLED', " +
                     "updated_by = ?, updated_at = GETDATE() WHERE maintenance_id = ?";
-        
+
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setString(1, cancelledBy);
             ps.setInt(2, maintenanceId);
-            
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Generic status transition (e.g. SCHEDULED -> IN_PROGRESS). Does not touch completed_date;
+     * use completeMaintenance() for the COMPLETED transition.
+     */
+    public boolean updateStatus(int maintenanceId, String status, String updatedBy) throws SQLException {
+        String sql = "UPDATE maintenance_schedules SET status = ?, " +
+                    "updated_by = ?, updated_at = GETDATE() WHERE maintenance_id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setString(2, updatedBy);
+            ps.setInt(3, maintenanceId);
+
             return ps.executeUpdate() > 0;
         }
     }
@@ -195,13 +214,22 @@ public class MaintenanceDAO {
      */
     public boolean deleteMaintenance(int maintenanceId) throws SQLException {
         String sql = "DELETE FROM maintenance_schedules WHERE maintenance_id = ?";
-        
+
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setInt(1, maintenanceId);
-            
+
             return ps.executeUpdate() > 0;
+        }
+    }
+
+    public void deleteByCarId(int carId) throws SQLException {
+        String sql = "DELETE FROM maintenance_schedules WHERE car_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, carId);
+            ps.executeUpdate();
         }
     }
 

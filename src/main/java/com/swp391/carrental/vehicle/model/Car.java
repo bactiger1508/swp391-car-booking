@@ -20,6 +20,8 @@ public class Car {
 
     private int carId;
     private String licensePlate;
+    private int modelId;
+    private int brandId;
     private String brand;
     private String model;
     private int year;
@@ -55,6 +57,22 @@ public class Car {
 
     public void setLicensePlate(String licensePlate) {
         this.licensePlate = licensePlate;
+    }
+
+    public int getModelId() {
+        return modelId;
+    }
+
+    public void setModelId(int modelId) {
+        this.modelId = modelId;
+    }
+
+    public int getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
     }
 
     public String getBrand() {

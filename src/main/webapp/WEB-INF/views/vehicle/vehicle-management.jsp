@@ -145,9 +145,25 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${not empty maintenance}">
-                                        <span style="font-weight: 600; color: var(--primary);">${maintenance.maintenanceType}</span><br/>
+                                        <span style="font-weight: 600; color: var(--primary);">
+                                            <c:choose>
+                                                <c:when test="${maintenance.maintenanceType == 'OIL_CHANGE'}">Thay Dầu</c:when>
+                                                <c:when test="${maintenance.maintenanceType == 'TIRE_CHANGE'}">Thay Lốp</c:when>
+                                                <c:when test="${maintenance.maintenanceType == 'INSPECTION'}">Kiểm Tra</c:when>
+                                                <c:when test="${maintenance.maintenanceType == 'REPAIR'}">Sửa Chữa</c:when>
+                                                <c:when test="${maintenance.maintenanceType == 'INSURANCE'}">Bảo Hiểm</c:when>
+                                                <c:otherwise>Khác</c:otherwise>
+                                            </c:choose>
+                                        </span><br/>
                                         <span style="font-size:12px; color:var(--text-secondary);">
-                                            ${maintenance.scheduledDate} &middot; ${maintenance.status}
+                                            ${maintenance.scheduledDate} &middot;
+                                            <c:choose>
+                                                <c:when test="${maintenance.status == 'SCHEDULED'}">Đã lên lịch</c:when>
+                                                <c:when test="${maintenance.status == 'IN_PROGRESS'}">Đang thực hiện</c:when>
+                                                <c:when test="${maintenance.status == 'COMPLETED'}">Hoàn tất</c:when>
+                                                <c:when test="${maintenance.status == 'CANCELLED'}">Đã hủy</c:when>
+                                                <c:otherwise>${maintenance.status}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </c:when>
                                     <c:when test="${car.status == 'MAINTENANCE'}">
@@ -163,13 +179,13 @@
                                     <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                                     </a>
-                                    <button onclick="openEditModal(${car.carId}, '${car.brand}', '${car.model}', ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                    <button onclick="openEditModal(${car.carId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                                     </button>
                                     <button onclick="if(confirm('Bạn chắc chắn muốn xóa xe này?')) { deleteVehicle(${car.carId}); }" class="text-[#D32F2F] hover:text-[#B71C1C] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xóa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
                                     </button>
-                                    <a href="${pageContext.request.contextPath}/maintenance?carId=${car.carId}" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Lịch bảo trì" style="display:inline-flex; align-items:center;">
+                                    <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&carId=${car.carId}" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Lịch bảo trì" style="display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">build</span>
                                     </a>
                                 </div>
@@ -377,8 +393,37 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // === MODALS ===
+function loadModelsForBrand(brandId, targetSelectId, selectedModelId) {
+    const modelSelect = document.getElementById(targetSelectId);
+    if (!brandId) {
+        modelSelect.innerHTML = '<option value="">-- Chọn hãng xe trước --</option>';
+        return Promise.resolve();
+    }
+    modelSelect.innerHTML = '<option value="">Đang tải...</option>';
+    return fetch(contextPath + '/vehicles/manage?action=getModelsByBrand&brandId=' + brandId)
+        .then(response => response.json())
+        .then(models => {
+            modelSelect.innerHTML = '<option value="">-- Chọn model --</option>';
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.modelId;
+                opt.textContent = m.modelName;
+                modelSelect.appendChild(opt);
+            });
+            if (selectedModelId) {
+                modelSelect.value = selectedModelId;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading models:', error);
+            modelSelect.innerHTML = '<option value="">Lỗi tải danh sách model</option>';
+        });
+}
+
 function openCreateModal() {
     document.getElementById('createForm').reset();
+    document.getElementById('createBrand').value = '';
+    document.getElementById('createModel').innerHTML = '<option value="">-- Chọn hãng xe trước --</option>';
     document.getElementById('createPrimaryImagePreview').innerHTML = '';
     document.getElementById('createSecondaryImagePreview').innerHTML = '';
     document.getElementById('createModal').style.display = 'block';
@@ -388,11 +433,11 @@ function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
 }
 
-function openEditModal(carId, brand, model, year, color, seats, transmission, fuelType, dailyRate, description, location, features, status, mileage, licensePlate) {
+function openEditModal(carId, brandId, modelId, year, color, seats, transmission, fuelType, dailyRate, description, location, features, status, mileage, licensePlate) {
     document.getElementById('editCarId').value = carId;
     document.getElementById('editLicensePlate').value = licensePlate;
-    document.getElementById('editBrand').value = brand;
-    document.getElementById('editModel').value = model;
+    document.getElementById('editBrand').value = brandId;
+    loadModelsForBrand(brandId, 'editModel', modelId);
     document.getElementById('editYear').value = year;
     document.getElementById('editColor').value = color;
     document.getElementById('editSeats').value = seats;
@@ -558,12 +603,21 @@ function closeEditModal() {
 }
 
 function deleteVehicle(carId) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '${pageContext.request.contextPath}/vehicles/manage';
-    form.innerHTML = '<input type="hidden" name="action" value="delete"><input type="hidden" name="carId" value="' + carId + '">';
-    document.body.appendChild(form);
-    form.submit();
+    fetch('${pageContext.request.contextPath}/vehicles/manage', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=delete&carId=' + carId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert(data.message || 'Xóa xe thành công!');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showErrorAlert(data.error || 'Không thể xóa xe này.');
+        }
+    })
+    .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
 }
 
 // Close modal when clicking outside
@@ -709,11 +763,18 @@ function showSuccessAlert(message) {
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Hãng Xe *</label>
-                    <input type="text" name="brand" class="bk-form-input" required>
+                    <select name="brandId" id="createBrand" class="bk-form-select" required onchange="loadModelsForBrand(this.value, 'createModel')">
+                        <option value="">-- Chọn hãng xe --</option>
+                        <c:forEach items="${brands}" var="b">
+                            <option value="${b.brandId}">${b.brandName}</option>
+                        </c:forEach>
+                    </select>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Model *</label>
-                    <input type="text" name="model" class="bk-form-input" required>
+                    <select name="modelId" id="createModel" class="bk-form-select" required>
+                        <option value="">-- Chọn hãng xe trước --</option>
+                    </select>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Năm SX *</label>
@@ -818,11 +879,18 @@ function showSuccessAlert(message) {
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Hãng Xe *</label>
-                    <input type="text" id="editBrand" name="brand" class="bk-form-input" required>
+                    <select id="editBrand" name="brandId" class="bk-form-select" required onchange="loadModelsForBrand(this.value, 'editModel')">
+                        <option value="">-- Chọn hãng xe --</option>
+                        <c:forEach items="${brands}" var="b">
+                            <option value="${b.brandId}">${b.brandName}</option>
+                        </c:forEach>
+                    </select>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Model *</label>
-                    <input type="text" id="editModel" name="model" class="bk-form-input" required>
+                    <select id="editModel" name="modelId" class="bk-form-select" required>
+                        <option value="">-- Chọn hãng xe trước --</option>
+                    </select>
                 </div>
                 <div class="bk-form-group">
                     <label class="bk-form-label">Năm SX *</label>
