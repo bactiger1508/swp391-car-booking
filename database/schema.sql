@@ -52,14 +52,44 @@ CREATE TABLE customer_profiles (
 GO
 
 -- ============================================================
--- 3. CARS
+-- 3. VEHICLE_BRANDS
+-- Lookup table for car manufacturers
+-- ============================================================
+CREATE TABLE vehicle_brands (
+    brand_id     INT IDENTITY(1,1) PRIMARY KEY,
+    brand_name   NVARCHAR(100)   NOT NULL UNIQUE,
+    is_active    BIT             NOT NULL DEFAULT 1,
+    created_at   DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
+    updated_at   DATETIME2       NOT NULL DEFAULT SYSDATETIME()
+);
+GO
+
+-- ============================================================
+-- 4. VEHICLE_MODELS
+-- Lookup table for car models, each belongs to one brand
+-- ============================================================
+CREATE TABLE vehicle_models (
+    model_id     INT IDENTITY(1,1) PRIMARY KEY,
+    brand_id     INT             NOT NULL,
+    model_name   NVARCHAR(100)   NOT NULL,
+    is_active    BIT             NOT NULL DEFAULT 1,
+    created_at   DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
+    updated_at   DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
+
+    CONSTRAINT FK_vehicle_models_vehicle_brands FOREIGN KEY (brand_id) REFERENCES vehicle_brands(brand_id),
+    CONSTRAINT UQ_vehicle_models_brand_name UNIQUE (brand_id, model_name)
+);
+CREATE INDEX IX_vehicle_models_brand ON vehicle_models(brand_id);
+GO
+
+-- ============================================================
+-- 5. CARS
 -- Vehicle inventory for the rental shop
 -- ============================================================
 CREATE TABLE cars (
     car_id              INT IDENTITY(1,1) PRIMARY KEY,
     license_plate       NVARCHAR(20)    NOT NULL UNIQUE,
-    brand               NVARCHAR(100)   NOT NULL,
-    model               NVARCHAR(100)   NOT NULL,
+    model_id            INT             NOT NULL,
     year                INT             NOT NULL,
     color               NVARCHAR(50)    NULL,
     seats               INT             NOT NULL DEFAULT 4,
@@ -72,12 +102,14 @@ CREATE TABLE cars (
     location            NVARCHAR(255)   NULL,
     features            NVARCHAR(MAX)   NULL,   -- e.g., GPS, Bluetooth, Dashcam
     created_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
-    updated_at          DATETIME2       NOT NULL DEFAULT GETDATE()
+    updated_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_cars_vehicle_models FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id)
 );
 GO
 
 -- ============================================================
--- 4. CAR_IMAGES
+-- 6. CAR_IMAGES
 -- Multiple images per car
 -- ============================================================
 CREATE TABLE car_images (
