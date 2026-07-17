@@ -149,10 +149,13 @@
     </div>
 
     <%-- GRAPH & BREAKDOWN GRID --%>
-    <div class="bk-detail-grid" style="margin-top:24px; align-items:stretch;">
-        <%-- LEFT: Biểu đồ hiệu suất SVG --%>
-        <div style="display:flex;">
-            <div class="bk-card" style="width:100%; height:100%;">
+    <!-- ================= LEFT CARD ================= -->
+    <div class="bk-card"
+         style="width:100%;
+         padding:24px;
+         display:flex;
+         flex-direction:column;
+         margin-top:24px;">
                 <div class="bk-card-title" style="display:flex; align-items:center; justify-content:space-between;">
                     <!-- Bên trái -->
                     <div style="display:flex; align-items:center; gap:8px;">
@@ -309,20 +312,19 @@
                         </c:forEach>
                     </div>
                 </div>     
-            </div>                
+    </div>
+
+    <!-- ================= RIGHT CARD ================= -->
+    <div class="bk-card" style="width:100%; padding:24px; margin-top:24px;">
+        <div class="bk-card-title" style="margin-bottom:24px;">
+            <span class="material-symbols-outlined">donut_large</span> Hiệu suất sử dụng theo phân khúc
         </div>
 
-        <%-- RIGHT: Cơ cấu hiệu suất theo phân khúc xe --%>
-        <div style="display:flex;">
-            <div class="bk-card" style="width:100%; height:100%; padding:24px;">
-                <div class="bk-card-title">
-                    <span class="material-symbols-outlined">donut_large</span> Hiệu suất sử dụng theo phân khúc
-                </div>
-
-                <div class="pie-chart"
-                     style="background:${segmentGradient};">
-                </div>
-                <div class="bk-detail-rows" style="margin-top:24px;gap:20px;">
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:40px; align-items:center;">
+            <div class="pie-chart"
+                 style="background:${segmentGradient}; margin: 0 auto;">
+            </div>
+            <div class="bk-detail-rows" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px 40px; width: 100%;">
 
                     <c:if test="${segmentTotal == 0}">
                         <p style="text-align:center;color:var(--secondary);font-size:13px;margin-top:40px;font-weight:600;">Chưa có dữ liệu phân khúc</p>
@@ -380,10 +382,8 @@
                     </c:forEach>
 
                 </div>
-
             </div>
         </div>
-    </div>
 
     <%-- LIST OF POPULAR CARS --%>
     <div class="bk-card" style="margin-top:24px;">
