@@ -26,6 +26,12 @@
         background:var(--primary);
         color:#fff;
     }
+    select.bk-form-select {
+        padding-left: 12px !important;
+        padding-right: 28px !important;
+        min-width: 110px !important;
+        width: auto !important;
+    }
 </style>
 
 <form action="${pageContext.request.contextPath}/reports/vehicle-utilization"method="GET">
@@ -267,30 +273,13 @@
                 <div style="display:flex; height:360px; width:100%;">
 
                     <!-- Y AXIS -->
-                    <c:set var="maxY" value="${chartMax * 1.2}" />
                     <div style="width:55px; height:360px; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; padding-right:10px; padding-bottom:0px; color:var(--on-surface-variant); font-size:12px; font-weight:600;">
-                        <span>
-                            100<fmt:formatNumber value="${maxY/1000000}" maxFractionDigits="0"/>
-                        </span>
-
-                        <span>
-                            80<fmt:formatNumber value="${maxY*0.8/1000000}" maxFractionDigits="0"/>
-                        </span>
-
-                        <span>
-                            60<fmt:formatNumber value="${maxY*0.6/1000000}" maxFractionDigits="0"/>
-                        </span>
-
-                        <span>
-                            40<fmt:formatNumber value="${maxY*0.4/1000000}" maxFractionDigits="0"/>
-                        </span>
-
-                        <span>
-                            20<fmt:formatNumber value="${maxY*0.2/1000000}" maxFractionDigits="0"/>
-                        </span>
-
-                        <span>0</span>
-
+                        <span>100%</span>
+                        <span>80%</span>
+                        <span>60%</span>
+                        <span>40%</span>
+                        <span>20%</span>
+                        <span>0%</span>
                     </div>
 
                     <!-- CHART AREA -->
@@ -303,17 +292,17 @@
                         <div style="position:absolute; left:0; right:0; top:80%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
 
                         <c:forEach items="${chartData}" var="c">
-                            <div style="width:70px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; z-index:2;">
+                            <div style="width:80px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; z-index:2;">
                                 <!-- VALUE -->
-                                <span style="margin-bottom:6px; font-size:12px; font-weight:700; color:${c.current ? 'var(--primary)' : 'var(--secondary)'};">
-                                    <fmt:formatNumber value="${c.usage}" maxFractionDigits="0"/>tr
+                                <span style="margin-bottom:6px; font-size:12px; font-weight:700; color:var(--primary);">
+                                    <fmt:formatNumber value="${c.usage}" maxFractionDigits="1"/>%
                                 </span>
 
                                 <!-- BAR -->
-                                <div style="width:38px; height:${c.height*0.85}%; background:${c.current ? 'var(--primary)' : 'var(--secondary)'}; border-radius:8px 8px 0 0;"></div>
+                                <div style="width:38px; height:${c.height}%; background:var(--primary); border-radius:8px 8px 0 0;"></div>
 
                                 <!-- MONTH -->
-                                <span style="margin-top:10px; font-size:12px; font-weight:600; color:${c.current ? 'var(--primary)' : 'var(--on-surface-variant)'};">
+                                <span style="margin-top:10px; font-size:11px; font-weight:600; color:var(--on-surface-variant); white-space:nowrap;">
                                     ${c.label}
                                 </span>
                             </div>
@@ -329,71 +318,65 @@
                 <div class="bk-card-title">
                     <span class="material-symbols-outlined">donut_large</span> Hiệu suất sử dụng theo phân khúc
                 </div>
-                <c:set var="c1" value="${segmentUsage['Sedan'] * 100 / totalSegmentUsage}" />
-                <c:set var="c2" value="${segmentUsage['SUV / Crossover'] * 100 / totalSegmentUsage}" />
-                <c:set var="c3" value="${segmentUsage['MPV gia đình'] * 100 / totalSegmentUsage}" />
-                <c:set var="c4" value="${segmentUsage['Xe bán tải / Pickup'] * 100 / totalSegmentUsage}" />
-                <c:set var="c5" value="${segmentUsage['Xe điện'] * 100 / totalSegmentUsage}" />
-
-                <c:set var="p1" value="${c1}" />
-                <c:set var="p2" value="${c1+c2}" />
-                <c:set var="p3" value="${c1+c2+c3}" />
-                <c:set var="p4" value="${c1+c2+c3+c4}" />
 
                 <div class="pie-chart"
                      style="background:${segmentGradient};">
                 </div>
                 <div class="bk-detail-rows" style="margin-top:24px;gap:20px;">
 
+                    <c:if test="${segmentTotal == 0}">
+                        <p style="text-align:center;color:var(--secondary);font-size:13px;margin-top:40px;font-weight:600;">Chưa có dữ liệu phân khúc</p>
+                    </c:if>
                     <c:forEach items="${segmentUsage}" var="s" varStatus="st">
+                        <c:if test="${s.value > 0}">
+                            <c:set var="usedDays"
+                                   value="${segmentTotal==0?0:s.value*100.0/segmentTotal}"/>
 
-                        <c:set var="usedDays"
-                               value="${segmentTotal==0?0:s.value*100.0/segmentTotal}"/>
+                            <c:set var="color"
+                                   value="${st.index % 6 == 0 ? 'var(--primary)'
+                                            : st.index % 6 == 1 ? 'var(--success)'
+                                            : st.index % 6 == 2 ? 'var(--warning)'
+                                            : st.index % 6 == 3 ? 'var(--error)'
+                                            : st.index % 6 == 4 ? 'var(--secondary)'
+                                            : 'var(--outline)'}"/>
 
-                        <c:set var="color"
-                               value="${st.index==0?'var(--primary)'
-                                        :st.index==1?'var(--success)'
-                                        :st.index==2?'var(--warning)'
-                                        :st.index==3?'var(--error)'
-                                        :'var(--secondary)'}"/>
+                            <div>
 
-                        <div>
+                                <div style="display:flex;
+                                     justify-content:space-between;
+                                     margin-bottom:6px;
+                                     font-size:13px;
+                                     font-weight:600;">
 
-                            <div style="display:flex;
-                                 justify-content:space-between;
-                                 margin-bottom:6px;
-                                 font-size:13px;
-                                 font-weight:600;">
+                                    <span>${s.key}</span>
 
-                                <span>${s.key}</span>
+                                    <span>
 
-                                <span>
+                                        ${s.value} ngày
 
-                                    ${s.value} ngày
+                                        (<fmt:formatNumber
+                                            value="${usedDays}"
+                                            maxFractionDigits="1"/>%)
 
-                                    (<fmt:formatNumber
-                                        value="${usedDays}"
-                                        maxFractionDigits="1"/>%)
+                                    </span>
 
-                                </span>
+                                </div>
 
-                            </div>
+                                <div style="background:var(--surface-container);
+                                     height:8px;
+                                     border-radius:4px;
+                                     overflow:hidden;">
 
-                            <div style="background:var(--surface-container);
-                                 height:8px;
-                                 border-radius:4px;
-                                 overflow:hidden;">
+                                    <div style="
+                                         background:${color};
+                                         width:${usedDays}%;
+                                         height:100%;">
+                                    </div>
 
-                                <div style="
-                                     background:${color};
-                                     width:${usedDays}%;
-                                     height:100%;">
                                 </div>
 
                             </div>
-
-                        </div>
-
+                        </c:if>
                     </c:forEach>
 
                 </div>
@@ -404,19 +387,23 @@
 
     <%-- LIST OF POPULAR CARS --%>
     <div class="bk-card" style="margin-top:24px;">
-        <div class="bk-card-title">
-            <span class="material-symbols-outlined">directions_car</span> Chi tiết Tần suất Sử dụng của từng Xe
+        <div class="bk-card-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 6px;">directions_car</span> Chi tiết Tần suất Sử dụng của từng Xe</span>
+            <button type="button" class="bk-btn bk-btn-sm" onclick="exportTableToCSV('hieu_suat_su_dung_xe.csv', 'utilization-table')" style="background: var(--primary); color: white; display: flex; align-items: center; gap: 4px; padding: 6px 12px; font-weight: 600; cursor: pointer;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">download</span> Xuất Excel
+            </button>
         </div>
 
         <div style="overflow-x:auto;margin-top:16px;">
-            <table class="bk-table">
+            <table class="bk-table" id="utilization-table">
                 <thead>
                     <tr>
                         <th>Thông tin Xe</th>
                         <th>Biển kiểm soát</th>
                         <th>Số ngày cho thuê</th>
                         <th>Mức độ sử dụng (%)</th>
-                        <th style="width:250px;">Biểu đồ hiệu suất</th>
+                        <th style="width:200px;">Biểu đồ hiệu suất</th>
+                        <th>Khuyến nghị</th>
                         <th>Trạng thái</th>
                     </tr>
                 </thead>
@@ -442,7 +429,7 @@
                             <td style="font-weight:700;">
 
                                 <fmt:formatNumber
-                                    value="${v.usedDays}"
+                                    value="${v.percent}"
                                     maxFractionDigits="1"/>%
 
                             </td>
@@ -456,13 +443,33 @@
                                      overflow:hidden;">
 
                                     <div style="
-                                         width:${v.usedDays}%;
+                                         width:${v.percent}%;
                                          background:var(--primary);
                                          height:100%;">
                                     </div>
 
                                 </div>
 
+                            </td>
+
+                            <td>
+                                <c:choose>
+                                    <c:when test="${v.percent >= 70.0}">
+                                        <span style="color:var(--success); font-weight:700; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">add_circle</span> Nhu cầu cao (Đề xuất thêm xe)
+                                        </span>
+                                    </c:when>
+                                    <c:when test="${v.percent <= 30.0}">
+                                        <span style="color:var(--error); font-weight:700; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">sell</span> Hiệu suất thấp (Nên giảm giá)
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color:var(--info); font-weight:700; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Tối ưu
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td>
@@ -509,4 +516,151 @@
         </div>
     </div>
 </form>
+
+<script>
+function exportTableToCSV(filename, tableId) {
+    var csv = [];
+    var rows = document.querySelectorAll("#" + tableId + " tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (var j = 0; j < cols.length; j++) {
+            var text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/^\s+|\s+$/g, "");
+            text = text.replace(/"/g, '""');
+            row.push('"' + text + '"');
+        }
+        
+        csv.push(row.join(","));        
+    }
+
+    var csvFile = new Blob(["\ufeff" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+    var downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+function paginateTable(tableId, rowsPerPage) {
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    
+    var tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    
+    var rows = tbody.querySelectorAll("tr");
+    var totalRows = rows.length;
+    if (totalRows <= rowsPerPage) return;
+    
+    var totalPages = Math.ceil(totalRows / rowsPerPage);
+    var currentPage = 1;
+    
+    var navContainer = document.createElement("div");
+    navContainer.className = "bk-pagination";
+    navContainer.style.cssText = "display: flex; justify-content: center; gap: 8px; margin-top: 16px; align-items: center;";
+    table.parentNode.appendChild(navContainer);
+    
+    function showPage(page) {
+        currentPage = page;
+        var start = (page - 1) * rowsPerPage;
+        var end = start + rowsPerPage;
+        
+        for (var i = 0; i < totalRows; i++) {
+            if (i >= start && i < end) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+        
+        renderButtons();
+    }
+    
+    function renderButtons() {
+        navContainer.innerHTML = "";
+        
+        var prevBtn = document.createElement("button");
+        prevBtn.type = "button";
+        prevBtn.className = "bk-btn bk-btn-outline bk-btn-sm";
+        prevBtn.innerText = "Trước";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.style.padding = "4px 8px";
+        prevBtn.onclick = function() { if (currentPage > 1) showPage(currentPage - 1); };
+        navContainer.appendChild(prevBtn);
+        
+        function createPageBtn(p) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "bk-btn bk-btn-sm " + (p === currentPage ? "active" : "");
+            btn.innerText = p;
+            btn.style.padding = "4px 10px";
+            if (p === currentPage) {
+                btn.style.background = "var(--primary)";
+                btn.style.color = "white";
+            } else {
+                btn.style.background = "transparent";
+                btn.style.border = "1px solid var(--outline-variant)";
+                btn.style.color = "var(--on-surface)";
+            }
+            btn.onclick = function() { showPage(p); };
+            navContainer.appendChild(btn);
+        }
+
+        function createEllipsis() {
+            var span = document.createElement("span");
+            span.innerText = "...";
+            span.style.cssText = "padding: 4px 6px; color: var(--secondary); font-weight: bold;";
+            navContainer.appendChild(span);
+        }
+
+        if (totalPages <= 5) {
+            for (var i = 1; i <= totalPages; i++) {
+                createPageBtn(i);
+            }
+        } else {
+            createPageBtn(1);
+
+            if (currentPage <= 3) {
+                createPageBtn(2);
+                createPageBtn(3);
+                createPageBtn(4);
+                createEllipsis();
+                createPageBtn(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                createEllipsis();
+                createPageBtn(totalPages - 3);
+                createPageBtn(totalPages - 2);
+                createPageBtn(totalPages - 1);
+                createPageBtn(totalPages);
+            } else {
+                createEllipsis();
+                createPageBtn(currentPage - 1);
+                createPageBtn(currentPage);
+                createPageBtn(currentPage + 1);
+                createEllipsis();
+                createPageBtn(totalPages);
+            }
+        }
+        
+        var nextBtn = document.createElement("button");
+        nextBtn.type = "button";
+        nextBtn.className = "bk-btn bk-btn-outline bk-btn-sm";
+        nextBtn.innerText = "Sau";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.style.padding = "4px 8px";
+        nextBtn.onclick = function() { if (currentPage < totalPages) showPage(currentPage + 1); };
+        navContainer.appendChild(nextBtn);
+    }
+    
+    showPage(1);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    paginateTable('utilization-table', 5);
+});
+</script>
+
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

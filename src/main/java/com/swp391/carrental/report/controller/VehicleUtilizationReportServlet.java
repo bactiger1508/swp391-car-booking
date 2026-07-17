@@ -165,7 +165,7 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
                         ? 0
                         : e.getValue() * 100.0 / total;
 
-                gradient.append(colors[i])
+                gradient.append(colors[i % colors.length])
                         .append(" ")
                         .append(start)
                         .append("% ")

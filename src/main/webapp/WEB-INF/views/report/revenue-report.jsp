@@ -26,6 +26,12 @@
         background: var(--primary);
         color:white;
     }
+    select.bk-form-select {
+        padding-left: 12px !important;
+        padding-right: 28px !important;
+        min-width: 110px !important;
+        width: auto !important;
+    }
 </style>
 
 <div class="bk-page-header">
@@ -42,94 +48,133 @@
 
 <form action="${pageContext.request.contextPath}/reports/revenue" method="GET" enctype="multipart/form-data">
     <%-- STATS GRID --%>
-    <div class="bk-stats-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px;">
-        <div class="bk-stat-card">
-            <span class="label">Tổng Doanh thu</span>
-            <span class="value" style="color:var(--primary);">
-                <fmt:formatNumber value="${totalRevenue}" type="number" maxFractionDigits="0"/>đ
-            </span>
-            <span style="font-size:12px;color:${revenueGrowth > 0 ? 'var(--success)' : revenueGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px;">
-                <c:choose>
-                    <c:when test="${revenueGrowth > 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">trending_up</span>+${String.format("%.2f", revenueGrowth)}% so với ${compareLabel}
-                    </c:when>
+    <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px;">
+        <%-- Row 1: Key Performance Metrics (3 columns) --%>
+        <div class="bk-stats-grid-row-1" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div class="bk-stat-card" style="padding: 20px;">
+                <span class="label">Tổng Doanh thu</span>
+                <span class="value" style="color:var(--primary); font-size: 28px;">
+                    <fmt:formatNumber value="${totalRevenue}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:${revenueGrowth > 0 ? 'var(--success)' : revenueGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:8px;font-weight:600;display:flex;align-items:center;gap:4px;">
+                    <c:choose>
+                        <c:when test="${revenueGrowth > 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--success);">trending_up</span>+${String.format("%.2f", revenueGrowth)}% so với kỳ trước
+                        </c:when>
 
-                    <c:when test="${revenueGrowth < 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">trending_down</span>${String.format("%.2f", revenueGrowth)}% so với ${compareLabel}
-                    </c:when>
+                        <c:when test="${revenueGrowth < 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--error);">trending_down</span>${String.format("%.2f", revenueGrowth)}% so với kỳ trước
+                        </c:when>
 
-                    <c:otherwise>
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--warning);">trending_flat</span>0% so với ${compareLabel}
-                    </c:otherwise>
-                </c:choose>
-            </span>
+                        <c:otherwise>
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--warning);">trending_flat</span>0% so với kỳ trước
+                        </c:otherwise>
+                    </c:choose>
+                </span>
+            </div>
+
+            <div class="bk-stat-card" style="padding: 20px;">
+                <span class="label">Lợi nhuận Ròng</span>
+                <span class="value" style="color:var(--success); font-size: 28px;">
+                    <fmt:formatNumber value="${netProfit}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:${netProfitGrowth > 0 ? 'var(--success)' : netProfitGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:8px;font-weight:600;display:flex;align-items:center;gap:4px;">
+                    <c:choose>
+                        <c:when test="${netProfitGrowth > 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--success);">trending_up</span>+${String.format("%.2f", netProfitGrowth)}% so với kỳ trước
+                        </c:when>
+
+                        <c:when test="${netProfitGrowth < 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--error);">trending_down</span>${String.format("%.2f", netProfitGrowth)}% so với kỳ trước
+                        </c:when>
+
+                        <c:otherwise>
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--warning);">trending_flat</span>0% so với kỳ trước
+                        </c:otherwise>
+                    </c:choose>
+                </span>
+            </div>
+
+            <div class="bk-stat-card" style="padding: 20px;">
+                <span class="label">Đơn thuê hoàn tất</span>
+                <span class="value" style="color:var(--info); font-size: 28px;">${completedBooking}</span>
+                <span style="font-size:12px;color:${bookingGrowth > 0 ? 'var(--success)' : bookingGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:8px;font-weight:600;display:flex;align-items:center;gap:4px;">
+                    <c:choose>
+                        <c:when test="${bookingGrowth > 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--success);">trending_up</span>+${String.format("%.2f", bookingGrowth)}% so với kỳ trước
+                        </c:when>
+
+                        <c:when test="${bookingGrowth < 0}">
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--error);">trending_down</span>${String.format("%.2f", bookingGrowth)}% so với kỳ trước
+                        </c:when>
+
+                        <c:otherwise>
+                            <span class="material-symbols-outlined" style="font-size:18px;color:var(--warning);">trending_flat</span>0% so với kỳ trước
+                        </c:otherwise>
+                    </c:choose>
+                </span>
+            </div>
         </div>
 
-        <div class="bk-stat-card">
-            <span class="label">Doanh thu Thuê xe</span>
-            <span class="value">
-                <fmt:formatNumber value="${rentalRevenue}" type="number" maxFractionDigits="0"/>đ
-            </span>
-            <span style="font-size:12px;color:var(--secondary);margin-top:6px;font-weight:600;">
-                Tỷ trọng: ${rentalRatio}% tổng thu
-            </span>
-        </div>
+        <%-- Row 2: Breakdown Details (4 columns) --%>
+        <div class="bk-stats-grid-row-2" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+            <div class="bk-stat-card" style="padding: 16px;">
+                <span class="label">Doanh thu Thuê xe</span>
+                <span class="value" style="font-size: 20px;">
+                    <fmt:formatNumber value="${rentalRevenue}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:var(--secondary);margin-top:6px;font-weight:600;display:block;">
+                    Tỷ trọng: ${rentalRatio}% tổng thu
+                </span>
+            </div>
 
-        <div class="bk-stat-card">
-            <span class="label">Tiền cọc đang giữ</span>
-            <span class="value" style="color:var(--warning);">
-                <fmt:formatNumber value="${depositRevenue}" type="number" maxFractionDigits="0"/>đ
-            </span>
-        </div>
+            <div class="bk-stat-card" style="padding: 16px;">
+                <span class="label">Tiền cọc đang giữ</span>
+                <span class="value" style="color:var(--warning); font-size: 20px;">
+                    <fmt:formatNumber value="${depositRevenue}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:var(--secondary);margin-top:6px;font-weight:600;display:block;">
+                    Tiền giữ thế chấp
+                </span>
+            </div>
 
-        <div class="bk-stat-card">
-            <span class="label">Phụ thu phát sinh</span>
-            <span class="value" style="color:var(--error);">
-                <fmt:formatNumber value="${additionalRevenue}" type="number" maxFractionDigits="0"/>đ
-            </span>
-            <span style="font-size:12px;color:${additionalFeeGrowth > 0 ? 'var(--success)' : additionalFeeGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px;">
-                <c:choose>
-                    <c:when test="${additionalFeeGrowth > 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">trending_up</span>+${String.format("%.2f", additionalFeeGrowth)}% so với ${compareLabel}
-                    </c:when>
+            <div class="bk-stat-card" style="padding: 16px;">
+                <span class="label">Phụ thu phát sinh</span>
+                <span class="value" style="color:var(--error); font-size: 20px;">
+                    <fmt:formatNumber value="${additionalRevenue}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:${additionalFeeGrowth > 0 ? 'var(--success)' : additionalFeeGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px;">
+                    <c:choose>
+                        <c:when test="${additionalFeeGrowth > 0}">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">trending_up</span>+${String.format("%.2f", additionalFeeGrowth)}%
+                        </c:when>
+                        <c:when test="${additionalFeeGrowth < 0}">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">trending_down</span>${String.format("%.2f", additionalFeeGrowth)}%
+                        </c:when>
+                        <c:otherwise>
+                            <span class="material-symbols-outlined" style="font-size:16px;color:var(--warning);">trending_flat</span>0%
+                        </c:otherwise>
+                    </c:choose>
+                </span>
+            </div>
 
-                    <c:when test="${additionalFeeGrowth < 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">trending_down</span>${String.format("%.2f", additionalFeeGrowth)}% so với ${compareLabel}
-                    </c:when>
-
-                    <c:otherwise>
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--warning);">trending_flat</span>0% so với ${compareLabel}
-                    </c:otherwise>
-                </c:choose>
-            </span>
-        </div>
-
-        <div class="bk-stat-card">
-            <span class="label">Đơn thuê hoàn tất</span>
-            <span class="value" style="color:var(--info);">${completedBooking}</span>
-            <span style="font-size:12px;color:${bookingGrowth > 0 ? 'var(--success)' : bookingGrowth < 0 ? 'var(--error)' : 'var(--on-surface-variant)'};margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px;">
-                <c:choose>
-                    <c:when test="${bookingGrowth > 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">trending_up</span>+${String.format("%.2f", bookingGrowth)}% so với ${compareLabel}
-                    </c:when>
-
-                    <c:when test="${bookingGrowth < 0}">
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">trending_down</span>${String.format("%.2f", bookingGrowth)}% so với ${compareLabel}
-                    </c:when>
-
-                    <c:otherwise>
-                        <span class="material-symbols-outlined" style="font-size:16px;color:var(--warning);">trending_flat</span>0% so với ${compareLabel}
-                    </c:otherwise>
-                </c:choose>
-            </span>
+            <div class="bk-stat-card" style="padding: 16px;">
+                <span class="label">Chi phí Bảo dưỡng</span>
+                <span class="value" style="color:var(--error); font-size: 20px;">
+                    <fmt:formatNumber value="${maintenanceCost}" type="number" maxFractionDigits="0"/>đ
+                </span>
+                <span style="font-size:12px;color:var(--secondary);margin-top:6px;font-weight:600;display:block;">
+                    Phí bảo trì đã hoàn tất
+                </span>
+            </div>
         </div>
     </div>
 
     <%-- GRAPH & BREAKDOWN GRID --%>
     <div class="bk-detail-grid"
          style="display:grid;
-         grid-template-columns:2fr 1fr;
-         gap:24px;
+         grid-template-columns:1.8fr 1.1fr 1.1fr;
+         gap:20px;
          align-items:stretch;
          margin-top:24px;">
 
@@ -143,41 +188,48 @@
             <div class="bk-card-title"
                  style="display:flex;
                  justify-content:space-between;
-                 align-items:center;">
+                 align-items:center;
+                 border-bottom:1px solid var(--outline-variant);
+                 padding-bottom:12px;
+                 margin-bottom:16px;">
 
-                <div style="display:flex;align-items:center;gap:8px;">
+                <div style="display:flex;align-items:center;gap:6px;">
                     <span class="material-symbols-outlined">bar_chart</span>
-                    <span>Doanh thu theo thời gian</span>
+                    Doanh thu theo thời gian
                 </div>
 
-                <div style="display:flex;align-items:center;gap:12px;">
+                <!-- SELECTORS -->
+                <div style="display:flex;
+                     gap:6px;
+                     padding:4px;
+                     border-radius:8px;
+                     background:var(--surface-variant);
+                     border:1px solid var(--outline-variant);">
 
-                    <!-- Filter -->
-                    <div style="display:flex;
-                         gap:6px;
-                         padding:4px;
-                         border-radius:8px;
-                         background:var(--surface-variant);
-                         border:1px solid var(--outline-variant);">
+                    <!-- BUTTONS -->
+                    <div style="display:flex;gap:2px;">
 
-                        <button type="submit"
-                                name="type"
-                                value="MONTH"
-                                class="bk-btn bk-btn-sm filter-btn ${type=='MONTH'?'active':''}">
+                        <button
+                            type="submit"
+                            name="type"
+                            value="MONTH"
+                            class="bk-btn bk-btn-sm filter-btn ${type=='MONTH'?'active':''}">
                             Tháng
                         </button>
 
-                        <button type="submit"
-                                name="type"
-                                value="QUARTER"
-                                class="bk-btn bk-btn-sm filter-btn ${type=='QUARTER'?'active':''}">
+                        <button
+                            type="submit"
+                            name="type"
+                            value="QUARTER"
+                            class="bk-btn bk-btn-sm filter-btn ${type=='QUARTER'?'active':''}">
                             Quý
                         </button>
 
-                        <button type="submit"
-                                name="type"
-                                value="YEAR"
-                                class="bk-btn bk-btn-sm filter-btn ${type=='YEAR'?'active':''}">
+                        <button
+                            type="submit"
+                            name="type"
+                            value="YEAR"
+                            class="bk-btn bk-btn-sm filter-btn ${type=='YEAR'?'active':''}">
                             Năm
                         </button>
 
@@ -301,7 +353,7 @@
 
                     <c:forEach items="${chartData}" var="c">
 
-                        <div style="width:60px;
+                        <div style="width:80px;
                              height:100%;
                              display:flex;
                              flex-direction:column;
@@ -318,7 +370,7 @@
                                  border-radius:8px 8px 0 0;">
                             </div>
 
-                            <span style="margin-top:10px;font-weight:600;">
+                            <span style="margin-top:10px;font-weight:600;font-size:11px;white-space:nowrap;">
                                 ${c.label}
                             </span>
 
@@ -332,7 +384,7 @@
 
         </div>
 
-        <!-- ================= RIGHT CARD ================= -->
+        <!-- ================= CENTER CARD: DOANH THU THEO PHAN KHUC ================= -->
         <div class="bk-card"
              style="padding:24px;
              display:flex;
@@ -340,59 +392,119 @@
 
             <div class="bk-card-title">
                 <span class="material-symbols-outlined">donut_large</span>
-                Doanh thu theo phân khúc xe
+                Doanh thu theo hãng xe
             </div>
 
             <div class="pie-chart"
                  style="background:${segmentGradient};">
             </div>
-            <c:forEach items="${segmentRevenue}" var="s">
-                <c:choose>
-                    <c:when test="${s.key == 'Sedan'}">
-                        <c:set var="color" value="var(--primary)"/>
-                    </c:when>
+            <c:if test="${segmentTotal == 0}">
+                <p style="text-align:center;color:var(--secondary);font-size:13px;margin-top:40px;font-weight:600;">Chưa có dữ liệu hãng xe</p>
+            </c:if>
+            <c:forEach items="${segmentRevenue}" var="s" varStatus="loop">
+                <c:if test="${s.value > 0}">
+                    <c:set var="color" value="var(--secondary)"/>
+                    <c:choose>
+                        <c:when test="${loop.index % 6 == 0}"><c:set var="color" value="var(--primary)"/></c:when>
+                        <c:when test="${loop.index % 6 == 1}"><c:set var="color" value="var(--success)"/></c:when>
+                        <c:when test="${loop.index % 6 == 2}"><c:set var="color" value="var(--warning)"/></c:when>
+                        <c:when test="${loop.index % 6 == 3}"><c:set var="color" value="var(--error)"/></c:when>
+                        <c:when test="${loop.index % 6 == 4}"><c:set var="color" value="var(--info)"/></c:when>
+                        <c:when test="${loop.index % 6 == 5}"><c:set var="color" value="var(--outline)"/></c:when>
+                    </c:choose>
 
-                    <c:when test="${s.key == 'SUV / Crossover'}">
-                        <c:set var="color" value="var(--success)"/>
-                    </c:when>
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px;">
+                            <span>${s.key}</span>
+                            <span>
+                                <fmt:formatNumber value="${s.value}" maxFractionDigits="0"/>đ
+                                (<fmt:formatNumber value="${s.value * 100 / (segmentTotal == 0 ? 1 : segmentTotal)}" maxFractionDigits="1"/>%)
+                            </span>
+                        </div>
 
-                    <c:when test="${s.key == 'MPV gia đình'}">
-                        <c:set var="color" value="var(--warning)"/>
-                    </c:when>
+                        <div style="height:8px; background:var(--surface-container); border-radius:10px; overflow:hidden;">
+                            <div style="height:100%; width:${s.value * 100 / (segmentTotal == 0 ? 1 : segmentTotal)}%; background:${color}; border-radius:10px;"></div>
+                        </div>
+                    </div>
+                </c:if>
+            </c:forEach>
 
-                    <c:when test="${s.key == 'Xe bán tải / Pickup'}">
-                        <c:set var="color" value="var(--error)"/>
-                    </c:when>
+        </div>
 
-                    <c:otherwise>
-                        <c:set var="color" value="var(--secondary)"/>
-                    </c:otherwise>
-                </c:choose>
+        <!-- ================= RIGHT CARD: CO CAU NGUON THU ================= -->
+        <div class="bk-card"
+             style="padding:24px;
+             display:flex;
+             flex-direction:column;
+             justify-content:space-between;">
 
-                <div style="margin-bottom:14px;">
-                    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px;">
-                        <span>${s.key}</span>
-                        <span>
-                            <fmt:formatNumber value="${s.value}" maxFractionDigits="0"/>đ
-                            (<fmt:formatNumber value="${s.value * 100 / segmentTotal}" maxFractionDigits="1"/>%)
+            <div>
+                <div class="bk-card-title">
+                    <span class="material-symbols-outlined">query_stats</span>
+                    Cơ cấu nguồn thu
+                </div>
+                <p style="font-size:12px; color:var(--secondary); margin-top:4px; margin-bottom:20px;">Tỷ lệ đóng góp doanh thu thực tế.</p>
+                
+                <%-- Linear Stacked Progress Bar --%>
+                <div style="height:20px; background:var(--surface-container); border-radius:10px; overflow:hidden; display:flex; margin-bottom:24px;">
+                    <div style="width:${rentalRatio}%; background:var(--primary);" title="Thuê xe: ${rentalRatio}%"></div>
+                    <div style="width:${depositRatio}%; background:var(--warning);" title="Đặt cọc: ${depositRatio}%"></div>
+                    <div style="width:${additionalRatio}%; background:var(--error);" title="Phụ thu: ${additionalRatio}%"></div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;">
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span style="width:10px; height:10px; border-radius:50%; background:var(--primary); display:inline-block;"></span>
+                                Tiền thuê xe
+                            </span>
+                            <span>${rentalRatio}%</span>
+                        </div>
+                        <span style="font-size:11px; color:var(--secondary); padding-left:16px; display:block;">
+                            <fmt:formatNumber value="${rentalRevenue}" type="number" maxFractionDigits="0"/>đ
                         </span>
                     </div>
 
-                    <div style="height:8px; background:var(--surface-container); border-radius:10px; overflow:hidden;">
-                        <div style="height:100%; width:${s.value * 100 / segmentTotal}%; background:${color}; border-radius:10px;"></div>
+                    <div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;">
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span style="width:10px; height:10px; border-radius:50%; background:var(--warning); display:inline-block;"></span>
+                                Tiền cọc giữ lại
+                            </span>
+                            <span>${depositRatio}%</span>
+                        </div>
+                        <span style="font-size:11px; color:var(--secondary); padding-left:16px; display:block;">
+                            <fmt:formatNumber value="${depositRevenue}" type="number" maxFractionDigits="0"/>đ
+                        </span>
+                    </div>
+
+                    <div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;">
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span style="width:10px; height:10px; border-radius:50%; background:var(--error); display:inline-block;"></span>
+                                Phụ thu phát sinh
+                            </span>
+                            <span>${additionalRatio}%</span>
+                        </div>
+                        <span style="font-size:11px; color:var(--secondary); padding-left:16px; display:block;">
+                            <fmt:formatNumber value="${additionalRevenue}" type="number" maxFractionDigits="0"/>đ
+                        </span>
                     </div>
                 </div>
-            </c:forEach>
-
+            </div>
         </div>
 
     </div>
 
     <div class="bk-card" style="margin-top: 24px; padding: 24px;">
-        <div class="bk-card-title" style="border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 16px;">
+        <div class="bk-card-title" style="border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
             <span>Giao dịch gần đây</span>
+            <button type="button" class="bk-btn bk-btn-sm" onclick="exportTableToCSV('giao_dich_gan_day.csv', 'transactions-table')" style="background: var(--primary); color: white; display: flex; align-items: center; gap: 4px; padding: 6px 12px; font-weight: 600; cursor: pointer;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">download</span> Xuất Excel
+            </button>
         </div>
-        <table class="bk-table" >
+        <table class="bk-table" id="transactions-table">
             <thead>
                 <tr style="background:#ffffff;">
                     <th>Mã GD</th>
@@ -438,4 +550,151 @@
         </table>
     </div>
 </form>
+
+<script>
+function exportTableToCSV(filename, tableId) {
+    var csv = [];
+    var rows = document.querySelectorAll("#" + tableId + " tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (var j = 0; j < cols.length; j++) {
+            var text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/^\s+|\s+$/g, "");
+            text = text.replace(/"/g, '""');
+            row.push('"' + text + '"');
+        }
+        
+        csv.push(row.join(","));        
+    }
+
+    var csvFile = new Blob(["\ufeff" + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+    var downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+function paginateTable(tableId, rowsPerPage) {
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    
+    var tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    
+    var rows = tbody.querySelectorAll("tr");
+    var totalRows = rows.length;
+    if (totalRows <= rowsPerPage) return;
+    
+    var totalPages = Math.ceil(totalRows / rowsPerPage);
+    var currentPage = 1;
+    
+    var navContainer = document.createElement("div");
+    navContainer.className = "bk-pagination";
+    navContainer.style.cssText = "display: flex; justify-content: center; gap: 8px; margin-top: 16px; align-items: center;";
+    table.parentNode.appendChild(navContainer);
+    
+    function showPage(page) {
+        currentPage = page;
+        var start = (page - 1) * rowsPerPage;
+        var end = start + rowsPerPage;
+        
+        for (var i = 0; i < totalRows; i++) {
+            if (i >= start && i < end) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+        
+        renderButtons();
+    }
+    
+    function renderButtons() {
+        navContainer.innerHTML = "";
+        
+        var prevBtn = document.createElement("button");
+        prevBtn.type = "button";
+        prevBtn.className = "bk-btn bk-btn-outline bk-btn-sm";
+        prevBtn.innerText = "Trước";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.style.padding = "4px 8px";
+        prevBtn.onclick = function() { if (currentPage > 1) showPage(currentPage - 1); };
+        navContainer.appendChild(prevBtn);
+        
+        function createPageBtn(p) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "bk-btn bk-btn-sm " + (p === currentPage ? "active" : "");
+            btn.innerText = p;
+            btn.style.padding = "4px 10px";
+            if (p === currentPage) {
+                btn.style.background = "var(--primary)";
+                btn.style.color = "white";
+            } else {
+                btn.style.background = "transparent";
+                btn.style.border = "1px solid var(--outline-variant)";
+                btn.style.color = "var(--on-surface)";
+            }
+            btn.onclick = function() { showPage(p); };
+            navContainer.appendChild(btn);
+        }
+
+        function createEllipsis() {
+            var span = document.createElement("span");
+            span.innerText = "...";
+            span.style.cssText = "padding: 4px 6px; color: var(--secondary); font-weight: bold;";
+            navContainer.appendChild(span);
+        }
+
+        if (totalPages <= 5) {
+            for (var i = 1; i <= totalPages; i++) {
+                createPageBtn(i);
+            }
+        } else {
+            createPageBtn(1);
+
+            if (currentPage <= 3) {
+                createPageBtn(2);
+                createPageBtn(3);
+                createPageBtn(4);
+                createEllipsis();
+                createPageBtn(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                createEllipsis();
+                createPageBtn(totalPages - 3);
+                createPageBtn(totalPages - 2);
+                createPageBtn(totalPages - 1);
+                createPageBtn(totalPages);
+            } else {
+                createEllipsis();
+                createPageBtn(currentPage - 1);
+                createPageBtn(currentPage);
+                createPageBtn(currentPage + 1);
+                createEllipsis();
+                createPageBtn(totalPages);
+            }
+        }
+        
+        var nextBtn = document.createElement("button");
+        nextBtn.type = "button";
+        nextBtn.className = "bk-btn bk-btn-outline bk-btn-sm";
+        nextBtn.innerText = "Sau";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.style.padding = "4px 8px";
+        nextBtn.onclick = function() { if (currentPage < totalPages) showPage(currentPage + 1); };
+        navContainer.appendChild(nextBtn);
+    }
+    
+    showPage(1);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    paginateTable('transactions-table', 5);
+});
+</script>
+
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

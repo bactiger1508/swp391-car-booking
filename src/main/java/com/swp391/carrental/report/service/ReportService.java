@@ -23,6 +23,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import com.swp391.carrental.vehicle.dao.MaintenanceDAO;
+import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
+
 /*
  * Name: ReportService
  * @Author: TamTTMHE190340
@@ -39,6 +42,7 @@ public class ReportService {
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final UserDAO userDAO = new UserDAO();
     private final CarDAO carDAO = new CarDAO();
+    private final MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
     private final PaymentService paymentService = new PaymentService();
     private final BookingService bookingService = new BookingService();
 
@@ -180,15 +184,12 @@ public class ReportService {
 
         Map<String, BigDecimal> segmentRevenue = new LinkedHashMap<>();
 
-        segmentRevenue.put("Sedan", BigDecimal.ZERO);
-        segmentRevenue.put("SUV / Crossover", BigDecimal.ZERO);
-        segmentRevenue.put("MPV gia đình", BigDecimal.ZERO);
-        segmentRevenue.put("Xe bán tải / Pickup", BigDecimal.ZERO);
-        segmentRevenue.put("Xe điện", BigDecimal.ZERO);
-        segmentRevenue.put("Khác", BigDecimal.ZERO);
-
         List<Car> cars = carDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
+
+        for (Car car : cars) {
+            segmentRevenue.put(car.getBrand(), BigDecimal.ZERO);
+        }
 
         for (Booking booking : bookings) {
             LocalDate bookingDate = booking.getStartDate().toLocalDate();
@@ -203,7 +204,7 @@ public class ReportService {
                 continue;
             }
 
-            String segment = classifyCar(car);
+            String segment = car.getBrand();
 
             BigDecimal revenue = booking.getTotalAmount();
 
@@ -212,31 +213,6 @@ public class ReportService {
         return segmentRevenue;
     }
 
-    private String classifyCar(Car car) {
-        if ("ELECTRIC".equalsIgnoreCase(car.getFuelType())) {
-            return "Xe điện";
-        }
-
-        String model = car.getModel().toLowerCase();
-
-        if (model.contains("ranger") || model.contains("hilux") || model.contains("triton") || model.contains("navara") || model.contains("d-max")) {
-            return "Xe bán tải / Pickup";
-        }
-
-        if (car.getSeats() == 7) {
-            return "MPV gia đình";
-        }
-
-        if (car.getSeats() == 5) {
-            return "SUV / Crossover";
-        }
-
-        if (car.getSeats() == 4) {
-            return "Sedan";
-        }
-
-        return "Khác";
-    }
 
     public List<Map<String, Object>> getRevenueChart(LocalDate from, LocalDate to, String type) {
 
@@ -269,7 +245,7 @@ public class ReportService {
                 }
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("label", "T" + week);
+                item.put("label", "Tuần " + week);
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -299,7 +275,7 @@ public class ReportService {
 
                 Map<String, Object> item = new HashMap<>();
 
-                item.put("label", "T" + monthStart.getMonthValue());
+                item.put("label", "Tháng " + monthStart.getMonthValue());
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -328,7 +304,7 @@ public class ReportService {
                 }
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("label", "T" + month);
+                item.put("label", "Tháng " + month);
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -398,15 +374,12 @@ public class ReportService {
 
         Map<String, Integer> result = new LinkedHashMap<>();
 
-        result.put("Sedan", 0);
-        result.put("SUV / Crossover", 0);
-        result.put("MPV gia đình", 0);
-        result.put("Xe bán tải / Pickup", 0);
-        result.put("Xe điện", 0);
-        result.put("Khác", 0);
-
         List<Car> cars = carDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
+
+        for (Car car : cars) {
+            result.put(car.getBrand(), 0);
+        }
 
         for (Booking b : bookings) {
 
@@ -441,7 +414,7 @@ public class ReportService {
                 continue;
             }
 
-            String segment = classifyCar(car);
+            String segment = car.getBrand();
 
             result.put(segment,
                     result.get(segment) + days);
@@ -580,6 +553,8 @@ public class ReportService {
             String type) throws SQLException {
 
         List<Map<String, Object>> chart = new ArrayList<>();
+        List<Car> cars = carDAO.findAll();
+        int totalCars = cars.isEmpty() ? 1 : cars.size();
 
         if (type.equals("MONTH")) {
 
@@ -623,10 +598,17 @@ public class ReportService {
 
                 }
 
+                long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
+                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                if (usagePercent > 100.0) {
+                    usagePercent = 100.0;
+                }
+
                 Map<String, Object> item = new HashMap<>();
 
-                item.put("label", "T" + week);
-                item.put("usage", days);
+                item.put("label", "Tuần " + week);
+                item.put("usage", usagePercent);
+                item.put("height", usagePercent);
 
                 chart.add(item);
             }
@@ -649,12 +631,19 @@ public class ReportService {
                 int days = calculateUsedDays(
                         start, end);
 
+                long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
+                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                if (usagePercent > 100.0) {
+                    usagePercent = 100.0;
+                }
+
                 Map<String, Object> item = new HashMap<>();
 
                 item.put("label",
-                        "T" + start.getMonthValue());
+                        "Tháng " + start.getMonthValue());
 
-                item.put("usage", days);
+                item.put("usage", usagePercent);
+                item.put("height", usagePercent);
 
                 chart.add(item);
 
@@ -679,49 +668,28 @@ public class ReportService {
                 int days
                         = calculateUsedDays(start, end);
 
+                long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
+                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                if (usagePercent > 100.0) {
+                    usagePercent = 100.0;
+                }
+
                 Map<String, Object> item
                         = new HashMap<>();
 
                 item.put(
                         "label",
-                        "T" + m);
+                        "Tháng " + m);
 
-                item.put(
-                        "usage",
-                        days);
+                item.put("usage", usagePercent);
+                item.put("height", usagePercent);
 
                 chart.add(item);
-
             }
-
-        }
-
-        int max = 1;
-
-        for (Map<String, Object> c : chart) {
-
-            int v = (int) c.get("usage");
-
-            if (v > max) {
-                max = v;
-            }
-        }
-
-        for (Map<String, Object> c : chart) {
-
-            int v = (int) c.get("usage");
-
-            double height
-                    = v * 100.0 / max;
-
-            c.put(
-                    "height",
-                    height);
 
         }
 
         return chart;
-
     }
     
     private int calculateUsedDays(
@@ -768,4 +736,19 @@ public class ReportService {
 
     return total;
 }
+
+    public BigDecimal getTotalMaintenanceCost(LocalDate from, LocalDate to) throws SQLException {
+        BigDecimal total = BigDecimal.ZERO;
+        List<MaintenanceSchedule> schedules = maintenanceDAO.getAllMaintenanceSchedules();
+        for (MaintenanceSchedule s : schedules) {
+            if (!"COMPLETED".equals(s.getStatus())) {
+                continue;
+            }
+            LocalDate date = s.getCompletedDate() != null ? s.getCompletedDate() : s.getScheduledDate();
+            if (date != null && !date.isBefore(from) && !date.isAfter(to)) {
+                total = total.add(BigDecimal.valueOf(s.getCost()));
+            }
+        }
+        return total;
+    }
 }

@@ -125,7 +125,7 @@ public class RevenueReportServlet extends HttpServlet {
         for (Map.Entry<String, BigDecimal> e : segmentRevenue.entrySet()) {
             double percent = total.compareTo(BigDecimal.ZERO) == 0 ? 0 : e.getValue().multiply(BigDecimal.valueOf(100)).divide(total, 2, RoundingMode.HALF_UP).doubleValue();
 
-            gradient.append(colors[i]).append(" ").append(start).append("% ").append(start + percent).append("%");
+            gradient.append(colors[i % colors.length]).append(" ").append(start).append("% ").append(start + percent).append("%");
 
             start += percent;
 
@@ -168,7 +168,13 @@ public class RevenueReportServlet extends HttpServlet {
             ? BigDecimal.ZERO 
             : rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal additionalRevenue = reportService.getRevenueByType("ADDITIONAL_FEE", currentDate, toDate);
+        BigDecimal additionalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
+            ? BigDecimal.ZERO 
+            : additionalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal depositRevenue = reportService.getDepositRevenue(currentDate, toDate);
+        BigDecimal depositRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
+            ? BigDecimal.ZERO 
+            : depositRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
 
         int completedBooking = reportService.getCompletedBooking(currentDate, toDate);
 
@@ -183,6 +189,19 @@ public class RevenueReportServlet extends HttpServlet {
         double depositGrowth = reportService.calculateGrowth(depositRevenue, previousDepositRevenue);
         double bookingGrowth = reportService.calculateGrowth(BigDecimal.valueOf(completedBooking), BigDecimal.valueOf(previousBooking));
 
+        BigDecimal maintenanceCost = BigDecimal.ZERO;
+        BigDecimal netProfit = totalRevenue;
+        double netProfitGrowth = 0.0;
+        try {
+            maintenanceCost = reportService.getTotalMaintenanceCost(currentDate, toDate);
+            netProfit = totalRevenue.subtract(maintenanceCost);
+            BigDecimal previousMaintenanceCost = reportService.getTotalMaintenanceCost(previousFrom, previousTo);
+            BigDecimal previousNetProfit = previousRevenue.subtract(previousMaintenanceCost);
+            netProfitGrowth = reportService.calculateGrowth(netProfit, previousNetProfit);
+        } catch (SQLException ex) {
+            Logger.getLogger(RevenueReportServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         List<Map<String, Object>> transactions = new ArrayList<>();
 
         try {
@@ -195,12 +214,17 @@ public class RevenueReportServlet extends HttpServlet {
         request.setAttribute("rentalRevenue", rentalRevenue);
         request.setAttribute("rentalRatio", rentalRatio);
         request.setAttribute("depositRevenue", depositRevenue);
+        request.setAttribute("depositRatio", depositRatio);
         request.setAttribute("additionalRevenue", additionalRevenue);
+        request.setAttribute("additionalRatio", additionalRatio);
+        request.setAttribute("maintenanceCost", maintenanceCost);
+        request.setAttribute("netProfit", netProfit);
         request.setAttribute("completedBooking", completedBooking);
         request.setAttribute("revenueGrowth", revenueGrowth);
         request.setAttribute("additionalFeeGrowth", additionalFeeGrowth);
         request.setAttribute("depositGrowth", depositGrowth);
         request.setAttribute("bookingGrowth", bookingGrowth);
+        request.setAttribute("netProfitGrowth", netProfitGrowth);
         request.setAttribute("compareLabel", compareLabel);
         request.setAttribute("transactions", transactions);
         request.setAttribute("segmentRevenue", segmentRevenue);
