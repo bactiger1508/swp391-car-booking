@@ -67,9 +67,14 @@ public class BookingDetailServlet extends HttpServlet {
                 return;
             }
 
-            // Security: Customer can only view own bookings
-            boolean isStaffOrAdmin = Role.STAFF.equals(currentUser.getRole())
-                    || Role.ADMIN.equals(currentUser.getRole());
+            if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "VIEW_BOOKING")
+                    && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST")) {
+                request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
+                        .forward(request, response);
+                return;
+            }
+
+            boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST");
 
             if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
                 request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
@@ -92,9 +97,9 @@ public class BookingDetailServlet extends HttpServlet {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
                         // Refunds reduce the net paid amount
-                        totalPaid = totalPaid.subtract(p.getAmount());
+                        totalPaid = totalPaid.subtract(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
                     } else {
-                        totalPaid = totalPaid.add(p.getAmount());
+                        totalPaid = totalPaid.add(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
                     }
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
                         depositPaid = true;

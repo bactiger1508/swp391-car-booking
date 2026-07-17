@@ -47,6 +47,23 @@ public class BookingDAO {
         return bookings;
     }
 
+    /** Get bookings that overlap with a given date range (for calendar view) */
+    public List<Booking> findByDateRange(Timestamp rangeStart, Timestamp rangeEnd) throws SQLException {
+        List<Booking> bookings = new ArrayList<>();
+        String sql = "SELECT * FROM bookings WHERE start_date < ? AND end_date > ? "
+                   + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED') "
+                   + "ORDER BY car_id, start_date ASC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, rangeEnd);
+            ps.setTimestamp(2, rangeStart);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) bookings.add(mapRow(rs));
+            }
+        }
+        return bookings;
+    }
+
     /** Get bookings for a specific customer ID */
     public List<Booking> findByCustomerId(int customerId) throws SQLException {
         List<Booking> bookings = new ArrayList<>();

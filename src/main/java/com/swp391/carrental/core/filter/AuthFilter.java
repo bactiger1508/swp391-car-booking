@@ -34,13 +34,16 @@ public class AuthFilter implements Filter {
     private static final List<String> PUBLIC_URLS = Arrays.asList(
             "/login",
             "/register",
+            "/forgot-password",
             "/logout",
+            "/forgot-password",
             "/test-db",
             "/home",
             "/",
             "/index.jsp",
             "/vehicles",
-            "/vehicles/detail"
+            "/vehicles/detail",
+            "/bookings/policy"
     );
 
     /**
@@ -64,6 +67,17 @@ public class AuthFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String path = httpRequest.getServletPath();
+        String uri = httpRequest.getRequestURI();
+        String contextPath = httpRequest.getContextPath();
+        
+        // Normalize path in case getServletPath() returns empty
+        if (path == null || path.isEmpty()) {
+            if (contextPath != null && uri.startsWith(contextPath)) {
+                path = uri.substring(contextPath.length());
+            } else {
+                path = uri;
+            }
+        }
 
         // Allow static resources
         for (String prefix : STATIC_PREFIXES) {
@@ -71,6 +85,12 @@ public class AuthFilter implements Filter {
                 chain.doFilter(request, response);
                 return;
             }
+        }
+
+        // Allow public API endpoints (e.g. payment webhooks)
+        if (path.startsWith("/api/") || path.contains("/api/payment/webhook")) {
+            chain.doFilter(request, response);
+            return;
         }
 
         // Allow public URLs

@@ -88,25 +88,32 @@ public class VehicleManagementServlet extends HttpServlet {
 
         try {
             if ("create".equals(action)) {
-                handleCreateCar(request, response, currentUser);
+                handleCreateCar(request, response);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Tạo xe thành công!");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("update".equals(action)) {
-                handleUpdateCar(request, response, currentUser);
+                handleUpdateCar(request, response);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Cập nhật xe thành công!");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("delete".equals(action)) {
-                handleDeleteCar(request, response, currentUser);
-                sendJsonResponse(response, true, "Xóa xe thành công!");
+                handleDeleteCar(request, response);
             } else if ("deleteImage".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleDeleteImage(request, response);
             } else if ("setPrimaryImage".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleSetPrimaryImage(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/vehicles/manage");
@@ -295,8 +302,27 @@ public class VehicleManagementServlet extends HttpServlet {
         String uniqueFileName = System.currentTimeMillis() + "_" + sanitizedFileName;
         Path filePath = uploadPath.resolve(uniqueFileName);
 
+        // Copy to target/deployment directory (so it is visible immediately in the running app)
         try (InputStream input = part.getInputStream()) {
-            Files.copy(input, filePath);
+            Files.copy(input, filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Also duplicate to source directory src/main/webapp (so it is persisted in the codebase)
+        try {
+            String realPath = getServletContext().getRealPath("");
+            if (realPath != null && realPath.contains("target")) {
+                String srcPathStr = realPath.substring(0, realPath.indexOf("target")) + "src/main/webapp/assets/images/cars";
+                Path srcPath = Paths.get(srcPathStr);
+                if (Files.exists(srcPath.getParent())) {
+                    if (!Files.exists(srcPath)) {
+                        Files.createDirectories(srcPath);
+                    }
+                    Path srcFilePath = srcPath.resolve(uniqueFileName);
+                    Files.copy(filePath, srcFilePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[VehicleManagementServlet] Failed to duplicate upload to source folder: " + e.getMessage());
         }
 
         CarImage image = new CarImage();
@@ -307,6 +333,7 @@ public class VehicleManagementServlet extends HttpServlet {
         image.setSortOrder(sortOrder);
         return image;
     }
+
 
     private void saveSingleImage(int carId, HttpServletRequest request, String partName, boolean makePrimary)
             throws IOException, ServletException {

@@ -23,6 +23,7 @@ public class Payment {
     private int bookingId;
     private Integer contractId;
     private BigDecimal amount;
+    private BigDecimal amountPaid; // actual amount received — may differ from amount (overpayment)
     private String paymentType;
     private String paymentMethod;
     private String status;
@@ -49,6 +50,9 @@ public class Payment {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public BigDecimal getAmountPaid() { return amountPaid; }
+    public void setAmountPaid(BigDecimal amountPaid) { this.amountPaid = amountPaid; }
 
     public String getPaymentType() { return paymentType; }
     public void setPaymentType(String paymentType) { this.paymentType = paymentType; }

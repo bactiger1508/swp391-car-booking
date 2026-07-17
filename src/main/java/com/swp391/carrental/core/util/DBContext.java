@@ -30,20 +30,19 @@ public class DBContext {
     static {
         try (InputStream input = DBContext.class.getClassLoader()
                 .getResourceAsStream("db.properties")) {
-            if (input == null) {
-                throw new RuntimeException(
-                        "Cannot find db.properties on classpath. "
-                        + "Make sure src/main/resources/db.properties exists.");
+            if (input != null) {
+                props.load(input);
+            } else {
+                System.out.println("Warning: db.properties not found on classpath, relying entirely on Environment Variables.");
             }
-            props.load(input);
 
-            String server = props.getProperty("db.server", "localhost");
-            String port   = props.getProperty("db.port", "1433");
-            String dbName = props.getProperty("db.name", "CarRentalDB");
-            String user   = props.getProperty("db.user", "car_rental_user");
-            String pass   = props.getProperty("db.password", "");
-            String encrypt = props.getProperty("db.encrypt", "true");
-            String trustCert = props.getProperty("db.trustServerCertificate", "true");
+            String server = System.getenv("DB_SERVER") != null ? System.getenv("DB_SERVER") : props.getProperty("db.server", "localhost");
+            String port   = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : props.getProperty("db.port", "1433");
+            String dbName = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : props.getProperty("db.name", "CarRentalDB");
+            String user   = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : props.getProperty("db.user", "sa");
+            String pass   = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : props.getProperty("db.password", "123");
+            String encrypt = System.getenv("DB_ENCRYPT") != null ? System.getenv("DB_ENCRYPT") : props.getProperty("db.encrypt", "true");
+            String trustCert = System.getenv("DB_TRUST_CERT") != null ? System.getenv("DB_TRUST_CERT") : props.getProperty("db.trustServerCertificate", "true");
 
             connectionUrl = "jdbc:sqlserver://" + server + ":" + port
                     + ";databaseName=" + dbName
@@ -56,11 +55,9 @@ public class DBContext {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load db.properties: " + e.getMessage(), e);
+            System.err.println("Warning: Failed to load db.properties: " + e.getMessage());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(
-                    "SQL Server JDBC driver not found. "
-                    + "Make sure mssql-jdbc is in pom.xml dependencies.", e);
+            throw new RuntimeException("SQL Server JDBC Driver not found.", e);
         }
     }
 

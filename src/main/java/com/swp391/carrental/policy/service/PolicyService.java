@@ -10,9 +10,9 @@ import com.swp391.carrental.policy.model.PolicySetting;
 /*
  * Name: PolicyService
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Contains business logic for PolicyService.
+ * Date: 17/07/2026
+ * Version: 1.1
+ * Description: Contains business logic for PolicyService with thread-safe volatile static cache implementation.
  */
 
 
@@ -23,6 +23,25 @@ import com.swp391.carrental.policy.model.PolicySetting;
 public class PolicyService {
 
     private final PolicySettingDAO policyDAO = new PolicySettingDAO();
+    private static volatile Map<String, String> cache = null;
+
+    private static synchronized void loadCache(PolicySettingDAO dao) {
+        if (cache == null) {
+            Map<String, String> temp = new java.util.HashMap<>();
+            try {
+                for (PolicySetting setting : dao.findAll()) {
+                    temp.put(setting.getPolicyKey(), setting.getPolicyValue());
+                }
+            } catch (SQLException e) {
+                // Fallback will handle it
+            }
+            cache = temp;
+        }
+    }
+
+    private static synchronized void clearCache() {
+        cache = null;
+    }
 
     // Get policy by key
     public PolicySetting getPolicyByKey(String key) {
@@ -35,12 +54,11 @@ public class PolicyService {
 
     // Get policy value with fallback default value 
     public String getPolicyValue(String key, String defaultValue) {
-        try {
-            PolicySetting setting = policyDAO.findByKey(key);
-            return setting != null ? setting.getPolicyValue() : defaultValue;
-        } catch (SQLException e) {
-            return defaultValue;
+        if (cache == null) {
+            loadCache(policyDAO);
         }
+        String val = cache.get(key);
+        return val != null ? val : defaultValue;
     }
 
     // Get all policy settings
@@ -64,7 +82,11 @@ public class PolicyService {
     // Update a policy setting
     public boolean updatePolicy(String key, String value, int updatedBy) {
         try {
-            return policyDAO.updateValue(key, value, updatedBy);
+            boolean ok = policyDAO.updateValue(key, value, updatedBy);
+            if (ok) {
+                clearCache();
+            }
+            return ok;
         } catch (SQLException e) {
             throw new AppException("Failed to update policy.", e);
         }
@@ -75,7 +97,11 @@ public class PolicyService {
      */
     public int batchUpdatePolicies(Map<String, String> updates, int updatedBy) {
         try {
-            return policyDAO.batchUpdateValues(updates, updatedBy);
+            int count = policyDAO.batchUpdateValues(updates, updatedBy);
+            if (count > 0) {
+                clearCache();
+            }
+            return count;
         } catch (SQLException e) {
             throw new AppException("Failed to batch-update policies.", e);
         }
@@ -84,7 +110,11 @@ public class PolicyService {
     // Delete a policy setting 
     public boolean deletePolicy(int policyId) {
         try {
-            return policyDAO.delete(policyId);
+            boolean ok = policyDAO.delete(policyId);
+            if (ok) {
+                clearCache();
+            }
+            return ok;
         } catch (SQLException e) {
             throw new AppException("Failed to delete policy.", e);
         }

@@ -28,13 +28,11 @@ import com.swp391.carrental.vehicle.service.VehicleService;
  * Description: Handles booking approval/rejection by Staff/Admin. GET shows pending list, POST processes actions.
  */
 
-
-
 /**
  * Staff/Admin booking approval page.
  * URL: /bookings/approval
  */
-@WebServlet(name = "BookingApprovalServlet", urlPatterns = {"/bookings/approval"})
+@WebServlet(name = "BookingApprovalServlet", urlPatterns = { "/bookings/approval" })
 public class BookingApprovalServlet extends HttpServlet {
 
     private final BookingService bookingService = new BookingService();
@@ -96,8 +94,7 @@ public class BookingApprovalServlet extends HttpServlet {
             throws ServletException, IOException {
 
         User currentUser = (User) request.getSession().getAttribute("currentUser");
-        if (currentUser == null || (!Role.STAFF.equals(currentUser.getRole())
-                && !Role.ADMIN.equals(currentUser.getRole()))) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PROCESS_BOOKING_REQUEST")) {
             request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                     .forward(request, response);
             return;

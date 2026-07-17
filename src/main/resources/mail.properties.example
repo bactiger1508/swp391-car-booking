@@ -1,0 +1,7 @@
+# Gmail SMTP Configuration Example
+# Copy this file to mail.properties and fill in your app password
+
+mail.username=YOUR_GMAIL_ADDRESS@gmail.com
+mail.password=YOUR_16_CHAR_GOOGLE_APP_PASSWORD
+mail.smtp.host=smtp.gmail.com
+mail.smtp.port=587

@@ -100,4 +100,54 @@ public class ContractService {
             throw new AppException("Failed to update contract status.", e);
         }
     }
+
+    // Update contract details with validation
+    public boolean updateContract(RentalContract contract, int editorId, String editorRole) {
+        try {
+            // BR7: Check if contract exists and is still editable
+            RentalContract existing = contractDAO.findById(contract.getContractId());
+            if (existing == null) {
+                throw new AppException("Không tìm thấy hợp đồng.");
+            }
+            if (!ContractStatus.DRAFT.equals(existing.getStatus())) {
+                throw new AppException("Hợp đồng đã ký kết hoặc hoàn tất, không thể chỉnh sửa.");
+            }
+
+            // BR6: Validate contract data
+            if (contract.getStartDate() == null || contract.getEndDate() == null) {
+                throw new AppException("Thời hạn thuê xe không được để trống.");
+            }
+            if (!contract.getEndDate().isAfter(contract.getStartDate())) {
+                throw new AppException("Ngày trả xe phải sau ngày nhận xe.");
+            }
+            if (contract.getDailyRate() == null || contract.getDailyRate().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                throw new AppException("Đơn giá thuê ngày không hợp lệ.");
+            }
+            if (contract.getDepositAmount() == null || contract.getDepositAmount().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                throw new AppException("Tiền đặt cọc không hợp lệ.");
+            }
+            if (contract.getTotalAmount() == null || contract.getTotalAmount().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                throw new AppException("Tổng tiền hợp đồng không hợp lệ.");
+            }
+
+            boolean updated = contractDAO.update(contract);
+            if (updated) {
+                try {
+                    com.swp391.carrental.core.dao.AuditLogDAO auditLogDAO = new com.swp391.carrental.core.dao.AuditLogDAO();
+                    com.swp391.carrental.core.model.AuditLog log = new com.swp391.carrental.core.model.AuditLog();
+                    log.setUserId(editorId);
+                    log.setAction("UPDATE_CONTRACT");
+                    log.setEntityType("CONTRACT");
+                    log.setEntityId(contract.getContractId());
+                    log.setDescription("Cập nhật thông tin hợp đồng #" + contract.getContractId() + " bởi " + editorRole);
+                    auditLogDAO.insert(log);
+                } catch (Exception ex) {
+                    // Ignore audit log failure
+                }
+            }
+            return updated;
+        } catch (SQLException e) {
+            throw new AppException("Lỗi cập nhật hợp đồng.", e);
+        }
+    }
 }

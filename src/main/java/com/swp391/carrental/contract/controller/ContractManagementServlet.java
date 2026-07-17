@@ -66,7 +66,8 @@ public class ContractManagementServlet extends HttpServlet {
                     // Contract existing
                     if (contract != null) {
                         // Authorization check: CUSTOMER can only view their own contract
-                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin && contract.getCustomerId() != currentUser.getUserId()) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
                             return;
                         }
@@ -80,14 +81,16 @@ public class ContractManagementServlet extends HttpServlet {
                     // Booking have a contract
                     if (contract != null) {
                         // Authorization check: CUSTOMER can only view their own contract
-                        if ("CUSTOMER".equals(currentUser.getRole()) && contract.getCustomerId() != currentUser.getUserId()) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin && contract.getCustomerId() != currentUser.getUserId()) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập hợp đồng này.");
                             return;
                         }
                         booking = bookingService.getBookingById(contract.getBookingId());
                     } else {
                         // Draft contract - only staff/admin can create a contract
-                        if ("CUSTOMER".equals(currentUser.getRole())) {
+                        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+                        if (!isStaffOrAdmin) {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hợp đồng mới.");
                             return;
                         }
@@ -125,6 +128,43 @@ public class ContractManagementServlet extends HttpServlet {
                 if (contract != null) {
                     request.setAttribute("contract", contract);
                     request.setAttribute("creator", userService.getUserById(contract.getCreatedBy()));
+                    
+                    // Load VAT Invoice and total completed payment amount
+                    try {
+                        com.swp391.carrental.payment.dao.VatInvoiceDAO vatInvoiceDAO = new com.swp391.carrental.payment.dao.VatInvoiceDAO();
+                        com.swp391.carrental.payment.model.VatInvoice vatInvoice = vatInvoiceDAO.findByContractId(contract.getContractId());
+                        request.setAttribute("vatInvoice", vatInvoice);
+                        
+                        com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
+                        java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(contract.getBookingId());
+                        java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
+                        for (com.swp391.carrental.payment.model.Payment p : payments) {
+                            if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                                if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                                    totalPaid = totalPaid.subtract(p.getAmount());
+                                } else {
+                                    totalPaid = totalPaid.add(p.getAmount());
+                                }
+                            }
+                        }
+                        request.setAttribute("totalPaid", totalPaid);
+                    } catch (Exception ex) {
+                        // ignore or log
+                    }
+
+                    // Handle edit mode
+                    String editParam = request.getParameter("edit");
+                    if ("true".equals(editParam)) {
+                        if ("CUSTOMER".equals(currentUser.getRole())) {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền chỉnh sửa hợp đồng.");
+                            return;
+                        }
+                        if (!com.swp391.carrental.contract.constant.ContractStatus.DRAFT.equals(contract.getStatus())) {
+                            request.setAttribute("error", "Chỉ có thể chỉnh sửa hợp đồng đang ở trạng thái Nháp (DRAFT).");
+                        } else {
+                            request.setAttribute("editMode", true);
+                        }
+                    }
                 }
 
             } catch (Exception e) {
@@ -135,7 +175,8 @@ public class ContractManagementServlet extends HttpServlet {
         } // Display contract management page
         else {
             java.util.List<com.swp391.carrental.contract.model.RentalContract> contracts;
-            if ("CUSTOMER".equals(currentUser.getRole())) {
+            boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT");
+            if (!isStaffOrAdmin) {
                 contracts = contractService.getContractsByCustomerId(currentUser.getUserId());
             } else {
                 contracts = contractService.getAllContracts();
@@ -181,6 +222,12 @@ public class ContractManagementServlet extends HttpServlet {
             return;
         }
 
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT")
+                && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "UPDATE_CONTRACT")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
+            return;
+        }
+
         String action = request.getParameter("action");
         
         // Activate contract action
@@ -201,6 +248,77 @@ public class ContractManagementServlet extends HttpServlet {
                     session.setAttribute("errorMessage", "Lỗi kích hoạt hợp đồng: " + e.getMessage());
                 }
                 response.sendRedirect(request.getContextPath() + "/contracts");
+                return;
+            }
+        }
+
+        // Update contract details action
+        if ("update".equals(action)) {
+            if ("CUSTOMER".equals(currentUser.getRole())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền chỉnh sửa hợp đồng.");
+                return;
+            }
+            String contractIdStr = request.getParameter("contractId");
+            try {
+                if (contractIdStr == null || contractIdStr.isEmpty()) {
+                    throw new com.swp391.carrental.core.exception.AppException("Không có mã hợp đồng.");
+                }
+                int contractId = Integer.parseInt(contractIdStr);
+                
+                String startDateStr = request.getParameter("startDate");
+                String endDateStr = request.getParameter("endDate");
+                String dailyRateStr = request.getParameter("dailyRate");
+                String totalAmountStr = request.getParameter("totalAmount");
+                String depositAmountStr = request.getParameter("depositAmount");
+                String baseAmountStr = request.getParameter("baseAmount");
+                String discountAmountStr = request.getParameter("discountAmount");
+                String terms = request.getParameter("termsAndConditions");
+
+                // Parsing values
+                java.time.LocalDateTime startDate = null;
+                java.time.LocalDateTime endDate = null;
+                if (startDateStr != null && !startDateStr.isEmpty()) {
+                    startDate = java.time.LocalDateTime.parse(startDateStr);
+                }
+                if (endDateStr != null && !endDateStr.isEmpty()) {
+                    endDate = java.time.LocalDateTime.parse(endDateStr);
+                }
+
+                java.math.BigDecimal dailyRate = dailyRateStr != null && !dailyRateStr.isEmpty() 
+                        ? new java.math.BigDecimal(dailyRateStr.replace(",", "")) : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal totalAmount = totalAmountStr != null && !totalAmountStr.isEmpty() 
+                        ? new java.math.BigDecimal(totalAmountStr.replace(",", "")) : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal depositAmount = depositAmountStr != null && !depositAmountStr.isEmpty() 
+                        ? new java.math.BigDecimal(depositAmountStr.replace(",", "")) : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal baseAmount = baseAmountStr != null && !baseAmountStr.isEmpty() 
+                        ? new java.math.BigDecimal(baseAmountStr.replace(",", "")) : java.math.BigDecimal.ZERO;
+                java.math.BigDecimal discountAmount = discountAmountStr != null && !discountAmountStr.isEmpty() 
+                        ? new java.math.BigDecimal(discountAmountStr.replace(",", "")) : java.math.BigDecimal.ZERO;
+
+                com.swp391.carrental.contract.model.RentalContract contract = new com.swp391.carrental.contract.model.RentalContract();
+                contract.setContractId(contractId);
+                contract.setStartDate(startDate);
+                contract.setEndDate(endDate);
+                contract.setDailyRate(dailyRate);
+                contract.setTotalAmount(totalAmount);
+                contract.setDepositAmount(depositAmount);
+                contract.setBaseAmount(baseAmount);
+                contract.setDiscountAmount(discountAmount);
+                contract.setTermsAndConditions(terms);
+
+                boolean updated = contractService.updateContract(contract, currentUser.getUserId(), currentUser.getRole());
+                if (updated) {
+                    if (session != null) {
+                        session.setAttribute("successMessage", "Cập nhật hợp đồng thành công!");
+                    }
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
+                return;
+            } catch (Exception e) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Lỗi cập nhật hợp đồng: " + e.getMessage());
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractIdStr + "&edit=true");
                 return;
             }
         }

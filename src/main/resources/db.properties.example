@@ -1,0 +1,10 @@
+# Database Connection Configuration Example
+# Copy this file to db.properties and fill in your local settings
+
+db.server=localhost
+db.port=1433
+db.name=CarRentalDB
+db.user=YOUR_DB_USER
+db.password=YOUR_DB_PASSWORD
+db.encrypt=true
+db.trustServerCertificate=true
