@@ -171,18 +171,12 @@
     </div>
 
     <%-- GRAPH & BREAKDOWN GRID --%>
-    <div class="bk-detail-grid"
-         style="display:grid;
-         grid-template-columns:1.8fr 1.1fr 1.1fr;
-         gap:20px;
-         align-items:stretch;
+    <!-- ================= LEFT CARD ================= -->
+    <div class="bk-card"
+         style="padding:24px;
+         display:flex;
+         flex-direction:column;
          margin-top:24px;">
-
-        <!-- ================= LEFT CARD ================= -->
-        <div class="bk-card"
-             style="padding:24px;
-             display:flex;
-             flex-direction:column;">
 
             <!-- HEADER -->
             <div class="bk-card-title"
@@ -382,7 +376,15 @@
 
             </div>
 
-        </div>
+    </div>
+
+    <!-- ================= BREAKDOWN GRID ================= -->
+    <div class="bk-detail-grid"
+         style="display:grid;
+         grid-template-columns:1fr 1fr;
+         gap:20px;
+         align-items:stretch;
+         margin-top:24px;">
 
         <!-- ================= CENTER CARD: DOANH THU THEO PHAN KHUC ================= -->
         <div class="bk-card"
