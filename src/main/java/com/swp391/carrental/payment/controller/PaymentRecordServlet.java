@@ -270,9 +270,26 @@ public class PaymentRecordServlet extends HttpServlet {
             return;
         }
 
-        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT")) {
+        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT");
+        boolean isCustomer = "CUSTOMER".equals(currentUser.getRole());
+
+        if (!isStaffOrAdmin && !isCustomer) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
             return;
+        }
+
+        if (isCustomer) {
+            try {
+                int bookingId = Integer.parseInt(request.getParameter("bookingId"));
+                com.swp391.carrental.booking.model.Booking booking = bookingService.getBookingById(bookingId);
+                if (booking == null || booking.getCustomerId() != currentUser.getUserId()) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện giao dịch cho đơn thuê này.");
+                    return;
+                }
+            } catch (Exception e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Yêu cầu không hợp lệ.");
+                return;
+            }
         }
 
         try {
