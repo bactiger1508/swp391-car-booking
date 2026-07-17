@@ -39,6 +39,9 @@
         </a>
 
         <c:if test="${sessionScope.currentUser != null}">
+            <a href="${pageContext.request.contextPath}/notifications" class="bk-sidebar-link ${_cp == '/notifications' ? 'active' : ''}">
+                <span class="material-symbols-outlined">notifications</span> Thông báo
+            </a>
             <a href="${pageContext.request.contextPath}/profile" class="bk-sidebar-link ${_cp == '/profile' ? 'active' : ''}">
                 <span class="material-symbols-outlined">person</span> Hồ sơ cá nhân
             </a>
@@ -84,8 +87,8 @@
                 <a href="${pageContext.request.contextPath}/vehicles/availability" class="bk-sidebar-link ${_cp == '/vehicles/availability' ? 'active' : ''}">
                     <span class="material-symbols-outlined">calendar_today</span> Kiểm tra xe trống
                 </a>
-                <a href="${pageContext.request.contextPath}/maintenance" class="bk-sidebar-link ${_cp == '/maintenance' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">build</span> Lịch bảo dưỡng
+                <a href="${pageContext.request.contextPath}/vehicles/maintenance" class="bk-sidebar-link ${_cp == '/vehicles/maintenance' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">build</span> Quản lý bảo trì
                 </a>
 
                 <div class="bk-sidebar-section">Vận hành & Hợp đồng</div>
@@ -131,6 +134,12 @@
                 <a href="${pageContext.request.contextPath}/admin/payment-settings" class="bk-sidebar-link ${_cp == '/admin/payment-settings' ? 'active' : ''}">
                     <span class="material-symbols-outlined">payment</span> Cấu hình thanh toán
                 </a>
+                <a href="${pageContext.request.contextPath}/vehicles/brands" class="bk-sidebar-link ${_cp == '/vehicles/brands' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">branding_watermark</span> Hãng xe & Model
+                </a>
+                <a href="${pageContext.request.contextPath}/audit-logs" class="bk-sidebar-link ${_cp == '/audit-logs' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">history</span> Lịch sử hoạt động
+                </a>
             </c:if>
         </c:if>
     </nav>
@@ -156,7 +165,11 @@
         <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
 
         <div class="bk-header-actions">
-            <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
+            <c:if test="${sessionScope.currentUser != null}">
+                <a href="${pageContext.request.contextPath}/notifications" class="bk-header-icon">
+                    <span class="material-symbols-outlined">notifications</span>
+                </a>
+            </c:if>
             <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>
             
             <c:if test="${sessionScope.currentUser != null}">
