@@ -78,17 +78,43 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
                 break;
         }
 
+        LocalDate previousFrom;
+        LocalDate previousTo;
+
+        switch (type) {
+            case "YEAR":
+                previousFrom = fromDate.minusYears(1);
+                previousTo = toDate.minusYears(1);
+                break;
+
+            case "QUARTER":
+                previousFrom = fromDate.minusMonths(3);
+                previousTo = fromDate.minusDays(1);
+                break;
+
+            default:
+                previousFrom = fromDate.minusMonths(1);
+                previousTo = previousFrom.withDayOfMonth(previousFrom.lengthOfMonth());
+                break;
+        }
+
         LocalDateTime from = fromDate.atStartOfDay();
         LocalDateTime to = toDate.atTime(LocalTime.MAX);
+        LocalDateTime prevFrom = previousFrom.atStartOfDay();
+        LocalDateTime prevTo = previousTo.atTime(LocalTime.MAX);
 
-        String compareLabel = switch (type) {
-            case "YEAR" ->
-                "năm trước";
-            case "QUARTER" ->
-                "quý trước";
-            default ->
-                "tháng trước";
-        };
+        String compareLabel;
+        switch (type) {
+            case "YEAR":
+                compareLabel = "năm trước";
+                break;
+            case "QUARTER":
+                compareLabel = "quý trước";
+                break;
+            default:
+                compareLabel = "tháng trước";
+                break;
+        }
 
         try {
 
@@ -101,6 +127,11 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
 
             Map<String, Object> mostUsedCar
                     = reportService.getMostUsedCar(from, to);
+
+            double previousUsage = reportService.getAverageUsage(prevFrom, prevTo);
+            double usageGrowth = previousUsage == 0 
+                ? 0 
+                : (averageUsage - previousUsage) * 100.0 / previousUsage;
 
             // ===== Donut =====
             Map<String, Integer> segmentUsage
@@ -117,7 +148,8 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
                 "var(--success)",
                 "var(--warning)",
                 "var(--error)",
-                "var(--secondary)"
+                "var(--secondary)",
+                "var(--outline)"
             };
 
             StringBuilder gradient
@@ -157,6 +189,7 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
             List<Map<String, Object>> chartData
                     = reportService.getUsageChart(from, to, type);
             request.setAttribute("averageUsage", averageUsage);
+            request.setAttribute("usageGrowth", usageGrowth);
             request.setAttribute("totalUsedDays", totalUsedDays);
             request.setAttribute("mostUsedCar", mostUsedCar);
 

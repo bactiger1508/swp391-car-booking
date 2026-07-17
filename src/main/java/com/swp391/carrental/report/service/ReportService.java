@@ -185,6 +185,7 @@ public class ReportService {
         segmentRevenue.put("MPV gia đình", BigDecimal.ZERO);
         segmentRevenue.put("Xe bán tải / Pickup", BigDecimal.ZERO);
         segmentRevenue.put("Xe điện", BigDecimal.ZERO);
+        segmentRevenue.put("Khác", BigDecimal.ZERO);
 
         List<Car> cars = carDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
@@ -402,6 +403,7 @@ public class ReportService {
         result.put("MPV gia đình", 0);
         result.put("Xe bán tải / Pickup", 0);
         result.put("Xe điện", 0);
+        result.put("Khác", 0);
 
         List<Car> cars = carDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();

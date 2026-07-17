@@ -89,14 +89,18 @@ public class RevenueReportServlet extends HttpServlet {
                 break;
         }
 
-        String compareLabel = switch (type) {
-            case "YEAR" ->
-                "năm trước";
-            case "QUARTER" ->
-                "quý trước";
-            default ->
-                "tháng trước";
-        };
+        String compareLabel;
+        switch (type) {
+            case "YEAR":
+                compareLabel = "năm trước";
+                break;
+            case "QUARTER":
+                compareLabel = "quý trước";
+                break;
+            default:
+                compareLabel = "tháng trước";
+                break;
+        }
 
         Map<String, BigDecimal> segmentRevenue = new LinkedHashMap<>();
         try {
@@ -111,7 +115,7 @@ public class RevenueReportServlet extends HttpServlet {
             total = total.add(value);
         }
 
-        String[] colors = {"var(--primary)", "var(--success)", "var(--warning)", "var(--error)", "var(--secondary)"};
+        String[] colors = {"var(--primary)", "var(--success)", "var(--warning)", "var(--error)", "var(--secondary)", "var(--outline)"};
 
         StringBuilder gradient = new StringBuilder("conic-gradient(");
 
@@ -160,7 +164,9 @@ public class RevenueReportServlet extends HttpServlet {
         // ================= KPI =================
         BigDecimal totalRevenue = reportService.getTotalRevenue(currentDate, toDate);
         BigDecimal rentalRevenue = reportService.getRevenueByType("RENTAL", currentDate, toDate);
-        BigDecimal rentalRatio = rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal rentalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
+            ? BigDecimal.ZERO 
+            : rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal additionalRevenue = reportService.getRevenueByType("ADDITIONAL_FEE", currentDate, toDate);
         BigDecimal depositRevenue = reportService.getDepositRevenue(currentDate, toDate);
 

@@ -113,15 +113,24 @@
 
         <div class="bk-stat-card">
             <span class="label">Xe được thuê nhiều nhất</span>
-            <c:if test="${not empty mostUsedCar}">
-
-                ${mostUsedCar.car.brand}
-                ${mostUsedCar.car.model}
-
-            </c:if>
-            <span style="font-size:12px;color:var(--primary);margin-top:8px;font-weight:700;">
-                ${mostUsedCar.usedDays} ngày hoạt động
-            </span>
+            <c:choose>
+                <c:when test="${not empty mostUsedCar}">
+                    <span class="value" style="font-size:18px; font-weight:700; color:var(--primary); margin-top:8px; display:block;">
+                        ${mostUsedCar.car.brand} ${mostUsedCar.car.model}
+                    </span>
+                    <span style="font-size:12px;color:var(--primary);margin-top:4px;font-weight:700;display:block;">
+                        ${mostUsedCar.usedDays} ngày hoạt động
+                    </span>
+                </c:when>
+                <c:otherwise>
+                    <span class="value" style="font-size:18px; font-weight:700; color:var(--on-surface-variant); margin-top:8px; display:block;">
+                        Không có dữ liệu
+                    </span>
+                    <span style="font-size:12px;color:var(--secondary);margin-top:4px;font-weight:600;display:block;">
+                        Chưa có lịch thuê trong kỳ
+                    </span>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="bk-stat-card">
