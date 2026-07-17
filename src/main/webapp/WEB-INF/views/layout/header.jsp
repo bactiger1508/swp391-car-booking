@@ -39,6 +39,9 @@
                 </a>
 
                 <c:if test="${sessionScope.currentUser != null}">
+                    <a href="${pageContext.request.contextPath}/notifications" class="bk-sidebar-link ${_cp == '/notifications' ? 'active' : ''}">
+                        <span class="material-symbols-outlined">notifications</span> Thông báo
+                    </a>
                     <a href="${pageContext.request.contextPath}/profile" class="bk-sidebar-link ${_cp == '/profile' ? 'active' : ''}">
                         <span class="material-symbols-outlined">person</span> Hồ sơ cá nhân
                     </a>
@@ -146,7 +149,7 @@
                             </a>
                         </c:if>
                         <c:if test="${hasMaintenance}">
-                            <a href="${pageContext.request.contextPath}/maintenance" class="bk-sidebar-link ${_cp == '/maintenance' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/vehicles/maintenance" class="bk-sidebar-link ${_cp == '/vehicles/maintenance' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">build</span> Lịch bảo dưỡng
                             </a>
                         </c:if>
@@ -210,11 +213,6 @@
                                 <span class="material-symbols-outlined">manage_accounts</span> Quản lý thành viên
                             </a>
                         </c:if>
-                        <c:if test="${isAdmin}">
-                            <a href="${pageContext.request.contextPath}/roles" class="bk-sidebar-link ${_cp == '/roles' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">security</span> Quyền & Vai trò
-                            </a>
-                        </c:if>
                         <c:if test="${hasTaxInvoice}">
                             <a href="${pageContext.request.contextPath}/tax-invoice-settings" class="bk-sidebar-link ${_cp == '/tax-invoice-settings' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">receipt</span> Cấu hình hóa đơn thuế
@@ -223,6 +221,17 @@
                         <c:if test="${hasPaymentSetting}">
                             <a href="${pageContext.request.contextPath}/admin/payment-settings" class="bk-sidebar-link ${_cp == '/admin/payment-settings' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payment</span> Cấu hình thanh toán
+                            </a>
+                        </c:if>
+                        <c:if test="${isAdmin}">
+                            <a href="${pageContext.request.contextPath}/roles" class="bk-sidebar-link ${_cp == '/roles' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">security</span> Quyền & Vai trò
+                            </a>
+                            <a href="${pageContext.request.contextPath}/vehicles/brands" class="bk-sidebar-link ${_cp == '/vehicles/brands' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">branding_watermark</span> Hãng xe & Model
+                            </a>
+                            <a href="${pageContext.request.contextPath}/audit-logs" class="bk-sidebar-link ${_cp == '/audit-logs' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">history</span> Lịch sử hoạt động
                             </a>
                         </c:if>
                     </c:if>
@@ -250,7 +259,14 @@
                 <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
 
                 <div class="bk-header-actions">
-                    <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
+                    <c:if test="${sessionScope.currentUser != null}">
+                        <a href="${pageContext.request.contextPath}/notifications" class="bk-header-icon">
+                            <span class="material-symbols-outlined">notifications</span>
+                        </a>
+                    </c:if>
+                    <c:if test="${sessionScope.currentUser == null}">
+                        <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
+                    </c:if>
                     <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>
 
                     <c:if test="${sessionScope.currentUser != null}">

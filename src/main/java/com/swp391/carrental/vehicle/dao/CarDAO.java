@@ -22,8 +22,14 @@ import com.swp391.carrental.vehicle.model.Car;
  */
 public class CarDAO {
 
+    private static final String BASE_SELECT =
+            "SELECT c.*, m.model_name AS model, b.brand_name AS brand, b.brand_id AS brand_id "
+          + "FROM cars c "
+          + "JOIN vehicle_models m ON c.model_id = m.model_id "
+          + "JOIN vehicle_brands b ON m.brand_id = b.brand_id ";
+
     public Car findById(int carId) throws SQLException {
-        String sql = "SELECT * FROM cars WHERE car_id = ?";
+        String sql = BASE_SELECT + "WHERE c.car_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, carId);
@@ -36,7 +42,7 @@ public class CarDAO {
 
     public List<Car> findAll() throws SQLException {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT * FROM cars ORDER BY created_at DESC";
+        String sql = BASE_SELECT + "ORDER BY c.created_at DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -47,7 +53,7 @@ public class CarDAO {
 
     public List<Car> findByStatus(String status) throws SQLException {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT * FROM cars WHERE status = ? ORDER BY brand, model";
+        String sql = BASE_SELECT + "WHERE c.status = ? ORDER BY brand, model";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -59,7 +65,7 @@ public class CarDAO {
     }
 
     public Car findByLicensePlate(String licensePlate) throws SQLException {
-        String sql = "SELECT * FROM cars WHERE license_plate = ?";
+        String sql = BASE_SELECT + "WHERE c.license_plate = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, licensePlate);
@@ -75,12 +81,12 @@ public class CarDAO {
      */
     public List<Car> findAvailable(Timestamp startDate, Timestamp endDate) throws SQLException {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT c.* FROM cars c "
+        String sql = BASE_SELECT
                    + "WHERE c.status = 'AVAILABLE' "
                    + "AND c.car_id NOT IN ("
-                   + "  SELECT b.car_id FROM bookings b "
-                   + "  WHERE b.status IN ('CONFIRMED', 'IN_PROGRESS') "
-                   + "  AND b.start_date < ? AND b.end_date > ?"
+                   + "  SELECT bk.car_id FROM bookings bk "
+                   + "  WHERE bk.status IN ('CONFIRMED', 'IN_PROGRESS') "
+                   + "  AND bk.start_date < ? AND bk.end_date > ?"
                    + ") ORDER BY c.daily_rate";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -94,25 +100,24 @@ public class CarDAO {
     }
 
     public int insert(Car car) throws SQLException {
-        String sql = "INSERT INTO cars (license_plate, brand, model, year, color, seats, transmission, "
+        String sql = "INSERT INTO cars (license_plate, model_id, year, color, seats, transmission, "
                    + "fuel_type, daily_rate, description, status, mileage, location, features) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, car.getLicensePlate());
-            ps.setString(2, car.getBrand());
-            ps.setString(3, car.getModel());
-            ps.setInt(4, car.getYear());
-            ps.setString(5, car.getColor());
-            ps.setInt(6, car.getSeats());
-            ps.setString(7, car.getTransmission());
-            ps.setString(8, car.getFuelType());
-            ps.setBigDecimal(9, car.getDailyRate());
-            ps.setString(10, car.getDescription());
-            ps.setString(11, car.getStatus());
-            ps.setInt(12, car.getMileage());
-            ps.setString(13, car.getLocation());
-            ps.setString(14, car.getFeatures());
+            ps.setInt(2, car.getModelId());
+            ps.setInt(3, car.getYear());
+            ps.setString(4, car.getColor());
+            ps.setInt(5, car.getSeats());
+            ps.setString(6, car.getTransmission());
+            ps.setString(7, car.getFuelType());
+            ps.setBigDecimal(8, car.getDailyRate());
+            ps.setString(9, car.getDescription());
+            ps.setString(10, car.getStatus());
+            ps.setInt(11, car.getMileage());
+            ps.setString(12, car.getLocation());
+            ps.setString(13, car.getFeatures());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) return keys.getInt(1);
@@ -122,27 +127,26 @@ public class CarDAO {
     }
 
     public boolean update(Car car) throws SQLException {
-        String sql = "UPDATE cars SET license_plate = ?, brand = ?, model = ?, year = ?, color = ?, "
+        String sql = "UPDATE cars SET license_plate = ?, model_id = ?, year = ?, color = ?, "
                    + "seats = ?, transmission = ?, fuel_type = ?, daily_rate = ?, description = ?, "
                    + "status = ?, mileage = ?, location = ?, features = ?, updated_at = GETDATE() "
                    + "WHERE car_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, car.getLicensePlate());
-            ps.setString(2, car.getBrand());
-            ps.setString(3, car.getModel());
-            ps.setInt(4, car.getYear());
-            ps.setString(5, car.getColor());
-            ps.setInt(6, car.getSeats());
-            ps.setString(7, car.getTransmission());
-            ps.setString(8, car.getFuelType());
-            ps.setBigDecimal(9, car.getDailyRate());
-            ps.setString(10, car.getDescription());
-            ps.setString(11, car.getStatus());
-            ps.setInt(12, car.getMileage());
-            ps.setString(13, car.getLocation());
-            ps.setString(14, car.getFeatures());
-            ps.setInt(15, car.getCarId());
+            ps.setInt(2, car.getModelId());
+            ps.setInt(3, car.getYear());
+            ps.setString(4, car.getColor());
+            ps.setInt(5, car.getSeats());
+            ps.setString(6, car.getTransmission());
+            ps.setString(7, car.getFuelType());
+            ps.setBigDecimal(8, car.getDailyRate());
+            ps.setString(9, car.getDescription());
+            ps.setString(10, car.getStatus());
+            ps.setInt(11, car.getMileage());
+            ps.setString(12, car.getLocation());
+            ps.setString(13, car.getFeatures());
+            ps.setInt(14, car.getCarId());
             return ps.executeUpdate() > 0;
         }
     }
@@ -170,6 +174,8 @@ public class CarDAO {
         Car car = new Car();
         car.setCarId(rs.getInt("car_id"));
         car.setLicensePlate(rs.getString("license_plate"));
+        car.setModelId(rs.getInt("model_id"));
+        car.setBrandId(rs.getInt("brand_id"));
         car.setBrand(rs.getString("brand"));
         car.setModel(rs.getString("model"));
         car.setYear(rs.getInt("year"));

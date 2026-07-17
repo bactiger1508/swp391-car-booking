@@ -37,48 +37,116 @@ SET IDENTITY_INSERT customer_profiles OFF;
 GO
 
 -- ============================================================
+-- VEHICLE BRANDS
+-- ============================================================
+SET IDENTITY_INSERT vehicle_brands ON;
+
+INSERT INTO vehicle_brands (brand_id, brand_name)
+VALUES
+    (1, N'Toyota'),
+    (2, N'Honda'),
+    (3, N'Hyundai'),
+    (4, N'Mazda'),
+    (5, N'Kia'),
+    (6, N'Ford'),
+    (7, N'VinFast'),
+    (8, N'Mercedes'),
+    (9, N'Mitsubishi'),
+    (10, N'Suzuki'),
+    (11, N'BMW');
+
+SET IDENTITY_INSERT vehicle_brands OFF;
+GO
+
+-- ============================================================
+-- VEHICLE MODELS
+-- ============================================================
+SET IDENTITY_INSERT vehicle_models ON;
+
+INSERT INTO vehicle_models (model_id, brand_id, model_name)
+VALUES
+    (1, 1, N'Vios'),
+    (2, 2, N'City'),
+    (3, 3, N'Accent'),
+    (4, 4, N'CX-5'),
+    (5, 5, N'Morning'),
+    (6, 6, N'Ranger'),
+    (7, 7, N'VF 8'),
+    (8, 1, N'Fortuner'),
+    (9, 7, N'VF 5'),
+    (10, 7, N'VF e34'),
+    (11, 7, N'VF 9'),
+    (12, 7, N'VF 8 Plus'),
+    (13, 1, N'Camry'),
+    (14, 3, N'Santa Fe'),
+    (15, 5, N'Cerato'),
+    (16, 8, N'C200'),
+    (17, 9, N'Xpander'),
+    (18, 10, N'Ertiga'),
+    (19, 11, N'320i'),
+    (20, 5, N'Carnival'),
+    (21, 3, N'Tucson'),
+    (22, 4, N'CX-8'),
+    (23, 1, N'Innova'),
+    (24, 2, N'CR-V'),
+    (25, 7, N'VF 6'),
+    (26, 6, N'Everest'),
+    (27, 3, N'Stargazer'),
+    (28, 1, N'Veloz'),
+    (29, 5, N'Seltos'),
+    (30, 3, N'Custin'),
+    (31, 4, N'3'),
+    (32, 7, N'VF 7'),
+    (33, 1, N'Cross'),
+    (34, 6, N'Explorer'),
+    (35, 8, N'GLC 300');
+
+SET IDENTITY_INSERT vehicle_models OFF;
+GO
+
+-- ============================================================
 -- CARS
 -- ============================================================
 SET IDENTITY_INSERT cars ON;
 
-INSERT INTO cars (car_id, license_plate, brand, model, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
+INSERT INTO cars (car_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
 VALUES
-    (1, N'51A-12345', N'Toyota',   N'Vios',      2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2023, xe gia đình phổ biến, tiết kiệm nhiên liệu.',                    N'AVAILABLE',   15000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi'),
-    (2, N'51A-23456', N'Honda',    N'City',       2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Honda City 2023, thiết kế thể thao, nội thất rộng rãi.',                           N'AVAILABLE',   12000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Cảm biến va chạm'),
-    (3, N'51A-34567', N'Hyundai',  N'Accent',     2022, N'Xám',    5, N'MANUAL',    N'GASOLINE', 700000.00,  N'Hyundai Accent 2022, giá tốt, phù hợp đi lại hàng ngày.',                         N'AVAILABLE',   20000, N'Chi nhánh Quận 7',  N'Bluetooth, USB'),
-    (4, N'51A-45678', N'Mazda',    N'CX-5',       2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 1200000.00, N'Mazda CX-5 2023, SUV cao cấp, phù hợp gia đình và du lịch.',                       N'RENTED',      8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Cảm biến va chạm, Ghế da'),
-    (5, N'51A-56789', N'Kia',      N'Morning',    2022, N'Xanh',   4, N'AUTOMATIC', N'GASOLINE', 500000.00,  N'Kia Morning 2022, xe nhỏ gọn, phù hợp di chuyển nội thành.',                       N'MAINTENANCE', 30000, N'Chi nhánh Quận 7',  N'Bluetooth'),
-    (6, N'51A-67890', N'Ford',     N'Ranger',     2023, N'Bạc',    5, N'AUTOMATIC', N'DIESEL',   1500000.00, N'Ford Ranger 2023, bán tải mạnh mẽ, phù hợp đi xa và off-road.',                    N'AVAILABLE',   5000,  N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da, 4WD'),
-    (7, N'51A-78901', N'VinFast',  N'VF 8',       2024, N'Trắng',  5, N'AUTOMATIC', N'ELECTRIC', 1800000.00, N'VinFast VF 8 2024, SUV điện cao cấp, công nghệ hiện đại.',                          N'AVAILABLE',   2000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS, Ghế da, Sạc nhanh'),
-    (8, N'51A-89012', N'Toyota',   N'Fortuner',   2022, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   1400000.00, N'Toyota Fortuner 2022, SUV 7 chỗ, phù hợp gia đình lớn.',                           N'AVAILABLE',   18000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da'),
-    (9, N'51G-111.11', N'VinFast',  N'VF 5',       2023, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 900000.00,  N'VinFast VF 5 Plus 2023, xe điện thông minh, linh hoạt.',                           N'AVAILABLE',   5000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Cảm biến lùi'),
-    (10, N'51G-222.22', N'VinFast', N'VF e34',     2023, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 1200000.00, N'VinFast VF e34 2023, xe điện tiện dụng, trợ lý ảo thông minh.',                  N'AVAILABLE',   9000,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera 360'),
-    (11, N'51G-333.33', N'VinFast', N'VF 9',       2024, N'Đen',    7, N'AUTOMATIC', N'ELECTRIC', 2500000.00, N'VinFast VF 9 2024, SUV điện cỡ lớn, siêu sang trọng, công nghệ tối tân.',             N'AVAILABLE',   1000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS, Ghế mát-xa'),
-    (12, N'51G-444.44', N'VinFast', N'VF 8 Plus',  2024, N'Xám',    5, N'AUTOMATIC', N'ELECTRIC', 2000000.00, N'VinFast VF 8 Plus 2024, phiên bản thể thao nâng cấp của VF 8.',                    N'AVAILABLE',   3000,  N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, ADAS, Cửa sổ trời'),
-    (13, N'51G-555.55', N'Toyota',  N'Vios',       2022, N'Bạc',    5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2022, xe gia đình bền bỉ, tiết kiệm xăng tốt.',                        N'AVAILABLE',   22000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Camera lùi'),
-    (14, N'51G-666.66', N'Toyota',  N'Camry',      2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Toyota Camry 2.0Q 2023, sedan hạng D sang trọng, êm ái.',                            N'AVAILABLE',   7000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế điện'),
-    (15, N'51G-777.77', N'Hyundai', N'Santa Fe',   2023, N'Trắng',  7, N'AUTOMATIC', N'DIESEL',   1500000.00, N'Hyundai Santa Fe 2023, xe SUV 7 chỗ đa dụng gia đình.',                             N'AVAILABLE',   11000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Ghế sưởi, Camera 360'),
-    (16, N'51G-888.88', N'Kia',     N'Cerato',     2022, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Cerato 2022, kiểu dáng trẻ trung, hiện đại.',                                  N'AVAILABLE',   16000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Cửa sổ trời'),
-    (17, N'51G-999.99', N'Mercedes', N'C200',      2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 2200000.00, N'Mercedes-Benz C200 Avantgarde sang trọng, lịch lãm.',                      N'AVAILABLE',   9500,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế da, Phanh tự động'),
-    (18, N'51H-123.45', N'Mitsubishi', N'Xpander', 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Mitsubishi Xpander 2023, dòng MPV 7 chỗ bán chạy nhất, cực kỳ tiết kiệm.',        N'AVAILABLE',   16000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Apple CarPlay'),
-    (19, N'51H-234.56', N'Suzuki',   N'Ertiga',    2022, N'Bạc',    7, N'AUTOMATIC', N'HYBRID',   850000.00,  N'Suzuki Ertiga Hybrid 2022, MPV 7 chỗ tiết kiệm nhiên liệu tối ưu.',               N'AVAILABLE',   24000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Cảm biến lùi'),
-    (20, N'51H-345.67', N'BMW',      N'320i',      2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 2800000.00, N'BMW 320i Sport Line 2023, sedan hạng sang lái thể thao, đẳng cấp.',             N'AVAILABLE',   6000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Live Cockpit, Ghế da'),
-    (21, N'51H-456.78', N'Kia',      N'Carnival',  2023, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   2200000.00, N'Kia Carnival 2023, xe MPV cỡ lớn cao cấp, siêu rộng rãi cho gia đình.',           N'AVAILABLE',   12000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera 360, Cửa lùa điện, Ghế VIP'),
-    (22, N'51H-567.89', N'Hyundai',  N'Tucson',    2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 1100000.00, N'Hyundai Tucson 2023, thiết kế hiện đại, nhiều tính năng an toàn.',                 N'AVAILABLE',   8000,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Sạc không dây'),
-    (23, N'51H-678.90', N'Mazda',    N'CX-8',      2022, N'Xám',    7, N'AUTOMATIC', N'GASOLINE', 1400000.00, N'Mazda CX-8 2022, SUV 7 chỗ sang trọng, cách âm tốt, động cơ êm ái.',            N'AVAILABLE',   18000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, HUD, Hàng ghế 2 sưởi'),
-    (24, N'51H-789.01', N'Toyota',   N'Innova',    2023, N'Đồng',   7, N'MANUAL',    N'GASOLINE', 900000.00,  N'Toyota Innova 2023, xe 7 chỗ bền bỉ rộng rãi, phù hợp đi tỉnh.',                  N'AVAILABLE',   35000, N'Chi nhánh Thủ Đức', N'Bluetooth, Camera lùi, Điều hòa 2 giàn'),
-    (25, N'51H-890.12', N'Honda',    N'CR-V',      2023, N'Đen',    7, N'AUTOMATIC', N'GASOLINE', 1300000.00, N'Honda CR-V 2023, SUV 7 chỗ linh hoạt với gói an toàn Honda Sensing.',            N'AVAILABLE',   10000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Honda Sensing, Ghế da'),
-    (26, N'51K-111.22', N'VinFast',  N'VF 6',      2024, N'Đỏ',     5, N'AUTOMATIC', N'ELECTRIC', 1100000.00, N'VinFast VF 6 Plus 2024, SUV điện cỡ B thời thượng, thông minh.',                  N'AVAILABLE',   1500,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, ADAS, Trợ lý ảo'),
-    (27, N'51K-222.33', N'Ford',     N'Everest',   2024, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   1800000.00, N'Ford Ranger Everest Titanium 2024, SUV 7 chỗ off-road đỉnh cao.',                 N'AVAILABLE',   3000,  N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera 360, Cửa sổ trời toàn cảnh'),
-    (28, N'51K-333.44', N'Hyundai',  N'Stargazer', 2023, N'Bạc',    7, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Hyundai Stargazer 2023, xe MPV gia đình tiện dụng, giá thuê hợp lý.',             N'AVAILABLE',   14000, N'Chi nhánh Thủ Đức', N'Bluetooth, Apple CarPlay, Camera lùi'),
-    (29, N'51K-444.55', N'Toyota',   N'Veloz',     2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1000000.00, N'Toyota Veloz Cross 2023, xe 7 chỗ đa dụng hiện đại và tiết kiệm.',              N'AVAILABLE',   13000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Sạc không dây, Camera 360'),
-    (30, N'51K-555.66', N'Kia',      N'Seltos',    2023, N'Vàng',   5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Seltos 2023, SUV đô thị cá tính, tầm quan sát tốt.',                          N'AVAILABLE',   17000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Ghế thông gió'),
-    (31, N'51K-666.77', N'Hyundai',  N'Custin',    2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Hyundai Custin 2023, dòng MPV trung cao cấp cửa lùa tự động cực kỳ tiện nghi.',      N'AVAILABLE',   9000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Cửa lùa điện, Hàng ghế 2 thương gia'),
-    (32, N'51K-777.88', N'Mazda',    N'3',         2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Mazda 3 Premium 2023, sedan hạng C sang trọng, thiết kế Kodo quyến rũ.',           N'AVAILABLE',   11000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Ghế da, HUD'),
-    (33, N'51K-888.99', N'VinFast',  N'VF 7',       2024, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 1500000.00, N'VinFast VF 7 Plus 2024, SUV điện phân khúc C thể thao, mạnh mẽ.',                  N'AVAILABLE',   1000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS'),
-    (34, N'51K-999.00', N'Toyota',   N'Cross',     2023, N'Xám',    5, N'AUTOMATIC', N'HYBRID',   1100000.00, N'Toyota Corolla Cross 1.8V 2023, SUV đô thị tiết kiệm xăng và êm ái.',                 N'AVAILABLE',   12000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da'),
-    (35, N'51L-001.23', N'Ford',     N'Explorer',  2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 3000000.00, N'Ford Explorer Limited 2023, SUV cỡ lớn cao cấp nhập Mỹ, đầy uy lực.',                N'AVAILABLE',   15000, N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, Ghế mát-xa, Cửa sổ trời'),
-    (36, N'51L-012.34', N'Mercedes', N'GLC 300',   2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 3500000.00, N'Mercedes GLC 300 4MATIC 2023, SUV sang trọng bán chạy hàng đầu.',                   N'AVAILABLE',   8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Loa Burmester, Ghế da nâng điện');
+    (1, N'51A-12345', 1,  2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2023, xe gia đình phổ biến, tiết kiệm nhiên liệu.',                    N'AVAILABLE',   15000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi'),
+    (2, N'51A-23456', 2,  2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Honda City 2023, thiết kế thể thao, nội thất rộng rãi.',                           N'AVAILABLE',   12000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Cảm biến va chạm'),
+    (3, N'51A-34567', 3,  2022, N'Xám',    5, N'MANUAL',    N'GASOLINE', 700000.00,  N'Hyundai Accent 2022, giá tốt, phù hợp đi lại hàng ngày.',                         N'AVAILABLE',   20000, N'Chi nhánh Quận 7',  N'Bluetooth, USB'),
+    (4, N'51A-45678', 4,  2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 1200000.00, N'Mazda CX-5 2023, SUV cao cấp, phù hợp gia đình và du lịch.',                       N'RENTED',      8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Cảm biến va chạm, Ghế da'),
+    (5, N'51A-56789', 5,  2022, N'Xanh',   4, N'AUTOMATIC', N'GASOLINE', 500000.00,  N'Kia Morning 2022, xe nhỏ gọn, phù hợp di chuyển nội thành.',                       N'MAINTENANCE', 30000, N'Chi nhánh Quận 7',  N'Bluetooth'),
+    (6, N'51A-67890', 6,  2023, N'Bạc',    5, N'AUTOMATIC', N'DIESEL',   1500000.00, N'Ford Ranger 2023, bán tải mạnh mẽ, phù hợp đi xa và off-road.',                    N'AVAILABLE',   5000,  N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da, 4WD'),
+    (7, N'51A-78901', 7,  2024, N'Trắng',  5, N'AUTOMATIC', N'ELECTRIC', 1800000.00, N'VinFast VF 8 2024, SUV điện cao cấp, công nghệ hiện đại.',                          N'AVAILABLE',   2000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS, Ghế da, Sạc nhanh'),
+    (8, N'51A-89012', 8,  2022, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   1400000.00, N'Toyota Fortuner 2022, SUV 7 chỗ, phù hợp gia đình lớn.',                           N'AVAILABLE',   18000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da'),
+    (9, N'51G-111.11', 9,  2023, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 900000.00,  N'VinFast VF 5 Plus 2023, xe điện thông minh, linh hoạt.',                           N'AVAILABLE',   5000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Cảm biến lùi'),
+    (10, N'51G-222.22', 10, 2023, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 1200000.00, N'VinFast VF e34 2023, xe điện tiện dụng, trợ lý ảo thông minh.',                  N'AVAILABLE',   9000,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera 360'),
+    (11, N'51G-333.33', 11, 2024, N'Đen',    7, N'AUTOMATIC', N'ELECTRIC', 2500000.00, N'VinFast VF 9 2024, SUV điện cỡ lớn, siêu sang trọng, công nghệ tối tân.',             N'AVAILABLE',   1000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS, Ghế mát-xa'),
+    (12, N'51G-444.44', 12, 2024, N'Xám',    5, N'AUTOMATIC', N'ELECTRIC', 2000000.00, N'VinFast VF 8 Plus 2024, phiên bản thể thao nâng cấp của VF 8.',                    N'AVAILABLE',   3000,  N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, ADAS, Cửa sổ trời'),
+    (13, N'51G-555.55', 1,  2022, N'Bạc',    5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2022, xe gia đình bền bỉ, tiết kiệm xăng tốt.',                        N'AVAILABLE',   22000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Camera lùi'),
+    (14, N'51G-666.66', 13, 2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Toyota Camry 2.0Q 2023, sedan hạng D sang trọng, êm ái.',                            N'AVAILABLE',   7000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế điện'),
+    (15, N'51G-777.77', 14, 2023, N'Trắng',  7, N'AUTOMATIC', N'DIESEL',   1500000.00, N'Hyundai Santa Fe 2023, xe SUV 7 chỗ đa dụng gia đình.',                             N'AVAILABLE',   11000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Ghế sưởi, Camera 360'),
+    (16, N'51G-888.88', 15, 2022, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Cerato 2022, kiểu dáng trẻ trung, hiện đại.',                                  N'AVAILABLE',   16000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Cửa sổ trời'),
+    (17, N'51G-999.99', 16, 2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 2200000.00, N'Mercedes-Benz C200 Avantgarde sang trọng, lịch lãm.',                      N'AVAILABLE',   9500,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Ghế da, Phanh tự động'),
+    (18, N'51H-123.45', 17, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Mitsubishi Xpander 2023, dòng MPV 7 chỗ bán chạy nhất, cực kỳ tiết kiệm.',        N'AVAILABLE',   16000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Apple CarPlay'),
+    (19, N'51H-234.56', 18, 2022, N'Bạc',    7, N'AUTOMATIC', N'HYBRID',   850000.00,  N'Suzuki Ertiga Hybrid 2022, MPV 7 chỗ tiết kiệm nhiên liệu tối ưu.',               N'AVAILABLE',   24000, N'Chi nhánh Quận 7',  N'Bluetooth, USB, Cảm biến lùi'),
+    (20, N'51H-345.67', 19, 2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 2800000.00, N'BMW 320i Sport Line 2023, sedan hạng sang lái thể thao, đẳng cấp.',             N'AVAILABLE',   6000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Live Cockpit, Ghế da'),
+    (21, N'51H-456.78', 20, 2023, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   2200000.00, N'Kia Carnival 2023, xe MPV cỡ lớn cao cấp, siêu rộng rãi cho gia đình.',           N'AVAILABLE',   12000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera 360, Cửa lùa điện, Ghế VIP'),
+    (22, N'51H-567.89', 21, 2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 1100000.00, N'Hyundai Tucson 2023, thiết kế hiện đại, nhiều tính năng an toàn.',                 N'AVAILABLE',   8000,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Sạc không dây'),
+    (23, N'51H-678.90', 22, 2022, N'Xám',    7, N'AUTOMATIC', N'GASOLINE', 1400000.00, N'Mazda CX-8 2022, SUV 7 chỗ sang trọng, cách âm tốt, động cơ êm ái.',            N'AVAILABLE',   18000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, HUD, Hàng ghế 2 sưởi'),
+    (24, N'51H-789.01', 23, 2023, N'Đồng',   7, N'MANUAL',    N'GASOLINE', 900000.00,  N'Toyota Innova 2023, xe 7 chỗ bền bỉ rộng rãi, phù hợp đi tỉnh.',                  N'AVAILABLE',   35000, N'Chi nhánh Thủ Đức', N'Bluetooth, Camera lùi, Điều hòa 2 giàn'),
+    (25, N'51H-890.12', 24, 2023, N'Đen',    7, N'AUTOMATIC', N'GASOLINE', 1300000.00, N'Honda CR-V 2023, SUV 7 chỗ linh hoạt với gói an toàn Honda Sensing.',            N'AVAILABLE',   10000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Honda Sensing, Ghế da'),
+    (26, N'51K-111.22', 25, 2024, N'Đỏ',     5, N'AUTOMATIC', N'ELECTRIC', 1100000.00, N'VinFast VF 6 Plus 2024, SUV điện cỡ B thời thượng, thông minh.',                  N'AVAILABLE',   1500,  N'Chi nhánh Quận 7',  N'GPS, Bluetooth, ADAS, Trợ lý ảo'),
+    (27, N'51K-222.33', 26, 2024, N'Đen',    7, N'AUTOMATIC', N'DIESEL',   1800000.00, N'Ford Ranger Everest Titanium 2024, SUV 7 chỗ off-road đỉnh cao.',                 N'AVAILABLE',   3000,  N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera 360, Cửa sổ trời toàn cảnh'),
+    (28, N'51K-333.44', 27, 2023, N'Bạc',    7, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Hyundai Stargazer 2023, xe MPV gia đình tiện dụng, giá thuê hợp lý.',             N'AVAILABLE',   14000, N'Chi nhánh Thủ Đức', N'Bluetooth, Apple CarPlay, Camera lùi'),
+    (29, N'51K-444.55', 28, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1000000.00, N'Toyota Veloz Cross 2023, xe 7 chỗ đa dụng hiện đại và tiết kiệm.',              N'AVAILABLE',   13000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Sạc không dây, Camera 360'),
+    (30, N'51K-555.66', 29, 2023, N'Vàng',   5, N'AUTOMATIC', N'GASOLINE', 950000.00,  N'Kia Seltos 2023, SUV đô thị cá tính, tầm quan sát tốt.',                          N'AVAILABLE',   17000, N'Chi nhánh Quận 7',  N'Bluetooth, Camera lùi, Ghế thông gió'),
+    (31, N'51K-666.77', 30, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 1600000.00, N'Hyundai Custin 2023, dòng MPV trung cao cấp cửa lùa tự động cực kỳ tiện nghi.',      N'AVAILABLE',   9000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Cửa lùa điện, Hàng ghế 2 thương gia'),
+    (32, N'51K-777.88', 31, 2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Mazda 3 Premium 2023, sedan hạng C sang trọng, thiết kế Kodo quyến rũ.',           N'AVAILABLE',   11000, N'Chi nhánh Quận 7',  N'GPS, Bluetooth, Camera lùi, Ghế da, HUD'),
+    (33, N'51K-888.99', 32, 2024, N'Xanh',   5, N'AUTOMATIC', N'ELECTRIC', 1500000.00, N'VinFast VF 7 Plus 2024, SUV điện phân khúc C thể thao, mạnh mẽ.',                  N'AVAILABLE',   1000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, ADAS'),
+    (34, N'51K-999.00', 33, 2023, N'Xám',    5, N'AUTOMATIC', N'HYBRID',   1100000.00, N'Toyota Corolla Cross 1.8V 2023, SUV đô thị tiết kiệm xăng và êm ái.',                 N'AVAILABLE',   12000, N'Chi nhánh Thủ Đức', N'GPS, Bluetooth, Camera lùi, Ghế da'),
+    (35, N'51L-001.23', 34, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 3000000.00, N'Ford Explorer Limited 2023, SUV cỡ lớn cao cấp nhập Mỹ, đầy uy lực.',                N'AVAILABLE',   15000, N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, Ghế mát-xa, Cửa sổ trời'),
+    (36, N'51L-012.34', 35, 2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 3500000.00, N'Mercedes GLC 300 4MATIC 2023, SUV sang trọng bán chạy hàng đầu.',                   N'AVAILABLE',   8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Loa Burmester, Ghế da nâng điện');
 
 SET IDENTITY_INSERT cars OFF;
 GO

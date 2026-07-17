@@ -7,6 +7,10 @@ USE CarRentalDB;
 GO
 
 -- Drop tables in reverse dependency order
+IF OBJECT_ID('dbo.vat_invoices', 'U') IS NOT NULL DROP TABLE vat_invoices;
+IF OBJECT_ID('dbo.role_permission', 'U') IS NOT NULL DROP TABLE role_permission;
+IF OBJECT_ID('dbo.roles', 'U') IS NOT NULL DROP TABLE roles;
+IF OBJECT_ID('dbo.permission', 'U') IS NOT NULL DROP TABLE permission;
 IF OBJECT_ID('dbo.notifications', 'U') IS NOT NULL DROP TABLE notifications;
 IF OBJECT_ID('dbo.audit_logs', 'U') IS NOT NULL DROP TABLE audit_logs;
 IF OBJECT_ID('dbo.reviews', 'U') IS NOT NULL DROP TABLE reviews;
@@ -18,6 +22,8 @@ IF OBJECT_ID('dbo.rental_contracts', 'U') IS NOT NULL DROP TABLE rental_contract
 IF OBJECT_ID('dbo.bookings', 'U') IS NOT NULL DROP TABLE bookings;
 IF OBJECT_ID('dbo.car_images', 'U') IS NOT NULL DROP TABLE car_images;
 IF OBJECT_ID('dbo.cars', 'U') IS NOT NULL DROP TABLE cars;
+IF OBJECT_ID('dbo.vehicle_models', 'U') IS NOT NULL DROP TABLE vehicle_models;
+IF OBJECT_ID('dbo.vehicle_brands', 'U') IS NOT NULL DROP TABLE vehicle_brands;
 IF OBJECT_ID('dbo.policy_settings', 'U') IS NOT NULL DROP TABLE policy_settings;
 IF OBJECT_ID('dbo.customer_profiles', 'U') IS NOT NULL DROP TABLE customer_profiles;
 IF OBJECT_ID('dbo.users', 'U') IS NOT NULL DROP TABLE users;
