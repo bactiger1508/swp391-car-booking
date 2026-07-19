@@ -99,22 +99,22 @@
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">deployed_code</span>
                                 <select name="rentalModeCombo" id="rentalModeCombo" class="bk-form-select" onchange="onRentalModeChange()">
-                                    <option value="DAILY_STANDARD">Thuê theo ngày (Tiêu chuẩn)</option>
-                                    <option value="TRIP_STANDARD">Thuê theo chuyến (Trọn gói ${not empty tripKmLimit ? tripKmLimit : 150}km)</option>
-                                    <option value="COMBO_7_DAYS">Gói Combo 7 ngày (Tuần)</option>
-                                    <option value="COMBO_10_DAYS">Gói Combo 10 ngày</option>
-                                    <option value="COMBO_30_DAYS">Gói Combo 30 ngày (Tháng)</option>
+                                    <option value="DAILY_STANDARD" ${selectedRentalModeCombo == 'DAILY_STANDARD' || param.rentalModeCombo == 'DAILY_STANDARD' ? 'selected' : ''}>Thuê theo ngày (Tiêu chuẩn)</option>
+                                    <option value="TRIP_STANDARD" ${selectedRentalModeCombo == 'TRIP_STANDARD' || param.rentalModeCombo == 'TRIP_STANDARD' ? 'selected' : ''}>Thuê theo chuyến (Trọn gói ${not empty tripKmLimit ? tripKmLimit : 150}km)</option>
+                                    <option value="COMBO_7_DAYS" ${selectedRentalModeCombo == 'COMBO_7_DAYS' || param.rentalModeCombo == 'COMBO_7_DAYS' ? 'selected' : ''}>Gói Combo 7 ngày (Tuần)</option>
+                                    <option value="COMBO_10_DAYS" ${selectedRentalModeCombo == 'COMBO_10_DAYS' || param.rentalModeCombo == 'COMBO_10_DAYS' ? 'selected' : ''}>Gói Combo 10 ngày</option>
+                                    <option value="COMBO_30_DAYS" ${selectedRentalModeCombo == 'COMBO_30_DAYS' || param.rentalModeCombo == 'COMBO_30_DAYS' ? 'selected' : ''}>Gói Combo 30 ngày (Tháng)</option>
                                 </select>
                             </div>
                             <!-- Hidden inputs to submit separate values -->
-                            <input type="hidden" name="rentalMode" id="rentalMode" value="DAILY">
-                            <input type="hidden" name="pricingPackage" id="pricingPackage" value="">
+                            <input type="hidden" name="rentalMode" id="rentalMode" value="${not empty rentalMode ? rentalMode : (not empty param.rentalMode ? param.rentalMode : 'DAILY')}">
+                            <input type="hidden" name="pricingPackage" id="pricingPackage" value="${not empty pricingPackage ? pricingPackage : param.pricingPackage}">
                         </div>
                         <div class="bk-form-group">
                             <label class="bk-form-label">Số KM di chuyển dự kiến <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">speed</span>
-                                <input type="number" name="estimatedKm" id="estimatedKm" class="bk-form-input" placeholder="Nhập số km dự kiến" min="1" value="100" onchange="calculateBookingCost()" onkeyup="calculateBookingCost()">
+                                <input type="number" name="estimatedKm" id="estimatedKm" class="bk-form-input" placeholder="Nhập số km dự kiến" min="1" value="${not empty estimatedKm ? estimatedKm : (not empty param.estimatedKm ? param.estimatedKm : '100')}" onchange="calculateBookingCost()" onkeyup="calculateBookingCost()">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-estimatedKm"></span>
                         </div>
@@ -134,7 +134,7 @@
                             <label class="bk-form-label">Ngày bắt đầu <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">calendar_month</span>
-                                <input type="date" name="startDate" id="startDate" class="bk-form-input" onchange="calculateBookingCost()">
+                                <input type="date" name="startDate" id="startDate" class="bk-form-input" onchange="calculateBookingCost()" value="${not empty startDate ? startDate : param.startDate}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-startDate"></span>
                         </div>
@@ -142,7 +142,7 @@
                             <label class="bk-form-label">Giờ bắt đầu <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">schedule</span>
-                                <input type="time" name="startTime" id="startTime" class="bk-form-input" value="08:00">
+                                <input type="time" name="startTime" id="startTime" class="bk-form-input" value="${not empty startTime ? startTime : (not empty param.startTime ? param.startTime : '08:00')}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-startTime"></span>
                         </div>
@@ -150,7 +150,7 @@
                             <label class="bk-form-label">Ngày kết thúc <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">event</span>
-                                <input type="date" name="endDate" id="endDate" class="bk-form-input" onchange="calculateBookingCost()">
+                                <input type="date" name="endDate" id="endDate" class="bk-form-input" onchange="calculateBookingCost()" value="${not empty endDate ? endDate : param.endDate}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-endDate"></span>
                         </div>
@@ -158,7 +158,7 @@
                             <label class="bk-form-label">Giờ kết thúc <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">schedule</span>
-                                <input type="time" name="endTime" id="endTime" class="bk-form-input" value="08:00">
+                                <input type="time" name="endTime" id="endTime" class="bk-form-input" value="${not empty endTime ? endTime : (not empty param.endTime ? param.endTime : '08:00')}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-endTime"></span>
                         </div>
@@ -174,8 +174,8 @@
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">local_shipping</span>
                                 <select name="deliveryMethod" id="deliveryMethod" class="bk-form-select" onchange="onDeliveryMethodChange()">
-                                    <option value="SHOWROOM">Lấy tại showroom (Miễn phí)</option>
-                                    <option value="DELIVERY">Giao xe tận nơi (<fmt:formatNumber value="${not empty deliveryFeePerKm ? deliveryFeePerKm : 15000}" type="number" groupingUsed="true"/>đ/km)</option>
+                                    <option value="SHOWROOM" ${deliveryMethod == 'SHOWROOM' || param.deliveryMethod == 'SHOWROOM' ? 'selected' : ''}>Lấy tại showroom (Miễn phí)</option>
+                                    <option value="DELIVERY" ${deliveryMethod == 'DELIVERY' || param.deliveryMethod == 'DELIVERY' ? 'selected' : ''}>Giao xe tận nơi (<fmt:formatNumber value="${not empty deliveryFeePerKm ? deliveryFeePerKm : 15000}" type="number" groupingUsed="true"/>đ/km)</option>
                                 </select>
                             </div>
                         </div>
@@ -183,7 +183,7 @@
                             <label class="bk-form-label">Khoảng cách giao xe (km) <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">map</span>
-                                <input type="number" name="deliveryDistance" id="deliveryDistance" class="bk-form-input" value="0" min="0" onchange="calculateBookingCost()" onkeyup="calculateBookingCost()">
+                                <input type="number" name="deliveryDistance" id="deliveryDistance" class="bk-form-input" min="0" step="0.1" value="${not empty deliveryDistance ? deliveryDistance : (not empty param.deliveryDistance ? param.deliveryDistance : '0')}" onchange="calculateBookingCost()" onkeyup="calculateBookingCost()">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-deliveryDistance"></span>
                         </div>
@@ -194,7 +194,7 @@
                             <label class="bk-form-label">Điểm nhận xe <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">location_on</span>
-                                <input type="text" name="pickupLocation" id="pickupLocation" class="bk-form-input" placeholder="Nhập địa điểm nhận xe" readonly>
+                                <input type="text" name="pickupLocation" id="pickupLocation" class="bk-form-input" placeholder="Nhập địa điểm nhận xe" value="${not empty pickupLocation ? pickupLocation : param.pickupLocation}" readonly>
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-pickupLocation"></span>
                         </div>
@@ -202,7 +202,7 @@
                             <label class="bk-form-label">Điểm trả xe <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">pin_drop</span>
-                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" placeholder="Nhập địa điểm trả xe">
+                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" placeholder="Nhập địa điểm trả xe" value="${not empty returnLocation ? returnLocation : param.returnLocation}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-returnLocation"></span>
                         </div>
@@ -213,7 +213,7 @@
                         <label class="bk-form-label">Địa chỉ giao xe tận nơi <span style="color:var(--error);">*</span></label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">home</span>
-                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn">
+                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn" value="${not empty deliveryAddress ? deliveryAddress : param.deliveryAddress}">
                         </div>
                         <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-deliveryAddress"></span>
                     </div>
@@ -222,7 +222,7 @@
                 <%-- Notes --%>
                 <div class="bk-form-group" style="margin-bottom:24px;">
                     <label class="bk-form-label">Ghi chú (Tùy chọn)</label>
-                    <textarea name="notes" class="bk-form-textarea" rows="3" placeholder="Thêm bất kỳ yêu cầu đặc biệt hoặc ghi chú liên quan..."></textarea>
+                    <textarea name="notes" class="bk-form-textarea" rows="3" placeholder="Thêm bất kỳ yêu cầu đặc biệt hoặc ghi chú liên quan...">${not empty notes ? notes : param.notes}</textarea>
                 </div>
 
                 <%-- Actions --%>
