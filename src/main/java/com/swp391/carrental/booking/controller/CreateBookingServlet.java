@@ -22,6 +22,7 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.service.VehicleService;
 import com.swp391.carrental.policy.service.FeeCalculator;
+import jakarta.servlet.http.HttpSession;
 
 /*
  * Name: CreateBookingServlet
