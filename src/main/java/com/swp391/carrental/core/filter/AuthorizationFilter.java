@@ -87,11 +87,17 @@ public class AuthorizationFilter implements Filter {
                 HttpSession session = httpRequest.getSession(false);
                 if (session != null) {
                     User user = (User) session.getAttribute("currentUser");
-                    if (user != null && !SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
-                        // User doesn't have the required permission
-                        httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
-                                .forward(httpRequest, httpResponse);
-                        return;
+                    if (user != null) {
+                        // Bypass /payments/record restriction for CUSTOMER role (servlet handles ownership check)
+                        if ("/payments/record".equals(prefix) && "CUSTOMER".equals(user.getRole())) {
+                            break;
+                        }
+                        if (!SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
+                            // User doesn't have the required permission
+                            httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
+                                    .forward(httpRequest, httpResponse);
+                            return;
+                        }
                     }
                 }
                 break;
