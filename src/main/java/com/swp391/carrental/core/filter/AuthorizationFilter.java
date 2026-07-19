@@ -46,7 +46,7 @@ public class AuthorizationFilter implements Filter {
         PATH_PERMISSIONS.put("/bookings/manage", "PROCESS_BOOKING_REQUEST");
         PATH_PERMISSIONS.put("/bookings/approval", "PROCESS_BOOKING_REQUEST");
         PATH_PERMISSIONS.put("/bookings/calendar", "VIEW_BOOKINGS_CALENDAR");
-        PATH_PERMISSIONS.put("/bookings/create", "CREATE_BOOKING");
+        // PATH_PERMISSIONS.put("/bookings/create", "CREATE_BOOKING"); // Bypassed for Guest-to-Customer flow
         PATH_PERMISSIONS.put("/bookings/edit", "UPDATE_BOOKING");
         PATH_PERMISSIONS.put("/contracts", "VIEW_CONTRACT");
         PATH_PERMISSIONS.put("/payments/record", "RECORD_PAYMENT");
