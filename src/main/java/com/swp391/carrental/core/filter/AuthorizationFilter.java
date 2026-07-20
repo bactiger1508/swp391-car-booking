@@ -92,6 +92,10 @@ public class AuthorizationFilter implements Filter {
                         if ("/payments/record".equals(prefix) && "CUSTOMER".equals(user.getRole())) {
                             break;
                         }
+                        // Bypass /vehicles/availability restriction for realtime checkCarAvailability action
+                        if ("/vehicles/availability".equals(prefix) && "checkCarAvailability".equals(httpRequest.getParameter("action"))) {
+                            break;
+                        }
                         if (!SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
                             // User doesn't have the required permission
                             httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
