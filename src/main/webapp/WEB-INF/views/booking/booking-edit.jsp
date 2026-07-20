@@ -466,6 +466,14 @@ function parseLocalDate(dateStr) {
     return new Date(parts[0], parts[1] - 1, parts[2]);
 }
 
+function getLocalDateString(d) {
+    if (!d) d = new Date();
+    var year = d.getFullYear();
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+}
+
 function onRentalModeChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var modeInput = document.getElementById('rentalMode');
@@ -494,7 +502,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     } else if (modeCombo === "COMBO_10_DAYS") {
         modeInput.value = "COMBO";
@@ -504,7 +512,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     } else if (modeCombo === "COMBO_30_DAYS") {
         modeInput.value = "COMBO";
@@ -514,7 +522,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     }
     desc.innerHTML = descText;
@@ -718,15 +726,15 @@ document.getElementById('startDate').addEventListener('change', function() {
     if (modeCombo === "COMBO_7_DAYS") {
         var start = new Date(sd);
         var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-        edInput.value = end.toISOString().split('T')[0];
+        edInput.value = getLocalDateString(end);
     } else if (modeCombo === "COMBO_10_DAYS") {
         var start = new Date(sd);
         var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-        edInput.value = end.toISOString().split('T')[0];
+        edInput.value = getLocalDateString(end);
     } else if (modeCombo === "COMBO_30_DAYS") {
         var start = new Date(sd);
         var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-        edInput.value = end.toISOString().split('T')[0];
+        edInput.value = getLocalDateString(end);
     }
     calculateBookingCost();
 });
@@ -809,7 +817,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             if (sdVal && edVal) {
-                var todayDateStr = new Date().toISOString().split('T')[0];
+                var todayDateStr = getLocalDateString();
                 if (sdVal < todayDateStr) {
                     showError('startDate', 'Ngày bắt đầu không được ở quá khứ.');
                 }

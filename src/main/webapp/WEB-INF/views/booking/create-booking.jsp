@@ -515,9 +515,9 @@ function updateCarInfo() {
 function onRentalModeChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var desc = document.getElementById('modeDescription');
-    var sd = document.getElementById('startDate').value;
     var edInput = document.getElementById('endDate');
-    
+    var sd = document.getElementById('startDate').value;
+
     var descText = "";
     if (modeCombo === "DAILY_STANDARD") {
         descText = "<strong>Thuê theo ngày:</strong> Phù hợp cho nhu cầu di chuyển linh hoạt. Giới hạn " + kmLimitPerDay + "km/ngày. Ưu đãi chiết khấu: " + discountShortTier + "% cho 5-9 ngày, " + discountMediumTier + "% cho 10-29 ngày, " + discountLongTier + "% từ 30 ngày trở lên. Tặng thêm chiết khấu " + lowMileageDiscountPercent + "% khi di chuyển ít (khấu hao thấp, dưới " + Math.round(kmLimitPerDay / 2) + "km/ngày).";
@@ -531,7 +531,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     } else if (modeCombo === "COMBO_10_DAYS") {
         descText = "<strong>Combo 10 ngày:</strong> Gói thuê dài hạn cực tốt, tiết kiệm " + combo10DiscountPercent + "% so với giá ngày thường. Giới hạn " + formatNumber(combo10KmLimit) + "km toàn bộ chuyến đi.";
@@ -539,7 +539,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     } else if (modeCombo === "COMBO_30_DAYS") {
         descText = "<strong>Combo 30 ngày (Tháng):</strong> Gói thuê tháng siêu tiết kiệm, giảm giá lên tới " + combo30DiscountPercent + "% so với thuê ngày lẻ. Giới hạn " + formatNumber(combo30KmLimit) + "km cho cả tháng thuê.";
@@ -547,7 +547,7 @@ function onRentalModeChange() {
         if (sd) {
             var start = new Date(sd);
             var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-            edInput.value = end.toISOString().split('T')[0];
+            edInput.value = getLocalDateString(end);
         }
     }
     desc.innerHTML = descText;
@@ -992,15 +992,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (modeCombo === "COMBO_7_DAYS" && sd.value) {
                             var start = new Date(sd.value);
                             var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+                            document.getElementById('endDate').value = getLocalDateString(end);
                         } else if (modeCombo === "COMBO_10_DAYS" && sd.value) {
                             var start = new Date(sd.value);
                             var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+                            document.getElementById('endDate').value = getLocalDateString(end);
                         } else if (modeCombo === "COMBO_30_DAYS" && sd.value) {
                             var start = new Date(sd.value);
                             var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+                            document.getElementById('endDate').value = getLocalDateString(end);
                         }
                     }
                     calculateBookingCost();
@@ -1018,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Set min date to today
-    var today = new Date().toISOString().split('T')[0];
+    var today = getLocalDateString();
     if (sd) sd.setAttribute('min', today);
     if (ed) ed.setAttribute('min', today);
 
@@ -1099,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (sdVal && edVal) {
-                var todayDateStr = new Date().toISOString().split('T')[0];
+                var todayDateStr = getLocalDateString();
                 if (sdVal < todayDateStr) {
                     showError('startDate', 'Ngày bắt đầu không được ở quá khứ.');
                 }
