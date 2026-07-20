@@ -44,7 +44,9 @@ public class AuthFilter implements Filter {
             "/vehicles",
             "/vehicles/detail",
             "/bookings/policy",
-            "/bookings/create"
+            "/bookings/create",
+            "/vehicles/availability",
+            "/bookings/delivery-distance"
     );
 
     /**
