@@ -9,6 +9,9 @@ import java.io.IOException;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.user.service.UserService;
+import com.swp391.carrental.notification.service.NotificationService;
+import com.swp391.carrental.notification.model.Notification;
 
 /*
  * Name: BookingCancelServlet
@@ -20,6 +23,8 @@ import com.swp391.carrental.user.model.User;
 @WebServlet(name = "BookingCancelServlet", urlPatterns = {"/bookings/cancel"})
 public class BookingCancelServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
+    private final UserService userService = new UserService();
+    private final NotificationService notificationService = new NotificationService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -58,10 +63,12 @@ public class BookingCancelServlet extends HttpServlet {
                         request.getSession().setAttribute("errorMessage", "Đơn hàng đã xác nhận (đã đóng cọc) không thể tự hủy. Vui lòng liên hệ nhân viên để hỗ trợ.");
                     } else {
                         bookingService.cancelBooking(bookingId, reason.trim());
+                        notifyBookingCancelled(bookingId, reason.trim());
                         request.getSession().setAttribute("successMessage", "Hủy đơn thuê #" + bookingId + " thành công.");
                     }
                 } else {
                     bookingService.cancelBooking(bookingId, reason.trim());
+                    notifyBookingCancelled(bookingId, reason.trim());
                     request.getSession().setAttribute("successMessage", "Hủy đơn thuê #" + bookingId + " thành công.");
                 }
             }
@@ -75,6 +82,37 @@ public class BookingCancelServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingIdStr);
         } else {
             response.sendRedirect(request.getContextPath() + "/bookings/my");
+        }
+    }
+
+    private void notifyBookingCancelled(int bookingId, String cancelReason) {
+        try {
+            com.swp391.carrental.booking.model.Booking booking = bookingService.getBookingById(bookingId);
+            if (booking != null) {
+                int customerId = booking.getCustomerId();
+
+                Notification customerNotif = new Notification(customerId,
+                    "Đặt xe bị hủy",
+                    "Booking #" + bookingId + " của bạn đã bị hủy. Lý do: " + cancelReason,
+                    "BOOKING");
+                customerNotif.setReferenceType("BOOKING");
+                customerNotif.setReferenceId(bookingId);
+                notificationService.createNotification(customerNotif);
+
+                for (String staffRole : new String[]{"STAFF", "ADMIN"}) {
+                    for (User staffUser : userService.getUsersByRole(staffRole)) {
+                        Notification staffNotif = new Notification(staffUser.getUserId(),
+                            "Booking bị hủy",
+                            "Khách hàng vừa hủy booking #" + bookingId + ". Lý do: " + cancelReason,
+                            "BOOKING");
+                        staffNotif.setReferenceType("BOOKING");
+                        staffNotif.setReferenceId(bookingId);
+                        notificationService.createNotification(staffNotif);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send booking-cancelled notification: " + e.getMessage());
         }
     }
 }

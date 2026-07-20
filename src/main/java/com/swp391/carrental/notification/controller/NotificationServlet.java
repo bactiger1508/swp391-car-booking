@@ -105,6 +105,8 @@ public class NotificationServlet extends HttpServlet {
                 .append("\"title\":\"").append(escapeJson(n.getTitle())).append("\",")
                 .append("\"message\":\"").append(escapeJson(n.getMessage())).append("\",")
                 .append("\"notificationType\":\"").append(n.getNotificationType()).append("\",")
+                .append("\"referenceType\":").append(n.getReferenceType() != null ? "\"" + n.getReferenceType() + "\"" : "null").append(",")
+                .append("\"referenceId\":").append(n.getReferenceId() != null ? n.getReferenceId() : "null").append(",")
                 .append("\"isRead\":").append(n.isRead()).append(",")
                 .append("\"createdAt\":\"").append(n.getCreatedAt()).append("\"")
                 .append("}");

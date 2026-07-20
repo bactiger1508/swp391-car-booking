@@ -16,9 +16,12 @@ import java.time.temporal.ChronoUnit;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.core.exception.AppException;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.user.service.UserService;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.service.VehicleService;
 import com.swp391.carrental.policy.service.FeeCalculator;
@@ -42,6 +45,8 @@ public class CreateBookingServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final PolicyService policyService = new PolicyService();
     private final FeeCalculator feeCalculator = new FeeCalculator();
+    private final NotificationService notificationService = new NotificationService();
+    private final UserService userService = new UserService();
 
     /**
      * Show the create booking form.
@@ -309,6 +314,8 @@ public class CreateBookingServlet extends HttpServlet {
             // Create booking (service handles all business rule validation)
             int bookingId = bookingService.createBooking(booking);
 
+            notifyBookingCreated(bookingId, user);
+
             request.getSession().setAttribute("successMessage",
                     "Đặt xe thành công! Mã booking: #" + bookingId + ". Vui lòng chờ xác nhận.");
             response.sendRedirect(request.getContextPath() + "/bookings/my");
@@ -322,6 +329,37 @@ public class CreateBookingServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.setAttribute("error", "Dữ liệu không hợp lệ.");
             doGet(request, response);
+        }
+    }
+
+    /**
+     * Notifies the customer that their booking request was submitted, and notifies
+     * every STAFF/ADMIN account so they can process the new pending request.
+     */
+    private void notifyBookingCreated(int bookingId, User customer) {
+        try {
+            Notification customerNotif = new Notification(customer.getUserId(),
+                    "Đặt xe thành công",
+                    "Yêu cầu đặt xe #" + bookingId + " đã được gửi và đang chờ nhân viên duyệt.",
+                    "BOOKING");
+            customerNotif.setReferenceType("BOOKING");
+            customerNotif.setReferenceId(bookingId);
+            notificationService.createNotification(customerNotif);
+
+            for (String staffRole : new String[]{"STAFF", "ADMIN"}) {
+                for (User staffUser : userService.getUsersByRole(staffRole)) {
+                    Notification staffNotif = new Notification(staffUser.getUserId(),
+                            "Có yêu cầu đặt xe mới",
+                            "Khách hàng " + customer.getFullName() + " vừa gửi yêu cầu đặt xe #" + bookingId + ", đang chờ duyệt.",
+                            "BOOKING");
+                    staffNotif.setReferenceType("BOOKING");
+                    staffNotif.setReferenceId(bookingId);
+                    notificationService.createNotification(staffNotif);
+                }
+            }
+        } catch (Exception e) {
+            // Never let a notification failure break the booking flow.
+            System.err.println("Failed to send booking-created notifications: " + e.getMessage());
         }
     }
 }

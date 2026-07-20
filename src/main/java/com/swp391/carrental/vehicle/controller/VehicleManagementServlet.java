@@ -84,25 +84,32 @@ public class VehicleManagementServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        boolean isAjax = "create".equals(action) || "update".equals(action) || "delete".equals(action);
+        boolean isAjax = "create".equals(action) || "update".equals(action) || "delete".equals(action) || "hide".equals(action) || "show".equals(action);
 
         try {
             if ("create".equals(action)) {
-                handleCreateCar(request, response);
+                handleCreateCar(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Tạo xe thành công!");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("update".equals(action)) {
-                handleUpdateCar(request, response);
+                handleUpdateCar(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Cập nhật xe thành công!");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("delete".equals(action)) {
-                handleDeleteCar(request, response);
+                handleDeleteCar(request, response, currentUser);
+                sendJsonResponse(response, true, "Xóa xe thành công!");
+            } else if ("hide".equals(action)) {
+                handleHideCar(request, response, currentUser);
+                sendJsonResponse(response, true, "Ẩn xe thành công!");
+            } else if ("show".equals(action)) {
+                handleShowCar(request, response, currentUser);
+                sendJsonResponse(response, true, "Hiện xe thành công!");
             } else if ("deleteImage".equals(action)) {
                 if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -259,12 +266,23 @@ public class VehicleManagementServlet extends HttpServlet {
 
     private void handleDeleteCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
+        // Only ADMIN can delete vehicles
+        if (!"ADMIN".equals(currentUser.getRole())) {
+            throw new AppException("Chỉ quản trị viên mới được phép xóa xe. STAFF có thể ẩn xe bằng nút 'Ẩn'.");
+        }
+
         int carId = Integer.parseInt(request.getParameter("carId"));
 
         Car car = vehicleService.getCarById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
+
+        // Cannot delete rented vehicles
+        if ("RENTED".equals(car.getStatus())) {
+            throw new AppException("Không thể xóa xe đã cho thuê. Chỉ có thể ẩn xe bằng nút 'Ẩn'.");
+        }
+
         String carName = car.getBrand() + " " + car.getModel();
         String licensePlate = car.getLicensePlate();
 
@@ -275,6 +293,50 @@ public class VehicleManagementServlet extends HttpServlet {
 
         logVehicleAudit(request, currentUser, "DELETE", carId,
                 "Xóa xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+    }
+
+    private void handleHideCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+            throws ServletException, IOException {
+        int carId = Integer.parseInt(request.getParameter("carId"));
+
+        Car car = vehicleService.getCarById(carId);
+        if (car == null) {
+            throw new AppException("Xe không tồn tại.");
+        }
+
+        String carName = car.getBrand() + " " + car.getModel();
+        String licensePlate = car.getLicensePlate();
+
+        // Update car status to INACTIVE
+        boolean updated = vehicleService.updateCarStatus(carId, "INACTIVE");
+        if (!updated) {
+            throw new AppException("Không thể ẩn xe.");
+        }
+
+        logVehicleAudit(request, currentUser, "HIDE", carId,
+                "Ẩn xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+    }
+
+    private void handleShowCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+            throws ServletException, IOException {
+        int carId = Integer.parseInt(request.getParameter("carId"));
+
+        Car car = vehicleService.getCarById(carId);
+        if (car == null) {
+            throw new AppException("Xe không tồn tại.");
+        }
+
+        String carName = car.getBrand() + " " + car.getModel();
+        String licensePlate = car.getLicensePlate();
+
+        // Update car status to AVAILABLE
+        boolean updated = vehicleService.updateCarStatus(carId, "AVAILABLE");
+        if (!updated) {
+            throw new AppException("Không thể hiện xe.");
+        }
+
+        logVehicleAudit(request, currentUser, "SHOW", carId,
+                "Hiện xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
     }
 
     /**
@@ -395,28 +457,39 @@ public class VehicleManagementServlet extends HttpServlet {
 
     private void handleGetModelsByBrand(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String brandIdStr = request.getParameter("brandId");
+        response.setContentType("application/json; charset=UTF-8");
+
         if (brandIdStr == null || brandIdStr.isEmpty()) {
-            response.setContentType("application/json");
             response.getWriter().write("[]");
             return;
         }
 
-        int brandId = Integer.parseInt(brandIdStr);
-        List<VehicleModel> models = vehicleService.getModelsByBrandId(brandId);
+        try {
+            int brandId = Integer.parseInt(brandIdStr);
+            List<VehicleModel> models = vehicleService.getModelsByBrandId(brandId);
 
-        StringBuilder json = new StringBuilder("[");
-        for (int i = 0; i < models.size(); i++) {
-            VehicleModel m = models.get(i);
-            json.append("{")
-                .append("\"modelId\":").append(m.getModelId()).append(",")
-                .append("\"modelName\":\"").append(escapeJson(m.getModelName())).append("\"")
-                .append("}");
-            if (i < models.size() - 1) json.append(",");
+            if (models == null) {
+                models = new java.util.ArrayList<>();
+            }
+
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < models.size(); i++) {
+                VehicleModel m = models.get(i);
+                json.append("{")
+                    .append("\"modelId\":").append(m.getModelId()).append(",")
+                    .append("\"modelName\":\"").append(escapeJson(m.getModelName())).append("\"")
+                    .append("}");
+                if (i < models.size() - 1) json.append(",");
+            }
+            json.append("]");
+
+            response.getWriter().write(json.toString());
+        } catch (Exception e) {
+            System.err.println("Error loading models for brand " + brandIdStr + ": " + e.getMessage());
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
         }
-        json.append("]");
-
-        response.setContentType("application/json; charset=UTF-8");
-        response.getWriter().write(json.toString());
     }
 
     private void handleDeleteImage(HttpServletRequest request, HttpServletResponse response) throws IOException {

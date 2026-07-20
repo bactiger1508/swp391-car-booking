@@ -10,7 +10,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.core.exception.AppException;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.policy.service.PolicyService;
@@ -51,6 +54,7 @@ public class PaymentRecordServlet extends HttpServlet {
     private final com.swp391.carrental.contract.service.ContractService contractService
             = new com.swp391.carrental.contract.service.ContractService();
     private final PolicyService policyService = new PolicyService();
+    private final NotificationService notificationService = new NotificationService();
 
     // ─── Static bank BIN map for VietQR ──────────────────────────────────────
     // Maps upper-cased bank name keywords → VietQR BIN code.
@@ -286,6 +290,8 @@ public class PaymentRecordServlet extends HttpServlet {
             // recordPayment() calls validatePaymentMethod() + validateRefundMethod() + validateAmount()
             int paymentId = paymentService.recordPayment(payment);
 
+            notifyPaymentRecorded(payment, paymentId);
+
             // Redirect customer bank transfer payments to the awaiting checkout page
             if ("CUSTOMER".equals(currentUser.getRole()) && "BANK_TRANSFER".equalsIgnoreCase(payment.getPaymentMethod())) {
                 response.sendRedirect(request.getContextPath() + "/payments/checkout?paymentId=" + paymentId);
@@ -436,5 +442,39 @@ public class PaymentRecordServlet extends HttpServlet {
             default:               shortType = "PAY";     break;
         }
         return shortType + "-PAY" + paymentId;
+    }
+
+    /**
+     * Notifies the customer that owns the booking that a payment was recorded for them.
+     */
+    private void notifyPaymentRecorded(Payment payment, int paymentId) {
+        try {
+            Booking booking = bookingService.getBookingById(payment.getBookingId());
+            if (booking == null) {
+                return;
+            }
+
+            String typeLabel;
+            switch (payment.getPaymentType() == null ? "" : payment.getPaymentType().toUpperCase()) {
+                case "DEPOSIT":        typeLabel = "tiền cọc"; break;
+                case "RENTAL":         typeLabel = "tiền thuê xe"; break;
+                case "ADDITIONAL_FEE": typeLabel = "phí phát sinh"; break;
+                case "REFUND":         typeLabel = "hoàn tiền"; break;
+                default:               typeLabel = "thanh toán"; break;
+            }
+
+            String title = "REFUND".equalsIgnoreCase(payment.getPaymentType())
+                    ? "Yêu cầu hoàn tiền đã được xử lý"
+                    : "Đã ghi nhận thanh toán";
+            String message = "Đã ghi nhận khoản " + typeLabel + " " + payment.getAmount()
+                    + " VNĐ cho booking #" + payment.getBookingId() + ".";
+
+            Notification notif = new Notification(booking.getCustomerId(), title, message, "PAYMENT");
+            notif.setReferenceType("PAYMENT");
+            notif.setReferenceId(paymentId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send payment-recorded notification: " + e.getMessage());
+        }
     }
 }
