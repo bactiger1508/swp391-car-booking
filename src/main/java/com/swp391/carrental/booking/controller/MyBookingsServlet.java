@@ -35,6 +35,7 @@ public class MyBookingsServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
     private final VehicleService vehicleService = new VehicleService();
 
+    /** Hiển thị danh sách các đơn đặt xe của khách hàng đang đăng nhập */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

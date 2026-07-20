@@ -177,6 +177,7 @@ public class BookingService {
         }
     }
 
+    /** Hủy booking đang PENDING hoặc CONFIRMED và tự động tính toán hoàn tiền cọc */
     public boolean cancelBooking(int bookingId, String reason) {
         try {
             Booking booking = bookingDAO.findById(bookingId);

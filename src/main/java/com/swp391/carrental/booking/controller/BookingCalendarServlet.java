@@ -45,6 +45,7 @@ public class BookingCalendarServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final UserService userService = new UserService();
 
+    /** Hiển thị lịch đặt xe dạng biểu đồ Gantt Timeline cho Staff/Admin và trả về JSON cho AJAX */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
