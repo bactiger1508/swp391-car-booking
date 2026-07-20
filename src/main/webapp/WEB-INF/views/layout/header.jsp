@@ -37,6 +37,9 @@
                 <a href="${pageContext.request.contextPath}/vehicles" class="bk-sidebar-link ${_cp == '/vehicles' ? 'active' : ''}">
                     <span class="material-symbols-outlined">directions_car</span> Danh sách xe
                 </a>
+                <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">policy</span> Chính sách
+                </a>
 
                 <c:if test="${sessionScope.currentUser != null}">
                     <a href="${pageContext.request.contextPath}/notifications" class="bk-sidebar-link ${_cp == '/notifications' ? 'active' : ''}">
@@ -104,9 +107,6 @@
                                 <span class="material-symbols-outlined">description</span> Hợp đồng của tôi
                             </a>
                         </c:if>
-                        <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
-                            <span class="material-symbols-outlined">policy</span> Chính sách
-                        </a>
                     </c:if>
 
                     <%-- Section: Quản lý Đặt xe (Staff / Admin) --%>
@@ -130,9 +130,6 @@
                                 <span class="material-symbols-outlined">calendar_month</span> Lịch đặt xe
                             </a>
                         </c:if>
-                        <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
-                            <span class="material-symbols-outlined">policy</span> Chính sách
-                        </a>
                     </c:if>
 
                     <%-- Section: Nghiệp vụ xe (Staff / Admin) --%>

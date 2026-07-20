@@ -43,7 +43,8 @@ public class AuthFilter implements Filter {
             "/index.jsp",
             "/vehicles",
             "/vehicles/detail",
-            "/bookings/policy"
+            "/bookings/policy",
+            "/bookings/create"
     );
 
     /**
