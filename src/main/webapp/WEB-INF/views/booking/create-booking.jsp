@@ -5,6 +5,10 @@
     <jsp:param name="pageTitle" value="Tạo Đặt Xe"/>
 </jsp:include>
 
+<!-- Leaflet CSS & JS for OpenStreetMap -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
 <c:if test="${not empty error}">
     <div class="bk-alert bk-alert-error">
         <span class="material-symbols-outlined">error</span> ${error}
@@ -163,6 +167,11 @@
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-endTime"></span>
                         </div>
                     </div>
+                    <%-- Realtime Availability Error Alert / Notice --%>
+                    <div id="err-availability" class="bk-alert bk-alert-error" style="display:none; margin-top:12px; padding:10px 14px; font-size:13px; align-items:center; gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:18px;">error</span>
+                        <span id="err-availability-text">Xe đã có lịch đặt hoặc không sẵn sàng trong khoảng thời gian này. Vui lòng chọn ngày hoặc xe khác.</span>
+                    </div>
                 </div>
 
                 <%-- Delivery Method & Locations --%>
@@ -183,9 +192,12 @@
                             <label class="bk-form-label">Khoảng cách giao xe (km) <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">map</span>
-                                <input type="number" name="deliveryDistance" id="deliveryDistance" class="bk-form-input" min="0" step="0.1" value="${not empty deliveryDistance ? deliveryDistance : (not empty param.deliveryDistance ? param.deliveryDistance : '0')}" onchange="calculateBookingCost()" onkeyup="calculateBookingCost()">
+                                <input type="number" name="deliveryDistance" id="deliveryDistance" class="bk-form-input" min="0" step="0.1" value="${not empty deliveryDistance ? deliveryDistance : (not empty param.deliveryDistance ? param.deliveryDistance : '0')}" onchange="calculateBookingCost()" readonly>
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-deliveryDistance"></span>
+                            <div id="distanceFallbackNotice" style="display:none; font-size:11px; color:#6b7280; margin-top:4px; font-style:italic;">
+                                Ước tính theo đường chim bay (không lấy được dữ liệu giao thông)
+                            </div>
                         </div>
                     </div>
                     
@@ -208,14 +220,23 @@
                         </div>
                     </div>
                     
-                    <%-- Address Input for Delivery --%>
+                    <%-- Address Input for Delivery & Map --%>
                     <div class="bk-form-group" id="deliveryAddressGroup" style="display:none; margin-top: 16px;">
                         <label class="bk-form-label">Địa chỉ giao xe tận nơi <span style="color:var(--error);">*</span></label>
-                        <div class="bk-form-input-wrap">
+                        <div class="bk-form-input-wrap" style="margin-bottom: 8px;">
                             <span class="material-symbols-outlined">home</span>
-                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn" value="${not empty deliveryAddress ? deliveryAddress : param.deliveryAddress}">
+                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn hoặc tìm trên bản đồ..." value="${not empty deliveryAddress ? deliveryAddress : param.deliveryAddress}" onkeypress="if(event.key==='Enter'){event.preventDefault();searchAddressOnMap();}">
+                            <button type="button" class="bk-btn bk-btn-outline" style="padding: 6px 14px; font-size:13px; white-space:nowrap; margin-left: 8px;" onclick="searchAddressOnMap()">
+                                <span class="material-symbols-outlined" style="font-size:16px;">search</span> Tìm
+                            </button>
                         </div>
                         <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-deliveryAddress"></span>
+
+                        <%-- Leaflet Map Container --%>
+                        <div id="deliveryMap" style="width: 100%; height: 260px; border-radius: 8px; border: 1px solid var(--outline-variant); margin-top: 8px; z-index: 1;"></div>
+                        <div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">info</span> Bấm trực tiếp trên bản đồ hoặc di chuyển ghim để chọn vị trí giao xe chính xác.
+                        </div>
                     </div>
                 </div>
 
@@ -227,7 +248,7 @@
 
                 <%-- Actions --%>
                 <div class="bk-form-actions">
-                    <button type="submit" class="bk-btn bk-btn-primary" style="padding:12px 32px;">
+                    <button type="submit" id="submitBookingBtn" class="bk-btn bk-btn-primary" style="padding:12px 32px;">
                         <span class="material-symbols-outlined">check_circle</span> Gửi Đơn Đặt xe
                     </button>
                 </div>
@@ -533,6 +554,11 @@ function onRentalModeChange() {
     calculateBookingCost();
 }
 
+var map = null;
+var deliveryMarker = null;
+var SHOWROOM_LAT = 21.028511;
+var SHOWROOM_LNG = 105.804817;
+
 function onDeliveryMethodChange() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
     var distGroup = document.getElementById('distanceGroup');
@@ -546,11 +572,15 @@ function onDeliveryMethodChange() {
         if (pickupGroup) {
             pickupGroup.style.display = 'none';
         }
-        // When delivery is active, backend uses deliveryAddress so we can fill pickupLocation with placeholder to satisfy validation
         pickupInput.value = "Giao xe tận nơi";
+        initDeliveryMap();
     } else {
         distGroup.style.display = 'none';
         addrGroup.style.display = 'none';
+        document.getElementById('deliveryDistance').value = '0';
+        var fallbackNotice = document.getElementById('distanceFallbackNotice');
+        if (fallbackNotice) fallbackNotice.style.display = 'none';
+
         if (pickupGroup) {
             pickupGroup.style.display = 'block';
         }
@@ -566,6 +596,123 @@ function onDeliveryMethodChange() {
         }
     }
     calculateBookingCost();
+}
+
+function initDeliveryMap() {
+    var mapContainer = document.getElementById('deliveryMap');
+    if (!mapContainer) return;
+
+    if (!map) {
+        map = L.map('deliveryMap').setView([SHOWROOM_LAT, SHOWROOM_LNG], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        map.on('click', function(e) {
+            setDeliveryLocation(e.latlng.lat, e.latlng.lng, true);
+        });
+    } else {
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
+    }
+}
+
+function setDeliveryLocation(lat, lng, doReverseGeocode) {
+    if (!deliveryMarker) {
+        deliveryMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        deliveryMarker.on('dragend', function(e) {
+            var pos = e.target.getLatLng();
+            setDeliveryLocation(pos.lat, pos.lng, true);
+        });
+    } else {
+        deliveryMarker.setLatLng([lat, lng]);
+    }
+    map.panTo([lat, lng]);
+
+    fetchRoadDistance(lat, lng);
+
+    if (doReverseGeocode) {
+        reverseGeocode(lat, lng);
+    }
+}
+
+function fetchRoadDistance(lat, lng) {
+    var url = '${pageContext.request.contextPath}/bookings/delivery-distance?destLat=' + lat + '&destLng=' + lng;
+    fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var distInput = document.getElementById('deliveryDistance');
+            var fallbackNotice = document.getElementById('distanceFallbackNotice');
+
+            if (data.success && data.distanceKm !== undefined) {
+                distInput.value = data.distanceKm;
+                if (fallbackNotice) fallbackNotice.style.display = 'none';
+            } else {
+                // Fallback: Haversine (straight-line distance)
+                var distKm = calculateHaversineDistance(SHOWROOM_LAT, SHOWROOM_LNG, lat, lng);
+                distInput.value = distKm;
+                if (fallbackNotice) fallbackNotice.style.display = 'block';
+            }
+            calculateBookingCost();
+        })
+        .catch(function(err) {
+            console.error('Distance API error:', err);
+            var distKm = calculateHaversineDistance(SHOWROOM_LAT, SHOWROOM_LNG, lat, lng);
+            document.getElementById('deliveryDistance').value = distKm;
+            var fallbackNotice = document.getElementById('distanceFallbackNotice');
+            if (fallbackNotice) fallbackNotice.style.display = 'block';
+            calculateBookingCost();
+        });
+}
+
+function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371; // km
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    var result = Math.round(d * 10) / 10;
+    return result < 0.1 ? 0.1 : result;
+}
+
+function reverseGeocode(lat, lng) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi';
+    fetch(url, { headers: { 'User-Agent': 'CarRentalApp/1.0' } })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.display_name) {
+                document.getElementById('deliveryAddress').value = data.display_name;
+            }
+        })
+        .catch(function(err) {
+            console.error('Reverse geocode error:', err);
+        });
+}
+
+function searchAddressOnMap() {
+    var query = document.getElementById('deliveryAddress').value.trim();
+    if (!query) return;
+
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&accept-language=vi&limit=1';
+    fetch(url, { headers: { 'User-Agent': 'CarRentalApp/1.0' } })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                setDeliveryLocation(lat, lon, false);
+            } else {
+                alert('Không tìm thấy vị trí phù hợp với địa chỉ đã nhập.');
+            }
+        })
+        .catch(function(err) {
+            console.error('Address search error:', err);
+        });
 }
 
 function calculateBookingCost() {
@@ -746,22 +893,96 @@ function calculateBookingCost() {
     document.getElementById('depositCost').textContent = formatVND(deposit);
 }
 
+// Realtime Availability Check (Debounced)
+var availabilityTimer = null;
+function checkAvailabilityRealtime() {
+    if (availabilityTimer) {
+        clearTimeout(availabilityTimer);
+    }
+    availabilityTimer = setTimeout(function() {
+        doCheckAvailabilityRealtime();
+    }, 400);
+}
+
+function doCheckAvailabilityRealtime() {
+    var carSelect = document.getElementById('carSelect');
+    var startDateEl = document.getElementById('startDate');
+    var endDateEl = document.getElementById('endDate');
+    var startTimeEl = document.getElementById('startTime');
+    var endTimeEl = document.getElementById('endTime');
+
+    var carId = carSelect ? carSelect.value : '';
+    var startDate = startDateEl ? startDateEl.value : '';
+    var endDate = endDateEl ? endDateEl.value : '';
+    var startTime = startTimeEl ? startTimeEl.value : '08:00';
+    var endTime = endTimeEl ? endTimeEl.value : '08:00';
+
+    var errAlert = document.getElementById('err-availability');
+    var errText = document.getElementById('err-availability-text');
+    var submitBtn = document.getElementById('submitBookingBtn');
+
+    if (!carId || !startDate || !endDate) {
+        if (errAlert) errAlert.style.display = 'none';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+        return;
+    }
+
+    var url = '${pageContext.request.contextPath}/vehicles/availability?action=checkCarAvailability'
+            + '&carId=' + encodeURIComponent(carId)
+            + '&startDate=' + encodeURIComponent(startDate)
+            + '&startTime=' + encodeURIComponent(startTime)
+            + '&endDate=' + encodeURIComponent(endDate)
+            + '&endTime=' + encodeURIComponent(endTime);
+
+    fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.available) {
+                if (errAlert) errAlert.style.display = 'none';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                }
+            } else {
+                var msg = data.message || 'Xe đã bị trùng lịch đặt trong khoảng thời gian này. Vui lòng chọn xe hoặc ngày khác.';
+                if (errText) errText.textContent = msg;
+                if (errAlert) errAlert.style.display = 'flex';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.6';
+                    submitBtn.style.cursor = 'not-allowed';
+                }
+            }
+        })
+        .catch(function(err) {
+            console.error('Lỗi kiểm tra availability realtime:', err);
+        });
+}
+
 // Init and attach listeners robustly
 document.addEventListener('DOMContentLoaded', function() {
     var sel = document.getElementById('carSelect');
     var sd = document.getElementById('startDate');
     var ed = document.getElementById('endDate');
+    var st = document.getElementById('startTime');
+    var et = document.getElementById('endTime');
 
     if (sel) {
         sel.addEventListener('change', function() {
             updateCarInfo();
+            checkAvailabilityRealtime();
         });
     }
 
     // Initialize the cascading dropdowns
     initFilters();
 
-    [sd, ed].forEach(function(el) {
+    [sd, ed, st, et].forEach(function(el) {
         if (el) {
             ['change', 'input', 'blur', 'keyup'].forEach(function(evt) {
                 el.addEventListener(evt, function() {
@@ -783,6 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     calculateBookingCost();
+                    checkAvailabilityRealtime();
                 });
             });
         }
@@ -799,6 +1021,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var today = new Date().toISOString().split('T')[0];
     if (sd) sd.setAttribute('min', today);
     if (ed) ed.setAttribute('min', today);
+
+    // Initial realtime availability check on page load (handles restored preFilledBookingData)
+    checkAvailabilityRealtime();
     
     // Custom form validation
     var form = document.getElementById('bookingForm');
