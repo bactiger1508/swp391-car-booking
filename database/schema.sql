@@ -211,6 +211,8 @@ CREATE TABLE rental_contracts (
     terms_and_conditions NVARCHAR(MAX)  NULL,
     created_by          INT             NOT NULL,
     signed_at           DATETIME2       NULL,
+    staff_signed_at     DATETIME2       NULL,
+    customer_signed_at  DATETIME2       NULL,
     created_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
     -- Pricing and delivery properties

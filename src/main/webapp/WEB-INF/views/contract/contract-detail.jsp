@@ -52,7 +52,20 @@
                         <div>
                             <c:choose>
                                 <c:when test="${contract.status == 'DRAFT'}">
-                                    <span class="badge badge-pending">Hợp đồng nháp (Draft)</span>
+                                    <c:choose>
+                                        <c:when test="${contract.staffSigned && contract.customerSigned}">
+                                            <span class="badge badge-confirmed">Đã ký (Chờ kích hoạt)</span>
+                                        </c:when>
+                                        <c:when test="${contract.staffSigned}">
+                                            <span class="badge badge-pending">Nhân viên đã ký (Chờ khách hàng)</span>
+                                        </c:when>
+                                        <c:when test="${contract.customerSigned}">
+                                            <span class="badge badge-pending">Khách hàng đã ký (Chờ nhân viên)</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge badge-pending">Hợp đồng nháp (Chờ 2 bên ký)</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:when>
                                 <c:when test="${contract.status == 'ACTIVE'}">
                                     <span class="badge badge-confirmed">Hiệu lực (Active)</span>
@@ -210,18 +223,61 @@
                         </c:choose>
                     </c:if>
 
-                    <c:if test="${contract.status == 'DRAFT' && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
-                        <c:if test="${editMode != true}">
+                    <c:if test="${contract.status == 'DRAFT'}">
+                        <c:if test="${(sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN') && editMode != true}">
                             <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}&edit=true" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
                                 <span class="material-symbols-outlined" style="font-size: 20px;">edit</span> Cập nhật hợp đồng
                             </a>
                         </c:if>
-                        <form action="${pageContext.request.contextPath}/contracts" method="POST" style="margin: 0;">
-                            <input type="hidden" name="action" value="activate"/>
-                            <input type="hidden" name="contractId" value="${contract.contractId}"/>
-                            <button type="submit" class="btn btn-success">Ký kết & Kích hoạt</button>
-                        </form>
+
+                        <%-- Staff sign button --%>
+                        <c:if test="${(sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN') && !contract.staffSigned}">
+                            <form id="staffSignForm" action="${pageContext.request.contextPath}/contracts" method="POST" style="margin: 0;">
+                                <input type="hidden" name="action" value="activate"/>
+                                <input type="hidden" name="signSide" value="STAFF"/>
+                                <input type="hidden" name="contractId" value="${contract.contractId}"/>
+                                <button type="button" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;" onclick="openSignModal('staffSignForm', 'Xác nhận ký kết (Bên cho thuê)', 'Bạn có chắc chắn muốn xác nhận ký kết hợp đồng này với tư cách Đại diện Bên cho thuê (Bên A)?')">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">draw</span> Ký kết hợp đồng (Bên A)
+                                </button>
+                            </form>
+                        </c:if>
+
+                        <%-- Customer sign button --%>
+                        <c:if test="${sessionScope.currentUser.role == 'CUSTOMER' && contract.customerId == sessionScope.currentUser.userId && !contract.customerSigned}">
+                            <form id="customerSignForm" action="${pageContext.request.contextPath}/contracts" method="POST" style="margin: 0;">
+                                <input type="hidden" name="action" value="activate"/>
+                                <input type="hidden" name="signSide" value="CUSTOMER"/>
+                                <input type="hidden" name="contractId" value="${contract.contractId}"/>
+                                <button type="button" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;" onclick="openSignModal('customerSignForm', 'Xác nhận ký kết (Bên thuê xe)', 'Bạn có chắc chắn muốn xác nhận ký kết hợp đồng này với tư cách Bên thuê xe (Bên B)?')">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">draw</span> Ký kết hợp đồng (Bên B)
+                                </button>
+                            </form>
+                        </c:if>
                     </c:if>
+                </div>
+
+                <%-- CUSTOM SIGN CONFIRMATION MODAL --%>
+                <div id="customSignModal" class="bk-modal no-print">
+                    <div class="bk-modal-content">
+                        <div class="bk-modal-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="color: var(--success, #2e7d32); font-size: 26px;">draw</span>
+                                <h3 id="signModalTitle" style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Xác nhận ký kết hợp đồng</h3>
+                            </div>
+                            <span class="modal-close-icon" onclick="closeSignModal()">&times;</span>
+                        </div>
+                        <div class="bk-modal-body" style="padding: 20px 0;">
+                            <p id="signModalMessage" style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+                                Bạn có chắc chắn muốn xác nhận ký kết hợp đồng thuê xe này?
+                            </p>
+                        </div>
+                        <div class="bk-modal-footer">
+                            <button type="button" class="btn btn-outline" onclick="closeSignModal()">Hủy bỏ</button>
+                            <button type="button" id="signModalConfirmBtn" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;" onclick="submitSignForm()">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">draw</span> Đồng ý ký kết
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <%-- EDIT FORM: Displayed when editMode is true --%>
@@ -555,17 +611,21 @@
                                                         <p style="font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase;">ĐẠI DIỆN BÊN A (BÊN CHO THUÊ)</p>
                                                         <p style="font-size: 8.5pt; color: #666; margin: 0 0 15px 0;">(Ký, ghi rõ họ tên hoặc xác thực điện tử)</p>
                                                         <c:choose>
-                                                            <c:when test="${contract.status == 'ACTIVE' || contract.status == 'COMPLETED'}">
+                                                            <c:when test="${contract.staffSigned}">
                                                                 <div style="border: 1.5px dashed green; color: green; width: 230px; margin: 0 auto; padding: 8px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 8.5pt; background: #f9fff9; text-align: center; line-height: 1.4;">
                                                                     HỆ THỐNG CARPRO
                                                                     <br/>
                                                                     <span style="font-size: 9.5pt; color: #000; font-weight: bold;">ĐÃ KÝ ĐIỆN TỬ</span>
                                                                     <br/>
                                                                     <span style="font-size: 7.5pt; font-weight: normal; color: #666;">Bên A: ${creator != null ? creator.fullName : 'TRẦN THANH BẰNG'}</span>
+                                                                    <c:if test="${not empty contract.staffSignedAt}">
+                                                                        <br/>
+                                                                        <span style="font-size: 7pt; color: #888;">${contract.staffSignedAt.format(dateTimeFormatter)}</span>
+                                                                    </c:if>
                                                                 </div>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <p style="font-style: italic; color: #999; margin-top: 15px;">Chờ ký kết</p>
+                                                                <p style="font-style: italic; color: #999; margin-top: 15px;">Chờ Bên A ký kết</p>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
@@ -573,17 +633,21 @@
                                                         <p style="font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase;">ĐẠI DIỆN BÊN B (BÊN THUÊ)</p>
                                                         <p style="font-size: 8.5pt; color: #666; margin: 0 0 15px 0;">(Ký, ghi rõ họ tên hoặc xác thực điện tử)</p>
                                                         <c:choose>
-                                                            <c:when test="${contract.status == 'ACTIVE' || contract.status == 'COMPLETED'}">
+                                                            <c:when test="${contract.customerSigned}">
                                                                 <div style="border: 1.5px dashed green; color: green; width: 230px; margin: 0 auto; padding: 8px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 8.5pt; background: #f9fff9; text-align: center; line-height: 1.4;">
                                                                     KHÁCH HÀNG XÁC NHẬN
                                                                     <br/>
                                                                     <span style="font-size: 9.5pt; color: #000; font-weight: bold;">ĐÃ KÝ ĐIỆN TỬ</span>
                                                                     <br/>
                                                                     <span style="font-size: 7.5pt; font-weight: normal; color: #666;">Bên B: ${customer.fullName}</span>
+                                                                    <c:if test="${not empty contract.customerSignedAt}">
+                                                                        <br/>
+                                                                        <span style="font-size: 7pt; color: #888;">${contract.customerSignedAt.format(dateTimeFormatter)}</span>
+                                                                    </c:if>
                                                                 </div>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <p style="font-style: italic; color: #999; margin-top: 15px;">Chờ ký kết</p>
+                                                                <p style="font-style: italic; color: #999; margin-top: 15px;">Chờ Bên B ký kết</p>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
@@ -1032,6 +1096,85 @@ function validateUpdateForm() {
     recalculateTotal();
     return true;
 }
+
+// --- Custom Sign Confirmation Modal JS ---
+var activeSignFormId = null;
+
+function openSignModal(formId, title, message) {
+    activeSignFormId = formId;
+    if (title) document.getElementById('signModalTitle').textContent = title;
+    if (message) document.getElementById('signModalMessage').textContent = message;
+    var modal = document.getElementById('customSignModal');
+    if (modal) modal.classList.add('open');
+}
+
+function closeSignModal() {
+    var modal = document.getElementById('customSignModal');
+    if (modal) modal.classList.remove('open');
+    activeSignFormId = null;
+}
+
+function submitSignForm() {
+    if (activeSignFormId) {
+        var form = document.getElementById(activeSignFormId);
+        if (form) {
+            form.submit();
+        }
+    }
+    closeSignModal();
+}
+
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('customSignModal');
+    if (modal && event.target === modal) {
+        closeSignModal();
+    }
+});
 </script>
+
+<style>
+.bk-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(4, 22, 56, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+.bk-modal.open {
+    opacity: 1; pointer-events: auto;
+}
+.bk-modal-content {
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    width: 90%; max-width: 480px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    padding: 24px;
+    transform: scale(0.95);
+    transition: transform 0.2s ease-in-out;
+}
+.bk-modal.open .bk-modal-content {
+    transform: scale(1);
+}
+.bk-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    padding-bottom: 12px;
+}
+.modal-close-icon {
+    font-size: 24px; cursor: pointer; color: var(--text-secondary, #718096);
+    transition: color 0.15s ease;
+    line-height: 1;
+}
+.modal-close-icon:hover { color: var(--danger, #e53e3e); }
+.bk-modal-footer {
+    display: flex; justify-content: flex-end; gap: 12px;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+    padding-top: 16px; margin-top: 8px;
+}
+</style>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
