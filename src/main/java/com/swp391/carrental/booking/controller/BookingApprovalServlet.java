@@ -39,6 +39,7 @@ public class BookingApprovalServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
 
+    /** Hiển thị danh sách các đơn đặt xe đang ở trạng thái PENDING chờ nhân viên phê duyệt */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -86,9 +87,7 @@ public class BookingApprovalServlet extends HttpServlet {
                 .forward(request, response);
     }
 
-    /**
-     * Process approve/reject actions.
-     */
+    /** Xử lý hành động phê duyệt (approve) hoặc từ chối (reject) đơn đặt xe */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
