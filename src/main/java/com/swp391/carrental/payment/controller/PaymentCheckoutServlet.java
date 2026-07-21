@@ -73,10 +73,16 @@ public class PaymentCheckoutServlet extends HttpServlet {
                 return;
             }
 
+            com.swp391.carrental.booking.model.Booking booking = 
+                    new com.swp391.carrental.booking.service.BookingService().getBookingById(payment.getBookingId());
+            if (booking != null && ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus()))) {
+                request.getSession().setAttribute("errorMessage", "Đơn đặt xe đã bị hủy hoặc từ chối. Giao dịch thanh toán không thể thực hiện.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + booking.getBookingId());
+                return;
+            }
+
             // Security Check: Customers can only view their own booking payments
             if ("CUSTOMER".equals(currentUser.getRole())) {
-                com.swp391.carrental.booking.model.Booking booking = 
-                        new com.swp391.carrental.booking.service.BookingService().getBookingById(payment.getBookingId());
                 if (booking == null || booking.getCustomerId() != currentUser.getUserId()) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thông tin thanh toán này.");
                     return;

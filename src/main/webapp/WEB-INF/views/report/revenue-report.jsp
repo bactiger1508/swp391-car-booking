@@ -308,72 +308,81 @@
             </div>
 
             <!-- CHART -->
-            <div style="display:flex;margin-top:20px;height:360px;">
+            <div style="margin-top:20px;">
+                <!-- MAIN CHART BOX (PLOT AREA + Y-AXIS) -->
+                <div style="display:flex; height:300px;">
+                    <!-- Y AXIS -->
+                    <div style="width:60px;
+                         display:flex;
+                         flex-direction:column;
+                         justify-content:space-between;
+                         align-items:flex-end;
+                         padding-right:10px;
+                         font-size:12px;
+                         font-weight:600;
+                         line-height:1;">
 
-                <!-- Y AXIS -->
-                <div style="width:60px;
-                     display:flex;
-                     flex-direction:column;
-                     justify-content:space-between;
-                     align-items:flex-end;
-                     padding-right:10px;
-                     font-size:12px;
-                     font-weight:600;">
+                        <span><fmt:formatNumber value="${chartMax/1000000}" maxFractionDigits="0"/>tr</span>
+                        <span><fmt:formatNumber value="${step*4/1000000}" maxFractionDigits="0"/>tr</span>
+                        <span><fmt:formatNumber value="${step*3/1000000}" maxFractionDigits="0"/>tr</span>
+                        <span><fmt:formatNumber value="${step*2/1000000}" maxFractionDigits="0"/>tr</span>
+                        <span><fmt:formatNumber value="${step/1000000}" maxFractionDigits="0"/>tr</span>
+                        <span>0</span>
 
-                    <span><fmt:formatNumber value="${chartMax/1000000}" maxFractionDigits="0"/>tr</span>
-                    <span><fmt:formatNumber value="${step*4/1000000}" maxFractionDigits="0"/>tr</span>
-                    <span><fmt:formatNumber value="${step*3/1000000}" maxFractionDigits="0"/>tr</span>
-                    <span><fmt:formatNumber value="${step*2/1000000}" maxFractionDigits="0"/>tr</span>
-                    <span><fmt:formatNumber value="${step/1000000}" maxFractionDigits="0"/>tr</span>
-                    <span>0</span>
+                    </div>
 
-                </div>
+                    <!-- Chart Plot Area -->
+                    <div style="flex:1;
+                         position:relative;
+                         display:flex;
+                         justify-content:space-around;
+                         align-items:flex-end;
+                         border-left:1px solid var(--outline-variant);
+                         border-bottom:2px solid var(--outline);
+                         padding:0 20px;">
 
-                <!-- Chart Area -->
-                <div style="flex:1;
-                     position:relative;
-                     display:flex;
-                     justify-content:space-around;
-                     align-items:flex-end;
-                     border-left:1px solid var(--outline-variant);
-                     border-bottom:1px solid var(--outline-variant);
-                     padding:0 20px;">
+                        <div style="position:absolute;left:0;right:0;top:0;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
+                        <div style="position:absolute;left:0;right:0;top:20%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
+                        <div style="position:absolute;left:0;right:0;top:40%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
+                        <div style="position:absolute;left:0;right:0;top:60%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
+                        <div style="position:absolute;left:0;right:0;top:80%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
 
-                    <div style="position:absolute;left:0;right:0;top:0;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
-                    <div style="position:absolute;left:0;right:0;top:20%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
-                    <div style="position:absolute;left:0;right:0;top:40%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
-                    <div style="position:absolute;left:0;right:0;top:60%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
-                    <div style="position:absolute;left:0;right:0;top:80%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
+                        <c:forEach items="${chartData}" var="c">
+                            <div style="width:80px;
+                                 height:100%;
+                                 display:flex;
+                                 flex-direction:column;
+                                 justify-content:flex-end;
+                                 align-items:center;
+                                 position:relative;">
 
-                    <c:forEach items="${chartData}" var="c">
+                                <span style="position:absolute; bottom:calc(${c.height}% + 6px); font-size:12px; font-weight:600; white-space:nowrap; color:var(--on-surface);">
+                                    <fmt:formatNumber value="${c.revenue/1000000}" maxFractionDigits="0"/>tr
+                                </span>
 
-                        <div style="width:80px;
-                             height:100%;
-                             display:flex;
-                             flex-direction:column;
-                             justify-content:flex-end;
-                             align-items:center;">
+                                <div style="width:38px;
+                                     height:${c.height}%;
+                                     background:linear-gradient(180deg,var(--primary),var(--primary-container));
+                                     border-radius:6px 6px 0 0;">
+                                </div>
 
-                            <span style="margin-bottom:6px;font-size:12px;font-weight:600;">
-                                <fmt:formatNumber value="${c.revenue/1000000}" maxFractionDigits="0"/>tr
-                            </span>
-
-                            <div style="width:38px;
-                                 height:${c.height}%;
-                                 background:linear-gradient(180deg,var(--primary),var(--primary-container));
-                                 border-radius:8px 8px 0 0;">
                             </div>
-
-                            <span style="margin-top:10px;font-weight:600;font-size:11px;white-space:nowrap;">
-                                ${c.label}
-                            </span>
-
-                        </div>
-
-                    </c:forEach>
-
+                        </c:forEach>
+                    </div>
                 </div>
 
+                <!-- X AXIS LABELS -->
+                <div style="display:flex; margin-left:60px; padding:8px 20px 0 20px;">
+                    <div style="flex:1; display:flex; justify-content:space-around;">
+                        <c:forEach items="${chartData}" var="c">
+                            <div style="width:80px; text-align:center;">
+                                <span style="font-weight:600; font-size:12px; white-space:nowrap; color:var(--on-surface-variant);">
+                                    ${c.label}
+                                </span>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
             </div>
 
     </div>
