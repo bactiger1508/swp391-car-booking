@@ -93,7 +93,7 @@
                             <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
                                 <span class="material-symbols-outlined mi-filled">receipt_long</span> Đơn thuê của tôi
                             </a>
-                            <a href="${pageContext.request.contextPath}/payments/my" class="bk-sidebar-link ${_cp == '/payments/my' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán
                             </a>
                         </c:if>
@@ -170,11 +170,6 @@
                                 <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
                             </a>
                         </c:if>
-                        <c:if test="${hasAdditionalFee}">
-                            <a href="${pageContext.request.contextPath}/additional-fees" class="bk-sidebar-link ${_cp == '/additional-fees' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">price_change</span> Phí phát sinh
-                            </a>
-                        </c:if>
                     </c:if>
 
                     <%-- Section: Báo cáo & Cấu hình --%>
@@ -191,7 +186,7 @@
                             </a>
                         </c:if>
                         <c:if test="${hasPaymentRecord}">
-                            <a href="${pageContext.request.contextPath}/payments/record" class="bk-sidebar-link ${_cp == '/payments/record' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
                             </a>
                         </c:if>
@@ -257,9 +252,26 @@
 
                 <div class="bk-header-actions">
                     <c:if test="${sessionScope.currentUser != null}">
-                        <a href="${pageContext.request.contextPath}/notifications" class="bk-header-icon">
-                            <span class="material-symbols-outlined">notifications</span>
-                        </a>
+                        <div class="bk-header-noti-wrapper" style="position:relative; display:inline-block;">
+                            <button type="button" class="bk-header-icon" id="notiBellBtn" onclick="toggleNotiDropdown(event)" style="position:relative; cursor:pointer; background:none; border:none; color:inherit;">
+                                <span class="material-symbols-outlined" style="font-size:22px;">notifications</span>
+                                <span id="notiBadgeCount" class="bk-noti-badge" style="position:absolute; top:-2px; right:-2px; background:#EE5D50; color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:14px; height:14px; line-height:12px; text-align:center; border:2px solid var(--surface, #fff); display:none;">0</span>
+                            </button>
+
+                            <%-- Popup Dropdown --%>
+                            <div id="notiDropdownPopup" class="bk-noti-dropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:340px; background:var(--surface, #fff); border:1px solid var(--outline-variant, #e0e0e0); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.15); z-index:10000; overflow:hidden;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
+                                    <strong style="font-size:14px; color:var(--on-surface);">Thông báo</strong>
+                                    <button type="button" onclick="markAllNotisReadHeader()" style="background:none; border:none; color:var(--primary, #2F5ACD); font-size:12px; font-weight:600; cursor:pointer;">Đánh dấu tất cả đã đọc</button>
+                                </div>
+                                <div id="notiDropdownList" style="max-height:300px; overflow-y:auto;">
+                                    <div style="padding:20px; text-align:center; color:var(--secondary); font-size:13px;">Đang tải thông báo...</div>
+                                </div>
+                                <div style="padding:10px; text-align:center; border-top:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
+                                    <a href="${pageContext.request.contextPath}/notifications" style="font-size:12px; font-weight:700; color:var(--primary, #2F5ACD); text-decoration:none;">Xem tất cả thông báo &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
                     </c:if>
                     <c:if test="${sessionScope.currentUser == null}">
                         <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
@@ -280,6 +292,96 @@
                     </c:if>
                 </div>
             </header>
+
+            <c:if test="${sessionScope.currentUser != null}">
+                <script>
+                function fetchUnreadCountHeader() {
+                    fetch('${pageContext.request.contextPath}/notifications?action=getUnreadCount')
+                        .then(r => r.json())
+                        .then(data => {
+                            var badge = document.getElementById('notiBadgeCount');
+                            if (badge) {
+                                if (data.unreadCount > 0) {
+                                    badge.textContent = data.unreadCount > 99 ? '99+' : data.unreadCount;
+                                    badge.style.display = 'inline-block';
+                                } else {
+                                    badge.style.display = 'none';
+                                }
+                            }
+                        }).catch(e => console.log(e));
+                }
+
+                function toggleNotiDropdown(event) {
+                    if (event) event.stopPropagation();
+                    var popup = document.getElementById('notiDropdownPopup');
+                    if (!popup) return;
+                    
+                    if (popup.style.display === 'none' || popup.style.display === '') {
+                        popup.style.display = 'block';
+                        loadNotiListHeader();
+                    } else {
+                        popup.style.display = 'none';
+                    }
+                }
+
+                function loadNotiListHeader() {
+                    var container = document.getElementById('notiDropdownList');
+                    container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--secondary); font-size:13px;">Đang tải thông báo...</div>';
+                    
+                    fetch('${pageContext.request.contextPath}/notifications?action=getAll')
+                        .then(r => r.json())
+                        .then(list => {
+                            if (!list || list.length === 0) {
+                                container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--secondary); font-size:13px;">Không có thông báo nào.</div>';
+                                return;
+                            }
+                            var html = '';
+                            var displayList = list.slice(0, 6);
+                            displayList.forEach(n => {
+                                var bg = n.isRead ? 'transparent' : 'rgba(47, 90, 205, 0.06)';
+                                var dot = n.isRead ? '' : '<span style="width:7px; height:7px; border-radius:50%; background:#2F5ACD; display:inline-block; margin-right:6px;"></span>';
+                                html += '<div onclick="readNotiHeader(' + n.notificationId + ')" style="padding:12px 16px; border-bottom:1px solid rgba(0,0,0,0.05); background:' + bg + '; cursor:pointer; text-align:left;">' +
+                                        '<div style="font-size:13px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; justify-content:space-between;">' +
+                                        '<span>' + dot + n.title + '</span>' +
+                                        '<span style="font-size:10px; font-weight:400; color:var(--text-secondary);">' + n.createdAt + '</span>' +
+                                        '</div>' +
+                                        '<div style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.4;">' + n.message + '</div>' +
+                                        '</div>';
+                            });
+                            container.innerHTML = html;
+                        })
+                        .catch(e => {
+                            container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--error); font-size:13px;">Lỗi tải thông báo.</div>';
+                        });
+                }
+
+                function readNotiHeader(id) {
+                    fetch('${pageContext.request.contextPath}/notifications?action=markAsRead&notificationId=' + id, {method: 'POST'})
+                        .then(() => {
+                            fetchUnreadCountHeader();
+                            window.location.href = '${pageContext.request.contextPath}/notifications';
+                        });
+                }
+
+                function markAllNotisReadHeader() {
+                    fetch('${pageContext.request.contextPath}/notifications?action=markAllAsRead', {method: 'POST'})
+                        .then(() => {
+                            fetchUnreadCountHeader();
+                            loadNotiListHeader();
+                        });
+                }
+
+                document.addEventListener('click', function(e) {
+                    var wrapper = document.querySelector('.bk-header-noti-wrapper');
+                    var popup = document.getElementById('notiDropdownPopup');
+                    if (wrapper && popup && !wrapper.contains(e.target)) {
+                        popup.style.display = 'none';
+                    }
+                });
+
+                document.addEventListener('DOMContentLoaded', fetchUnreadCountHeader);
+                </script>
+            </c:if>
 
             <%-- CONTENT START --%>
             <div class="bk-content">

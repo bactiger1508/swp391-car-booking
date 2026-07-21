@@ -271,6 +271,17 @@
                 
                 <c:set var="finalRequired" value="${not empty totalRequired ? totalRequired : booking.totalAmount}"/>
                 <c:choose>
+                    <c:when test="${booking.status == 'CANCELLED' || booking.status == 'REJECTED'}">
+                        <div class="bk-summary-highlight" style="background: rgba(238,93,80,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid rgba(238,93,80,0.2);">
+                            <div style="font-weight: 700; color: #C9392D; font-size: 14px; display:flex; align-items:center; gap:6px;">
+                                <span class="material-symbols-outlined" style="font-size:18px;">cancel</span>
+                                <span>Đơn hàng đã ${booking.status == 'CANCELLED' ? 'hủy' : 'bị từ chối'}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; line-height: 1.4;">
+                                Hợp đồng thuê xe chấm dứt. Không phát sinh số tiền cần thu.
+                            </div>
+                        </div>
+                    </c:when>
                     <c:when test="${totalPaid >= finalRequired}">
                         <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
                             <span class="label" style="color: #039C74; font-weight: 600;">Tiền thừa (Hoàn trả)</span>
@@ -307,7 +318,7 @@
                         <span>Đã nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Vui lòng liên hệ quầy để hoàn tiền.</span>
                     </div>
                 </c:if>
-                <c:if test="${!depositPaid}">
+                <c:if test="${!depositPaid && (booking.status == 'PENDING' || booking.status == 'CONFIRMED')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#05CD99; border-color:#05CD99;">
                         <span class="material-symbols-outlined">payments</span> Thanh toán tiền cọc
                     </a>

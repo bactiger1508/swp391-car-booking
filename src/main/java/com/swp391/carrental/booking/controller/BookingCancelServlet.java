@@ -21,6 +21,7 @@ import com.swp391.carrental.user.model.User;
 public class BookingCancelServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
 
+    /** Xử lý yêu cầu hủy đơn đặt xe từ khách hàng hoặc nhân viên */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

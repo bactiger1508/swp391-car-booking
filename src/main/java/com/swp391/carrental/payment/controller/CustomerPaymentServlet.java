@@ -25,7 +25,7 @@ import com.swp391.carrental.user.model.User;
  * Access is restricted to users with role CUSTOMER.
  * Staff and Admin should use /payments/record for the full transaction log.
  */
-@WebServlet(name = "CustomerPaymentServlet", urlPatterns = {"/payments/my"})
+@WebServlet(name = "CustomerPaymentServlet", urlPatterns = {"/payments/history"})
 public class CustomerPaymentServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
@@ -42,14 +42,13 @@ public class CustomerPaymentServlet extends HttpServlet {
             return;
         }
 
-        // Staff/Admin should use the global log — redirect them there
-        if (!"CUSTOMER".equals(currentUser.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/payments/record");
-            return;
-        }
-
         try {
-            List<Payment> myPayments = paymentService.getPaymentsByCustomerId(currentUser.getUserId());
+            List<Payment> myPayments;
+            if ("CUSTOMER".equals(currentUser.getRole())) {
+                myPayments = paymentService.getPaymentsByCustomerId(currentUser.getUserId());
+            } else {
+                myPayments = paymentService.getAllPayments();
+            }
             request.setAttribute("myPayments", myPayments);
         } catch (Exception e) {
             request.setAttribute("errorMsg", "Không thể tải lịch sử thanh toán: " + e.getMessage());
@@ -58,7 +57,7 @@ public class CustomerPaymentServlet extends HttpServlet {
         request.setAttribute("dateTimeFormatter",
             java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
 
-        request.getRequestDispatcher("/WEB-INF/views/payment/my-payments.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/payment/payments-history.jsp")
                .forward(request, response);
     }
 }

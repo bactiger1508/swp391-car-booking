@@ -40,6 +40,7 @@ public class BookingDetailServlet extends HttpServlet {
     private final com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
     private final com.swp391.carrental.contract.service.ContractService contractService = new com.swp391.carrental.contract.service.ContractService();
 
+    /** Hiển thị trang chi tiết đơn đặt xe (xem thông tin, lịch trình, hợp đồng, thanh toán) */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -94,7 +95,7 @@ public class BookingDetailServlet extends HttpServlet {
             boolean rentalPaid = false;
             java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
             for (com.swp391.carrental.payment.model.Payment p : payments) {
-                if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                if ("COMPLETED".equalsIgnoreCase(p.getStatus()) || "REFUNDED".equalsIgnoreCase(p.getStatus())) {
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
                         // Refunds reduce the net paid amount
                         totalPaid = totalPaid.subtract(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
@@ -120,7 +121,9 @@ public class BookingDetailServlet extends HttpServlet {
                 // ignore error
             }
             java.math.BigDecimal totalRequired = booking.getTotalAmount();
-            if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+            if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
+                totalRequired = java.math.BigDecimal.ZERO;
+            } else if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
                 totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
             }
             request.setAttribute("returns", vehicleReturn);
