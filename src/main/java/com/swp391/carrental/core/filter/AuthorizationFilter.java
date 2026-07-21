@@ -60,6 +60,11 @@ public class AuthorizationFilter implements Filter {
         PATH_PERMISSIONS.put("/additional-fees", "RECORD_ADDITIONAL_FEE");
         PATH_PERMISSIONS.put("/reports", "VIEW_REVENUE_REPORT");
         PATH_PERMISSIONS.put("/change-password", "CHANGE_PASSWORD");
+        PATH_PERMISSIONS.put("/vehicles/brands", "MANAGE_VEHICLE_BRANDS");
+        PATH_PERMISSIONS.put("/payments/approve", "APPROVE_PAYMENT");
+        PATH_PERMISSIONS.put("/payments/checkout", "INITIATE_PAYMENT");
+        PATH_PERMISSIONS.put("/audit-logs", "VIEW_AUDIT_LOGS");
+        PATH_PERMISSIONS.put("/vat-invoice", "CREATE_VAT_INVOICE");
     }
 
     @Override
