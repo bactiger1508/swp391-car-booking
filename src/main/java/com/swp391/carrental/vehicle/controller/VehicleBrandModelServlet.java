@@ -13,6 +13,7 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.model.VehicleBrand;
 import com.swp391.carrental.vehicle.model.VehicleModel;
 import com.swp391.carrental.vehicle.service.VehicleService;
+import com.swp391.carrental.core.util.SecurityUtils;
 
 /*
  * Name: VehicleBrandModelServlet
@@ -34,7 +35,7 @@ public class VehicleBrandModelServlet extends HttpServlet {
             return;
         }
 
-        if (!("ADMIN".equals(currentUser.getRole()))) {
+        if (!SecurityUtils.hasPermission(request, "MANAGE_VEHICLE_BRANDS")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }
