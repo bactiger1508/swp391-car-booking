@@ -36,17 +36,17 @@ public class AuthService {
         try {
             User user = userDAO.findByEmail(email);
             if (user == null) {
-                throw new AppException("Invalid email or password.");
+                throw new AppException("Email hoặc mật khẩu không đúng.");
             }
             if (!user.isActive()) {
-                throw new AppException("Your account has been deactivated. Please contact admin.");
+                throw new AppException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với quản lý");
             }
             if (!BCrypt.checkpw(password, user.getPasswordHash())) {
-                throw new AppException("Invalid email or password.");
+                throw new AppException("Email hoặc mật khẩu không đúng.");
             }
             return user;
         } catch (SQLException e) {
-            throw new AppException("Login failed due to system error.", e);
+            throw new AppException("Đăng nhập không thành công do lỗi hệ thống.", e);
         }
     }
 
@@ -58,7 +58,7 @@ public class AuthService {
             // Check if email already exists
             User existing = userDAO.findByEmail(email);
             if (existing != null) {
-                throw new AppException("Email is already registered.");
+                throw new AppException("Email đã được đăng ký.");
             }
 
             // Create user
@@ -72,7 +72,7 @@ public class AuthService {
 
             int userId = userDAO.insert(user);
             if (userId <= 0) {
-                throw new AppException("Failed to create account.");
+                throw new AppException("Tạo tài khoản không thành công.");
             }
             user.setUserId(userId);
 
@@ -84,7 +84,7 @@ public class AuthService {
 
             return user;
         } catch (SQLException e) {
-            throw new AppException("Registration failed due to system error.", e);
+            throw new AppException("Đăng ký không thành công do lỗi hệ thống.", e);
         }
     }
 }
