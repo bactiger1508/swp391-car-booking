@@ -32,8 +32,7 @@
                 <li><a href="${pageContext.request.contextPath}/contracts">📄 Quản Lý Hợp Đồng</a></li>
                 <li><a href="${pageContext.request.contextPath}/handovers">🔑 Giao Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/returns">🔄 Nhận Lại Xe</a></li>
-                <li><a href="${pageContext.request.contextPath}/additional-fees">💰 Phí Phát Sinh</a></li>
-                <li><a href="${pageContext.request.contextPath}/payments/history">💳 Nhật Ký Giao Dịch</a></li>
+                <li><a href="${pageContext.request.contextPath}/payments/record">💳 Nhật Ký Giao Dịch</a></li>
                 <li><a href="${pageContext.request.contextPath}/policies">⚖️ Cấu Hình Chính Sách</a></li>
 
                 <li class="menu-section">Báo Cáo</li>

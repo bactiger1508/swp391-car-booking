@@ -34,6 +34,7 @@ public class DeliveryDistanceServlet extends HttpServlet {
     private static final double SHOWROOM_LAT = 21.028511;
     private static final double SHOWROOM_LNG = 105.804817;
 
+    /** Tính khoảng cách đường đi thực tế từ showroom đến vị trí giao xe bằng OpenRouteService API */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

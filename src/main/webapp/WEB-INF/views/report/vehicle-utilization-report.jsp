@@ -269,44 +269,53 @@
                     </div>
                 </div>
 
-                <!--Card biểu đồ-->
-                <div style="display:flex; height:360px; width:100%;">
+                <!-- CHART BOX (PLOT AREA + Y-AXIS) -->
+                <div>
+                    <div style="display:flex; height:300px; width:100%;">
+                        <!-- Y AXIS -->
+                        <div style="width:55px; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; padding-right:10px; color:var(--on-surface-variant); font-size:12px; font-weight:600; line-height:1;">
+                            <span>100%</span>
+                            <span>80%</span>
+                            <span>60%</span>
+                            <span>40%</span>
+                            <span>20%</span>
+                            <span>0%</span>
+                        </div>
 
-                    <!-- Y AXIS -->
-                    <div style="width:55px; height:360px; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end; padding-right:10px; padding-bottom:0px; color:var(--on-surface-variant); font-size:12px; font-weight:600;">
-                        <span>100%</span>
-                        <span>80%</span>
-                        <span>60%</span>
-                        <span>40%</span>
-                        <span>20%</span>
-                        <span>0%</span>
+                        <!-- CHART AREA -->
+                        <div style="flex:1; position:relative; border-left:1px solid var(--outline-variant); border-bottom:2px solid var(--outline); display:flex; justify-content:space-around; align-items:flex-end; padding:0 30px;">
+                            <!-- GRID -->
+                            <div style="position:absolute; left:0; right:0; top:0; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
+                            <div style="position:absolute; left:0; right:0; top:20%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
+                            <div style="position:absolute; left:0; right:0; top:40%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
+                            <div style="position:absolute; left:0; right:0; top:60%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
+                            <div style="position:absolute; left:0; right:0; top:80%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
+
+                            <c:forEach items="${chartData}" var="c">
+                                <div style="width:80px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; z-index:2;">
+                                    <!-- VALUE -->
+                                    <span style="position:absolute; bottom:calc(${c.height}% + 6px); font-size:12px; font-weight:700; color:var(--primary); white-space:nowrap;">
+                                        <fmt:formatNumber value="${c.usage}" maxFractionDigits="1"/>%
+                                    </span>
+
+                                    <!-- BAR -->
+                                    <div style="width:38px; height:${c.height}%; background:var(--primary); border-radius:6px 6px 0 0;"></div>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
 
-                    <!-- CHART AREA -->
-                    <div style="flex:1; height:360px; position:relative; border-left:1px solid var(--outline-variant); border-bottom:1px solid var(--outline-variant); display:flex; justify-content:space-around; align-items:flex-end; padding:0 30px 0;">
-                        <!-- GRID -->
-                        <div style="position:absolute; left:0; right:0; top:0; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
-                        <div style="position:absolute; left:0; right:0; top:20%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
-                        <div style="position:absolute; left:0; right:0; top:40%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
-                        <div style="position:absolute; left:0; right:0; top:60%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
-                        <div style="position:absolute; left:0; right:0; top:80%; border-top:1px dashed var(--outline-variant); opacity:.35;"></div>
-
-                        <c:forEach items="${chartData}" var="c">
-                            <div style="width:80px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; z-index:2;">
-                                <!-- VALUE -->
-                                <span style="margin-bottom:6px; font-size:12px; font-weight:700; color:var(--primary);">
-                                    <fmt:formatNumber value="${c.usage}" maxFractionDigits="1"/>%
-                                </span>
-
-                                <!-- BAR -->
-                                <div style="width:38px; height:${c.height}%; background:var(--primary); border-radius:8px 8px 0 0;"></div>
-
-                                <!-- MONTH -->
-                                <span style="margin-top:10px; font-size:11px; font-weight:600; color:var(--on-surface-variant); white-space:nowrap;">
-                                    ${c.label}
-                                </span>
-                            </div>
-                        </c:forEach>
+                    <!-- X AXIS LABELS -->
+                    <div style="display:flex; margin-left:55px; padding:8px 30px 0 30px;">
+                        <div style="flex:1; display:flex; justify-content:space-around;">
+                            <c:forEach items="${chartData}" var="c">
+                                <div style="width:80px; text-align:center;">
+                                    <span style="font-weight:600; font-size:12px; white-space:nowrap; color:var(--on-surface-variant);">
+                                        ${c.label}
+                                    </span>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
                 </div>     
             </div>                

@@ -98,6 +98,13 @@ public class PaymentRecordServlet extends HttpServlet {
                 if (booking == null) {
                     request.setAttribute("errorMsg", "Không tìm thấy đơn đặt xe.");
                 } else {
+                    if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
+                        request.setAttribute("isCancelledOrRejected", true);
+                        request.setAttribute("errorMsg", "Đơn đặt xe #BK-" + bookingId + " đã ở trạng thái " 
+                                + ("CANCELLED".equalsIgnoreCase(booking.getStatus()) ? "Đã hủy" : "Đã từ chối") 
+                                + ". Không thể thực hiện giao dịch nộp tiền thanh toán mới.");
+                    }
+
                     boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT");
                     if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thanh toán cho đơn thuê này.");
@@ -266,6 +273,19 @@ public class PaymentRecordServlet extends HttpServlet {
         if (!isStaffOrAdmin && !isCustomer) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
             return;
+        }
+
+        String bookingIdStr = request.getParameter("bookingId");
+        if (bookingIdStr != null && !bookingIdStr.trim().isEmpty()) {
+            try {
+                int bId = Integer.parseInt(bookingIdStr.trim());
+                com.swp391.carrental.booking.model.Booking b = bookingService.getBookingById(bId);
+                if (b != null && ("CANCELLED".equalsIgnoreCase(b.getStatus()) || "REJECTED".equalsIgnoreCase(b.getStatus()))) {
+                    request.getSession().setAttribute("errorMessage", "Đơn đặt xe #BK-" + bId + " đã bị hủy hoặc từ chối. Không thể thực hiện nộp tiền thanh toán.");
+                    response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bId);
+                    return;
+                }
+            } catch (NumberFormatException ignored) {}
         }
 
         if (isCustomer) {
