@@ -246,18 +246,8 @@ public class PaymentRecordServlet extends HttpServlet {
             return;
         }
 
-        boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_PAYMENT");
-        // No bookingId: Customer is not allowed to view the global transactions log
-        if (!isStaffOrAdmin) {
-            response.sendRedirect(request.getContextPath() + "/payments/my");
-            return;
-        }
-
-        // Staff/Admin: show global payment log
-        request.setAttribute("payments",       paymentService.getAllPayments());
-        request.setAttribute("enabledMethods", paymentService.getEnabledMethods());
-        request.getRequestDispatcher("/WEB-INF/views/payment/payment-record.jsp")
-               .forward(request, response);
+        // No bookingId: redirect all users to the unified payments history page
+        response.sendRedirect(request.getContextPath() + "/payments/history");
     }
 
     @Override
