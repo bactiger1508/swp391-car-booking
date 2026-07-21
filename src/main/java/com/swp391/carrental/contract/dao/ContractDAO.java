@@ -131,12 +131,97 @@ public class ContractDAO {
         }
     }
 
+    private static boolean columnsChecked = false;
+
+    private static synchronized void ensureSignatureColumns(Connection conn) {
+        if (columnsChecked) return;
+        try {
+            DatabaseMetaData md = conn.getMetaData();
+            try (ResultSet rs = md.getColumns(null, null, "rental_contracts", "staff_signed_at")) {
+                if (!rs.next()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate("ALTER TABLE rental_contracts ADD staff_signed_at DATETIME2 NULL");
+                    }
+                }
+            }
+            try (ResultSet rs = md.getColumns(null, null, "rental_contracts", "customer_signed_at")) {
+                if (!rs.next()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate("ALTER TABLE rental_contracts ADD customer_signed_at DATETIME2 NULL");
+                    }
+                }
+            }
+            columnsChecked = true;
+        } catch (Exception e) {
+            // Ignore if metadata check is unpermitted or column exists
+        }
+    }
+
+    // Sign contract by staff
+    public boolean signContractByStaff(int contractId) throws SQLException {
+        try (Connection conn = DBContext.getConnection()) {
+            ensureSignatureColumns(conn);
+            String sql = "UPDATE rental_contracts SET staff_signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, contractId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    checkAndUpdateActiveStatus(conn, contractId);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Sign contract by customer
+    public boolean signContractByCustomer(int contractId) throws SQLException {
+        try (Connection conn = DBContext.getConnection()) {
+            ensureSignatureColumns(conn);
+            String sql = "UPDATE rental_contracts SET customer_signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, contractId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    checkAndUpdateActiveStatus(conn, contractId);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Check if both parties have signed and set status to ACTIVE
+    public boolean checkAndUpdateActiveStatus(Connection conn, int contractId) throws SQLException {
+        String sql = "SELECT staff_signed_at, customer_signed_at, status FROM rental_contracts WHERE contract_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, contractId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Timestamp staffSigned = rs.getTimestamp("staff_signed_at");
+                    Timestamp customerSigned = rs.getTimestamp("customer_signed_at");
+                    String currentStatus = rs.getString("status");
+
+                    if (staffSigned != null && customerSigned != null && "DRAFT".equals(currentStatus)) {
+                        String updateSql = "UPDATE rental_contracts SET status = 'ACTIVE', signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+                        try (PreparedStatement ups = conn.prepareStatement(updateSql)) {
+                            ups.setInt(1, contractId);
+                            return ups.executeUpdate() > 0;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     // Update contract status
     public boolean updateStatus(int contractId, String status) throws SQLException {
-        String sql = "UPDATE rental_contracts SET status = ?, updated_at = GETDATE() WHERE contract_id = ?";
+        String sql = "UPDATE rental_contracts SET status = ?, signed_at = CASE WHEN ? = 'ACTIVE' AND signed_at IS NULL THEN GETDATE() ELSE signed_at END, updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setInt(2, contractId);
+            ps.setString(2, status);
+            ps.setInt(3, contractId);
             return ps.executeUpdate() > 0;
         }
     }
@@ -190,6 +275,18 @@ public class ContractDAO {
         Timestamp sa = rs.getTimestamp("signed_at");
         if (sa != null) {
             c.setSignedAt(sa.toLocalDateTime());
+        }
+        try {
+            Timestamp ssa = rs.getTimestamp("staff_signed_at");
+            if (ssa != null) {
+                c.setStaffSignedAt(ssa.toLocalDateTime());
+            }
+            Timestamp csa = rs.getTimestamp("customer_signed_at");
+            if (csa != null) {
+                c.setCustomerSignedAt(csa.toLocalDateTime());
+            }
+        } catch (SQLException ignore) {
+            // Column may not exist yet in legacy DB queries
         }
         Timestamp ca = rs.getTimestamp("created_at");
         if (ca != null) {

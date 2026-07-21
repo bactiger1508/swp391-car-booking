@@ -31,6 +31,8 @@ public class RentalContract {
     private String termsAndConditions;
     private int createdBy;
     private LocalDateTime signedAt;
+    private LocalDateTime staffSignedAt;
+    private LocalDateTime customerSignedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -93,6 +95,20 @@ public class RentalContract {
 
     public LocalDateTime getSignedAt() { return signedAt; }
     public void setSignedAt(LocalDateTime signedAt) { this.signedAt = signedAt; }
+
+    public LocalDateTime getStaffSignedAt() { return staffSignedAt; }
+    public void setStaffSignedAt(LocalDateTime staffSignedAt) { this.staffSignedAt = staffSignedAt; }
+
+    public LocalDateTime getCustomerSignedAt() { return customerSignedAt; }
+    public void setCustomerSignedAt(LocalDateTime customerSignedAt) { this.customerSignedAt = customerSignedAt; }
+
+    public boolean isStaffSigned() {
+        return staffSignedAt != null || "ACTIVE".equals(status) || "COMPLETED".equals(status);
+    }
+
+    public boolean isCustomerSigned() {
+        return customerSignedAt != null || "ACTIVE".equals(status) || "COMPLETED".equals(status);
+    }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
