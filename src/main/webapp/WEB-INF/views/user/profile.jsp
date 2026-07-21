@@ -23,7 +23,9 @@
             <div class="card-header">
                 <h3>Hồ Sơ Thành Viên</h3>
                 <span class="badge ${profile.verificationStatus == 'VERIFIED' ? 'badge-completed' : (profile.verificationStatus == 'REJECTED' ? 'badge-cancelled' : 'badge-pending')}">
-                    Trạng thái xác minh: ${profile.verificationStatus}
+                    Trạng thái xác minh: ${profile.verificationStatus== 'VERIFIED' ? 'Đã xác minh' :
+                                           (profile.verificationStatus == 'REJECTED' ? 'Đã từ chối' :
+                                           (profile.verificationStatus == 'PENDING' ? 'Đang chờ xác minh' : 'Chưa xác minh'))}
                 </span>
             </div>
 
@@ -94,9 +96,9 @@
                         <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px;">Mặt trước</label>
                         <div class="upload-box" onclick="document.getElementById('idCardImageFront').click()"
                              style="border:2px dashed var(--outline-variant); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:var(--surface-container-low); transition:.2s; position:relative; min-height:120px;"
-                             onmouseover="this.style.background='var(--surface-container-high)'" onmouseout="this.style.background='var(--surface-container-low)'">
+                             onmouseover="this.style.background = 'var(--surface-container-high)'" onmouseout="this.style.background = 'var(--surface-container-low)'">
                             <input type="file" id="idCardImageFront" name="idCardImageFront" accept=".png,.jpg,.jpeg"
-                                   style="display:none;" onchange="previewImg(this,'prevFront')">
+                                   style="display:none;" onchange="previewImg(this, 'prevFront')">
                             <span class="material-symbols-outlined" style="font-size:36px;color:var(--text-secondary);">id_card</span>
                             <p style="margin-top:6px; font-size:12px; color:var(--primary); font-weight:600;">Nhấp để tải lên</p>
                             <p style="font-size:11px; color:var(--text-secondary);">PNG, JPG • Tối đa 10MB</p>
@@ -117,9 +119,9 @@
                         <label style="font-weight:600; font-size:13px; display:block; margin-bottom:8px;">Mặt sau</label>
                         <div class="upload-box" onclick="document.getElementById('idCardImageBack').click()"
                              style="border:2px dashed var(--outline-variant); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:var(--surface-container-low); transition:.2s; position:relative; min-height:120px;"
-                             onmouseover="this.style.background='var(--surface-container-high)'" onmouseout="this.style.background='var(--surface-container-low)'">
+                             onmouseover="this.style.background = 'var(--surface-container-high)'" onmouseout="this.style.background = 'var(--surface-container-low)'">
                             <input type="file" id="idCardImageBack" name="idCardImageBack" accept=".png,.jpg,.jpeg"
-                                   style="display:none;" onchange="previewImg(this,'prevBack')">
+                                   style="display:none;" onchange="previewImg(this, 'prevBack')">
                             <span class="material-symbols-outlined" style="font-size:36px;color:var(--text-secondary);">id_card</span>
                             <p style="margin-top:6px; font-size:12px; color:var(--primary); font-weight:600;">Nhấp để tải lên</p>
                             <p style="font-size:11px; color:var(--text-secondary);">PNG, JPG • Tối đa 10MB</p>
@@ -141,9 +143,9 @@
                 <div>
                     <div class="upload-box" onclick="document.getElementById('driverLicenseImage').click()"
                          style="border:2px dashed var(--outline-variant); border-radius:12px; padding:20px; text-align:center; cursor:pointer; background:var(--surface-container-low); transition:.2s; min-height:120px;"
-                         onmouseover="this.style.background='var(--surface-container-high)'" onmouseout="this.style.background='var(--surface-container-low)'">
+                         onmouseover="this.style.background = 'var(--surface-container-high)'" onmouseout="this.style.background = 'var(--surface-container-low)'">
                         <input type="file" id="driverLicenseImage" name="driverLicenseImage" accept=".png,.jpg,.jpeg"
-                               style="display:none;" onchange="previewImg(this,'prevLicense')">
+                               style="display:none;" onchange="previewImg(this, 'prevLicense')">
                         <span class="material-symbols-outlined" style="font-size:36px;color:var(--text-secondary);">drive_eta</span>
                         <p style="margin-top:6px; font-size:12px; color:var(--primary); font-weight:600;">Nhấp để tải lên</p>
                         <p style="font-size:11px; color:var(--text-secondary);">PNG, JPG • Tối đa 10MB</p>
@@ -174,7 +176,8 @@
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         const file = input.files[0];
-        if (!file) return;
+        if (!file)
+            return;
         const allowed = ['image/png', 'image/jpeg'];
         if (!allowed.includes(file.type)) {
             container.innerHTML = '<small style="color:#d32f2f;">Chỉ chấp nhận PNG hoặc JPG.</small>';
@@ -187,10 +190,10 @@
             return;
         }
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             container.innerHTML =
-                '<img src="' + e.target.result + '" style="width:200px;height:130px;object-fit:cover;border:1px solid #ddd;border-radius:8px;display:block;"/>' +
-                '<div style="font-size:11px;color:#666;margin-top:4px;">' + file.name + '</div>';
+                    '<img src="' + e.target.result + '" style="width:200px;height:130px;object-fit:cover;border:1px solid #ddd;border-radius:8px;display:block;"/>' +
+                    '<div style="font-size:11px;color:#666;margin-top:4px;">' + file.name + '</div>';
         };
         reader.readAsDataURL(file);
     }
