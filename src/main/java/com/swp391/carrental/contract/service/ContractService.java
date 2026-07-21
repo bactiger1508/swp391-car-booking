@@ -67,16 +67,16 @@ public class ContractService {
         }
     }
 
-    // Create contract from confirmed booking
+    // Create contract from confirmed booking (UC 2.2.1)
     public int createContract(RentalContract contract) {
         try {
-            // BR-05: Verify booking is CONFIRMED
+            // UC 2.2.1 Step 3 / Alt 1: Verify booking is CONFIRMED
             Booking booking = bookingDAO.findById(contract.getBookingId());
             if (booking == null) {
-                throw new AppException("Booking not found.");
+                throw new AppException("Không tìm thấy đơn đặt xe.");
             }
             if (!BookingStatus.CONFIRMED.equals(booking.getStatus())) {
-                throw new AppException("Contract can only be created from a Confirmed booking.");
+                throw new AppException("Chỉ có thể soạn hợp đồng cho các đơn đặt xe đã Xác nhận (Confirmed).");
             }
 
             // Generate contract number
@@ -89,6 +89,24 @@ public class ContractService {
             return contractDAO.insert(contract);
         } catch (SQLException e) {
             throw new AppException("Failed to create contract.", e);
+        }
+    }
+
+    // Sign contract by staff
+    public boolean signByStaff(int contractId) {
+        try {
+            return contractDAO.signContractByStaff(contractId);
+        } catch (SQLException e) {
+            throw new AppException("Lỗi khi nhân viên ký hợp đồng.", e);
+        }
+    }
+
+    // Sign contract by customer
+    public boolean signByCustomer(int contractId) {
+        try {
+            return contractDAO.signContractByCustomer(contractId);
+        } catch (SQLException e) {
+            throw new AppException("Lỗi khi khách hàng ký hợp đồng.", e);
         }
     }
 
