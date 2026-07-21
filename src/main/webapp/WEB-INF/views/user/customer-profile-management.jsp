@@ -21,9 +21,9 @@
             <input class="form-control" type="text" name="keyword" value="${param.keyword}" placeholder="Tìm kiếm...">
             <select class="form-control" name="status">
                 <option value="">Tất cả trạng thái</option>
-                <option value="PENDING" ${param.status=='PENDING'?'selected':''}>Pending</option>
-                <option value="VERIFIED" ${param.status=='VERIFIED'?'selected':''}>Verified</option>
-                <option value="REJECTED" ${param.status=='REJECTED'?'selected':''}>Rejected</option>
+                <option value="PENDING" ${param.status=='PENDING'?'selected':''}>Chờ xác minh</option>
+                <option value="VERIFIED" ${param.status=='VERIFIED'?'selected':''}>Đã xác minh</option>
+                <option value="REJECTED" ${param.status=='REJECTED'?'selected':''}>Đã từ chối</option>
             </select>
             <button class="btn btn-primary">Tìm kiếm</button>
         </form>
@@ -63,13 +63,13 @@
                         <td>
                             <c:choose>
                                 <c:when test="${p.verificationStatus=='PENDING'}">
-                                    <span class="badge badge-warning">Pending</span>
+                                    <span class="badge badge-warning">Chờ xác minh</span>
                                 </c:when>
                                 <c:when test="${p.verificationStatus=='VERIFIED'}">
-                                    <span class="badge badge-success">Verified</span>
+                                    <span class="badge badge-success">Đã xác minh</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="badge badge-danger">Rejected</span>
+                                    <span class="badge badge-danger">Đã từ chối</span>
                                 </c:otherwise>
                             </c:choose>
                         </td>

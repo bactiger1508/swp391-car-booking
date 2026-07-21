@@ -30,7 +30,7 @@ public class MaintenanceServlet extends HttpServlet {
             return;
         }
 
-        if (!("STAFF".equals(currentUser.getRole()) || "ADMIN".equals(currentUser.getRole()))) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_VEHICLE_MAINTENANCE")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -63,7 +63,7 @@ public class MaintenanceServlet extends HttpServlet {
             return;
         }
 
-        if (!("STAFF".equals(currentUser.getRole()) || "ADMIN".equals(currentUser.getRole()))) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "RECORD_VEHICLE_MAINTENANCE")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }

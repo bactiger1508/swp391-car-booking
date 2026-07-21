@@ -10,7 +10,7 @@
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <h2>Customer Profile Detail</h2>
             <a class="btn btn-secondary" href="${pageContext.request.contextPath}/user/customer-profiles?status=${param.searchStatus}&keyword=${param.searchKeyword}">
-                Back
+                Quay lại
             </a>
         </div>
 
