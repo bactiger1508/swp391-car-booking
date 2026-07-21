@@ -93,7 +93,7 @@
                             <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
                                 <span class="material-symbols-outlined mi-filled">receipt_long</span> Đơn thuê của tôi
                             </a>
-                            <a href="${pageContext.request.contextPath}/payments/my" class="bk-sidebar-link ${_cp == '/payments/my' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán
                             </a>
                         </c:if>
@@ -186,7 +186,7 @@
                             </a>
                         </c:if>
                         <c:if test="${hasPaymentRecord}">
-                            <a href="${pageContext.request.contextPath}/payments/record" class="bk-sidebar-link ${_cp == '/payments/record' ? 'active' : ''}">
+                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
                             </a>
                         </c:if>
