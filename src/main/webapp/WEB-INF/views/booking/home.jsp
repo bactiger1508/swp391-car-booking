@@ -81,12 +81,10 @@
                     <span class="material-symbols-outlined text-[20px]">directions_car</span>
                     Xem danh sách xe
                 </a>
-                <c:if test="${sessionScope.currentUser != null && sessionScope.currentUser.role == 'CUSTOMER'}">
-                    <a href="${pageContext.request.contextPath}/bookings/create" class="bg-transparent border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[20px]">add_circle</span>
-                        Đặt xe ngay
-                    </a>
-                </c:if>
+                <a href="${pageContext.request.contextPath}/bookings/create" class="bg-transparent border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    Đặt xe ngay
+                </a>
             </div>
         </div>
         <div class="hidden lg:flex relative z-10 w-48 h-48 items-center justify-center">
@@ -94,6 +92,210 @@
             <span class="material-symbols-outlined text-[120px] text-[#8393bc] opacity-90 drop-shadow-lg" data-weight="fill">car_rental</span>
         </div>
     </div>
+
+    <!-- Pricing Information Banner -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary" data-weight="fill">sell</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-on-surface">Bảng giá dịch vụ</h3>
+                    <p class="text-sm text-on-surface-variant">Minh bạch — Cạnh tranh — Linh hoạt</p>
+                </div>
+            </div>
+            <a href="${pageContext.request.contextPath}/bookings/policy" class="text-sm font-semibold text-primary hover:text-primary-container flex items-center gap-1 transition-colors">
+                Xem chi tiết chính sách <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+        </div>
+
+        <!-- Rental Mode Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+            <!-- Daily Mode -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+                <div class="bg-gradient-to-r from-primary to-primary-container p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white text-[22px]">today</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-base">Thuê theo ngày</h4>
+                            <p class="text-[#8393bc] text-xs">Linh hoạt theo nhu cầu</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-primary">speed</span>
+                            Giới hạn KM/ngày
+                        </span>
+                        <span class="font-semibold text-on-surface">${kmLimitPerDay} km</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-primary">add_road</span>
+                            Phí vượt KM
+                        </span>
+                        <span class="font-semibold text-on-surface"><fmt:formatNumber value="${extraKmFee}" type="number"/>đ/km</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-primary">percent</span>
+                            Thuế VAT
+                        </span>
+                        <span class="font-semibold text-on-surface">${taxRate}%</span>
+                    </div>
+                    <hr class="border-outline-variant/30">
+                    <div class="text-xs text-on-surface-variant">Giá thuê = Đơn giá xe × Số ngày</div>
+                </div>
+            </div>
+
+            <!-- Trip Mode -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+                <div class="bg-gradient-to-r from-[#1a5c3a] to-[#2d8a5e] p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white text-[22px]">route</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-base">Thuê theo chuyến</h4>
+                            <p class="text-emerald-200/70 text-xs">Phù hợp đi xa</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-[#2d8a5e]">trending_up</span>
+                            Hệ số giá chuyến
+                        </span>
+                        <span class="font-semibold text-on-surface">+${tripRateMultiplierPercent}%</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-[#2d8a5e]">speed</span>
+                            Giới hạn KM/chuyến
+                        </span>
+                        <span class="font-semibold text-on-surface">${tripKmLimit} km</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-on-surface-variant flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-[#2d8a5e]">add_road</span>
+                            Phí vượt KM
+                        </span>
+                        <span class="font-semibold text-on-surface"><fmt:formatNumber value="${extraKmFee}" type="number"/>đ/km</span>
+                    </div>
+                    <hr class="border-outline-variant/30">
+                    <div class="text-xs text-on-surface-variant">Giá = Đơn giá × Số ngày × (1 + ${tripRateMultiplierPercent}%)</div>
+                </div>
+            </div>
+
+            <!-- Combo Mode -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm overflow-hidden hover:shadow-md transition-shadow group relative">
+                <div class="absolute top-3 right-3 z-20 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">Hot</div>
+                <div class="bg-gradient-to-r from-[#7c3aed] to-[#a855f7] p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white text-[22px]">package_2</span>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-base">Gói Combo</h4>
+                            <p class="text-purple-200/70 text-xs">Tiết kiệm tối đa</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2.5">
+                    <div class="flex items-center justify-between text-sm bg-purple-50/50 rounded-lg px-3 py-2">
+                        <span class="text-on-surface-variant font-medium">Combo 7 ngày</span>
+                        <div class="text-right">
+                            <span class="font-bold text-[#7c3aed]">-${combo7DiscountPercent}%</span>
+                            <span class="text-xs text-on-surface-variant block">${combo7KmLimit} km</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm bg-purple-50/50 rounded-lg px-3 py-2">
+                        <span class="text-on-surface-variant font-medium">Combo 10 ngày</span>
+                        <div class="text-right">
+                            <span class="font-bold text-[#7c3aed]">-${combo10DiscountPercent}%</span>
+                            <span class="text-xs text-on-surface-variant block">${combo10KmLimit} km</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm bg-purple-50/50 rounded-lg px-3 py-2">
+                        <span class="text-on-surface-variant font-medium">Combo 30 ngày</span>
+                        <div class="text-right">
+                            <span class="font-bold text-[#7c3aed]">-${combo30DiscountPercent}%</span>
+                            <span class="text-xs text-on-surface-variant block">${combo30KmLimit} km</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Info Row: Deposit + Delivery + Discount Tiers -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Deposit & Tax -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary text-[20px]" data-weight="fill">account_balance_wallet</span>
+                    <h5 class="font-bold text-on-surface text-sm">Đặt cọc & Thuế</h5>
+                </div>
+                <div class="space-y-2.5">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Đặt cọc trước</span>
+                        <span class="font-semibold text-on-surface">${depositPercentage}% tổng tiền</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Thuế VAT</span>
+                        <span class="font-semibold text-on-surface">${taxRate}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Fee -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary text-[20px]" data-weight="fill">local_shipping</span>
+                    <h5 class="font-bold text-on-surface text-sm">Phí giao xe</h5>
+                </div>
+                <div class="space-y-2.5">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Nhận xe tại cửa hàng</span>
+                        <span class="font-semibold text-emerald-600">Miễn phí</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Giao tận nơi</span>
+                        <span class="font-semibold text-on-surface"><fmt:formatNumber value="${deliveryFeePerKm}" type="number"/>đ/km</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discount Tiers -->
+            <div class="bg-white rounded-xl border border-outline-variant/40 shadow-sm p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary text-[20px]" data-weight="fill">loyalty</span>
+                    <h5 class="font-bold text-on-surface text-sm">Ưu đãi thuê dài hạn</h5>
+                </div>
+                <div class="space-y-2.5">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Thuê 5-9 ngày</span>
+                        <span class="font-semibold text-emerald-600">Giảm ${discountShortTier}%</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Thuê 10-29 ngày</span>
+                        <span class="font-semibold text-emerald-600">Giảm ${discountMediumTier}%</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Thuê 30+ ngày</span>
+                        <span class="font-semibold text-emerald-600">Giảm ${discountLongTier}%</span>
+                    </div>
+                    <hr class="border-outline-variant/30">
+                    <div class="text-xs text-on-surface-variant italic">* Chỉ áp dụng cho hình thức Thuê theo ngày</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Statistics Grid (Only visible to STAFF or ADMIN roles) -->
     <c:if test="${sessionScope.currentUser != null && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

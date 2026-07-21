@@ -22,6 +22,7 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.service.VehicleService;
 import com.swp391.carrental.policy.service.FeeCalculator;
+import jakarta.servlet.http.HttpSession;
 
 /*
  * Name: CreateBookingServlet
@@ -52,7 +53,7 @@ public class CreateBookingServlet extends HttpServlet {
             throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("currentUser");
-        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_BOOKING")) {
+        if (user != null && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_BOOKING")) {
             request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                     .forward(request, response);
             return;
@@ -63,7 +64,25 @@ public class CreateBookingServlet extends HttpServlet {
         request.setAttribute("cars", availableCars);
         request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableCars));
 
+        // Restore pre-filled booking data from Guest session if exists
+        HttpSession session = request.getSession();
+        java.util.Map<String, String[]> preFilled = (java.util.Map<String, String[]>) session.getAttribute("preFilledBookingData");
+        if (preFilled != null) {
+            session.removeAttribute("preFilledBookingData");
+            for (java.util.Map.Entry<String, String[]> entry : preFilled.entrySet()) {
+                if (entry.getValue() != null && entry.getValue().length > 0) {
+                    request.setAttribute(entry.getKey(), entry.getValue()[0]);
+                }
+            }
+        }
+
+        // Retrieve parameters from request or restored session attributes
         String carIdParam = request.getParameter("carId");
+        if (carIdParam == null || carIdParam.isEmpty()) {
+            if (preFilled != null && preFilled.get("carId") != null && preFilled.get("carId").length > 0) {
+                carIdParam = preFilled.get("carId")[0];
+            }
+        }
         if (carIdParam != null && !carIdParam.isEmpty()) {
             try {
                 int carId = Integer.parseInt(carIdParam);
@@ -76,6 +95,45 @@ public class CreateBookingServlet extends HttpServlet {
                 }
             } catch (NumberFormatException e) {
                 request.setAttribute("error", "Mã xe không hợp lệ.");
+            }
+        }
+
+        String startDateParam = request.getParameter("startDate");
+        if (startDateParam == null || startDateParam.isEmpty()) {
+            if (preFilled != null && preFilled.get("startDate") != null && preFilled.get("startDate").length > 0) {
+                startDateParam = preFilled.get("startDate")[0];
+            }
+        }
+        if (startDateParam != null && !startDateParam.isEmpty()) {
+            request.setAttribute("startDate", startDateParam);
+        }
+
+        String endDateParam = request.getParameter("endDate");
+        if (endDateParam == null || endDateParam.isEmpty()) {
+            if (preFilled != null && preFilled.get("endDate") != null && preFilled.get("endDate").length > 0) {
+                endDateParam = preFilled.get("endDate")[0];
+            }
+        }
+        if (endDateParam != null && !endDateParam.isEmpty()) {
+            request.setAttribute("endDate", endDateParam);
+        }
+
+        // Resolve rentalModeCombo selection
+        String rentalMode = (String) request.getAttribute("rentalMode");
+        String pricingPackage = (String) request.getAttribute("pricingPackage");
+        if (rentalMode != null) {
+            if ("DAILY".equals(rentalMode)) {
+                request.setAttribute("selectedRentalModeCombo", "DAILY_STANDARD");
+            } else if ("TRIP".equals(rentalMode)) {
+                request.setAttribute("selectedRentalModeCombo", "TRIP_STANDARD");
+            } else if ("COMBO".equals(rentalMode)) {
+                if ("COMBO_7_DAYS".equals(pricingPackage)) {
+                    request.setAttribute("selectedRentalModeCombo", "COMBO_7_DAYS");
+                } else if ("COMBO_10_DAYS".equals(pricingPackage)) {
+                    request.setAttribute("selectedRentalModeCombo", "COMBO_10_DAYS");
+                } else if ("COMBO_30_DAYS".equals(pricingPackage)) {
+                    request.setAttribute("selectedRentalModeCombo", "COMBO_30_DAYS");
+                }
             }
         }
 
@@ -115,6 +173,17 @@ public class CreateBookingServlet extends HttpServlet {
             throws ServletException, IOException {
 
         User user = (User) request.getSession().getAttribute("currentUser");
+        if (user == null) {
+            // Save pre-filled booking form data into session
+            HttpSession session = request.getSession();
+            java.util.Map<String, String[]> paramMap = new java.util.HashMap<>(request.getParameterMap());
+            session.setAttribute("preFilledBookingData", paramMap);
+            // Save redirect URL to bring the user back to bookings/create after login
+            session.setAttribute("redirectUrl", "/bookings/create");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
         if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_BOOKING")) {
             request.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
                     .forward(request, response);

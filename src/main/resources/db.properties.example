@@ -8,3 +8,6 @@ db.user=YOUR_DB_USER
 db.password=YOUR_DB_PASSWORD
 db.encrypt=true
 db.trustServerCertificate=true
+
+# OpenRouteService API Key (Sign up for free at https://openrouteservice.org/ or set ORS_API_KEY env var)
+ors.api.key=YOUR_OPENROUTESERVICE_API_KEY

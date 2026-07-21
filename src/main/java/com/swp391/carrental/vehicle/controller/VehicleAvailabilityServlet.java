@@ -35,6 +35,12 @@ public class VehicleAvailabilityServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        String action = request.getParameter("action");
+        if ("checkCarAvailability".equals(action)) {
+            handleCheckCarAvailability(request, response);
+            return;
+        }
+
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
 
@@ -77,5 +83,56 @@ public class VehicleAvailabilityServlet extends HttpServlet {
 
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-availability.jsp")
                 .forward(request, response);
+    }
+
+    private void handleCheckCarAvailability(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        response.setContentType("application/json; charset=UTF-8");
+
+        try {
+            String carIdStr = request.getParameter("carId");
+            String startDateStr = request.getParameter("startDate");
+            String startTimeStr = request.getParameter("startTime");
+            String endDateStr = request.getParameter("endDate");
+            String endTimeStr = request.getParameter("endTime");
+
+            if (carIdStr == null || carIdStr.trim().isEmpty() ||
+                startDateStr == null || startDateStr.trim().isEmpty() ||
+                endDateStr == null || endDateStr.trim().isEmpty()) {
+                response.getWriter().write("{\"success\":false,\"message\":\"Thiếu thông tin xe hoặc khoảng thời gian.\"}");
+                return;
+            }
+
+            int carId = Integer.parseInt(carIdStr);
+            if (startTimeStr == null || startTimeStr.trim().isEmpty()) startTimeStr = "08:00";
+            if (endTimeStr == null || endTimeStr.trim().isEmpty()) endTimeStr = "08:00";
+
+            LocalDate sDate = LocalDate.parse(startDateStr);
+            LocalTime sTime = LocalTime.parse(startTimeStr);
+            LocalDateTime start = LocalDateTime.of(sDate, sTime);
+
+            LocalDate eDate = LocalDate.parse(endDateStr);
+            LocalTime eTime = LocalTime.parse(endTimeStr);
+            LocalDateTime end = LocalDateTime.of(eDate, eTime);
+
+            if (end.isBefore(start) || end.isEqual(start)) {
+                response.getWriter().write("{\"success\":true,\"available\":false,\"message\":\"Ngày giờ trả xe phải sau ngày giờ nhận xe.\"}");
+                return;
+            }
+
+            if (sDate.isBefore(LocalDate.now())) {
+                response.getWriter().write("{\"success\":true,\"available\":false,\"message\":\"Ngày nhận xe không được ở quá khứ.\"}");
+                return;
+            }
+
+            boolean isAvailable = availabilityService.isCarAvailableForRange(carId, start, end);
+            if (isAvailable) {
+                response.getWriter().write("{\"success\":true,\"available\":true}");
+            } else {
+                response.getWriter().write("{\"success\":true,\"available\":false,\"message\":\"Xe đã bị trùng lịch đặt hoặc không khả dụng trong khoảng thời gian này.\"}");
+            }
+        } catch (Exception e) {
+            response.getWriter().write("{\"success\":false,\"message\":\"Định dạng ngày giờ không hợp lệ.\"}");
+        }
     }
 }
