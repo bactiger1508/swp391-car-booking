@@ -19,10 +19,6 @@ import com.swp391.carrental.user.service.UserService;
  * Version: 1.0
  * Description: Handles HTTP requests and responses for UserManagementServlet.
  */
-
-
-
-
 /**
  * Handles user management (Admin only). URL: /users
  */
@@ -42,14 +38,18 @@ public class UserManagementServlet extends HttpServlet {
             String status = request.getParameter("status");
             int page = parsePage(request.getParameter("page"));
 
-            if ("edit".equals(action)) {
+            if ("edit".equals(action) && request.getAttribute("formUser") == null) {
+
                 int userId = parseUserId(request.getParameter("userId"));
+
                 if (userId > 0) {
                     User user = userService.getUserById(userId);
+
                     if (user != null) {
                         request.setAttribute("formUser", user);
+                        request.setAttribute("formMode", "edit");
                     } else {
-                        request.setAttribute("error", "No found user to edit.");
+                        request.setAttribute("error", "Không tìm thấy tài khoản cần chỉnh sửa.");
                     }
                 }
             }
@@ -65,9 +65,17 @@ public class UserManagementServlet extends HttpServlet {
             request.setAttribute("searchParam", search);
             request.setAttribute("roleParam", role);
             request.setAttribute("statusParam", status);
-            String success = request.getParameter("success");
-            if (success != null && !success.isEmpty()) {
+            // Lấy thông báo từ Session
+            String success = (String) request.getSession().getAttribute("success");
+            if (success != null) {
                 request.setAttribute("success", success);
+                request.getSession().removeAttribute("success");
+            }
+
+            String error = (String) request.getSession().getAttribute("error");
+            if (error != null) {
+                request.setAttribute("error", error);
+                request.getSession().removeAttribute("error");
             }
             request.getRequestDispatcher("/WEB-INF/views/user/user-management.jsp").forward(request, response);
         } catch (Exception e) {
@@ -85,19 +93,20 @@ public class UserManagementServlet extends HttpServlet {
             if ("create".equals(action)) {
                 User user = buildUserFromRequest(request);
                 userService.createUser(user, request.getParameter("password"));
-                request.setAttribute("success", "New user created successfully.");
-                doGet(request, response);
+                request.getSession().setAttribute("success", "Thêm tài khoản thành công.");
+                response.sendRedirect(request.getContextPath() + "/users");
                 return;
             }
             if ("edit".equals(action)) {
                 User user = buildUserFromRequest(request);
                 int userId = parseUserId(request.getParameter("userId"));
                 if (userId <= 0) {
-                    throw new AppException("Invalid user id.");
+                    throw new AppException("ID người dùng không hợp lệ.");
                 }
                 user.setUserId(userId);
                 userService.updateUser(user);
-                response.sendRedirect(contextPath + "/users?success= Update user successfully.");
+                request.getSession().setAttribute("success", "Cập nhật tài khoản thành công.");
+                response.sendRedirect(contextPath + "/users");
                 return;
             }
             if ("toggleActive".equals(action)) {
@@ -108,13 +117,34 @@ public class UserManagementServlet extends HttpServlet {
             }
             response.sendRedirect(contextPath + "/users");
         } catch (AppException e) {
+
             request.setAttribute("error", e.getMessage());
-            request.setAttribute("formUser", buildUserFromRequest(request));
+
+            User user = buildUserFromRequest(request);
+            request.setAttribute("formUser", user);
+
+            if ("edit".equals(action)) {
+                request.setAttribute("formMode", "edit");
+            } else {
+                request.setAttribute("formMode", "create");
+            }
+
             doGet(request, response);
         } catch (Exception e) {
+
             e.printStackTrace();
-            request.setAttribute("error", "An error occurred while processing the request.");
-            request.setAttribute("formUser", buildUserFromRequest(request));
+
+            request.setAttribute("error", "Đã xảy ra lỗi trong quá trình xử lý.");
+
+            User user = buildUserFromRequest(request);
+            request.setAttribute("formUser", user);
+
+            if ("edit".equals(action)) {
+                request.setAttribute("formMode", "edit");
+            } else {
+                request.setAttribute("formMode", "create");
+            }
+
             doGet(request, response);
         }
     }
