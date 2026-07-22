@@ -33,6 +33,9 @@ public class AuthService {
      * @throws AppException if login fails
      */
     public User login(String email, String password) {
+        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            throw new AppException("Email hoặc mật khẩu không đúng.");
+        }
         try {
             User user = userDAO.findByEmail(email);
             if (user == null) {
@@ -54,6 +57,23 @@ public class AuthService {
      * Register a new customer account.
      */
     public User register(String email, String fullName, String phone, String password) {
+        if (email == null || email.trim().isEmpty() ||
+            fullName == null || fullName.trim().isEmpty() ||
+            phone == null || phone.trim().isEmpty() ||
+            password == null || password.trim().isEmpty()) {
+            throw new AppException("Vui lòng nhập đầy đủ thông tin bắt buộc.");
+        }
+
+        // Validate email format
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new AppException("Định dạng email không hợp lệ.");
+        }
+
+        // Validate password length
+        if (password.length() < 8) {
+            throw new AppException("Mật khẩu phải có độ dài tối thiểu 8 ký tự.");
+        }
+
         try {
             // Check if email already exists
             User existing = userDAO.findByEmail(email);

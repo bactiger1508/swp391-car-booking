@@ -79,6 +79,13 @@ public class ContractService {
                 throw new AppException("Chỉ có thể soạn hợp đồng cho các đơn đặt xe đã Xác nhận (Confirmed).");
             }
 
+            // Verify customer is VERIFIED
+            com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
+            com.swp391.carrental.user.model.CustomerProfile profile = profileDAO.findByUserId(contract.getCustomerId());
+            if (profile == null || !"VERIFIED".equals(profile.getVerificationStatus())) {
+                throw new AppException("Khách hàng chưa xác minh hồ sơ, không thể lập hợp đồng.");
+            }
+
             // Generate contract number
             String contractNumber = "CTR-"
                     + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy"))
