@@ -18,7 +18,7 @@ import com.swp391.carrental.policy.service.PolicyService;
  */
 
 
-@WebServlet(name = "TaxInvoiceSettingsServlet", urlPatterns = {"/tax-invoice-settings"})
+@WebServlet(name = "TaxInvoiceSettingsServlet", urlPatterns = {"/tax-invoice-settings", "/tax-invoice/settings"})
 public class TaxInvoiceSettingsServlet extends HttpServlet {
     private final PolicyService policyService = new PolicyService();
 
@@ -31,7 +31,30 @@ public class TaxInvoiceSettingsServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO: Update tax/invoice settings
+        int userId = 1;
+        com.swp391.carrental.user.model.User user = (com.swp391.carrental.user.model.User) request.getSession().getAttribute("user");
+        if (user != null) {
+            userId = user.getUserId();
+        }
+        
+        String companyName = request.getParameter("companyName");
+        String taxId = request.getParameter("taxId");
+        String defaultVatRate = request.getParameter("defaultVatRate");
+        String address = request.getParameter("address");
+
+        if (companyName != null) {
+            policyService.updatePolicy("COMPANY_NAME", companyName, userId);
+        }
+        if (taxId != null) {
+            policyService.updatePolicy("COMPANY_TAX_ID", taxId, userId);
+        }
+        if (defaultVatRate != null) {
+            policyService.updatePolicy("TAX_RATE", defaultVatRate, userId);
+        }
+        if (address != null) {
+            policyService.updatePolicy("COMPANY_ADDRESS", address, userId);
+        }
+
         response.sendRedirect(request.getContextPath() + "/tax-invoice-settings");
     }
 }

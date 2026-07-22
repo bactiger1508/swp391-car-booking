@@ -51,18 +51,31 @@ public class ReportService {
      * fields.
      */
     public Map<String, Object> generateRevenueReport(LocalDate startDate, LocalDate endDate) {
-        // TODO: Implement full revenue report with date filtering
         Map<String, Object> report = new HashMap<>();
         try {
             List<Payment> allPayments = paymentDAO.findAll();
-
+            List<Payment> filteredPayments = new ArrayList<>();
             BigDecimal totalRevenue = BigDecimal.ZERO;
             int totalTransactions = 0;
 
             for (Payment p : allPayments) {
-                if ("COMPLETED".equals(p.getStatus())) {
-                    totalRevenue = totalRevenue.add(p.getAmount());
-                    totalTransactions++;
+                LocalDateTime dt = p.getPaidAt() != null ? p.getPaidAt() : (p.getCreatedAt() != null ? p.getCreatedAt() : LocalDateTime.now());
+                LocalDate paymentDate = dt.toLocalDate();
+
+                boolean withinRange = true;
+                if (startDate != null && paymentDate.isBefore(startDate)) {
+                    withinRange = false;
+                }
+                if (endDate != null && paymentDate.isAfter(endDate)) {
+                    withinRange = false;
+                }
+
+                if (withinRange) {
+                    filteredPayments.add(p);
+                    if ("COMPLETED".equals(p.getStatus())) {
+                        totalRevenue = totalRevenue.add(p.getAmount());
+                        totalTransactions++;
+                    }
                 }
             }
 
@@ -70,7 +83,7 @@ public class ReportService {
             report.put("totalTransactions", totalTransactions);
             report.put("startDate", startDate);
             report.put("endDate", endDate);
-            report.put("payments", allPayments);
+            report.put("payments", filteredPayments);
 
         } catch (SQLException e) {
             throw new AppException("Failed to generate revenue report.", e);

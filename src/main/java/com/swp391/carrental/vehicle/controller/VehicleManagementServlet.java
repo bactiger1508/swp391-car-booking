@@ -182,7 +182,11 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setSeats(Integer.parseInt(request.getParameter("seats")));
         car.setTransmission(request.getParameter("transmission"));
         car.setFuelType(request.getParameter("fuelType"));
-        car.setDailyRate(new BigDecimal(request.getParameter("dailyRate")));
+        BigDecimal dailyRate = new BigDecimal(request.getParameter("dailyRate"));
+        if (dailyRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException("Giá thuê phải lớn hơn 0.");
+        }
+        car.setDailyRate(dailyRate);
         car.setDescription(request.getParameter("description"));
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));
@@ -247,7 +251,11 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setSeats(Integer.parseInt(request.getParameter("seats")));
         car.setTransmission(request.getParameter("transmission"));
         car.setFuelType(request.getParameter("fuelType"));
-        car.setDailyRate(new BigDecimal(request.getParameter("dailyRate")));
+        BigDecimal dailyRate = new BigDecimal(request.getParameter("dailyRate"));
+        if (dailyRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException("Giá thuê phải lớn hơn 0.");
+        }
+        car.setDailyRate(dailyRate);
         car.setDescription(request.getParameter("description"));
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));
