@@ -39,13 +39,47 @@ public class RevenueReportServlet extends HttpServlet {
         LocalDate today = LocalDate.now();
 
         String type = request.getParameter("type");
+        String monthParam = request.getParameter("month");
+        String quarterParam = request.getParameter("quarter");
+        String yearParam = request.getParameter("year");
+
         if (type == null || type.isBlank()) {
-            type = "MONTH";
+            if (quarterParam != null && !quarterParam.isBlank()) {
+                type = "QUARTER";
+            } else if (monthParam != null && !monthParam.isBlank()) {
+                type = "MONTH";
+            } else {
+                type = "MONTH";
+            }
         }
 
-        int year = request.getParameter("year") == null ? today.getYear() : Integer.parseInt(request.getParameter("year"));
-        int month = request.getParameter("month") == null ? today.getMonthValue() : Integer.parseInt(request.getParameter("month"));
-        int quarter = request.getParameter("quarter") == null ? (today.getMonthValue() - 1) / 3 + 1 : Integer.parseInt(request.getParameter("quarter"));
+        int year = (yearParam == null || yearParam.isBlank())
+                ? today.getYear()
+                : Integer.parseInt(yearParam);
+
+        int quarter;
+        if (quarterParam != null && !quarterParam.isBlank()) {
+            quarter = Integer.parseInt(quarterParam);
+        } else if (monthParam != null && !monthParam.isBlank()) {
+            int m = Integer.parseInt(monthParam);
+            quarter = (m - 1) / 3 + 1;
+        } else if (year == today.getYear()) {
+            quarter = (today.getMonthValue() - 1) / 3 + 1;
+        } else {
+            quarter = 1;
+        }
+
+        int month;
+        if (monthParam != null && !monthParam.isBlank()) {
+            month = Integer.parseInt(monthParam);
+        } else if (quarterParam != null && !quarterParam.isBlank()) {
+            int q = Integer.parseInt(quarterParam);
+            month = (q - 1) * 3 + 1;
+        } else if (year == today.getYear()) {
+            month = today.getMonthValue();
+        } else {
+            month = 1;
+        }
 
         LocalDate currentDate;
         LocalDate toDate;
