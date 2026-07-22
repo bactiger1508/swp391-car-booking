@@ -102,6 +102,13 @@ public class BookingService {
     /** Create a new booking with date, car status, and overlapping checks */
     public int createBooking(Booking booking) {
         try {
+            // Verify customer profile is VERIFIED
+            CustomerProfileDAO profileDAO = new CustomerProfileDAO();
+            CustomerProfile profile = profileDAO.findByUserId(booking.getCustomerId());
+            if (profile == null || !"VERIFIED".equals(profile.getVerificationStatus())) {
+                throw new AppException("Khách hàng chưa xác minh hồ sơ, không thể đặt xe.");
+            }
+
             // BR-01: Validate dates
             if (booking.getEndDate().isBefore(booking.getStartDate())) {
                 throw new AppException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
@@ -210,7 +217,7 @@ public class BookingService {
         }
     }
 
-    /** Hủy booking đang PENDING hoặc CONFIRMED và tự động tính toán hoàn tiền cọc */
+    /** Cancel PENDING or CONFIRMED booking and automatically calculate deposit refund */
     public boolean cancelBooking(int bookingId, String reason) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
