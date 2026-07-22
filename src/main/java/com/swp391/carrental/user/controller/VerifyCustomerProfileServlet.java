@@ -43,13 +43,9 @@ public class VerifyCustomerProfileServlet extends HttpServlet {
 
         }
 
-        if (!"STAFF".equals(currentUser.getRole())
-                && !"ADMIN".equals(currentUser.getRole())) {
-
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "VERIFY_CUSTOMER_PROFILE")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
             return;
-
         }
 
         String action = request.getParameter("action");

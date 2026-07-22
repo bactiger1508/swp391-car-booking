@@ -219,9 +219,13 @@
                             <a href="${pageContext.request.contextPath}/roles" class="bk-sidebar-link ${_cp == '/roles' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">security</span> Quyền & Vai trò
                             </a>
+                        </c:if>
+                        <c:if test="${isAdmin || (not empty sessionScope.userPermissions && sessionScope.userPermissions.contains('MANAGE_VEHICLE_BRANDS'))}">
                             <a href="${pageContext.request.contextPath}/vehicles/brands" class="bk-sidebar-link ${_cp == '/vehicles/brands' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">branding_watermark</span> Hãng xe & Model
                             </a>
+                        </c:if>
+                        <c:if test="${isAdmin || (not empty sessionScope.userPermissions && sessionScope.userPermissions.contains('VIEW_ACTIVITY_HISTORY'))}">
                             <a href="${pageContext.request.contextPath}/audit-logs" class="bk-sidebar-link ${_cp == '/audit-logs' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">history</span> Lịch sử hoạt động
                             </a>
