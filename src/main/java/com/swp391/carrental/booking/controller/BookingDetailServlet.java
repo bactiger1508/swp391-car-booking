@@ -40,7 +40,7 @@ public class BookingDetailServlet extends HttpServlet {
     private final com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
     private final com.swp391.carrental.contract.service.ContractService contractService = new com.swp391.carrental.contract.service.ContractService();
 
-    /** Hiển thị trang chi tiết đơn đặt xe (xem thông tin, lịch trình, hợp đồng, thanh toán) */
+    /** Display booking detail page (view details, schedule, contract, payment status) */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
