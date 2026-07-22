@@ -15,6 +15,7 @@ import com.swp391.carrental.user.dao.CustomerProfileDAO;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.CustomerProfile;
 import com.swp391.carrental.user.model.User;
+import java.util.regex.Pattern;
 
 /*
  * Name: ProfileServlet
@@ -23,7 +24,6 @@ import com.swp391.carrental.user.model.User;
  * Version: 1.1
  * Description: Handles HTTP requests and responses for ProfileServlet with status reset logic and multi-image uploads.
  */
-
 /**
  * Handles user profile view and edit. URL: /profile
  */
@@ -85,14 +85,31 @@ public class ProfileServlet extends HttpServlet {
             // Read parameters
             String fullName = request.getParameter("fullName");
             String phone = request.getParameter("phone");
+            // Validate phone number
+            if (!isValidVietnamPhone(phone)) {
+                request.setAttribute("error", "Số điện thoại phải gồm đúng 10 chữ số và là đầu số Việt Nam (03, 05, 07, 08, 09).");
+                doGet(request, response);
+                return;
+            }
             String dobStr = request.getParameter("dateOfBirth");
+            // Validate date of birth
+            if (dobStr != null && !dobStr.trim().isEmpty()) {
+                LocalDate dob = LocalDate.parse(dobStr);
+
+                if (dob.isAfter(LocalDate.now())) {
+                    request.setAttribute("error",
+                            "Ngày sinh không được lớn hơn ngày hiện tại.");
+                    doGet(request, response);
+                    return;
+                }
+            }
             String address = request.getParameter("address");
             String idCardNumber = request.getParameter("idCardNumber");
             String driverLicenseNumber = request.getParameter("driverLicenseNumber");
             String driverLicenseExpiryStr = request.getParameter("driverLicenseExpiry");
             Part licenseImagePart = request.getPart("driverLicenseImage");
-            Part idCardFrontPart   = request.getPart("idCardImageFront");
-            Part idCardBackPart    = request.getPart("idCardImageBack");
+            Part idCardFrontPart = request.getPart("idCardImageFront");
+            Part idCardBackPart = request.getPart("idCardImageBack");
 
             // Update user core info
             currentUser.setFullName(fullName);
@@ -110,8 +127,10 @@ public class ProfileServlet extends HttpServlet {
                 profile.setProfileId(profileId);
             }
 
-            if (dobStr != null && !dobStr.isEmpty()) {
+            if (dobStr != null && !dobStr.trim().isEmpty()) {
                 profile.setDateOfBirth(LocalDate.parse(dobStr));
+            } else {
+                profile.setDateOfBirth(null);
             }
             profile.setAddress(address);
             profile.setIdCardNumber(idCardNumber);
@@ -124,15 +143,21 @@ public class ProfileServlet extends HttpServlet {
 
             // Save ID card front image
             String savedFront = saveUploadedImage(idCardFrontPart, "front", currentUser.getUserId());
-            if (savedFront != null) profile.setIdCardImageFront(savedFront);
+            if (savedFront != null) {
+                profile.setIdCardImageFront(savedFront);
+            }
 
             // Save ID card back image
             String savedBack = saveUploadedImage(idCardBackPart, "back", currentUser.getUserId());
-            if (savedBack != null) profile.setIdCardImageBack(savedBack);
+            if (savedBack != null) {
+                profile.setIdCardImageBack(savedBack);
+            }
 
             // Save driver license image
             String savedLicense = saveUploadedImage(licenseImagePart, "license", currentUser.getUserId());
-            if (savedLicense != null) profile.setDriverLicenseImage(savedLicense);
+            if (savedLicense != null) {
+                profile.setDriverLicenseImage(savedLicense);
+            }
 
             // Automatically reset verification status to PENDING when user updates profile information
             profile.setVerificationStatus("PENDING");
@@ -147,19 +172,33 @@ public class ProfileServlet extends HttpServlet {
             doGet(request, response);
         }
     }
+    // Vietnamese phone number:
+    // Starts with 03,05,07,08,09 and has total 10 digits
+    private static final Pattern VIETNAM_PHONE_PATTERN
+            = Pattern.compile("^(03|05|07|08|09)\\d{8}$");
+
+    private boolean isValidVietnamPhone(String phone) {
+        return phone != null && VIETNAM_PHONE_PATTERN.matcher(phone.trim()).matches();
+    }
 
     // Saves uploaded image and returns its relative path or null if no file was uploaded.
     private String saveUploadedImage(Part part, String prefix, int userId) throws Exception {
-        if (part == null || part.getSize() == 0) return null;
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
         String ct = part.getContentType();
-        if (!"image/png".equals(ct) && !"image/jpeg".equals(ct)) return null;
+        if (!"image/png".equals(ct) && !"image/jpeg".equals(ct)) {
+            return null;
+        }
 
         String uploadDir = getServletContext().getRealPath("/uploads");
         if (uploadDir == null) {
             uploadDir = System.getProperty("user.home") + File.separator + "car-rental-uploads";
         }
         File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
         String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
         String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".jpg";
