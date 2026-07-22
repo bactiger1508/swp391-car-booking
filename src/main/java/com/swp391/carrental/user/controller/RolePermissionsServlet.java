@@ -14,6 +14,7 @@ import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.dao.PermissionDAO;
 import com.swp391.carrental.user.model.Permission;
 import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.core.util.SecurityUtils;
 
 /**
  * Handles role permissions management (Admin only). URL: /roles
@@ -42,9 +43,9 @@ public class RolePermissionsServlet extends HttpServlet {
         }
 
         // ==============================
-        // 2. CHECK ADMIN ROLE
+        // 2. CHECK DYNAMIC PERMISSION
         // ==============================
-        if (!isAdmin(currentUser)) {
+        if (!SecurityUtils.hasPermission(request, "VIEW_USER_LIST")) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
                     "Bạn không có quyền truy cập trang này.");
@@ -99,9 +100,9 @@ public class RolePermissionsServlet extends HttpServlet {
         }
 
         // ==============================
-        // 2. ONLY ADMIN
+        // 2. CHECK DYNAMIC PERMISSION
         // ==============================
-        if (!isAdmin(currentUser)) {
+        if (!SecurityUtils.hasPermission(request, "VIEW_USER_LIST")) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
                     "Bạn không có quyền thay đổi quyền.");
@@ -157,15 +158,5 @@ public class RolePermissionsServlet extends HttpServlet {
             return null;
         }
         return (User) session.getAttribute("currentUser");
-    }
-
-    /**
-     * Check admin permission
-     */
-    private boolean isAdmin(User user) {
-        if (user == null || user.getRole() == null) {
-            return false;
-        }
-        return user.getRole().equals(Role.ADMIN);
     }
 }
