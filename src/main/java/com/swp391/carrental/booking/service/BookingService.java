@@ -278,6 +278,15 @@ public class BookingService {
             boolean cancelled = bookingDAO.cancel(bookingId, reason);
             if (cancelled) {
                 try {
+                    com.swp391.carrental.contract.dao.ContractDAO contractDAO = new com.swp391.carrental.contract.dao.ContractDAO();
+                    com.swp391.carrental.contract.model.RentalContract contract = contractDAO.findByBookingId(bookingId);
+                    if (contract != null) {
+                        contractDAO.updateStatus(contract.getContractId(), "TERMINATED");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                try {
                     com.swp391.carrental.notification.dao.NotificationDAO notiDAO = new com.swp391.carrental.notification.dao.NotificationDAO();
                     com.swp391.carrental.notification.model.Notification noti = new com.swp391.carrental.notification.model.Notification();
                     noti.setUserId(booking.getCustomerId());

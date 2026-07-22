@@ -196,6 +196,15 @@ public class PaymentService {
             
             if (totalPaid.compareTo(totalRequired) >= 0) {
                 bookingDAO.updateStatus(bookingId, "COMPLETED");
+                try {
+                    com.swp391.carrental.contract.dao.ContractDAO contractDAO = new com.swp391.carrental.contract.dao.ContractDAO();
+                    com.swp391.carrental.contract.model.RentalContract contract = contractDAO.findByBookingId(bookingId);
+                    if (contract != null) {
+                        contractDAO.updateStatus(contract.getContractId(), "COMPLETED");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
