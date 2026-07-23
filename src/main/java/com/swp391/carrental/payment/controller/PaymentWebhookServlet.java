@@ -14,9 +14,15 @@ import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.payment.service.PaymentWebhookService;
 import com.swp391.carrental.payment.service.WebhookTransaction;
 
-/**
- * Servlet endpoint to receive and process webhook payment notifications.
- * Maps to /api/payment/webhook (POST).
+/*
+ * Name: PaymentWebhookServlet
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: API Controller servlet handling HTTP POST requests to receive and process automated bank transfer webhook notifications.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (16/07/2026): fix(auth): allow payment webhook to bypass authentication...
+ * - v1.2 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentWebhookServlet", urlPatterns = { "/api/payment/webhook" })
 public class PaymentWebhookServlet extends HttpServlet {
@@ -25,6 +31,9 @@ public class PaymentWebhookServlet extends HttpServlet {
     private final PaymentWebhookService webhookService = new PaymentWebhookService();
     private final PaymentService paymentService = new PaymentService();
 
+    /**
+     * Handles HTTP GET requests to check webhook endpoint status.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -33,6 +42,9 @@ public class PaymentWebhookServlet extends HttpServlet {
         response.getWriter().write("{\"success\":true,\"message\":\"Payment Webhook endpoint is active (Use POST to send webhook payloads)\"}");
     }
 
+    /**
+     * Handles HTTP POST webhook payloads, verifying authorization, and processing bank transactions.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

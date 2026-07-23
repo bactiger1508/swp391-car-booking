@@ -5,25 +5,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import com.swp391.carrental.core.util.DBContext;
-import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.policy.model.PolicySetting;
-import com.swp391.carrental.user.model.User;
 
 /*
  * Name: PolicySettingDAO
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles database operations for PolicySettingDAO.
- */
-
-
-
-/**
- * Data Access Object for PolicySetting entities.
+ * Created: 23/05/2026 
+ * Description: Data Access Object for handling database operations on system Policy Settings.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (31/05/2026): feat: implement payment processing system including recor...
+ * - v1.3 (01/06/2026): last update for iter1
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.6 (23/07/2026): Added Javadoc and method comments.
  */
 public class PolicySettingDAO {
 
+    /**
+     * Query a policy setting by its unique policy key string.
+     */
     public PolicySetting findByKey(String policyKey) throws SQLException {
         String sql = "SELECT * FROM policy_settings WHERE policy_key = ?";
         try (Connection conn = DBContext.getConnection();
@@ -36,6 +38,9 @@ public class PolicySettingDAO {
         return null;
     }
 
+    /**
+     * Retrieve all policy settings in the system.
+     */
     public List<PolicySetting> findAll() throws SQLException {
         List<PolicySetting> list = new ArrayList<>();
         String sql = "SELECT * FROM policy_settings ORDER BY category, policy_key";
@@ -47,6 +52,9 @@ public class PolicySettingDAO {
         return list;
     }
 
+    /**
+     * Retrieve policy settings belonging to a specific category.
+     */
     public List<PolicySetting> findByCategory(String category) throws SQLException {
         List<PolicySetting> list = new ArrayList<>();
         String sql = "SELECT * FROM policy_settings WHERE category = ? ORDER BY policy_key";
@@ -60,6 +68,9 @@ public class PolicySettingDAO {
         return list;
     }
 
+    /**
+     * Update a single policy setting's value, or insert it if it does not exist.
+     */
     public boolean updateValue(String policyKey, String policyValue, int updatedBy) throws SQLException {
         String selectSql = "SELECT 1 FROM policy_settings WHERE policy_key = ?";
         String updateSql = "UPDATE policy_settings SET policy_value = ?, updated_by = ?, updated_at = GETDATE() WHERE policy_key = ?";
@@ -91,6 +102,9 @@ public class PolicySettingDAO {
         }
     }
 
+    /**
+     * Insert a new policy setting record.
+     */
     public int insert(PolicySetting ps2) throws SQLException {
         String sql = "INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
@@ -108,6 +122,9 @@ public class PolicySettingDAO {
         return -1;
     }
 
+    /**
+     * Delete a policy setting by ID.
+     */
     public boolean delete(int policyId) throws SQLException {
         String sql = "DELETE FROM policy_settings WHERE policy_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -169,6 +186,9 @@ public class PolicySettingDAO {
         return count;
     }
 
+    /**
+     * Helper function to default categories based on specific policy keys.
+     */
     private String getCategoryForKey(String key) {
         if ("DEPOSIT_PERCENTAGE".equals(key)) {
             return "PRICING";
@@ -176,6 +196,9 @@ public class PolicySettingDAO {
         return "PAYMENT";
     }
 
+    /**
+     * Helper function to resolve user-friendly descriptions for standard policy keys.
+     */
     private String getDescriptionForKey(String key) {
         switch (key) {
             case "PAYMENT_METHOD_CASH_ENABLED":
@@ -213,6 +236,9 @@ public class PolicySettingDAO {
         }
     }
 
+    /**
+     * Map a JDBC ResultSet row to a PolicySetting model object.
+     */
     private PolicySetting mapRow(ResultSet rs) throws SQLException {
         PolicySetting p = new PolicySetting();
         p.setPolicyId(rs.getInt("policy_id"));

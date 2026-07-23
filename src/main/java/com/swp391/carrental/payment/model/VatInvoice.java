@@ -3,6 +3,15 @@ package com.swp391.carrental.payment.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/*
+ * Name: VatInvoice
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Model representing a VAT invoice generated for a rental contract.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (23/07/2026): Added Javadoc and method comments.
+ */
 public class VatInvoice {
     private int invoiceId;
     private int contractId;

@@ -10,21 +10,27 @@ import com.swp391.carrental.policy.model.PolicySetting;
 /*
  * Name: PolicyService
  * @Author: TungNLHE186756
- * Date: 17/07/2026
- * Version: 1.1
- * Description: Contains business logic for PolicyService with thread-safe volatile static cache implementation.
- */
-
-
-
-/**
- * Service for managing policy settings.
+ * Created: 23/05/2026 
+ * Description: Service containing business logic for policy settings management with a volatile static cache.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (31/05/2026): feat: implement payment processing system including recor...
+ * - v1.3 (01/06/2026): last update for iter1
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.6 (16/07/2026): perf(policy): cache policy settings in-memory to prevent ...
+ * - v1.7 (17/07/2026): docs(convention): update header comments and versions for...
+ * - v1.8 (23/07/2026): Added Javadoc and method comments.
  */
 public class PolicyService {
 
     private final PolicySettingDAO policyDAO = new PolicySettingDAO();
     private static volatile Map<String, String> cache = null;
 
+    /**
+     * Helper function to initialize and load the static volatile policies cache map from database.
+     */
     private static synchronized void loadCache(PolicySettingDAO dao) {
         if (cache == null) {
             Map<String, String> temp = new java.util.HashMap<>();
@@ -39,11 +45,16 @@ public class PolicyService {
         }
     }
 
+    /**
+     * Helper function to clear and evict cache, forcing next read to fetch fresh DB values.
+     */
     private static synchronized void clearCache() {
         cache = null;
     }
 
-    // Get policy by key
+    /**
+     * Query a policy setting by key.
+     */
     public PolicySetting getPolicyByKey(String key) {
         try {
             return policyDAO.findByKey(key);
@@ -52,7 +63,9 @@ public class PolicyService {
         }
     }
 
-    // Get policy value with fallback default value 
+    /**
+     * Query the value of a policy setting by key with a fallback default.
+     */
     public String getPolicyValue(String key, String defaultValue) {
         if (cache == null) {
             loadCache(policyDAO);
@@ -61,7 +74,9 @@ public class PolicyService {
         return val != null ? val : defaultValue;
     }
 
-    // Get all policy settings
+    /**
+     * Retrieve all policy settings in the system.
+     */
     public List<PolicySetting> getAllPolicies() {
         try {
             return policyDAO.findAll();
@@ -70,7 +85,9 @@ public class PolicyService {
         }
     }
 
-    // Get policies by category
+    /**
+     * Retrieve policy settings belonging to a specific category.
+     */
     public List<PolicySetting> getPoliciesByCategory(String category) {
         try {
             return policyDAO.findByCategory(category);
@@ -79,7 +96,9 @@ public class PolicyService {
         }
     }
 
-    // Update a policy setting
+    /**
+     * Update a policy setting's value.
+     */
     public boolean updatePolicy(String key, String value, int updatedBy) {
         try {
             boolean ok = policyDAO.updateValue(key, value, updatedBy);
@@ -93,7 +112,7 @@ public class PolicyService {
     }
 
     /**
-     * Atomically updates multiple policy key-value pairs in one DB transaction.
+     * Perform bulk updates on multiple policy settings in a single transaction.
      */
     public int batchUpdatePolicies(Map<String, String> updates, int updatedBy) {
         try {
@@ -107,7 +126,9 @@ public class PolicyService {
         }
     }
 
-    // Delete a policy setting 
+    /**
+     * Delete a policy setting by ID.
+     */
     public boolean deletePolicy(int policyId) {
         try {
             boolean ok = policyDAO.delete(policyId);
