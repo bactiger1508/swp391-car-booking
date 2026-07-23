@@ -19,24 +19,25 @@ import com.swp391.carrental.user.model.User;
 /*
  * Name: PaymentRecordServlet
  * @Author: TungNLHE186756
- * Date: 17/07/2026
- * Version: 1.2
- * Description: Handles HTTP requests and responses for PaymentRecordServlet.
- *              v1.1 — loads bank config from PolicyService for QR generation.
- *              v1.2 — integrates amountPaid overpayment tracking and dynamic permission-based access checks.
- */
-
-
-
-/**
- * Handles the payment record page and payment form submission.
- *
- * <p>GET /payments/record — shows payment form for a specific booking (any logged-in user)
- * or global transaction log (Staff/Admin only).</p>
- *
- * <p>POST /payments/record — records a payment. Any authenticated user
- * may submit a payment for their own booking. Staff/Admin may also enter
- * the actual received amount (amountPaid) for overpayment tracking.</p>
+ * Created: 23/05/2026 
+ * Description: Controller handling HTTP GET and POST requests for recording and list-viewing payments.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (31/05/2026): feat: implement payment processing system including recor...
+ * - v1.3 (01/06/2026): last update for iter1
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.6 (21/06/2026): feat: implement booking workflow with contract creation a...
+ * - v1.7 (23/06/2026): feat: implement 3-image profile verification, non-expiry ...
+ * - v1.8 (23/06/2026): feat & fix: implement pagination for home, vehicle list, ...
+ * - v1.9 (16/07/2026): feat: implement automated VietQR payment processing syste...
+ * - v1.10 (17/07/2026): Update PaymentRecordServlet
+ * - v1.11 (17/07/2026): docs(convention): update header comments and versions for...
+ * - v1.12 (17/07/2026): fix(payment): allow customers to access payment record ch...
+ * - v1.13 (21/07/2026): feat(booking,payment,report,notification): refine cancell...
+ * - v1.14 (21/07/2026): feat: redesign payment management UI and refactor payment...
+ * - v2.5 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentRecordServlet", urlPatterns = {"/payments/record"})
 public class PaymentRecordServlet extends HttpServlet {
@@ -80,6 +81,9 @@ public class PaymentRecordServlet extends HttpServlet {
         BANK_BIN_MAP.put("MSBANK",       "970426");
     }
 
+    /**
+     * Handles HTTP GET requests to render the payment collection/recording form or list payment logs.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -257,6 +261,9 @@ public class PaymentRecordServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/payments/history");
     }
 
+    /**
+     * Handles HTTP POST requests to submit and register new payment or refund transactions.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -346,6 +353,9 @@ public class PaymentRecordServlet extends HttpServlet {
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
+    /**
+     * Helper to parse form inputs and map request attributes to a Payment model object.
+     */
     private Payment buildPaymentFromRequest(HttpServletRequest req, int userId) {
         Payment p = new Payment();
         p.setBookingId(Integer.parseInt(req.getParameter("bookingId")));

@@ -6,9 +6,15 @@ import java.time.LocalDateTime;
 /*
  * Name: RentalContract
  * @Author: TungNLHE186756
- * Date: 21/06/2026
- * Version: 2.0
- * Description: Handles business logic and operations for RentalContract.
+ * Created: 23/05/2026 
+ * Description: Model representing a rental contract entity with associated database fields and redesign metadata.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.3 (21/06/2026): feat: standard combo packages, dynamic tet surcharge and ...
+ * - v1.4 (21/07/2026): feat: update rental contract workflow to require customer...
+ * - v1.5 (23/07/2026): Added Javadoc and method comments.
  */
 
 /**

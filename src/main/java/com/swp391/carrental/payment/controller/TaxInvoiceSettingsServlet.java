@@ -6,22 +6,27 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.policy.service.PolicyService;
 
 /*
  * Name: TaxInvoiceSettingsServlet
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for TaxInvoiceSettingsServlet.
+ * Created: 23/05/2026 
+ * Description: Controller handling HTTP GET and POST requests for configuring tax invoice settings.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.3 (22/07/2026): Fix: complete Java backend bug fixes and UI settings impr...
+ * - v1.4 (23/07/2026): Added Javadoc and method comments.
  */
-
-
 @WebServlet(name = "TaxInvoiceSettingsServlet", urlPatterns = {"/tax-invoice-settings", "/tax-invoice/settings"})
 public class TaxInvoiceSettingsServlet extends HttpServlet {
     private final PolicyService policyService = new PolicyService();
 
+    /**
+     * Handles HTTP GET requests to load and display tax settings.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // BR-10: Tax/invoice fields are stored internally only
@@ -29,6 +34,9 @@ public class TaxInvoiceSettingsServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/payment/tax-invoice-settings.jsp").forward(request, response);
     }
 
+    /**
+     * Handles HTTP POST requests to update company details and tax rates.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int userId = 1;
