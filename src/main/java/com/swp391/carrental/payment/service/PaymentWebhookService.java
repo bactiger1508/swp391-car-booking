@@ -10,9 +10,15 @@ import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletRequest;
 import com.swp391.carrental.policy.service.PolicyService;
 
-/**
- * Service for verifying and parsing incoming payment webhook notifications.
- * Supports SePay, Casso, PayOS, and other generic/custom providers.
+/*
+ * Name: PaymentWebhookService
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Service for verifying and parsing incoming payment webhook notifications from payment providers like SePay.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (17/07/2026): feat: refine payment and policy settings configuration
+ * - v1.2 (23/07/2026): Added Javadoc and method comments.
  */
 public class PaymentWebhookService {
 
@@ -71,6 +77,9 @@ public class PaymentWebhookService {
         return txs;
     }
 
+    /**
+     * Extract a string value from a raw JSON string using a regex pattern.
+     */
     private String getJsonStringValue(String json, String key) {
         Pattern pattern = Pattern.compile("\"" + key + "\":\\s*\"([^\"]*)\"");
         Matcher matcher = pattern.matcher(json);
@@ -80,6 +89,9 @@ public class PaymentWebhookService {
         return null;
     }
 
+    /**
+     * Extract a numeric value from a raw JSON string using a regex pattern.
+     */
     private BigDecimal getJsonNumericValue(String json, String key) {
         Pattern pattern = Pattern.compile("\"" + key + "\":\\s*([\\d\\.]+)");
         Matcher matcher = pattern.matcher(json);
@@ -89,6 +101,9 @@ public class PaymentWebhookService {
         return null;
     }
 
+    /**
+     * Parse standard date strings to LocalDateTime objects.
+     */
     private LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return LocalDateTime.now();

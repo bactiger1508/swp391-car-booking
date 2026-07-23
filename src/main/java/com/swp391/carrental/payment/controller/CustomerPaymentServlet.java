@@ -14,22 +14,21 @@ import com.swp391.carrental.user.model.User;
 /*
  * Name: CustomerPaymentServlet
  * @Author: TungNLHE186756
- * Date: 15/07/2026
- * Version: 1.0
- * Description: Displays payment history for the currently logged-in Customer.
- *              Customers may only view payments belonging to their own bookings.
- */
-
-/**
- * Serves the Customer Payment History page at /payments/my.
- * Access is restricted to users with role CUSTOMER.
- * Staff and Admin should use /payments/record for the full transaction log.
+ * Created: 16/07/2026 
+ * Description: Controller handling HTTP GET request to display payment history for the currently logged-in Customer.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (21/07/2026): feat: redesign payment management UI and refactor payment...
+ * - v1.2 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "CustomerPaymentServlet", urlPatterns = {"/payments/history"})
 public class CustomerPaymentServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
 
+    /**
+     * Handles HTTP GET requests to list payment records for the logged-in customer.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
