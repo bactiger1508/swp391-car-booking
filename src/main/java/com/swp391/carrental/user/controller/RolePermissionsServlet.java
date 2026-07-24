@@ -16,6 +16,14 @@ import com.swp391.carrental.user.model.Permission;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.core.util.SecurityUtils;
 
+/*
+ * Name: RolePemissionServlet
+ * @Author: AnhNNHE160896
+ * Date: 01/07/2026
+ * Version: 1.1
+ * Description: Handle HTTP requests and responses for RolePermissionServlet with access control logic.
+ */
+/**
 /**
  * Handles role permissions management (Admin only). URL: /roles
  */
