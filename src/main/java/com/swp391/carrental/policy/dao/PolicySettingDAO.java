@@ -20,6 +20,7 @@ import com.swp391.carrental.policy.model.PolicySetting;
  * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
  * - v1.5 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
  * - v1.6 (23/07/2026): Added Javadoc and method comments.
+ * - v1.7 (24/07/2026): Removed unused payment methods (CARD, MOMO, VNPAY, ZALOPAY).
  */
 public class PolicySettingDAO {
 
@@ -205,14 +206,6 @@ public class PolicySettingDAO {
                 return "Cho phép thanh toán tiền mặt";
             case "PAYMENT_METHOD_BANK_TRANSFER_ENABLED":
                 return "Cho phép thanh toán chuyển khoản ngân hàng";
-            case "PAYMENT_METHOD_CARD_ENABLED":
-                return "Cho phép thanh toán thẻ tín dụng/ghi nợ";
-            case "PAYMENT_METHOD_MOMO_ENABLED":
-                return "Cho phép thanh toán qua ví MoMo";
-            case "PAYMENT_METHOD_VNPAY_ENABLED":
-                return "Cho phép thanh toán qua VNPay";
-            case "PAYMENT_METHOD_ZALOPAY_ENABLED":
-                return "Cho phép thanh toán qua ZaloPay";
             case "PAYMENT_GRACE_PERIOD_HOURS":
                 return "Số giờ gia hạn thanh toán trước khi hủy đặt xe";
             case "PAYMENT_CURRENCY":

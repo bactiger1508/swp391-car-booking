@@ -173,7 +173,13 @@
                                     </c:choose>
                                 </td>
                                 <td style="padding: 8px 12px; font-weight:600; color:var(--primary);"><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ</td>
-                                <td style="padding: 8px 12px;">${p.paymentMethod}</td>
+                                <td style="padding: 8px 12px;">
+                                    <c:choose>
+                                        <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
+                                        <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
+                                        <c:otherwise>${p.paymentMethod}</c:otherwise>
+                                    </c:choose>
+                                </td>
                                 <td style="padding: 8px 12px; color:var(--text-secondary);">${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>
                             </tr>
                         </c:forEach>

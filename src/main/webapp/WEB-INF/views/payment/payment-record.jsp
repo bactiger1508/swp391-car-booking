@@ -205,15 +205,7 @@
                                             <c:if test="${enabledMethods['BANK_TRANSFER']}">
                                                 <option value="BANK_TRANSFER" selected>Chuyển khoản</option>
                                             </c:if>
-                                            <c:if test="${enabledMethods['VNPAY']}">
-                                                <option value="VNPAY">VNPay</option>
-                                            </c:if>
-                                            <c:if test="${enabledMethods['MOMO']}">
-                                                <option value="MOMO">Momo</option>
-                                            </c:if>
-                                            <c:if test="${enabledMethods['ZALOPAY']}">
-                                                <option value="ZALOPAY">ZaloPay</option>
-                                            </c:if>
+
                                         </select>
                                     </div>
                                 </c:when>
