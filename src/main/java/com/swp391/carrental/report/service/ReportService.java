@@ -113,7 +113,11 @@ public class ReportService {
                 continue;
             }
 
-            LocalDate paymentDate = p.getPaidAt().toLocalDate();
+            java.time.LocalDateTime paidAtTime = p.getPaidAt() != null ? p.getPaidAt() : p.getCreatedAt();
+            if (paidAtTime == null) {
+                continue;
+            }
+            LocalDate paymentDate = paidAtTime.toLocalDate();
             if ((paymentDate.isEqual(fromDate) || paymentDate.isAfter(fromDate))
                     && (paymentDate.isEqual(toDate) || paymentDate.isBefore(toDate))) {
                 total = total.add(p.getAmount());
@@ -133,7 +137,11 @@ public class ReportService {
                 continue;
             }
 
-            LocalDate paymentDate = p.getPaidAt().toLocalDate();
+            java.time.LocalDateTime paidAtTime = p.getPaidAt() != null ? p.getPaidAt() : p.getCreatedAt();
+            if (paidAtTime == null) {
+                continue;
+            }
+            LocalDate paymentDate = paidAtTime.toLocalDate();
 
             if (!paymentDate.isBefore(fromDate)
                     && !paymentDate.isAfter(toDate)) {
@@ -250,7 +258,11 @@ public class ReportService {
                         continue;
                     }
 
-                    LocalDate paid = p.getPaidAt().toLocalDate();
+                    java.time.LocalDateTime paidAtTime = p.getPaidAt() != null ? p.getPaidAt() : p.getCreatedAt();
+                    if (paidAtTime == null) {
+                        continue;
+                    }
+                    LocalDate paid = paidAtTime.toLocalDate();
 
                     if (!paid.isBefore(start) && !paid.isAfter(end)) {
                         revenue = revenue.add(p.getAmount());
@@ -279,7 +291,11 @@ public class ReportService {
                         continue;
                     }
 
-                    LocalDate paid = p.getPaidAt().toLocalDate();
+                    java.time.LocalDateTime paidAtTime = p.getPaidAt() != null ? p.getPaidAt() : p.getCreatedAt();
+                    if (paidAtTime == null) {
+                        continue;
+                    }
+                    LocalDate paid = paidAtTime.toLocalDate();
 
                     if (!paid.isBefore(monthStart) && !paid.isAfter(monthEnd)) {
                         revenue = revenue.add(p.getAmount());
@@ -309,7 +325,11 @@ public class ReportService {
                         continue;
                     }
 
-                    LocalDate paid = p.getPaidAt().toLocalDate();
+                    java.time.LocalDateTime paidAtTime = p.getPaidAt() != null ? p.getPaidAt() : p.getCreatedAt();
+                    if (paidAtTime == null) {
+                        continue;
+                    }
+                    LocalDate paid = paidAtTime.toLocalDate();
 
                     if (!paid.isBefore(monthStart) && !paid.isAfter(monthEnd)) {
                         revenue = revenue.add(p.getAmount());

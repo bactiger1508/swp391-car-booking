@@ -182,9 +182,25 @@
                                     <button onclick="openEditModal(${car.carId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                                     </button>
-                                    <button onclick="if(confirm('Bạn chắc chắn muốn xóa xe này?')) { deleteVehicle(${car.carId}); }" class="text-[#D32F2F] hover:text-[#B71C1C] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xóa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-                                    </button>
+                                    <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
+                                        <button onclick="deleteVehicle(${car.carId})" class="text-[#D32F2F] hover:text-[#B71C1C] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xóa xe (chỉ ADMIN)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                                        </button>
+                                    </c:if>
+                                    <c:if test="${sessionScope.currentUser.role != 'ADMIN'}">
+                                        <c:choose>
+                                            <c:when test="${car.status == 'INACTIVE'}">
+                                                <button onclick="showVehicle(${car.carId})" class="text-[#2E7D32] hover:text-[#1B5E20] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Hiện xe (cho phép customer xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                                </button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button onclick="hideVehicle(${car.carId})" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Ẩn xe (customer không thể xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:if>
                                     <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&carId=${car.carId}" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Lịch bảo trì" style="display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">build</span>
                                     </a>
@@ -603,6 +619,10 @@ function closeEditModal() {
 }
 
 function deleteVehicle(carId) {
+    if (!confirm('⚠️ Bạn chắc chắn muốn xóa xe này? Hành động này không thể hoàn tác!\n\nNhư cầu: Chỉ ADMIN được phép xóa. Nếu xe đang cho thuê, bạn phải ẩn nó trước.')) {
+        return;
+    }
+
     fetch('${pageContext.request.contextPath}/vehicles/manage', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -615,6 +635,50 @@ function deleteVehicle(carId) {
             setTimeout(() => location.reload(), 1200);
         } else {
             showErrorAlert(data.error || 'Không thể xóa xe này.');
+        }
+    })
+    .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
+}
+
+function hideVehicle(carId) {
+    if (!confirm('Bạn chắc chắn muốn ẩn xe này? Customer sẽ không thể thấy xe.')) {
+        return;
+    }
+
+    fetch('${pageContext.request.contextPath}/vehicles/manage', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=hide&carId=' + carId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert(data.message || 'Ẩn xe thành công!');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showErrorAlert(data.error || 'Không thể ẩn xe này.');
+        }
+    })
+    .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
+}
+
+function showVehicle(carId) {
+    if (!confirm('Bạn chắc chắn muốn hiện xe này? Customer sẽ có thể thấy xe.')) {
+        return;
+    }
+
+    fetch('${pageContext.request.contextPath}/vehicles/manage', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'action=show&carId=' + carId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert(data.message || 'Hiện xe thành công!');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showErrorAlert(data.error || 'Không thể hiện xe này.');
         }
     })
     .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));

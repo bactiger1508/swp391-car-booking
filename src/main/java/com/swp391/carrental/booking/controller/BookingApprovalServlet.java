@@ -13,6 +13,8 @@ import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.core.exception.AppException;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
@@ -38,6 +40,7 @@ public class BookingApprovalServlet extends HttpServlet {
     private final BookingService bookingService = new BookingService();
     private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
+    private final NotificationService notificationService = new NotificationService();
 
     /** Hiển thị danh sách các đơn đặt xe đang ở trạng thái PENDING chờ nhân viên phê duyệt */
     @Override
@@ -104,11 +107,13 @@ public class BookingApprovalServlet extends HttpServlet {
 
         try {
             int bookingId = Integer.parseInt(bookingIdStr);
+            Booking booking = bookingService.getBookingById(bookingId);
 
             if ("approve".equals(action)) {
                 bookingService.approveBooking(bookingId, currentUser.getUserId());
                 request.getSession().setAttribute("successMessage",
                         "Đã duyệt booking #" + bookingId + " thành công.");
+                notifyBookingDecision(booking, bookingId, true, null);
             } else if ("reject".equals(action)) {
                 String reason = request.getParameter("reason");
                 if (reason == null || reason.trim().isEmpty()) {
@@ -117,6 +122,7 @@ public class BookingApprovalServlet extends HttpServlet {
                 bookingService.rejectBooking(bookingId, currentUser.getUserId(), reason.trim());
                 request.getSession().setAttribute("successMessage",
                         "Đã từ chối booking #" + bookingId + ".");
+                notifyBookingDecision(booking, bookingId, false, reason.trim());
             }
         } catch (AppException e) {
             request.getSession().setAttribute("errorMessage", e.getMessage());
@@ -125,5 +131,27 @@ public class BookingApprovalServlet extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/bookings/approval");
+    }
+
+    /**
+     * Notifies the customer whether their booking request was approved or rejected.
+     */
+    private void notifyBookingDecision(Booking booking, int bookingId, boolean approved, String reason) {
+        if (booking == null) {
+            return;
+        }
+        try {
+            String title = approved ? "Đặt xe đã được duyệt" : "Đặt xe bị từ chối";
+            String message = approved
+                    ? "Booking #" + bookingId + " của bạn đã được duyệt. Vui lòng chờ chuẩn bị hợp đồng."
+                    : "Booking #" + bookingId + " của bạn đã bị từ chối. Lý do: " + reason;
+
+            Notification notif = new Notification(booking.getCustomerId(), title, message, "BOOKING");
+            notif.setReferenceType("BOOKING");
+            notif.setReferenceId(bookingId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send booking-decision notification: " + e.getMessage());
+        }
     }
 }
