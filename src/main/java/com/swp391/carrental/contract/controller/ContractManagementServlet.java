@@ -6,24 +6,35 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import com.swp391.carrental.booking.constant.BookingStatus;
-import com.swp391.carrental.booking.model.Booking;
-import com.swp391.carrental.booking.service.BookingService;
-import com.swp391.carrental.contract.constant.ContractStatus;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.contract.service.ContractService;
 import com.swp391.carrental.core.exception.AppException;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.service.VehicleService;
-
 /*
  * Name: ContractManagementServlet
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for ContractManagementServlet.
+ * Created: 23/05/2026 
+ * Description: Controller handling HTTP requests and responses for preparing, viewing, editing, signing, and managing contracts.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (30/05/2026): feat: implement Prepare Contract
+ * - v1.3 (01/06/2026): merge code and fixbug - Tung (Contract & Payment)
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (09/06/2026): docs(contract): add simple english comments to contract m...
+ * - v1.6 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.7 (21/06/2026): feat: implement booking workflow with contract creation a...
+ * - v1.8 (23/06/2026): feat: implement 3-image profile verification, non-expiry ...
+ * - v1.9 (08/07/2026): feat: implement update contract
+ * - v1.10 (16/07/2026): feat: implement VAT invoice generation
+ * - v1.11 (17/07/2026): Update ContractManagementServlet
+ * - v1.12 (21/07/2026): feat: update rental contract workflow to require customer...
+ * - v2.3 (23/07/2026): Added Javadoc and method comments.
  */
 
 
@@ -34,8 +45,11 @@ public class ContractManagementServlet extends HttpServlet {
     private final com.swp391.carrental.booking.service.BookingService bookingService = new com.swp391.carrental.booking.service.BookingService();
     private final com.swp391.carrental.user.service.UserService userService = new com.swp391.carrental.user.service.UserService();
     private final com.swp391.carrental.vehicle.service.VehicleService vehicleService = new com.swp391.carrental.vehicle.service.VehicleService();
+    private final NotificationService notificationService = new NotificationService();
 
-    // Handle GET requests for listing and details
+    /**
+     * Handles HTTP GET requests to list contracts (for staff) or view details of a contract.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession(false);
@@ -216,7 +230,9 @@ public class ContractManagementServlet extends HttpServlet {
         }
     }
 
-    // Handle POST requests for activation and creation
+    /**
+     * Handles HTTP POST requests for creating, updating, and signing (activating) contracts.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession(false);
@@ -369,6 +385,29 @@ public class ContractManagementServlet extends HttpServlet {
 
         String bookingIdStr = request.getParameter("bookingId");
         String termsAndConditions = request.getParameter("termsAndConditions");
+
+        // Activate contract notification
+        if ("activate".equals(action)) {
+            String contractIdStr = request.getParameter("contractId");
+            try {
+                if (contractIdStr != null && !contractIdStr.isEmpty()) {
+                    int contractId = Integer.parseInt(contractIdStr);
+                    com.swp391.carrental.contract.model.RentalContract activeContract = contractService.getContractById(contractId);
+                    boolean updated = contractService.updateContractStatus(contractId, com.swp391.carrental.contract.constant.ContractStatus.ACTIVE);
+                    if (updated && activeContract != null) {
+                        notifyContractActivated(activeContract, contractId);
+                    }
+                    response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
+                    return;
+                }
+            } catch (Exception e) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Lỗi kích hoạt hợp đồng: " + e.getMessage());
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts");
+                return;
+            }
+        }
         
         // Booking ID is required for contract creation
         if (bookingIdStr == null || bookingIdStr.isEmpty()) {
@@ -418,6 +457,7 @@ public class ContractManagementServlet extends HttpServlet {
 
             int contractId = contractService.createContract(contract);
             if (contractId > 0) {
+                notifyContractPrepared(contract, contractId, booking.getCustomerId());
                 response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
             } else {
                 throw new com.swp391.carrental.core.exception.AppException("Không thể lưu hợp đồng vào cơ sở dữ liệu.");
@@ -427,6 +467,34 @@ public class ContractManagementServlet extends HttpServlet {
                 session.setAttribute("errorMessage", "Lỗi tạo hợp đồng: " + e.getMessage());
             }
             response.sendRedirect(request.getContextPath() + "/contracts");
+        }
+    }
+
+    private void notifyContractPrepared(RentalContract contract, int contractId, int customerId) {
+        try {
+            Notification notif = new Notification(customerId,
+                    "Hợp đồng đã được chuẩn bị",
+                    "Hợp đồng #" + contractId + " cho booking #" + contract.getBookingId() + " đã được soạn thảo. Vui lòng kiểm tra và ký kết.",
+                    "CONTRACT");
+            notif.setReferenceType("CONTRACT");
+            notif.setReferenceId(contractId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send contract-prepared notification: " + e.getMessage());
+        }
+    }
+
+    private void notifyContractActivated(RentalContract contract, int contractId) {
+        try {
+            Notification notif = new Notification(contract.getCustomerId(),
+                    "Hợp đồng đã được kích hoạt",
+                    "Hợp đồng #" + contractId + " đã được ký kết và kích hoạt. Bạn có thể tiến hành bàn giao xe.",
+                    "CONTRACT");
+            notif.setReferenceType("CONTRACT");
+            notif.setReferenceId(contractId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send contract-activated notification: " + e.getMessage());
         }
     }
 }

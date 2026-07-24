@@ -547,8 +547,9 @@ public class CarProSystemTestRunner {
 
         // TC-BAC-PROC-01 [FIXED]
         try {
-            // SỬA: Sử dụng xe 12 và khoảng thời gian 120-122 ngày để tránh trùng lịch với TC-BAC-BOOK-01 (90-92 ngày)
-            Booking b = createPlaceholderBooking(3, 12, LocalDateTime.now().plusDays(120), LocalDateTime.now().plusDays(122), "PENDING");
+            // SỬA: Sử dụng xe 25 và khoảng thời gian ngẫu nhiên để tránh trùng lịch hoàn toàn qua các lần chạy
+            int offsetDays = 300 + new java.util.Random().nextInt(1000);
+            Booking b = createPlaceholderBooking(3, 25, LocalDateTime.now().plusDays(offsetDays), LocalDateTime.now().plusDays(offsetDays + 2), "PENDING");
             int bId = bookingService.createBooking(b);
             boolean success = bookingService.approveBooking(bId, 2); // approved by Staff 2
             addResult("TC-BAC-PROC-01", success ? "Approved booking successfully." : "Failed", success, "Fixed test setup/data, not a code issue: Isolated car 12 and dates 120-122 to resolve overlaps");

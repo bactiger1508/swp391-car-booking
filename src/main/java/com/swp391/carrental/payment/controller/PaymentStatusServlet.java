@@ -10,15 +10,23 @@ import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.model.User;
 
-/**
- * Endpoint to safely retrieve status updates for a payment.
- * Used by checkout polling scripts.
+/*
+ * Name: PaymentStatusServlet
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Controller handling HTTP GET requests to retrieve payment transaction statuses as JSON.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentStatusServlet", urlPatterns = {"/payments/status"})
 public class PaymentStatusServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
 
+    /**
+     * Handles HTTP GET requests to retrieve payment status information (JSON endpoint).
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

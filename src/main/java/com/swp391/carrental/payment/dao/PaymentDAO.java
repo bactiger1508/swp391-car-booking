@@ -9,10 +9,15 @@ import com.swp391.carrental.payment.model.Payment;
 /*
  * Name: PaymentDAO
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.1
- * Description: Handles database operations for PaymentDAO.
- *              v1.1 — added amount_paid column support and findByCustomerId().
+ * Created: 23/05/2026 
+ * Description: Data Access Object for handling database operations on Payments.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.3 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.4 (16/07/2026): feat: implement automated VietQR payment processing syste...
+ * - v1.5 (23/07/2026): Added Javadoc and method comments.
  */
 
 
@@ -22,7 +27,9 @@ import com.swp391.carrental.payment.model.Payment;
  */
 public class PaymentDAO {
 
-    // Finds a payment by ID.
+    /**
+     * Query a payment record from the database by primary ID.
+     */
     public Payment findById(int paymentId) throws SQLException {
         String sql = "SELECT * FROM payments WHERE payment_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -36,7 +43,9 @@ public class PaymentDAO {
         return null;
     }
 
-    // Retrieves payments for a booking.
+    /**
+     * Query all payment records associated with a specific booking.
+     */
     public List<Payment> findByBookingId(int bookingId) throws SQLException {
         List<Payment> payments = new ArrayList<>();
         String sql = "SELECT * FROM payments WHERE booking_id = ? ORDER BY created_at DESC";
@@ -51,7 +60,9 @@ public class PaymentDAO {
         return payments;
     }
 
-    // Retrieves all payments for a specific customer (via booking ownership).
+    /**
+     * Retrieve all payments for a specific customer by joining with booking details.
+     */
     public List<Payment> findByCustomerId(int customerId) throws SQLException {
         List<Payment> payments = new ArrayList<>();
         String sql = "SELECT p.* FROM payments p "
@@ -69,7 +80,9 @@ public class PaymentDAO {
         return payments;
     }
 
-    // Retrieves all payments.
+    /**
+     * Query all payments in the database.
+     */
     public List<Payment> findAll() throws SQLException {
         List<Payment> payments = new ArrayList<>();
         String sql = "SELECT * FROM payments ORDER BY created_at DESC";
@@ -81,7 +94,9 @@ public class PaymentDAO {
         return payments;
     }
 
-    // Creates a new payment record (includes amount_paid).
+    /**
+     * Insert a new payment record into the database, handling auto-generated keys.
+     */
     public int insert(Payment payment) throws SQLException {
         String sql = "INSERT INTO payments (booking_id, contract_id, amount, amount_paid, payment_type, payment_method, "
                 + "status, transaction_ref, notes, paid_at, recorded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -123,7 +138,9 @@ public class PaymentDAO {
         return -1;
     }
 
-    // Updates payment status.
+    /**
+     * Update status field of an existing payment record.
+     */
     public boolean updateStatus(int paymentId, String status) throws SQLException {
         String sql = "UPDATE payments SET status = ?, updated_at = GETDATE() WHERE payment_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -133,7 +150,9 @@ public class PaymentDAO {
         }
     }
 
-    // Deletes a payment record.
+    /**
+     * Delete a payment record by ID.
+     */
     public boolean delete(int paymentId) throws SQLException {
         String sql = "DELETE FROM payments WHERE payment_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -142,7 +161,9 @@ public class PaymentDAO {
         }
     }
 
-    // Finds a payment by ID with update row locking (transaction safety).
+    /**
+     * Query a payment record using database row locking (UPDLOCK) within a transaction.
+     */
     public Payment findByIdWithLock(Connection conn, int paymentId) throws SQLException {
         String sql = "SELECT * FROM payments WITH (UPDLOCK) WHERE payment_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -156,7 +177,9 @@ public class PaymentDAO {
         return null;
     }
 
-    // Updates a payment record as part of a transaction.
+    /**
+     * Update a payment record using an active transaction connection.
+     */
     public boolean updatePaymentTransactional(Connection conn, Payment payment) throws SQLException {
         String sql = "UPDATE payments SET status = ?, payment_method = ?, amount = ?, amount_paid = ?, transaction_ref = ?, notes = ?, paid_at = ?, recorded_by = ?, updated_at = GETDATE() WHERE payment_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -185,7 +208,9 @@ public class PaymentDAO {
         }
     }
 
-    // Maps ResultSet to Payment (includes amount_paid).
+    /**
+     * Map a JDBC ResultSet row to a Payment model object, with self-healing check for amount_paid column.
+     */
     private Payment mapRow(ResultSet rs) throws SQLException {
         Payment p = new Payment();
         p.setPaymentId(rs.getInt("payment_id"));

@@ -82,6 +82,7 @@ public class NotificationServlet extends HttpServlet {
         }
     }
 
+    // Displays notification list page with all user notifications and unread count.
     private void handleViewNotifications(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         List<Notification> notifications = notificationService.getNotificationsByUserId(currentUser.getUserId());
@@ -92,6 +93,7 @@ public class NotificationServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/notification/notifications.jsp").forward(request, response);
     }
 
+    // Returns all user notifications as JSON for header dropdown real-time polling.
     private void handleGetAllNotifications(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException {
         List<Notification> notifications = notificationService.getNotificationsByUserId(currentUser.getUserId());
@@ -105,6 +107,8 @@ public class NotificationServlet extends HttpServlet {
                 .append("\"title\":\"").append(escapeJson(n.getTitle())).append("\",")
                 .append("\"message\":\"").append(escapeJson(n.getMessage())).append("\",")
                 .append("\"notificationType\":\"").append(n.getNotificationType()).append("\",")
+                .append("\"referenceType\":").append(n.getReferenceType() != null ? "\"" + n.getReferenceType() + "\"" : "null").append(",")
+                .append("\"referenceId\":").append(n.getReferenceId() != null ? n.getReferenceId() : "null").append(",")
                 .append("\"isRead\":").append(n.isRead()).append(",")
                 .append("\"createdAt\":\"").append(n.getCreatedAt()).append("\"")
                 .append("}");
@@ -116,6 +120,7 @@ public class NotificationServlet extends HttpServlet {
         response.getWriter().write(json.toString());
     }
 
+    // Returns unread notification count as JSON for header badge display.
     private void handleGetUnreadCount(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException {
         int unreadCount = notificationService.getUnreadCount(currentUser.getUserId());
@@ -124,6 +129,7 @@ public class NotificationServlet extends HttpServlet {
         response.getWriter().write("{\"unreadCount\":" + unreadCount + "}");
     }
 
+    // Marks single notification as read (validates ownership before updating).
     private void handleMarkAsRead(HttpServletRequest request, HttpServletResponse response, User currentUser) {
         String notificationIdStr = request.getParameter("notificationId");
         if (notificationIdStr == null || notificationIdStr.isEmpty()) {
@@ -144,10 +150,12 @@ public class NotificationServlet extends HttpServlet {
         notificationService.markNotificationAsRead(notificationId);
     }
 
+    // Marks all user notifications as read in one bulk operation.
     private void handleMarkAllAsRead(HttpServletRequest request, HttpServletResponse response, User currentUser) {
         notificationService.markAllNotificationsAsRead(currentUser.getUserId());
     }
 
+    // Escapes special characters in text for safe JSON response output (prevents XSS).
     private String escapeJson(String text) {
         if (text == null) return "";
         return text.replace("\\", "\\\\")

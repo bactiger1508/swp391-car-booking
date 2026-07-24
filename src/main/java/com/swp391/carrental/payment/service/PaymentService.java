@@ -3,8 +3,6 @@ package com.swp391.carrental.payment.service;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
-import com.swp391.carrental.booking.model.Booking;
-import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.payment.dao.PaymentDAO;
 import com.swp391.carrental.payment.model.Payment;
@@ -13,11 +11,19 @@ import com.swp391.carrental.policy.service.PolicyService;
 /*
  * Name: PaymentService
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.1
- * Description: Contains business logic for PaymentService.
- *              v1.1 — restricted methods to CASH/BANK_TRANSFER; added REFUND=CASH enforcement;
- *                     added getPaymentsByCustomerId(); updated getEnabledMethods().
+ * Created: 23/05/2026 
+ * Description: Service containing business logic for registering payments, bank transfer webhook matching, and refunds.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (31/05/2026): feat: implement payment processing system including recor...
+ * - v1.3 (01/06/2026): last update for iter1
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.6 (23/06/2026): feat: implement 3-image profile verification, non-expiry ...
+ * - v1.7 (16/07/2026): feat: implement automated VietQR payment processing syste...
+ * - v1.8 (22/07/2026): feat: update contract status when cancel, return and refa...
+ * - v1.9 (23/07/2026): Added Javadoc and method comments.
  */
 
 
@@ -51,6 +57,9 @@ public class PaymentService {
 
     // ─── Queries ─────────────────────────────────────────────────────────────
 
+    /**
+     * Retrieve a payment record by its database primary ID.
+     */
     public Payment getPaymentById(int paymentId) {
         try {
             return paymentDAO.findById(paymentId);
@@ -59,6 +68,9 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Retrieve all payment records associated with a specific booking.
+     */
     public List<Payment> getPaymentsByBooking(int bookingId) {
         try {
             return paymentDAO.findByBookingId(bookingId);
@@ -67,6 +79,9 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Retrieve all payments in the system.
+     */
     public List<Payment> getAllPayments() {
         try {
             return paymentDAO.findAll();
@@ -164,6 +179,9 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Settle booking status to COMPLETED if fully paid (calls outside transaction to keep db connections clean).
+     */
     private void checkAndSettleBooking(int bookingId) {
         try {
             com.swp391.carrental.booking.dao.BookingDAO bookingDAO = new com.swp391.carrental.booking.dao.BookingDAO();
@@ -196,12 +214,24 @@ public class PaymentService {
             
             if (totalPaid.compareTo(totalRequired) >= 0) {
                 bookingDAO.updateStatus(bookingId, "COMPLETED");
+                try {
+                    com.swp391.carrental.contract.dao.ContractDAO contractDAO = new com.swp391.carrental.contract.dao.ContractDAO();
+                    com.swp391.carrental.contract.model.RentalContract contract = contractDAO.findByBookingId(bookingId);
+                    if (contract != null) {
+                        contractDAO.updateStatus(contract.getContractId(), "COMPLETED");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Update the payment status of a transaction.
+     */
     public boolean updatePaymentStatus(int paymentId, String status) {
         try {
             return paymentDAO.updateStatus(paymentId, status);
@@ -289,6 +319,9 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Approve a pending payment (cash or transfer) by transitioning its status to COMPLETED.
+     */
     public boolean approvePendingPayment(int paymentId, int recordedBy) {
         java.sql.Connection conn = null;
         try {
@@ -339,7 +372,7 @@ public class PaymentService {
     }
 
     /**
-     * Returns enabled status for CASH and BANK_TRANSFER only.
+     * Returns enabled status map for CASH and BANK_TRANSFER only.
      * (VNPAY, MOMO, ZALOPAY, CARD are no longer supported in the payment flow.)
      */
     public java.util.Map<String, Boolean> getEnabledMethods() {

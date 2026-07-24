@@ -21,6 +21,14 @@
             <p style="font-size: 15px; color: var(--on-surface-variant); line-height: 1.6; margin-bottom: 28px;">
                 Đã xảy ra lỗi xử lý bên trong máy chủ. Vui lòng thử lại sau hoặc liên hệ ban quản trị để được hỗ trợ.
             </p>
+            <% if (exception != null) { %>
+                <pre style="text-align:left; background:#111; color:#0f0; padding:10px; font-size:12px; max-height:200px; overflow:auto; font-family:monospace;"><%= exception.getMessage() %>\n<%
+                    java.io.StringWriter sw = new java.io.StringWriter();
+                    java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+                    exception.printStackTrace(pw);
+                    out.print(sw.toString());
+                %></pre>
+            <% } %>
             <a href="${pageContext.request.contextPath}/home" class="btn btn-primary" style="width: auto; padding: 12px 32px; border-radius: 10px; font-weight: 600; margin: 0 auto; display: inline-flex;">
                 Quay về Trang chủ
             </a>
