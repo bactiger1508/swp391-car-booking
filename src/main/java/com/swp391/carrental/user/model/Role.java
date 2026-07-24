@@ -1,6 +1,18 @@
 package com.swp391.carrental.user.model;
 
 import java.time.LocalDateTime;
+/*
+ * Name: Role
+ * @Author: AnhNNHE160896
+ * Date: 01/07/2026
+ * Version: 1.0
+ * Description: Handles business logic and operations for Role.
+ */
+
+/**
+ * Represents a role in the system.
+ * Maps to the 'role' table.
+ */
 
 public class Role {
     private int roleId;
