@@ -34,6 +34,18 @@
                 <a href="${pageContext.request.contextPath}/home" class="bk-sidebar-link ${_cp == '/home' || _cp == '/' ? 'active' : ''}">
                     <span class="material-symbols-outlined">home</span> Trang chủ
                 </a>
+                <a href="${pageContext.request.contextPath}/vehicles" class="bk-sidebar-link ${_cp == '/vehicles' ? 'active' : ''}">
+                    <span class="material-symbols-outlined">directions_car</span> Danh sách xe
+                </a>
+
+                <c:if test="${sessionScope.currentUser == null}">
+                    <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
+                        <span class="material-symbols-outlined mi-filled">receipt_long</span> Đơn thuê của tôi
+                    </a>
+                    <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
+                        <span class="material-symbols-outlined">policy</span> Chính sách
+                    </a>
+                </c:if>
 
                 <c:if test="${sessionScope.currentUser != null}">
                     <a href="${pageContext.request.contextPath}/notifications" class="bk-sidebar-link ${_cp == '/notifications' ? 'active' : ''}">
@@ -288,17 +300,8 @@
                     <c:if test="${sessionScope.currentUser == null}">
                         <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
                     </c:if>
-                        ${sessionScope.currentUser.fullName.substring(0,1)}
-                    </div>
->>>>>>> origin/TinhDev
                 </div>
-            </c:if>
-            
-            <c:if test="${sessionScope.currentUser == null}">
-                <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
-            </c:if>
-        </div>
-    </header>
+            </header>
 
             <c:if test="${sessionScope.currentUser != null}">
                 <script>

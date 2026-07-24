@@ -114,8 +114,16 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                 if (handover != null) {
                     handoverService.updateStatusConfirm(handover.getHandoverId());
                     Car car = carDAO.findById(carId);
-                    car.setMileage(handover.getMileageAtHandover());
-                    carDAO.update(car);
+                    if (car != null) {
+                        car.setMileage(handover.getMileageAtHandover());
+                        carDAO.update(car);
+                    }
+                    
+                    // Send notifications & session message
+                    notifyHandoverSigned(handover, bookingId);
+                    if (request.getSession() != null) {
+                        request.getSession().setAttribute("successMessage", "Ký nhận biên bản bàn giao xe thành công!");
+                    }
                 }
 
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
@@ -123,6 +131,35 @@ public class VehicleHandoverViewServlet extends HttpServlet {
             } catch (SQLException e) {
                 throw new ServletException(e);
             }
+        }
+    }
+
+    private void notifyHandoverSigned(VehicleHandover handover, int bookingId) {
+        try {
+            com.swp391.carrental.notification.service.NotificationService notificationService = new com.swp391.carrental.notification.service.NotificationService();
+            // Notify customer
+            com.swp391.carrental.notification.model.Notification notifCustomer = new com.swp391.carrental.notification.model.Notification(
+                    handover.getReceivedBy(),
+                    "Ký nhận bàn giao xe thành công",
+                    "Bạn đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId + ". Chúc bạn có chuyến đi an toàn!",
+                    "HANDOVER");
+            notifCustomer.setReferenceType("HANDOVER");
+            notifCustomer.setReferenceId(handover.getHandoverId());
+            notificationService.createNotification(notifCustomer);
+
+            // Notify staff who handed over the vehicle
+            if (handover.getHandedBy() > 0) {
+                com.swp391.carrental.notification.model.Notification notifStaff = new com.swp391.carrental.notification.model.Notification(
+                        handover.getHandedBy(),
+                        "Khách hàng đã ký nhận bàn giao xe",
+                        "Khách hàng đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId + ".",
+                        "HANDOVER");
+                notifStaff.setReferenceType("HANDOVER");
+                notifStaff.setReferenceId(handover.getHandoverId());
+                notificationService.createNotification(notifStaff);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send handover signed notification: " + e.getMessage());
         }
     }
 }
