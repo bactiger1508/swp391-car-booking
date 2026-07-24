@@ -18,6 +18,8 @@ import com.swp391.carrental.contract.dao.ContractDAO;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.CarDAO;
@@ -37,6 +39,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
     private final CarDAO carDAO = new CarDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final NotificationService notificationService = new NotificationService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -219,7 +222,9 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             handover.setHandoverDate(LocalDateTime.now());
 
-            handoverService.handoverVehicle(handover);
+            int handoverId = handoverService.handoverVehicle(handover);
+
+            notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
 
             response.sendRedirect(request.getContextPath() + "/handovers");
 
@@ -374,6 +379,20 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             request.setAttribute("chkDashboardLights", request.getParameter("chkDashboardLights") != null);
         } catch (SQLException ex) {
             Logger.getLogger(CreateVehicleHandoverServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void notifyVehicleHandedOver(int bookingId, int handoverId, int customerId) {
+        try {
+            Notification notif = new Notification(customerId,
+                    "Xe đã được bàn giao",
+                    "Xe cho booking #" + bookingId + " đã được bàn giao thành công. Vui lòng kiểm tra tình trạng xe.",
+                    "HANDOVER");
+            notif.setReferenceType("HANDOVER");
+            notif.setReferenceId(handoverId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send vehicle-handed-over notification: " + e.getMessage());
         }
     }
 }

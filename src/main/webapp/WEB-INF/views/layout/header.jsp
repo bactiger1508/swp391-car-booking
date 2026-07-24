@@ -34,12 +34,6 @@
                 <a href="${pageContext.request.contextPath}/home" class="bk-sidebar-link ${_cp == '/home' || _cp == '/' ? 'active' : ''}">
                     <span class="material-symbols-outlined">home</span> Trang chủ
                 </a>
-                <a href="${pageContext.request.contextPath}/vehicles" class="bk-sidebar-link ${_cp == '/vehicles' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">directions_car</span> Danh sách xe
-                </a>
-                <a href="${pageContext.request.contextPath}/bookings/policy" class="bk-sidebar-link ${_cp == '/bookings/policy' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">policy</span> Chính sách
-                </a>
 
                 <c:if test="${sessionScope.currentUser != null}">
                     <a href="${pageContext.request.contextPath}/notifications" class="bk-sidebar-link ${_cp == '/notifications' ? 'active' : ''}">
@@ -294,8 +288,17 @@
                     <c:if test="${sessionScope.currentUser == null}">
                         <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
                     </c:if>
+                        ${sessionScope.currentUser.fullName.substring(0,1)}
+                    </div>
+>>>>>>> origin/TinhDev
                 </div>
-            </header>
+            </c:if>
+            
+            <c:if test="${sessionScope.currentUser == null}">
+                <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
+            </c:if>
+        </div>
+    </header>
 
             <c:if test="${sessionScope.currentUser != null}">
                 <script>
@@ -389,3 +392,334 @@
 
             <%-- CONTENT START --%>
             <div class="bk-content">
+
+        <style>
+            .bk-notification-container {
+                position: relative;
+                display: inline-block;
+            }
+
+            .notification-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #e74c3c;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+            }
+
+            .notification-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                width: 360px;
+                max-height: 500px;
+                display: none;
+                z-index: 1000;
+                margin-top: 8px;
+            }
+
+            .notification-dropdown.show {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .notification-header {
+                padding: 12px 16px;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .notification-header h3 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .mark-all-btn {
+                background: none;
+                border: none;
+                color: #3498db;
+                font-size: 12px;
+                cursor: pointer;
+                padding: 0;
+            }
+
+            .mark-all-btn:hover {
+                color: #2980b9;
+            }
+
+            .notification-list {
+                overflow-y: auto;
+                flex: 1;
+            }
+
+            .notification-item {
+                padding: 12px 16px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+
+            .notification-item:hover {
+                background-color: #f9f9f9;
+            }
+
+            .notification-item.unread {
+                background-color: #f0f8ff;
+            }
+
+            .notification-content {
+                flex: 1;
+            }
+
+            .notification-title {
+                font-weight: 600;
+                font-size: 13px;
+                margin: 0 0 4px 0;
+                color: #333;
+            }
+
+            .notification-message {
+                font-size: 12px;
+                color: #666;
+                margin: 0;
+                line-height: 1.4;
+            }
+
+            .notification-time {
+                font-size: 11px;
+                color: #999;
+                margin-top: 4px;
+            }
+
+            .notification-unread-indicator {
+                width: 8px;
+                height: 8px;
+                background: #3498db;
+                border-radius: 50%;
+                margin-left: 8px;
+                flex-shrink: 0;
+                margin-top: 6px;
+            }
+
+            .no-notifications {
+                padding: 24px 16px;
+                text-align: center;
+                color: #999;
+                font-size: 13px;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .notification-dropdown {
+                    background: #2c3e50;
+                    border-color: #34495e;
+                }
+
+                .notification-header {
+                    border-bottom-color: #34495e;
+                }
+
+                .notification-header h3 {
+                    color: #ecf0f1;
+                }
+
+                .notification-item {
+                    border-bottom-color: #34495e;
+                }
+
+                .notification-item:hover {
+                    background-color: #34495e;
+                }
+
+                .notification-item.unread {
+                    background-color: #1a3a52;
+                }
+
+                .notification-title {
+                    color: #ecf0f1;
+                }
+
+                .notification-message {
+                    color: #bdc3c7;
+                }
+
+                .notification-time {
+                    color: #95a5a6;
+                }
+            }
+        </style>
+
+        <script>
+            let notificationDropdownOpen = false;
+            let notificationPollInterval;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (document.querySelector('#notificationBell')) {
+                    loadNotifications();
+                    notificationPollInterval = setInterval(loadNotifications, 60000);
+                }
+            });
+
+            function toggleNotificationDropdown() {
+                const dropdown = document.getElementById('notificationDropdown');
+                notificationDropdownOpen = !notificationDropdownOpen;
+                if (notificationDropdownOpen) {
+                    dropdown.classList.add('show');
+                    loadNotifications();
+                } else {
+                    dropdown.classList.remove('show');
+                }
+            }
+
+            function loadNotifications() {
+                fetch('${pageContext.request.contextPath}/notifications?action=getAll')
+                    .then(response => response.json())
+                    .then(notifications => {
+                        updateNotificationUI(notifications);
+                    })
+                    .catch(error => console.error('Error loading notifications:', error));
+            }
+
+            function updateNotificationUI(notifications) {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                const badge = document.getElementById('notificationBadge');
+                const list = document.getElementById('notificationList');
+
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                if (notifications.length === 0) {
+                    list.innerHTML = '<div class="no-notifications">Không có thông báo</div>';
+                    return;
+                }
+
+                list.innerHTML = notifications.map(notif => {
+                    const date = new Date(notif.createdAt);
+                    const timeStr = formatNotificationTime(date);
+                    const unreadClass = !notif.isRead ? 'unread' : '';
+                    const unreadIndicator = !notif.isRead ? '<div class="notification-unread-indicator"></div>' : '';
+                    const escapedTitle = escapeHtml(notif.title);
+                    const escapedMessage = escapeHtml(notif.message);
+
+                    return `
+                        <div class="notification-item ${unreadClass}" onclick="clickNotification(${notif.notificationId}, '${notif.referenceType}', ${notif.referenceId})">
+                            <div class="notification-content">
+                                <p class="notification-title">${escapedTitle}</p>
+                                <p class="notification-message">${escapedMessage}</p>
+                                <div class="notification-time">${timeStr}</div>
+                            </div>
+                            ${unreadIndicator}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function formatNotificationTime(date) {
+                const now = new Date();
+                const diff = now - date;
+                const seconds = Math.floor(diff / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (seconds < 60) return 'Vừa xong';
+                if (minutes < 60) return minutes + ' phút trước';
+                if (hours < 24) return hours + ' giờ trước';
+                if (days < 7) return days + ' ngày trước';
+
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            function clickNotification(notificationId, referenceType, referenceId) {
+                markNotificationAsRead(notificationId);
+
+                let redirectUrl = '${pageContext.request.contextPath}/notifications';
+                if (referenceType && referenceId) {
+                    switch(referenceType) {
+                        case 'BOOKING':
+                            redirectUrl = '${pageContext.request.contextPath}/bookings/detail?id=' + referenceId;
+                            break;
+                        case 'CONTRACT':
+                            redirectUrl = '${pageContext.request.contextPath}/contracts/detail?id=' + referenceId;
+                            break;
+                        case 'PAYMENT':
+                            redirectUrl = '${pageContext.request.contextPath}/payments/record?bookingId=' + referenceId;
+                            break;
+                        case 'HANDOVER':
+                            redirectUrl = '${pageContext.request.contextPath}/handovers';
+                            break;
+                        case 'RETURN':
+                            redirectUrl = '${pageContext.request.contextPath}/returns';
+                            break;
+                    }
+                }
+
+                window.location.href = redirectUrl;
+            }
+
+            function markNotificationAsRead(notificationId) {
+                fetch('${pageContext.request.contextPath}/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=markAsRead&notificationId=' + notificationId
+                }).then(() => {
+                    loadNotifications();
+                }).catch(error => console.error('Error marking notification as read:', error));
+            }
+
+            function markAllNotificationsAsRead() {
+                fetch('${pageContext.request.contextPath}/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=markAllAsRead'
+                }).then(() => {
+                    loadNotifications();
+                }).catch(error => console.error('Error marking all notifications as read:', error));
+            }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            document.addEventListener('click', function(event) {
+                const bell = document.getElementById('notificationBell');
+                const dropdown = document.getElementById('notificationDropdown');
+                if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+                    notificationDropdownOpen = false;
+                    dropdown.classList.remove('show');
+                }
+            });
+        </script>
