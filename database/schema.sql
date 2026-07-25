@@ -1,7 +1,9 @@
 -- ============================================================
--- Car Rental Management System — Database Schema
+-- Vehicle Rental Management System — Database Schema
 -- Database: CarRentalDB
 -- SQL Server (T-SQL)
+-- NOTE: This file contains ONLY DDL (CREATE TABLE, INDEX, CONSTRAINT).
+--       Run sample-data.sql after this to insert data.
 -- ============================================================
 
 USE CarRentalDB;
@@ -53,7 +55,7 @@ GO
 
 -- ============================================================
 -- 3. VEHICLE_BRANDS
--- Lookup table for car manufacturers
+-- Lookup table for vehicle manufacturers
 -- ============================================================
 CREATE TABLE vehicle_brands (
     brand_id     INT IDENTITY(1,1) PRIMARY KEY,
@@ -66,7 +68,7 @@ GO
 
 -- ============================================================
 -- 4. VEHICLE_MODELS
--- Lookup table for car models, each belongs to one brand
+-- Lookup table for vehicle models, each belongs to one brand
 -- ============================================================
 CREATE TABLE vehicle_models (
     model_id     INT IDENTITY(1,1) PRIMARY KEY,
@@ -83,7 +85,7 @@ CREATE INDEX IX_vehicle_models_brand ON vehicle_models(brand_id);
 GO
 
 -- ============================================================
--- 5. CARS
+-- 5. VEHICLES
 -- Vehicle inventory for the rental shop
 -- ============================================================
 CREATE TABLE vehicles (
@@ -109,8 +111,8 @@ CREATE TABLE vehicles (
 GO
 
 -- ============================================================
--- 6. CAR_IMAGES
--- Multiple images per car
+-- 6. VEHICLE_IMAGES
+-- Multiple images per vehicle
 -- ============================================================
 CREATE TABLE vehicle_images (
     image_id    INT IDENTITY(1,1) PRIMARY KEY,
@@ -126,7 +128,7 @@ CREATE TABLE vehicle_images (
 GO
 
 -- ============================================================
--- 4b. MAINTENANCE_SCHEDULES
+-- 7. MAINTENANCE_SCHEDULES
 -- Tracks vehicle maintenance schedules
 -- ============================================================
 CREATE TABLE maintenance_schedules (
@@ -149,7 +151,7 @@ CREATE TABLE maintenance_schedules (
 GO
 
 -- ============================================================
--- 5. BOOKINGS
+-- 8. BOOKINGS
 -- Rental reservations
 -- ============================================================
 CREATE TABLE bookings (
@@ -193,7 +195,7 @@ CREATE TABLE bookings (
 GO
 
 -- ============================================================
--- 6. RENTAL_CONTRACTS
+-- 9. RENTAL_CONTRACTS
 -- Formal rental contracts linked to confirmed bookings
 -- ============================================================
 CREATE TABLE rental_contracts (
@@ -236,7 +238,7 @@ CREATE TABLE rental_contracts (
 GO
 
 -- ============================================================
--- 7. PAYMENTS
+-- 10. PAYMENTS
 -- Payment records for bookings/contracts
 -- ============================================================
 CREATE TABLE payments (
@@ -244,6 +246,7 @@ CREATE TABLE payments (
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
     amount          DECIMAL(18,2)   NOT NULL,
+    amount_paid     DECIMAL(18,2)   NULL,
     payment_type    NVARCHAR(30)    NOT NULL,     -- DEPOSIT, RENTAL, ADDITIONAL_FEE, REFUND
     payment_method  NVARCHAR(30)    NULL,         -- CASH, BANK_TRANSFER, CARD
     status          NVARCHAR(20)    NOT NULL DEFAULT 'PENDING',  -- PENDING, COMPLETED, FAILED, REFUNDED
@@ -261,7 +264,7 @@ CREATE TABLE payments (
 GO
 
 -- ============================================================
--- 8. VEHICLE_HANDOVERS
+-- 11. VEHICLE_HANDOVERS
 -- Records when vehicle is handed over to customer
 -- ============================================================
 CREATE TABLE vehicle_handovers (
@@ -291,7 +294,7 @@ CREATE TABLE vehicle_handovers (
 GO
 
 -- ============================================================
--- 9. VEHICLE_RETURNS
+-- 12. VEHICLE_RETURNS
 -- Records when vehicle is returned by customer
 -- ============================================================
 CREATE TABLE vehicle_returns (
@@ -315,7 +318,7 @@ CREATE TABLE vehicle_returns (
     lost_item_fee   DECIMAL(18,2)   NOT NULL DEFAULT 0,
     total_additional_fee DECIMAL(18,2) NOT NULL DEFAULT 0,
     notes           NVARCHAR(MAX)   NULL,
-    received_by     INT             NOT NULL,   -- staff who received the car
+    received_by     INT             NOT NULL,   -- staff who received the vehicle
     returned_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
@@ -329,7 +332,7 @@ CREATE TABLE vehicle_returns (
 GO
 
 -- ============================================================
--- 10. REVIEWS
+-- 13. REVIEWS
 -- Customer reviews for completed rentals
 -- ============================================================
 CREATE TABLE reviews (
@@ -351,7 +354,7 @@ CREATE TABLE reviews (
 GO
 
 -- ============================================================
--- 11. POLICY_SETTINGS
+-- 14. POLICY_SETTINGS
 -- Configurable business policies (rates, limits, rules)
 -- ============================================================
 CREATE TABLE policy_settings (
@@ -359,7 +362,7 @@ CREATE TABLE policy_settings (
     policy_key      NVARCHAR(100)   NOT NULL UNIQUE,
     policy_value    NVARCHAR(500)   NOT NULL,
     description     NVARCHAR(500)   NULL,
-    category        NVARCHAR(50)    NULL,          -- PRICING, BOOKING, PENALTY, TAX, GENERAL
+    category        NVARCHAR(50)    NULL,          -- PRICING, BOOKING, PENALTY, TAX, GENERAL, PAYMENT
     updated_by      INT             NULL,
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
@@ -369,14 +372,14 @@ CREATE TABLE policy_settings (
 GO
 
 -- ============================================================
--- 12. AUDIT_LOGS
+-- 15. AUDIT_LOGS
 -- Tracks important actions in the system
 -- ============================================================
 CREATE TABLE audit_logs (
     log_id          INT IDENTITY(1,1) PRIMARY KEY,
     user_id         INT             NULL,
     action          NVARCHAR(100)   NOT NULL,
-    entity_type     NVARCHAR(50)    NULL,     -- e.g., BOOKING, CAR, USER
+    entity_type     NVARCHAR(50)    NULL,     -- e.g., BOOKING, VEHICLE, USER
     entity_id       INT             NULL,
     old_value       NVARCHAR(MAX)   NULL,
     new_value       NVARCHAR(MAX)   NULL,
@@ -389,7 +392,7 @@ CREATE TABLE audit_logs (
 GO
 
 -- ============================================================
--- 15. NOTIFICATIONS
+-- 16. NOTIFICATIONS
 -- System notifications for users (bookings, payments, etc.)
 -- ============================================================
 CREATE TABLE notifications (
@@ -405,6 +408,67 @@ CREATE TABLE notifications (
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT FK_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+GO
+
+-- ============================================================
+-- 17. VAT_INVOICES
+-- VAT invoices linked to rental contracts
+-- ============================================================
+CREATE TABLE vat_invoices (
+    invoice_id INT IDENTITY(1,1) PRIMARY KEY,
+    contract_id INT NOT NULL UNIQUE,
+    invoice_code NVARCHAR(50) NOT NULL UNIQUE,
+    invoice_date DATETIME2 NOT NULL DEFAULT GETDATE(),
+    invoice_status NVARCHAR(20) NOT NULL DEFAULT 'ISSUED',
+    amount_before_tax DECIMAL(18,2) NOT NULL,
+    tax_rate DECIMAL(5,2) NOT NULL,
+    tax_amount DECIMAL(18,2) NOT NULL,
+    total_amount DECIMAL(18,2) NOT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_vat_invoices_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id)
+);
+GO
+
+-- ============================================================
+-- 18. ROLES
+-- User roles for permission management
+-- ============================================================
+CREATE TABLE roles (
+    role_id INT IDENTITY(1,1) PRIMARY KEY,
+    role NVARCHAR(20) NOT NULL,
+    description NVARCHAR(255) NULL,
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ============================================================
+-- 19. PERMISSION
+-- Detailed permissions for each functional area
+-- ============================================================
+CREATE TABLE permission (
+    permission_id INT IDENTITY(1,1) PRIMARY KEY,
+    permission_key VARCHAR(100) NOT NULL UNIQUE,
+    permission_name NVARCHAR(100) NOT NULL,
+    functional_area NVARCHAR(100) NOT NULL
+);
+GO
+
+-- ============================================================
+-- 20. ROLE_PERMISSION
+-- Maps roles to permissions (many-to-many)
+-- ============================================================
+CREATE TABLE role_permission (
+    role_id INT NOT NULL,
+    permission_id INT NOT NULL,
+    assigned_at DATETIME DEFAULT GETDATE(),
+    PRIMARY KEY (role_id, permission_id),
+    CONSTRAINT FK_RolePermission_Role FOREIGN KEY (role_id) 
+        REFERENCES roles(role_id) ON DELETE CASCADE,
+    CONSTRAINT FK_RolePermission_Permission FOREIGN KEY (permission_id) 
+        REFERENCES permission(permission_id) ON DELETE CASCADE
 );
 GO
 
@@ -425,124 +489,4 @@ CREATE INDEX IX_notifications_created ON notifications(created_at);
 GO
 
 PRINT 'Schema created successfully!';
-GO
--- 1. Update payments table schema to support overpayment/underpayment tracking
-IF NOT EXISTS (
-    SELECT 1 
-    FROM sys.columns 
-    WHERE object_id = OBJECT_ID('payments') AND name = 'amount_paid'
-)
-BEGIN
-    ALTER TABLE payments ADD amount_paid DECIMAL(18,2) NULL;
-END
-GO
-
--- Update existing completed payments to default amount_paid if null
-UPDATE payments 
-SET amount_paid = amount 
-WHERE amount_paid IS NULL AND status = 'COMPLETED';
-GO
-
--- 2. Configure bank account and webhook policies
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_ACCOUNT_NAME')
-    UPDATE policy_settings SET policy_value = N'NGUYEN LAM TUNG' WHERE policy_key = 'BANK_ACCOUNT_NAME';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'BANK_ACCOUNT_NAME', N'NGUYEN LAM TUNG', N'Tên tài khoản ngân hàng', N'PAYMENT', 1);
-
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_ACCOUNT_NUMBER')
-    UPDATE policy_settings SET policy_value = N'00000104077' WHERE policy_key = 'BANK_ACCOUNT_NUMBER';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'BANK_ACCOUNT_NUMBER', N'00000104077', N'Số tài khoản ngân hàng', N'PAYMENT', 1);
-
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_NAME')
-    UPDATE policy_settings SET policy_value = N'TPBank' WHERE policy_key = 'BANK_NAME';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'BANK_NAME', N'TPBank', N'Tên ngân hàng', N'PAYMENT', 1);
-
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_BRANCH')
-    UPDATE policy_settings SET policy_value = N'Chi nhánh Hà Nội' WHERE policy_key = 'BANK_BRANCH';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'BANK_BRANCH', N'Chi nhánh Hà Nội', N'Chi nhánh ngân hàng', N'PAYMENT', 1);
-
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'WEBHOOK_PROVIDER')
-    UPDATE policy_settings SET policy_value = N'SEPAY' WHERE policy_key = 'WEBHOOK_PROVIDER';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'WEBHOOK_PROVIDER', N'SEPAY', N'Nhà cung cấp dịch vụ Webhook thanh toán (SEPAY, CASSO, PAYOS)', N'PAYMENT', 1);
-
-IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'WEBHOOK_SECRET')
-    UPDATE policy_settings SET policy_value = N'CRS' WHERE policy_key = 'WEBHOOK_SECRET';
-ELSE
-    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
-    VALUES (N'WEBHOOK_SECRET', N'CRS', N'Khóa bảo mật để xác thực request webhook từ provider', N'PAYMENT', 1);
-GO
--- ============================================================
--- VAT Invoice Setup & Test Data
--- Database: CarRentalDB
--- SQL Server (T-SQL)
--- ============================================================
-
-USE CarRentalDB;
-GO
-
--- 1. Create vat_invoices table if not exists
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[vat_invoices]') AND type in (N'U'))
-BEGIN
-    CREATE TABLE vat_invoices (
-        invoice_id INT IDENTITY(1,1) PRIMARY KEY,
-        contract_id INT NOT NULL UNIQUE,
-        invoice_code NVARCHAR(50) NOT NULL UNIQUE,
-        invoice_date DATETIME2 NOT NULL DEFAULT GETDATE(),
-        invoice_status NVARCHAR(20) NOT NULL DEFAULT 'ISSUED',
-        amount_before_tax DECIMAL(18,2) NOT NULL,
-        tax_rate DECIMAL(5,2) NOT NULL,
-        tax_amount DECIMAL(18,2) NOT NULL,
-        total_amount DECIMAL(18,2) NOT NULL,
-        created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
-        updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
-        CONSTRAINT FK_vat_invoices_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id)
-    );
-    PRINT 'Table vat_invoices created successfully!';
-END
-ELSE
-BEGIN
-    PRINT 'Table vat_invoices already exists.';
-END
-GO
-
--- 2. Insert Completed Booking for testing (if booking_id = 9 does not exist)
-IF NOT EXISTS (SELECT 1 FROM bookings WHERE booking_id = 9)
-BEGIN
-    SET IDENTITY_INSERT bookings ON;
-    INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
-    VALUES (9, 3, 1, '2026-07-10 08:00:00', '2026-07-15 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 4000000.00, 1200000.00, N'COMPLETED', 2, '2026-07-09 10:00:00');
-    SET IDENTITY_INSERT bookings OFF;
-    PRINT 'Test Booking inserted successfully!';
-END
-GO
-
--- 3. Insert Completed Contract for testing (if contract_id = 9 does not exist)
-IF NOT EXISTS (SELECT 1 FROM rental_contracts WHERE contract_id = 9)
-BEGIN
-    SET IDENTITY_INSERT rental_contracts ON;
-    INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, car_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
-    VALUES (9, 9, N'CTR-2026-TEST9', 3, 1, '2026-07-10 08:00:00', '2026-07-15 08:00:00', 800000.00, 4000000.00, 1200000.00, N'COMPLETED', 2, '2026-07-10 07:30:00');
-    SET IDENTITY_INSERT rental_contracts OFF;
-    PRINT 'Test Contract inserted successfully!';
-END
-GO
-
--- 4. Insert Completed Payments (if not already present for booking_id = 9)
-IF NOT EXISTS (SELECT 1 FROM payments WHERE booking_id = 9)
-BEGIN
-    INSERT INTO payments (booking_id, contract_id, amount, payment_type, payment_method, status, transaction_ref, paid_at, recorded_by)
-    VALUES 
-        (9, 9, 1200000.00, N'DEPOSIT', N'BANK_TRANSFER', N'COMPLETED', N'TXN-TEST-DEP9', '2026-07-09 11:00:00', 2),
-        (9, 9, 2800000.00, N'RENTAL', N'BANK_TRANSFER', N'COMPLETED', N'TXN-TEST-RENT9', '2026-07-15 17:00:00', 2);
-    PRINT 'Test Payments inserted successfully!';
-END
 GO

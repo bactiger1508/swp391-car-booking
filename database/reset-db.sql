@@ -1,5 +1,5 @@
 -- ============================================================
--- Car Rental Management System — Reset Database
+-- Vehicle Rental Management System — Reset Database
 -- WARNING: This will DROP ALL TABLES and recreate them.
 -- ============================================================
 
