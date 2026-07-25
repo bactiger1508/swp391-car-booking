@@ -5,20 +5,21 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+
 import com.swp391.carrental.handover.service.HandoverService;
 
-/*
+/**
  * Name: VehicleHandoverListServlet
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 21/06/2026
  * Version: 1.0
- * Description: Handles HTTP requests and responses for VehicleHandoverListServlet.
+ * Description: Controller for displaying the list of all vehicle handover records.
  */
-
-
 @WebServlet(name = "VehicleHandoverListServlet", urlPatterns = {"/handovers"})
 public class VehicleHandoverListServlet extends HttpServlet {
+
     private final HandoverService handoverService = new HandoverService();
 
     @Override
@@ -33,4 +34,3 @@ public class VehicleHandoverListServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/handovers");
     }
 }
-

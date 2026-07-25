@@ -3,16 +3,12 @@ package com.swp391.carrental.handover.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/*
+/**
  * Name: VehicleReturn
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Handles business logic and operations for VehicleReturn.
- */
-/**
- * Records when a vehicle is returned by a customer. Maps to the
- * 'vehicle_returns' table.
+ * Description: Entity model representing vehicle return inspections, condition checklists, surcharge calculations, and staff assignments.
  */
 public class VehicleReturn {
 

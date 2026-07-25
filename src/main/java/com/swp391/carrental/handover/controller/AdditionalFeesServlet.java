@@ -1,32 +1,37 @@
 package com.swp391.carrental.handover.controller;
 
-import com.swp391.carrental.booking.dao.BookingDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
 import com.swp391.carrental.booking.model.Booking;
+import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.handover.dao.HandoverDAO;
 import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.handover.service.ReturnService;
+import com.swp391.carrental.payment.model.Payment;
+import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.policy.service.FeeCalculator;
+import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
-import java.math.BigDecimal;
-import java.sql.SQLException;
 
-/*
+import java.math.BigDecimal;
+import java.util.List;
+import java.io.IOException;
+
+/**
  * Name: AdditionalFeesServlet
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Handles HTTP requests and responses for AdditionalFeesServlet.
+ * Description: Controller for calculating, previewing, and applying additional fees (late fees, extra km fees, damage, cleaning).
  */
 @WebServlet(name = "AdditionalFeesServlet", urlPatterns = {"/additional-fees"})
 public class AdditionalFeesServlet extends HttpServlet {
@@ -43,7 +48,10 @@ public class AdditionalFeesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
+            String carIdStr = request.getParameter("vehicleId");
+            if (carIdStr == null || carIdStr.trim().isEmpty()) {
+                carIdStr = request.getParameter("carId");
+            }
 
             if (bookingIdStr != null && carIdStr != null) {
 
@@ -54,19 +62,22 @@ public class AdditionalFeesServlet extends HttpServlet {
                 Vehicle car = vehicleDAO.findById(carId);
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
+                request.setAttribute("vehicle", car);
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", carId);
 
                 // Calculate total paid so far
-                com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
-                java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                PaymentService paymentService = new PaymentService();
+                List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
                 BigDecimal totalPaid = BigDecimal.ZERO;
-                for (com.swp391.carrental.payment.model.Payment p : payments) {
+                for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        BigDecimal amt = (p.getAmountPaid() != null && p.getAmountPaid().compareTo(BigDecimal.ZERO) > 0) ? p.getAmountPaid() : p.getAmount();
                         if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
+                            totalPaid = totalPaid.subtract(amt);
                         } else {
-                            totalPaid = totalPaid.add(p.getAmount());
+                            totalPaid = totalPaid.add(amt);
                         }
                     }
                 }
@@ -78,12 +89,21 @@ public class AdditionalFeesServlet extends HttpServlet {
                 }
 
                 // Load rates dynamically from policy settings
-                com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+                PolicyService policyService = new PolicyService();
                 request.setAttribute("extraKmFeeRate", policyService.getPolicyValue("EXTRA_KM_FEE", "4000"));
                 request.setAttribute("lateFeePerHour", policyService.getPolicyValue("LATE_FEE_PER_HOUR", "100000"));
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+                if (handover == null && car != null) {
+                    handover = new VehicleHandover();
+                    handover.setBookingId(bookingId);
+                    handover.setVehicleId(carId);
+                    handover.setMileageAtHandover(car.getMileage());
+                    handover.setFuelLevel("FULL");
+                } else if (handover != null && handover.getMileageAtHandover() <= 0 && car != null) {
+                    handover.setMileageAtHandover(car.getMileage());
+                }
 
                 if (returns != null) {
                     request.setAttribute("lateHours", returns.getLateHours());
@@ -95,50 +115,18 @@ public class AdditionalFeesServlet extends HttpServlet {
                     request.setAttribute("totalAdditionalFee", returns.getTotalAdditionalFee());
                     request.setAttribute("returns", returns);
 
-                    // Automatically calculate extra km fee
-                    // Only auto-fill if extraKmFee has not been entered manually (== 0 or null)
-                    boolean extraKmNotSetYet = returns.getExtraKmFee() == null
-                            || returns.getExtraKmFee().compareTo(BigDecimal.ZERO) == 0;
-
-                    if (extraKmNotSetYet && handover != null && booking != null) {
+                    if (handover != null) {
                         int mileageAtHandover = handover.getMileageAtHandover();
-                        int mileageAtReturn   = returns.getMileageAtReturn();
-                        int actualKm          = Math.max(0, mileageAtReturn - mileageAtHandover);
-
-                        int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
-
-                        // Actual extra km (total)
-                        int actualExtraKm = Math.max(0, actualKm - kmLimit);
-
-                        // Extra km paid in advance during booking (estimatedKm - kmLimit)
-                        int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
-                        int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
-
-                        // Only charge the difference
-                        int additionalExtraKm = Math.max(0, actualExtraKm - alreadyPaidExtraKm);
-
-                        request.setAttribute("autoExtraKm", additionalExtraKm);
-                        request.setAttribute("actualKm", actualKm);
-                        request.setAttribute("kmLimit", kmLimit);
-                        request.setAttribute("estimatedKm", estimatedKm);
-                        request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
-                        request.setAttribute("actualExtraKm", actualExtraKm);
-                    } else {
-                        // Already entered manually - pass mileage information for JSP reference
-                        if (handover != null && booking != null) {
-                            int mileageAtHandover = handover.getMileageAtHandover();
-                            int mileageAtReturn   = returns.getMileageAtReturn();
-                            int actualKm          = Math.max(0, mileageAtReturn - mileageAtHandover);
-                            int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
-                            int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
-                            int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
-                            int actualExtraKm = Math.max(0, actualKm - kmLimit);
-                            request.setAttribute("actualKm", actualKm);
-                            request.setAttribute("kmLimit", kmLimit);
-                            request.setAttribute("estimatedKm", estimatedKm);
-                            request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
-                            request.setAttribute("actualExtraKm", actualExtraKm);
+                        int mileageAtReturn = returns.getMileageAtReturn();
+                        int actualKm = 0;
+                        if (mileageAtReturn > 0) {
+                            if (mileageAtReturn >= mileageAtHandover && mileageAtHandover > 0) {
+                                actualKm = mileageAtReturn - mileageAtHandover;
+                            } else {
+                                actualKm = mileageAtReturn;
+                            }
                         }
+                        request.setAttribute("actualKm", actualKm);
                     }
                 }
             }
@@ -150,13 +138,15 @@ public class AdditionalFeesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("bookingId = " + request.getParameter("bookingId"));
-        System.out.println("carId = " + request.getParameter("carId"));
         String action = request.getParameter("action");
         if ("save".equals(action)) {
             try {
                 int bookingId = Integer.parseInt(request.getParameter("bookingId"));
-                int carId = Integer.parseInt(request.getParameter("carId"));
+                String vIdStr = request.getParameter("vehicleId");
+                if (vIdStr == null || vIdStr.trim().isEmpty()) {
+                    vIdStr = request.getParameter("carId");
+                }
+                int vehicleId = Integer.parseInt(vIdStr);
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
@@ -188,8 +178,10 @@ public class AdditionalFeesServlet extends HttpServlet {
                 returnService.updateReturnVehicle(returns);
                 request.getSession().setAttribute("notification", "Đã lưu và áp dụng phụ thu vào đơn hàng!");
 
-                response.sendRedirect(request.getContextPath() + "/returns/detail?bookingId=" + bookingId + "&carId=" + carId);
-            } catch (SQLException e) {
+                response.sendRedirect(request.getContextPath() + "/returns/detail?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
                 throw new ServletException(e);
             }
         }

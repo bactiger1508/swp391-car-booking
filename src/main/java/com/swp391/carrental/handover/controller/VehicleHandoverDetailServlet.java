@@ -1,16 +1,17 @@
 package com.swp391.carrental.handover.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
@@ -24,12 +25,18 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
+/**
+ * Name: VehicleHandoverDetailServlet
+ * @Author: TamTTMHE190340
+ * Date: 21/06/2026
+ * Version: 1.0
+ * Description: Controller for viewing, editing, and managing vehicle handover details.
+ */
 @WebServlet(name = "VehicleHandoverDetailServlet", urlPatterns = {"/handovers/detail"})
 @MultipartConfig(
         maxFileSize = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 15
 )
-
 public class VehicleHandoverDetailServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
@@ -65,6 +72,18 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
                     User customer = userDAO.findById(booking.getCustomerId());
                     request.setAttribute("customer", customer);
                 }
+
+                User staff = null;
+                if (handover != null && handover.getHandedBy() > 0) {
+                    staff = userDAO.findById(handover.getHandedBy());
+                }
+                if (staff == null) {
+                    User currentUser = (User) request.getSession().getAttribute("currentUser");
+                    if (currentUser != null) {
+                        staff = currentUser;
+                    }
+                }
+                request.setAttribute("staff", staff);
             }
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi tải thông tin: " + e.getMessage());
@@ -158,6 +177,10 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
                 }
 
                 // ===== UPDATE OBJECT =====
+                User currentUser = (User) request.getSession().getAttribute("currentUser");
+                if (currentUser != null) {
+                    handover.setHandedBy(currentUser.getUserId());
+                }
                 handover.setMileageAtHandover(mileage);
                 handover.setFuelLevel(fuelLevel);
 

@@ -94,11 +94,11 @@
                         </div>
                         <div style="display:flex; justify-content:space-between; border-bottom: 1px solid var(--outline-variant); padding-bottom: 6px; margin-top: 4px;">
                             <span style="color:var(--text-secondary);">Khách hàng:</span>
-                            <span style="font-weight:600; color: var(--text-primary);">${not empty sessionScope.currentUser ? sessionScope.currentUser.fullName : ''}</span>
+                            <span style="font-weight:600; color: var(--text-primary);">${not empty customer ? customer.fullName : ''}</span>
                         </div>
                         <div style="display:flex; justify-content:space-between; padding-bottom: 2px; margin-top: 4px;">
                             <span style="color:var(--text-secondary);">Nhân viên lập:</span>
-                            <span style="font-weight:600;">${not empty user ? user.fullName : ''}</span>
+                            <span style="font-weight:600; color: var(--text-primary);">${not empty staff ? staff.fullName : (not empty user ? user.fullName : 'N/A')}</span>
                         </div>
                     </div>
                 </div>

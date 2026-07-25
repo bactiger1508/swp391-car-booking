@@ -2,16 +2,12 @@ package com.swp391.carrental.handover.model;
 
 import java.time.LocalDateTime;
 
-/*
+/**
  * Name: VehicleHandover
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Handles business logic and operations for VehicleHandover.
- */
-/**
- * Records when a vehicle is handed over to a customer. Maps to the
- * 'vehicle_handovers' table.
+ * Description: Entity model representing vehicle handover records, initial inspection checklists, ODO at handover, and staff signatures.
  */
 public class VehicleHandover {
 
