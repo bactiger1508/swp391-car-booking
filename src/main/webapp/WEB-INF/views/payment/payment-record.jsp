@@ -181,9 +181,8 @@
                                 <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">payments</span>
                                 <input type="text" id="amountDisplay" class="bk-form-input" required
                                        placeholder="0 đ"
-                                       oninput="syncAmount(this)"
-                                       ${sessionScope.currentUser.role == 'CUSTOMER' ? 'readonly' : ''}
-                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary); ${sessionScope.currentUser.role == 'CUSTOMER' ? 'background-color: var(--surface-container-low);' : ''}">
+                                       readonly
+                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary); background-color: var(--surface-container-low); cursor: not-allowed;">
                                 <input type="hidden" id="amount" name="amount" value="${defaultPaymentType == 'DEPOSIT' ? remainingDeposit : (defaultPaymentType == 'REFUND' ? excessAmount : remainingAmount)}">
                             </div>
                         </div>

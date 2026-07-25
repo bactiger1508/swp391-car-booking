@@ -29,8 +29,11 @@ public class TaxInvoiceSettingsServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // BR-10: Tax/invoice fields are stored internally only
-        request.setAttribute("taxPolicies", policyService.getPoliciesByCategory("TAX"));
+        request.setAttribute("companyName", policyService.getPolicyValue("COMPANY_NAME", ""));
+        request.setAttribute("companyTaxId", policyService.getPolicyValue("COMPANY_TAX_ID", ""));
+        request.setAttribute("taxRate", policyService.getPolicyValue("TAX_RATE", "10"));
+        request.setAttribute("companyAddress", policyService.getPolicyValue("COMPANY_ADDRESS", ""));
+        
         request.getRequestDispatcher("/WEB-INF/views/payment/tax-invoice-settings.jsp").forward(request, response);
     }
 

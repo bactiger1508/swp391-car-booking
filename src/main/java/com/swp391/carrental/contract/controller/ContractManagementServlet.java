@@ -199,15 +199,21 @@ public class ContractManagementServlet extends HttpServlet {
                 com.swp391.carrental.policy.model.PolicySetting cNamePolicy = policyService.getPolicyByKey("COMPANY_NAME");
                 com.swp391.carrental.policy.model.PolicySetting cAddressPolicy = policyService.getPolicyByKey("COMPANY_ADDRESS");
                 com.swp391.carrental.policy.model.PolicySetting cTaxIdPolicy = policyService.getPolicyByKey("COMPANY_TAX_ID");
+                com.swp391.carrental.policy.model.PolicySetting cHotlinePolicy = policyService.getPolicyByKey("COMPANY_HOTLINE");
+                com.swp391.carrental.policy.model.PolicySetting depositPolicy = policyService.getPolicyByKey("DEPOSIT_PERCENTAGE");
                 
                 request.setAttribute("companyName", (cNamePolicy != null && cNamePolicy.getPolicyValue() != null && !cNamePolicy.getPolicyValue().trim().isEmpty()) ? cNamePolicy.getPolicyValue() : "CÔNG TY TNHH CARPRO VIỆT NAM");
                 request.setAttribute("companyAddress", (cAddressPolicy != null && cAddressPolicy.getPolicyValue() != null && !cAddressPolicy.getPolicyValue().trim().isEmpty()) ? cAddressPolicy.getPolicyValue() : "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
                 request.setAttribute("companyTaxId", (cTaxIdPolicy != null && cTaxIdPolicy.getPolicyValue() != null && !cTaxIdPolicy.getPolicyValue().trim().isEmpty()) ? cTaxIdPolicy.getPolicyValue() : "0123456789");
+                request.setAttribute("companyHotline", (cHotlinePolicy != null && cHotlinePolicy.getPolicyValue() != null && !cHotlinePolicy.getPolicyValue().trim().isEmpty()) ? cHotlinePolicy.getPolicyValue() : "1900 1234");
+                request.setAttribute("depositPercentage", (depositPolicy != null && depositPolicy.getPolicyValue() != null && !depositPolicy.getPolicyValue().trim().isEmpty()) ? depositPolicy.getPolicyValue() : "30");
             } catch (Exception e) {
                 request.setAttribute("defaultTerms", "- Phí trả xe trễ giờ thỏa thuận: 100.000 đ/giờ.\n- Phí phụ trội quãng đường: 5.000 đ/km (vượt quá 300km/ngày).\n- Phí rửa xe, dọn vệ sinh nếu trả xe bẩn: 200.000 đ.\n- Khách hàng cam kết chịu các chi phí cầu đường, phạt nguội phát sinh trong thời gian thuê.");
                 request.setAttribute("companyName", "CÔNG TY TNHH CARPRO VIỆT NAM");
                 request.setAttribute("companyAddress", "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
                 request.setAttribute("companyTaxId", "0123456789");
+                request.setAttribute("companyHotline", "1900 1234");
+                request.setAttribute("depositPercentage", "30");
             }
 
             request.getRequestDispatcher("/WEB-INF/views/contract/contract-detail.jsp").forward(request, response);

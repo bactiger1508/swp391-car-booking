@@ -181,6 +181,8 @@
                             <th style="padding: 8px 12px;">Mã</th>
                             <th style="padding: 8px 12px;">Loại</th>
                             <th style="padding: 8px 12px;">Số tiền</th>
+                            <th style="padding: 8px 12px;">Đã thanh toán</th>
+                            <th style="padding: 8px 12px;">Chênh lệch</th>
                             <th style="padding: 8px 12px;">Phương thức</th>
                             <th style="padding: 8px 12px;">Trạng thái</th>
                             <th style="padding: 8px 12px;">Ngày thanh toán</th>
@@ -202,6 +204,27 @@
                                 </td>
                                 <td style="padding: 8px 12px; font-weight:700; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">
                                     <c:if test="${p.paymentType == 'REFUND'}">-</c:if><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ
+                                </td>
+                                <td style="padding: 8px 12px; font-weight:600; color: var(--on-surface);">
+                                    <c:choose>
+                                        <c:when test="${p.amountPaid != null}"><fmt:formatNumber value="${p.amountPaid}" pattern="#,##0"/> đ</c:when>
+                                        <c:when test="${p.status == 'COMPLETED'}"><fmt:formatNumber value="${p.amount}" pattern="#,##0"/> đ</c:when>
+                                        <c:otherwise>—</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px; font-weight:700;">
+                                    <c:choose>
+                                        <c:when test="${p.status != 'COMPLETED' && p.amountPaid == null}">—</c:when>
+                                        <c:otherwise>
+                                            <c:set var="actualPaid" value="${p.amountPaid != null ? p.amountPaid : p.amount}"/>
+                                            <c:set var="diff" value="${actualPaid - p.amount}"/>
+                                            <c:choose>
+                                                <c:when test="${diff > 0}"><span style="color: #039C74;">+<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ</span></c:when>
+                                                <c:when test="${diff < 0}"><span style="color: #C9392D;"><fmt:formatNumber value="${diff}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;">CÒN NỢ</span></span></c:when>
+                                                <c:otherwise>—</c:otherwise>
+                                            </c:choose>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td style="padding: 8px 12px;">
                                     <c:choose>
