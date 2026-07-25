@@ -68,7 +68,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                     request.getSession().setAttribute("infoMessage",
                             "Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
                     response.sendRedirect(
-                            request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&carId=" + carId);
+                            request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
                     return;
                 }
 
@@ -138,7 +138,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 request.getSession().setAttribute("errorMessage",
                         "Không thể tạo thêm: Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
                 response.sendRedirect(
-                        request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&carId=" + carId);
+                        request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
                 return;
             }
 

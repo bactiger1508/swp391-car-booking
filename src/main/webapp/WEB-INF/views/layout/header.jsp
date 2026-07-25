@@ -115,20 +115,20 @@
                         </c:if>
                     </c:if>
 
-                    <%-- Section: Quản lý Đặt xe (Staff / Admin) --%>
+                    <%-- Section: Khách hàng & Đặt xe (Staff / Admin) --%>
                     <c:if test="${(hasProcessBooking || hasVerifyProfile || hasViewCalendar) && sessionScope.currentUser.role != 'CUSTOMER'}">
-                        <div class="bk-sidebar-section">Quản lý Đặt xe</div>
-                        <c:if test="${hasProcessBooking}">
-                            <a href="${pageContext.request.contextPath}/bookings/manage" class="bk-sidebar-link ${_cp == '/bookings/manage' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">assignment</span> Quản lý đặt xe
-                            </a>
-                            <a href="${pageContext.request.contextPath}/bookings/approval" class="bk-sidebar-link ${_cp == '/bookings/approval' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">fact_check</span> Duyệt đặt xe
-                            </a>
-                        </c:if>
+                        <div class="bk-sidebar-section">Khách hàng & Đặt xe</div>
                         <c:if test="${hasVerifyProfile}">
                             <a href="${pageContext.request.contextPath}/user/customer-profiles" class="bk-sidebar-link ${_cp == '/user/customer-profiles' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">id_card</span> Duyệt hồ sơ KH
+                            </a>
+                        </c:if>
+                        <c:if test="${hasProcessBooking}">
+                            <a href="${pageContext.request.contextPath}/bookings/approval" class="bk-sidebar-link ${_cp == '/bookings/approval' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">fact_check</span> Duyệt đặt xe
+                            </a>
+                            <a href="${pageContext.request.contextPath}/bookings/manage" class="bk-sidebar-link ${_cp == '/bookings/manage' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">assignment</span> Danh sách đặt xe
                             </a>
                         </c:if>
                         <c:if test="${hasViewCalendar}">
@@ -138,12 +138,32 @@
                         </c:if>
                     </c:if>
 
-                    <%-- Section: Nghiệp vụ xe (Staff / Admin) --%>
+                    <%-- Section: Vận hành Chuyến đi (Staff / Admin) --%>
+                    <c:if test="${(hasViewContract || hasHandover || hasReturn || hasAdditionalFee) && sessionScope.currentUser.role != 'CUSTOMER'}">
+                        <div class="bk-sidebar-section">Vận hành Chuyến đi</div>
+                        <c:if test="${hasViewContract}">
+                            <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">description</span> Hợp đồng
+                            </a>
+                        </c:if>
+                        <c:if test="${hasHandover}">
+                            <a href="${pageContext.request.contextPath}/handovers" class="bk-sidebar-link ${_cp == '/handovers' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">key</span> Giao xe (Handover)
+                            </a>
+                        </c:if>
+                        <c:if test="${hasReturn}">
+                            <a href="${pageContext.request.contextPath}/returns" class="bk-sidebar-link ${_cp == '/returns' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe (Return)
+                            </a>
+                        </c:if>
+                    </c:if>
+
+                    <%-- Section: Quản lý Đội xe (Staff / Admin) --%>
                     <c:if test="${(hasManageVehicle || hasCheckAvailability || hasMaintenance) && sessionScope.currentUser.role != 'CUSTOMER'}">
-                        <div class="bk-sidebar-section">Nghiệp vụ xe</div>
+                        <div class="bk-sidebar-section">Quản lý Đội xe</div>
                         <c:if test="${hasManageVehicle}">
                             <a href="${pageContext.request.contextPath}/vehicles/manage" class="bk-sidebar-link ${_cp == '/vehicles/manage' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">garage</span> Quản lý xe
+                                <span class="material-symbols-outlined">garage</span> Danh mục xe
                             </a>
                         </c:if>
                         <c:if test="${hasCheckAvailability}">
@@ -158,29 +178,14 @@
                         </c:if>
                     </c:if>
 
-                    <%-- Section: Vận hành & Hợp đồng (Staff / Admin) --%>
-                    <c:if test="${(hasViewContract || hasHandover || hasReturn || hasAdditionalFee) && sessionScope.currentUser.role != 'CUSTOMER'}">
-                        <div class="bk-sidebar-section">Vận hành & Hợp đồng</div>
-                        <c:if test="${hasViewContract}">
-                            <a href="${pageContext.request.contextPath}/contracts" class="bk-sidebar-link ${_cp == '/contracts' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">description</span> Hợp đồng
+                    <%-- Section: Tài chính & Báo cáo --%>
+                    <c:if test="${(hasRevenueReport || hasUtilizationReport || hasPaymentRecord) && sessionScope.currentUser.role != 'CUSTOMER'}">
+                        <div class="bk-sidebar-section">Tài chính & Báo cáo</div>
+                        <c:if test="${hasPaymentRecord}">
+                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
                             </a>
                         </c:if>
-                        <c:if test="${hasHandover}">
-                            <a href="${pageContext.request.contextPath}/handovers" class="bk-sidebar-link ${_cp == '/handovers' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">key</span> Giao xe
-                            </a>
-                        </c:if>
-                        <c:if test="${hasReturn}">
-                            <a href="${pageContext.request.contextPath}/returns" class="bk-sidebar-link ${_cp == '/returns' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
-                            </a>
-                        </c:if>
-                    </c:if>
-
-                    <%-- Section: Báo cáo & Cấu hình --%>
-                    <c:if test="${(hasRevenueReport || hasUtilizationReport || hasPaymentRecord || hasRentalPolicy) && sessionScope.currentUser.role != 'CUSTOMER'}">
-                        <div class="bk-sidebar-section">Báo cáo & Cấu hình</div>
                         <c:if test="${hasRevenueReport}">
                             <a href="${pageContext.request.contextPath}/reports/revenue" class="bk-sidebar-link ${_cp == '/reports/revenue' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">analytics</span> Báo cáo doanh thu
@@ -191,24 +196,14 @@
                                 <span class="material-symbols-outlined">query_stats</span> Hiệu suất sử dụng xe
                             </a>
                         </c:if>
-                        <c:if test="${hasPaymentRecord}">
-                            <a href="${pageContext.request.contextPath}/payments/history" class="bk-sidebar-link ${_cp == '/payments/history' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">payments</span> Nhật ký thanh toán
-                            </a>
-                        </c:if>
+                    </c:if>
+
+                    <%-- Section: Cấu hình & Hệ thống --%>
+                    <c:if test="${(hasUserList || hasTaxInvoice || hasPaymentSetting || hasRentalPolicy || isAdmin) && sessionScope.currentUser.role != 'CUSTOMER'}">
+                        <div class="bk-sidebar-section">Cấu hình & Hệ thống</div>
                         <c:if test="${hasRentalPolicy}">
                             <a href="${pageContext.request.contextPath}/policies" class="bk-sidebar-link ${_cp == '/policies' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">settings_suggest</span> Cấu hình chính sách
-                            </a>
-                        </c:if>
-                    </c:if>
-
-                    <%-- Section: Hệ thống (Admin only or system configurators) --%>
-                    <c:if test="${(hasUserList || hasTaxInvoice || hasPaymentSetting || isAdmin) && sessionScope.currentUser.role != 'CUSTOMER'}">
-                        <div class="bk-sidebar-section">Hệ thống</div>
-                        <c:if test="${hasUserList}">
-                            <a href="${pageContext.request.contextPath}/users" class="bk-sidebar-link ${_cp == '/users' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">manage_accounts</span> Quản lý thành viên
                             </a>
                         </c:if>
                         <c:if test="${hasTaxInvoice}">
@@ -219,6 +214,11 @@
                         <c:if test="${hasPaymentSetting}">
                             <a href="${pageContext.request.contextPath}/admin/payment-settings" class="bk-sidebar-link ${_cp == '/admin/payment-settings' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">payment</span> Cấu hình thanh toán
+                            </a>
+                        </c:if>
+                        <c:if test="${hasUserList}">
+                            <a href="${pageContext.request.contextPath}/users" class="bk-sidebar-link ${_cp == '/users' ? 'active' : ''}">
+                                <span class="material-symbols-outlined">manage_accounts</span> Quản lý thành viên
                             </a>
                         </c:if>
                         <c:if test="${isAdmin}">

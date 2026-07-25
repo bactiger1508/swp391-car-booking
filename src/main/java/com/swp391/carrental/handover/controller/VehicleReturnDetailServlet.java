@@ -60,9 +60,6 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty()) {
-                vehicleIdStr = request.getParameter("carId");
-            }
 
             if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
@@ -114,12 +111,8 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 request.setAttribute("returns", returns);
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("vehicleId", vehicleId);
-<<<<<<< HEAD
-=======
-                request.setAttribute("carId", vehicleId);
                 boolean needsMaintenance = returns != null && returns.getNotes() != null && returns.getNotes().contains("[CẦN BẢO DƯỠNG]");
                 request.setAttribute("needsMaintenance", needsMaintenance);
->>>>>>> origin/TamDev
                 request.setAttribute("distanceDriven", distanceDriven);
 
                 if (booking != null) {
@@ -158,18 +151,8 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             int bookingId = 0;
             int vehicleId = 0;
             try {
-<<<<<<< HEAD
                 bookingId = Integer.parseInt(request.getParameter("bookingId"));
                 vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
-=======
-                String bIdStr = request.getParameter("bookingId");
-                String vIdStr = request.getParameter("vehicleId");
-                if (vIdStr == null || vIdStr.trim().isEmpty()) {
-                    vIdStr = request.getParameter("carId");
-                }
-                bookingId = Integer.parseInt(bIdStr);
-                vehicleId = Integer.parseInt(vIdStr);
->>>>>>> origin/TamDev
 
                 // ===== VALIDATION =====
                 if (!validateOdo(request, response, bookingId, vehicleId)) {
@@ -191,11 +174,6 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     returns = new VehicleReturn();
                     returns.setBookingId(bookingId);
                     returns.setVehicleId(vehicleId);
-<<<<<<< HEAD
-                    
-=======
-
->>>>>>> origin/TamDev
                     RentalContract contract = contractDAO.findByBookingId(bookingId);
                     if (contract != null) {
                         returns.setContractId(contract.getContractId());
@@ -533,12 +511,6 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         return true;
     }
 
-<<<<<<< HEAD
-    private void loadDetailData(HttpServletRequest request, int bookingId, int vehicleId) {
-        try {
-            Booking booking = bookingDAO.findById(bookingId);
-            Vehicle car = vehicleDAO.findById(vehicleId);
-=======
     private VehicleHandover getHandoverWithFallback(int bookingId, int vehicleId, RentalContract contract, Vehicle vehicle) throws SQLException {
         VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
         if (handover == null) {
@@ -565,7 +537,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         try {
             Booking booking = bookingDAO.findById(bookingId);
             Vehicle vehicle = vehicleDAO.findById(vehicleId);
->>>>>>> origin/TamDev
+            Vehicle car = vehicle;
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
             VehicleReturn returns = returnDAO.findByBookingId(bookingId);
@@ -608,11 +580,6 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             request.setAttribute("returns", returns);
             request.setAttribute("bookingId", bookingId);
             request.setAttribute("vehicleId", vehicleId);
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> origin/TamDev
             String inputOdo = request.getParameter("currentOdo");
             if (inputOdo != null) {
                 request.setAttribute("distanceDriven", inputOdo);

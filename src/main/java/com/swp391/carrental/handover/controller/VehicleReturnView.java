@@ -53,9 +53,6 @@ public class VehicleReturnView extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty()) {
-                vehicleIdStr = request.getParameter("carId");
-            }
 
             if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
@@ -217,11 +214,7 @@ public class VehicleReturnView extends HttpServlet {
                 request.setAttribute("handover", handover);
                 request.setAttribute("returns", returns);
                 request.setAttribute("bookingId", bookingId);
-<<<<<<< HEAD
                 request.setAttribute("vehicleId", vehicleId);
-=======
-                request.setAttribute("carId", carId);
-                request.setAttribute("vehicleId", carId);
                 request.setAttribute("distanceDriven", distanceDriven);
                 request.setAttribute("kmLimit", kmLimit);
                 request.setAttribute("actualKm", distanceDriven);
@@ -229,7 +222,6 @@ public class VehicleReturnView extends HttpServlet {
                 request.setAttribute("estimatedKm", estimatedKm);
                 request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
                 request.setAttribute("autoExtraKm", additionalExtraKm);
->>>>>>> origin/TamDev
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());

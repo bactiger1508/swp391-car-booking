@@ -49,9 +49,6 @@ public class AdditionalFeesServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty()) {
-                vehicleIdStr = request.getParameter("carId");
-            }
 
             if (bookingIdStr != null && vehicleIdStr != null) {
 
@@ -142,9 +139,6 @@ public class AdditionalFeesServlet extends HttpServlet {
             try {
                 int bookingId = Integer.parseInt(request.getParameter("bookingId"));
                 String vehicleIdStr = request.getParameter("vehicleId");
-                if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty()) {
-                    vehicleIdStr = request.getParameter("carId");
-                }
                 int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
