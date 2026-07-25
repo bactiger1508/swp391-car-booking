@@ -11,3 +11,7 @@ db.trustServerCertificate=true
 
 # OpenRouteService API Key (Sign up for free at https://openrouteservice.org/ or set ORS_API_KEY env var)
 ors.api.key=YOUR_OPENROUTESERVICE_API_KEY
+
+# Payment Webhook API Key (Used to verify incoming requests from SePay or other providers)
+# You can also set this using the WEBHOOK_API_KEY environment variable
+webhook.api.key=YOUR_WEBHOOK_API_KEY_HERE

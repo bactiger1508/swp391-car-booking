@@ -41,12 +41,15 @@
 <div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
     <div style="display: flex; gap: 12px; flex: 1; min-width: 280px; align-items: center;">
         <%-- Category Dropdown Filter --%>
-        <div style="position: relative; min-width: 200px;">
-            <select id="categorySelect" onchange="switchCategorySelect(this.value)" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--outline-variant); background: var(--surface-container-low, #f8f9fa); color: var(--on-surface, #0f172a); font-size: 14px; font-weight: 600; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;">
+        <div style="position: relative; min-width: 220px;">
+            <select id="categoryFilter" onchange="switchCategory(this.value)" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--outline-variant); background: var(--surface-container-low, #f8f9fa); color: var(--on-surface, #0f172a); font-size: 14px; font-weight: 600; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;">
                 <option value="ALL">📌 Tất cả chính sách</option>
                 <option value="PENALTY">⚠️ Chính sách phí phạt</option>
                 <option value="BOOKING">🚗 Quy định Đặt xe</option>
                 <option value="PAYMENT">💳 Tài chính &amp; Webhook</option>
+                <option value="TAX_CONTRACT">📜 Hợp đồng &amp; Thuế/Hóa đơn</option>
+                <option value="PRICING">🏷️ Định giá &amp; Tỷ lệ</option>
+                <option value="OTHER">⚙️ Các chính sách khác</option>
             </select>
             <span class="material-symbols-outlined" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-secondary);">expand_more</span>
         </div>
@@ -56,6 +59,7 @@
             <span class="material-symbols-outlined" style="color: var(--text-secondary);">search</span>
             <input type="text" id="searchInput" placeholder="Gõ từ khóa để tìm nhanh chính sách..." oninput="filterPolicies()" style="border: none; background: none; width: 100%; outline: none; font-size: 14px; font-weight: 500; color: var(--on-surface);">
         </div>
+    </div>
     </div>
     
     <%-- Add Policy Button --%>
@@ -203,7 +207,6 @@ function filterPolicies() {
         
         let matchesSearch = text.includes(search);
         let matchesCat = false;
-        
         if (currentCategory === 'ALL') {
             matchesCat = true;
         } else if (currentCategory === 'PENALTY') {
@@ -211,7 +214,14 @@ function filterPolicies() {
         } else if (currentCategory === 'BOOKING') {
             matchesCat = cat.includes('BOOKING') || cat.includes('RENTAL') || cat.includes('SYSTEM') || key.includes('LIMIT') || key.includes('AGE') || key.includes('TRIP') || text.includes('đặt xe') || text.includes('thuê');
         } else if (currentCategory === 'PAYMENT') {
-            matchesCat = cat.includes('PAYMENT') || cat.includes('FINANCE') || cat.includes('VAT') || cat.includes('TAX') || key.includes('TAX') || key.includes('DEPOSIT') || text.includes('thanh toán') || text.includes('thuế') || text.includes('cọc');
+            matchesCat = cat.includes('PAYMENT') || cat.includes('FINANCE') || key.includes('DEPOSIT') || text.includes('thanh toán') || text.includes('cọc');
+        } else if (currentCategory === 'TAX_CONTRACT') {
+            matchesCat = cat.includes('TAX') || cat.includes('CONTRACT') || key.includes('TAX') || key.includes('VAT') || text.includes('thuế') || text.includes('hóa đơn');
+        } else if (currentCategory === 'PRICING') {
+            matchesCat = cat.includes('PRICING') || key.includes('RATE') || key.includes('PRICE') || text.includes('định giá') || text.includes('giá');
+        } else if (currentCategory === 'OTHER') {
+            let known = ['PENALTY', 'BOOKING', 'PAYMENT', 'TAX', 'CONTRACT', 'PRICING'];
+            matchesCat = !known.some(k => cat.includes(k));
         } else {
             matchesCat = cat.includes(currentCategory);
         }
@@ -224,7 +234,7 @@ function filterPolicies() {
     });
 }
 
-function switchCategorySelect(cat) {
+function switchCategory(cat) {
     currentCategory = cat;
     filterPolicies();
 }
