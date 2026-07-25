@@ -134,11 +134,27 @@ public class BookingDetailServlet extends HttpServlet {
             } catch (Exception e) {
                 // ignore error
             }
+            java.math.BigDecimal totalAdditionalFeeRequiredFromPayments = java.math.BigDecimal.ZERO;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("ADDITIONAL_FEE".equalsIgnoreCase(p.getPaymentType())) {
+                    totalAdditionalFeeRequiredFromPayments = totalAdditionalFeeRequiredFromPayments.add(p.getAmount());
+                }
+            }
+
             java.math.BigDecimal totalRequired = booking.getTotalAmount();
             if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
                 totalRequired = java.math.BigDecimal.ZERO;
-            } else if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
-                totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
+            } else {
+                java.math.BigDecimal returnAdditionalFee = java.math.BigDecimal.ZERO;
+                if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+                    returnAdditionalFee = vehicleReturn.getTotalAdditionalFee();
+                }
+                
+                if (totalAdditionalFeeRequiredFromPayments.compareTo(returnAdditionalFee) > 0) {
+                    totalRequired = totalRequired.add(totalAdditionalFeeRequiredFromPayments);
+                } else {
+                    totalRequired = totalRequired.add(returnAdditionalFee);
+                }
             }
             request.setAttribute("returns", vehicleReturn);
             request.setAttribute("totalRequired", totalRequired);

@@ -16,6 +16,17 @@
     </div>
 </div>
 
+<c:if test="${not empty sessionScope.successMessage}">
+    <div class="bk-alert bk-alert-success" style="max-width:800px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: space-between; background: #E6F4EA; border: 1.5px solid #34A853; color: #137333; padding: 14px 20px; border-radius: 12px; font-weight: 500;">
+        <div style="display:flex; align-items:center; gap: 8px;">
+            <span class="material-symbols-outlined" style="color: #34A853;">check_circle</span>
+            <span>${sessionScope.successMessage}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-weight:bold; font-size:18px;">&times;</button>
+    </div>
+    <c:remove var="successMessage" scope="session"/>
+</c:if>
+
 <div class="bk-card" style="max-width:800px;margin:0 auto;">
     <div class="bk-card-title">
         <span class="material-symbols-outlined">receipt</span> Thông tin Doanh nghiệp xuất hóa đơn GTGT
@@ -63,7 +74,7 @@
 
         <div style="margin-top:32px;display:flex;justify-content:flex-end;gap:12px;">
             <a href="${pageContext.request.contextPath}/home" class="bk-btn bk-btn-outline">Hủy bỏ</a>
-            <button type="submit" class="bk-btn bk-btn-primary" onclick="alert('Đã lưu cấu hình hóa đơn GTGT!');">
+            <button type="submit" class="bk-btn bk-btn-primary">
                 <span class="material-symbols-outlined">save</span> Lưu thiết lập
             </button>
         </div>

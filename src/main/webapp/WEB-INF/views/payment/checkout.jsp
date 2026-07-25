@@ -34,6 +34,9 @@
                 <div class="checkout-spinner" style="margin-bottom: 16px;"></div>
                 <h3 style="font-size: 20px; font-weight: 700; color: var(--primary); margin: 0 0 4px 0;">Đang đợi thanh toán...</h3>
                 <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">Hệ thống đang kiểm tra tự động mỗi 5 giây. Không cần tải lại trang.</p>
+                <div id="countdown-container" style="background: #FFF3E0; border: 1.5px solid #FFB74D; border-radius: 8px; padding: 10px 16px; margin-top: 16px; color: #E65100; font-weight: 600;">
+                    Mã QR sẽ hết hạn sau: <span id="timer-display" style="font-size: 18px; font-weight: 800; font-family: monospace;"></span>
+                </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; text-align: left; margin-top: 16px; border-top: 1px solid var(--outline-variant); padding-top: 24px;">
@@ -215,7 +218,52 @@ const pollInterval = setInterval(function() {
             console.error('Error polling payment status:', err);
         });
 }, 5000);
+
+// Expiration Countdown Logic
+let remainingSeconds = ${remainingSeconds};
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function handleExpiration() {
+    clearInterval(pollInterval); // Stop polling
+    document.getElementById('awaiting-panel').style.display = 'none';
+    const alertDiv = document.getElementById('dynamic-alert');
+    if (alertDiv) {
+        alertDiv.style.display = 'block';
+        alertDiv.style.background = '#FCE8E6';
+        alertDiv.style.border = '1.5px solid #EA4335';
+        alertDiv.style.color = '#C5221F';
+        alertDiv.innerHTML = 
+            '<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-weight:700;">' +
+                '<span class="material-symbols-outlined" style="font-size:20px;">error</span>' +
+                '<span>Phiên giao dịch đã hết hạn!</span>' +
+            '</div>' +
+            '<div style="margin-left:28px;">' +
+                'Mã QR này không còn hiệu lực (quá 15 phút). Vui lòng quay lại trang chi tiết đơn đặt xe và bấm Thanh toán để tạo lại giao dịch mới.' +
+            '</div>';
+    }
+}
+
+if (remainingSeconds <= 0) {
+    handleExpiration();
+} else {
+    document.getElementById('timer-display').innerText = formatTime(remainingSeconds);
+    const countdownInterval = setInterval(function() {
+        remainingSeconds--;
+        if (remainingSeconds <= 0) {
+            clearInterval(countdownInterval);
+            handleExpiration();
+        } else {
+            document.getElementById('timer-display').innerText = formatTime(remainingSeconds);
+        }
+    }, 1000);
+}
 </script>
+
 
 <style>
 .checkout-spinner {

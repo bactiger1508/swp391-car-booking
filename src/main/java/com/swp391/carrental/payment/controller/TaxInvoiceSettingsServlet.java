@@ -66,6 +66,7 @@ public class TaxInvoiceSettingsServlet extends HttpServlet {
             policyService.updatePolicy("COMPANY_ADDRESS", address, userId);
         }
 
+        request.getSession().setAttribute("successMessage", "Đã lưu cấu hình hóa đơn GTGT thành công!");
         response.sendRedirect(request.getContextPath() + "/tax-invoice-settings");
     }
 }
