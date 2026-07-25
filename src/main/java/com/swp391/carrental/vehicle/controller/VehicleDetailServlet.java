@@ -25,22 +25,22 @@ public class VehicleDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String carIdStr = request.getParameter("id");
-        if (carIdStr != null) {
-            int carId = Integer.parseInt(carIdStr);
-            Vehicle car = vehicleService.getVehicleById(carId);
+        String vehicleIdStr = request.getParameter("id");
+        if (vehicleIdStr != null) {
+            int vehicleId = Integer.parseInt(vehicleIdStr);
+            Vehicle car = vehicleService.getVehicleById(vehicleId);
             request.setAttribute("car", car);
-            request.setAttribute("images", vehicleService.getVehicleImages(carId));
+            request.setAttribute("images", vehicleService.getVehicleImages(vehicleId));
             
             // Query active bookings of the car to display in a modal calendar/schedule
             com.swp391.carrental.booking.service.BookingService bookingService = new com.swp391.carrental.booking.service.BookingService();
-            List<com.swp391.carrental.booking.model.Booking> activeBookings = bookingService.getActiveBookingsByVehicle(carId);
+            List<com.swp391.carrental.booking.model.Booking> activeBookings = bookingService.getActiveBookingsByVehicle(vehicleId);
             request.setAttribute("activeBookings", activeBookings);
             
             // Query maintenance schedules of the car
             com.swp391.carrental.vehicle.dao.MaintenanceDAO maintenanceDAO = new com.swp391.carrental.vehicle.dao.MaintenanceDAO();
             try {
-                List<com.swp391.carrental.vehicle.model.MaintenanceSchedule> maintenances = maintenanceDAO.getMaintenanceByVehicle(carId);
+                List<com.swp391.carrental.vehicle.model.MaintenanceSchedule> maintenances = maintenanceDAO.getMaintenanceByVehicle(vehicleId);
                 java.util.List<com.swp391.carrental.vehicle.model.MaintenanceSchedule> scheduledMaintenances = new java.util.ArrayList<>();
                 if (maintenances != null) {
                     for (com.swp391.carrental.vehicle.model.MaintenanceSchedule ms : maintenances) {
@@ -74,14 +74,14 @@ public class VehicleDetailServlet extends HttpServlet {
                     }
                 }
                 int pageSize = 5;
-                int totalReviews = reviewDAO.countByCarId(carId);
+                int totalReviews = reviewDAO.countByVehicleId(vehicleId);
                 int totalPages = (int) Math.ceil((double) totalReviews / pageSize);
                 if (totalPages < 1) totalPages = 1;
                 if (reviewPage > totalPages) reviewPage = totalPages;
 
                 int offset = (reviewPage - 1) * pageSize;
-                List<com.swp391.carrental.vehicle.model.Review> reviews = reviewDAO.findByCarId(carId, offset, pageSize);
-                double avgRating = reviewDAO.getAverageRating(carId);
+                List<com.swp391.carrental.vehicle.model.Review> reviews = reviewDAO.findByVehicleId(vehicleId, offset, pageSize);
+                double avgRating = reviewDAO.getAverageRating(vehicleId);
 
                 request.setAttribute("reviews", reviews);
                 request.setAttribute("avgRating", String.format(java.util.Locale.US, "%.1f", avgRating));
@@ -102,7 +102,7 @@ public class VehicleDetailServlet extends HttpServlet {
                     List<com.swp391.carrental.booking.model.Booking> userBookings = bookingService.getCustomerBookings(currentUser.getUserId());
                     if (userBookings != null) {
                         for (com.swp391.carrental.booking.model.Booking b : userBookings) {
-                            if (b.getVehicleId() == carId && "COMPLETED".equalsIgnoreCase(b.getStatus())) {
+                            if (b.getVehicleId() == vehicleId && "COMPLETED".equalsIgnoreCase(b.getStatus())) {
                                 canReview = true;
                                 reviewBookingId = b.getBookingId();
                                 break;
@@ -136,7 +136,7 @@ public class VehicleDetailServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/login");
                 return;
             }
-            int carId = Integer.parseInt(request.getParameter("carId"));
+            int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
             int rating = Integer.parseInt(request.getParameter("rating"));
             String comment = request.getParameter("comment");
@@ -144,7 +144,7 @@ public class VehicleDetailServlet extends HttpServlet {
             com.swp391.carrental.vehicle.model.Review review = new com.swp391.carrental.vehicle.model.Review();
             review.setBookingId(bookingId);
             review.setCustomerId(currentUser.getUserId());
-            review.setVehicleId(carId);
+            review.setVehicleId(vehicleId);
             review.setRating(rating);
             review.setComment(comment != null ? comment.trim() : "");
             review.setVisible(true);
@@ -156,7 +156,7 @@ public class VehicleDetailServlet extends HttpServlet {
             } catch (Exception e) {
                 request.getSession().setAttribute("errorMessage", "Không thể gửi đánh giá: " + e.getMessage());
             }
-            response.sendRedirect(request.getContextPath() + "/vehicles/detail?id=" + carId);
+            response.sendRedirect(request.getContextPath() + "/vehicles/detail?id=" + vehicleId);
         }
     }
 }

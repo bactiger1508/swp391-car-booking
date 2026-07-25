@@ -114,11 +114,11 @@
                                 <c:if test="${empty userMap[b.customerId]}">User #${b.customerId}</c:if>
                             </td>
                             <td>
-                                <c:if test="${not empty carMap[b.carId]}">
-                                    <div style="font-weight:600;">${carMap[b.carId].brand} ${carMap[b.carId].model}</div>
-                                    <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${carMap[b.carId].licensePlate}</div>
+                                <c:if test="${not empty carMap[b.vehicleId]}">
+                                    <div style="font-weight:600;">${carMap[b.vehicleId].brand} ${carMap[b.vehicleId].model}</div>
+                                    <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${carMap[b.vehicleId].licensePlate}</div>
                                 </c:if>
-                                <c:if test="${empty carMap[b.carId]}">Xe #${b.carId}</c:if>
+                                <c:if test="${empty carMap[b.vehicleId]}">Xe #${b.vehicleId}</c:if>
                             </td>
                             <td>
                                 <div>
@@ -141,10 +141,10 @@
                             <td class="text-right">
                                 <div style="display:flex;justify-content:flex-end;gap:6px;">
                                     <c:if test="${b.status == 'CONFIRMED'}">
-                                        <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${b.bookingId}&carId=${b.carId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#2E7D32; border-color:#2E7D32; color:#fff;">Giao xe</a>
+                                        <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${b.bookingId}&vehicleId=${b.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#2E7D32; border-color:#2E7D32; color:#fff;">Giao xe</a>
                                     </c:if>
                                     <c:if test="${b.status == 'IN_PROGRESS'}">
-                                        <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${b.bookingId}&carId=${b.carId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#0288D1; border-color:#0288D1; color:#fff;">Nhận lại xe</a>
+                                        <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${b.bookingId}&vehicleId=${b.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#0288D1; border-color:#0288D1; color:#fff;">Nhận lại xe</a>
                                     </c:if>
                                     <a href="${pageContext.request.contextPath}/bookings/detail?id=${b.bookingId}" class="bk-btn bk-btn-outline bk-btn-sm">Xem</a>
                                 </div>

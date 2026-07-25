@@ -21,7 +21,7 @@
 
 <form method="post" action="${pageContext.request.contextPath}/additional-fees">
     <input type="hidden" name="bookingId" value="${bookingId}">
-    <input type="hidden" name="carId" value="${carId}">
+    <input type="hidden" name="vehicleId" value="${vehicleId != null ? vehicleId : vehicleId}">
     <div class="bk-detail-grid">
         <%-- LEFT: Máy tính phụ thu tương tác --%>
         <div>
@@ -156,7 +156,7 @@
                     <button type="submit" name="action" value="save" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;">
                         <span class="material-symbols-outlined">check_circle</span> Áp dụng
                     </button>
-                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${bookingId}&carId=${carId}" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
+                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${bookingId}&vehicleId=${vehicleId}" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
                         <span class="material-symbols-outlined">arrow_back</span> Hủy bỏ
                     </a>
                 </div>

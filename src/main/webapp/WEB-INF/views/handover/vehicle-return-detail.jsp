@@ -98,7 +98,7 @@
     <form action="${pageContext.request.contextPath}/returns/detail" method="POST" enctype="multipart/form-data">
         <!-- Hidden Inputs for Booking and Car IDs -->
         <input type="hidden" name="bookingId" value="${bookingId}" />
-        <input type="hidden" name="carId" value="${carId}" />
+        <input type="hidden" name="vehicleId" value="${vehicleId}" />
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; align-items: stretch;">
             <%-- Cột bên phải: Thông tin đặt xe --%>
@@ -132,8 +132,16 @@
                     <span>Chi tiết xe</span>
                 </div>
                 <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
-                        <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0; overflow:hidden;">
+                        <c:choose>
+                            <c:when test="${not empty car.primaryImageUrl}">
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                <span class="material-symbols-outlined" style="font-size: 28px; display:none;">garage</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div>
                         <div style="font-weight: 700; color: var(--primary); font-size: 16px;">

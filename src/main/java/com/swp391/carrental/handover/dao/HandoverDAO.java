@@ -149,7 +149,7 @@ public class HandoverDAO {
         if (!rs.wasNull()) {
             h.setContractId(cid);
         }
-        h.setCarId(rs.getInt("vehicle_id"));
+        h.setVehicleId(rs.getInt("vehicle_id"));
         Timestamp hd = rs.getTimestamp("handover_date");
         if (hd != null) {
             h.setHandoverDate(hd.toLocalDateTime());

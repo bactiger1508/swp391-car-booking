@@ -47,10 +47,10 @@ public class VehicleHandoverViewServlet extends HttpServlet {
 
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
-            if (bookingIdStr != null && carIdStr != null) {
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int carId = Integer.parseInt(carIdStr);
+                int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
                 if (booking != null) {
@@ -59,7 +59,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                         return;
                     }
                 }
-                Vehicle car = vehicleDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -68,7 +68,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                 request.setAttribute("contract", contract);
                 request.setAttribute("handover", handover);
                 request.setAttribute("bookingId", bookingId);
-                request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", vehicleId);
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
@@ -85,8 +85,8 @@ public class VehicleHandoverViewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        String carIdStr = request.getParameter("carId");
-        int carId = Integer.parseInt(carIdStr);
+        String vehicleIdStr = request.getParameter("vehicleId");
+        int vehicleId = Integer.parseInt(vehicleIdStr);
 
         if ("requiredUpdate".equals(action)) {
             try {
@@ -113,7 +113,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
 
                 if (handover != null) {
                     handoverService.updateStatusConfirm(handover.getHandoverId());
-                    Vehicle car = vehicleDAO.findById(carId);
+                    Vehicle car = vehicleDAO.findById(vehicleId);
                     if (car != null) {
                         car.setMileage(handover.getMileageAtHandover());
                         vehicleDAO.update(car);

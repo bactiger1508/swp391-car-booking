@@ -55,11 +55,11 @@ public class VehicleReturnView extends HttpServlet {
 
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
+            String vehicleIdStr = request.getParameter("vehicleId");
 
-            if (bookingIdStr != null && carIdStr != null) {
+            if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int carId = Integer.parseInt(carIdStr);
+                int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
                 if (booking != null) {
@@ -68,7 +68,7 @@ public class VehicleReturnView extends HttpServlet {
                         return;
                     }
                 }
-                Vehicle car = vehicleDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
@@ -79,7 +79,7 @@ public class VehicleReturnView extends HttpServlet {
                 request.setAttribute("handover", handover);
                 request.setAttribute("returns", returns);
                 request.setAttribute("bookingId", bookingId);
-                request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", vehicleId);
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());

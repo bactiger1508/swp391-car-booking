@@ -22,39 +22,39 @@
         <span class="material-symbols-outlined">directions_car</span> Chọn Xe
     </div>
 
-    <c:if test="${empty cars}">
+    <c:if test="${empty vehicles}">
         <div class="bk-empty">
             <span class="material-symbols-outlined">directions_car</span>
             <h3>Không có xe nào trong hệ thống</h3>
         </div>
     </c:if>
 
-    <c:if test="${not empty cars}">
+    <c:if test="${not empty vehicles}">
         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
-            <c:forEach items="${cars}" var="car">
-                <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&carId=${car.carId}"
-                   style="text-decoration:none; color:inherit; border:1px solid ${selectedCar.carId == car.carId ? 'var(--primary)' : 'var(--outline-variant)'}; border-radius:var(--radius-md); padding:14px; ${selectedCar.carId == car.carId ? 'background:var(--surface-container-low);' : 'background:var(--surface);'}">
+            <c:forEach items="${vehicles}" var="vehicle">
+                <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&vehicleId=${vehicle.vehicleId}"
+                   style="text-decoration:none; color:inherit; border:1px solid ${selectedVehicle.vehicleId == vehicle.vehicleId ? 'var(--primary)' : 'var(--outline-variant)'}; border-radius:var(--radius-md); padding:14px; ${selectedVehicle.vehicleId == vehicle.vehicleId ? 'background:var(--surface-container-low);' : 'background:var(--surface);'}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                        <div style="font-weight:600; color:var(--primary);">${car.brand} ${car.model}</div>
-                        <c:if test="${car.status == 'MAINTENANCE'}"><span class="bk-badge bk-badge-pending" style="flex-shrink:0;"><span class="bk-badge-dot"></span> Đang bảo trì</span></c:if>
-                        <c:if test="${car.status == 'AVAILABLE'}"><span class="bk-badge bk-badge-completed" style="flex-shrink:0;"><span class="bk-badge-dot"></span> Có sẵn</span></c:if>
+                        <div style="font-weight:600; color:var(--primary);">${vehicle.brand} ${vehicle.model}</div>
+                        <c:if test="${vehicle.status == 'MAINTENANCE'}"><span class="bk-badge bk-badge-pending" style="flex-shrink:0;"><span class="bk-badge-dot"></span> Đang bảo trì</span></c:if>
+                        <c:if test="${vehicle.status == 'AVAILABLE'}"><span class="bk-badge bk-badge-completed" style="flex-shrink:0;"><span class="bk-badge-dot"></span> Có sẵn</span></c:if>
                     </div>
-                    <div style="font-size:13px; color:var(--on-surface-variant); margin-top:4px;">Biển số: ${car.licensePlate}</div>
-                    <div style="font-size:13px; color:var(--on-surface-variant);">Năm: ${car.year}</div>
+                    <div style="font-size:13px; color:var(--on-surface-variant); margin-top:4px;">Biển số: ${vehicle.licensePlate}</div>
+                    <div style="font-size:13px; color:var(--on-surface-variant);">Năm: ${vehicle.year}</div>
                 </a>
             </c:forEach>
         </div>
     </c:if>
 </div>
 
-<c:if test="${not empty selectedCar}">
+<c:if test="${not empty selectedVehicle}">
     <div class="bk-card" style="margin-bottom:24px;">
         <div class="bk-card-title">
-            <span class="material-symbols-outlined">build</span> Ghi Nhận Bảo Trì — ${selectedCar.brand} ${selectedCar.model} (${selectedCar.licensePlate})
+            <span class="material-symbols-outlined">build</span> Ghi Nhận Bảo Trì — ${selectedVehicle.brand} ${selectedVehicle.model} (${selectedVehicle.licensePlate})
         </div>
         <form id="maintenanceForm" onsubmit="submitMaintenanceForm(event)">
             <input type="hidden" name="action" value="recordMaintenance">
-            <input type="hidden" name="carId" id="carId" value="${selectedCar.carId}">
+            <input type="hidden" name="vehicleId" id="vehicleId" value="${selectedVehicle.vehicleId}">
 
             <div class="bk-form-grid">
                 <div class="bk-form-group">

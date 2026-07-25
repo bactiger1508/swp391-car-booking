@@ -104,7 +104,7 @@
                 <div style="display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 16px;">
                     <c:choose>
                         <c:when test="${car.status == 'AVAILABLE'}">
-                            <a href="${pageContext.request.contextPath}/bookings/create?carId=${car.carId}" class="bk-btn bk-btn-primary" style="text-align: center; justify-content: center; height: 48px; width: 100%;">
+                            <a href="${pageContext.request.contextPath}/bookings/create?vehicleId=${car.vehicleId}" class="bk-btn bk-btn-primary" style="text-align: center; justify-content: center; height: 48px; width: 100%;">
                                 Đặt xe ngay
                             </a>
                         </c:when>
@@ -234,7 +234,7 @@
                 </h4>
                 <form action="${pageContext.request.contextPath}/vehicles/detail" method="post">
                     <input type="hidden" name="action" value="addReview" />
-                    <input type="hidden" name="carId" value="${car.vehicleId}" />
+                    <input type="hidden" name="vehicleId" value="${car.vehicleId}" />
                     <input type="hidden" name="bookingId" value="${reviewBookingId}" />
                     
                     <div style="margin-bottom: 16px;">

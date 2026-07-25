@@ -111,7 +111,7 @@
                 <tbody>
                     <c:forEach var="c" items="${contracts}">
                         <c:set var="cust" value="${userMap[c.customerId]}"/>
-                        <c:set var="carItem" value="${carMap[c.carId]}"/>
+                        <c:set var="carItem" value="${carMap[c.vehicleId]}"/>
                         
                         <%-- Calculate rental days --%>
                         <c:set var="days" value="1"/>

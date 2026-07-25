@@ -52,7 +52,7 @@
                         <tr>
                             <td class="code">HD-${h.handoverId}</td>
                             <td><a href="${pageContext.request.contextPath}/bookings/detail?id=${h.bookingId}" style="font-weight:600;color:var(--primary);">#BK-${h.bookingId}</a></td>
-                            <td style="font-weight:500;">Xe #${h.carId}</td>
+                            <td style="font-weight:500;">Xe #${h.vehicleId}</td>
                             <td>
                                 <div style="font-size:13px;">
                                     ${h.handoverDate.dayOfMonth}/${h.handoverDate.monthValue}/${h.handoverDate.year} ${h.handoverDate.hour}:${h.handoverDate.minute}
@@ -75,7 +75,7 @@
                                     ${h.status}
                             </td>
                             <td>
-                                <a href="${pageContext.request.contextPath}/handovers/detail?bookingId=${h.bookingId}&carId=${h.carId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
+                                <a href="${pageContext.request.contextPath}/handovers/detail?bookingId=${h.bookingId}&vehicleId=${h.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
                             </td>
                         </tr>
                     </c:forEach>

@@ -31,9 +31,11 @@ public class MaintenanceScheduleServlet extends HttpServlet {
             MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
 
             List<Vehicle> maintenanceVehicles = vehicleDAO.findByStatus("MAINTENANCE");
+            List<Vehicle> allVehicles = vehicleDAO.findAll();
             List<MaintenanceSchedule> schedules = maintenanceDAO.getAllMaintenanceSchedules();
 
             request.setAttribute("maintenanceVehicles", maintenanceVehicles);
+            request.setAttribute("allVehicles", allVehicles);
             request.setAttribute("schedules", schedules);
         } catch (Exception e) {
             request.setAttribute("error", e.getMessage());
@@ -43,13 +45,16 @@ public class MaintenanceScheduleServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String carIdStr = request.getParameter("carId");
+        String vehicleIdStr = request.getParameter("vehicleId");
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+            vehicleIdStr = request.getParameter("vehicleId");
+        }
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
         String notes = request.getParameter("notes");
 
         try {
-            if (carIdStr == null || carIdStr.trim().isEmpty() ||
+            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty() ||
                 startDateStr == null || startDateStr.trim().isEmpty() ||
                 endDateStr == null || endDateStr.trim().isEmpty()) {
                 throw new AppException("Vui lòng nhập đầy đủ thông tin.");
@@ -63,7 +68,7 @@ public class MaintenanceScheduleServlet extends HttpServlet {
             }
 
             MaintenanceSchedule m = new MaintenanceSchedule();
-            m.setVehicleId(Integer.parseInt(carIdStr.trim()));
+            m.setVehicleId(Integer.parseInt(vehicleIdStr.trim()));
             m.setMaintenanceType("INSPECTION");
             m.setScheduledDate(start);
             m.setCompletedDate(end);

@@ -83,6 +83,16 @@ public class BookingEditServlet extends HttpServlet {
                 return;
             }
 
+            // Prevent editing if deposit is already paid
+            com.swp391.carrental.payment.service.PaymentService paymentSvc = new com.swp391.carrental.payment.service.PaymentService();
+            List<com.swp391.carrental.payment.model.Payment> payments = paymentSvc.getPaymentsByBooking(bookingId);
+            boolean hasPaidDeposit = payments.stream().anyMatch(p -> "COMPLETED".equalsIgnoreCase(p.getStatus()));
+            if (hasPaidDeposit) {
+                request.getSession().setAttribute("errorMessage", "Đơn đặt xe đã được thanh toán cọc, không thể chỉnh sửa.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
+
             List<Vehicle> availableVehicles = vehicleService.getVehiclesByStatus("AVAILABLE");
             // Also include current booked car in available list to let customer re-select it
             Vehicle currentVehicle = vehicleService.getVehicleById(booking.getVehicleId());
@@ -164,8 +174,19 @@ public class BookingEditServlet extends HttpServlet {
                 throw new AppException("Chỉ có thể sửa đơn đặt xe ở trạng thái Chờ xử lý.");
             }
 
+            // Prevent editing if deposit is already paid
+            com.swp391.carrental.payment.service.PaymentService paymentSvc = new com.swp391.carrental.payment.service.PaymentService();
+            List<com.swp391.carrental.payment.model.Payment> payments = paymentSvc.getPaymentsByBooking(bookingId);
+            boolean hasPaidDeposit = payments.stream().anyMatch(p -> "COMPLETED".equalsIgnoreCase(p.getStatus()));
+            if (hasPaidDeposit) {
+                throw new AppException("Đơn đặt xe đã được thanh toán cọc, không thể chỉnh sửa.");
+            }
+
             // Parse form inputs
-            String carIdStr = request.getParameter("carId");
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+                vehicleIdStr = request.getParameter("vehicleId");
+            }
             String startDateVal = request.getParameter("startDate");
             String startTimeVal = request.getParameter("startTime");
             String endDateVal = request.getParameter("endDate");
@@ -206,7 +227,7 @@ public class BookingEditServlet extends HttpServlet {
             }
 
             // Basic validation
-            if (carIdStr == null || carIdStr.isEmpty()) throw new AppException("Vui lòng chọn xe.");
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) throw new AppException("Vui lòng chọn xe.");
             if (startDateVal == null || startDateVal.isEmpty()) throw new AppException("Vui lòng chọn ngày bắt đầu.");
             if (endDateVal == null || endDateVal.isEmpty()) throw new AppException("Vui lòng chọn ngày kết thúc.");
             if (pickupLocation == null || pickupLocation.trim().isEmpty()) throw new AppException("Vui lòng nhập địa điểm nhận xe.");
@@ -215,7 +236,7 @@ public class BookingEditServlet extends HttpServlet {
             if (startTimeVal == null || startTimeVal.isEmpty()) startTimeVal = "08:00";
             if (endTimeVal == null || endTimeVal.isEmpty()) endTimeVal = "08:00";
 
-            int carId = Integer.parseInt(carIdStr);
+            int vehicleId = Integer.parseInt(vehicleIdStr);
             LocalDateTime startDate = LocalDateTime.parse(startDateVal + "T" + startTimeVal);
             LocalDateTime endDate = LocalDateTime.parse(endDateVal + "T" + endTimeVal);
 
@@ -242,7 +263,7 @@ public class BookingEditServlet extends HttpServlet {
                 }
             }
 
-            Vehicle car = vehicleService.getVehicleById(carId);
+            Vehicle car = vehicleService.getVehicleById(vehicleId);
             if (car == null) throw new AppException("Xe không tồn tại.");
 
             long rentalDays = ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
@@ -299,7 +320,7 @@ public class BookingEditServlet extends HttpServlet {
             }
 
             // Populate updated fields
-            existingBooking.setCarId(carId);
+            existingBooking.setVehicleId(vehicleId);
             existingBooking.setStartDate(startDate);
             existingBooking.setEndDate(endDate);
             existingBooking.setPickupLocation(pickupLocation.trim());

@@ -29,9 +29,7 @@ public class VehicleImageDAO {
         return images;
     }
 
-    public List<VehicleImage> findByCarId(int carId) throws SQLException {
-        return findByVehicleId(carId);
-    }
+
 
     public int insert(VehicleImage image) throws SQLException {
         String sql = "INSERT INTO vehicle_images (vehicle_id, image_url, caption, is_primary, sort_order) VALUES (?, ?, ?, ?, ?)";
@@ -68,9 +66,7 @@ public class VehicleImageDAO {
         }
     }
 
-    public boolean deleteByCarId(int carId) throws SQLException {
-        return deleteByVehicleId(carId);
-    }
+
 
     public boolean setPrimary(int imageId, boolean isPrimary) throws SQLException {
         String sql = "UPDATE vehicle_images SET is_primary = ? WHERE image_id = ?";
@@ -91,9 +87,7 @@ public class VehicleImageDAO {
         }
     }
 
-    public boolean clearPrimaryByCarId(int carId) throws SQLException {
-        return clearPrimaryByVehicleId(carId);
-    }
+
 
     public boolean update(VehicleImage image) throws SQLException {
         String sql = "UPDATE vehicle_images SET caption = ?, sort_order = ? WHERE image_id = ?";

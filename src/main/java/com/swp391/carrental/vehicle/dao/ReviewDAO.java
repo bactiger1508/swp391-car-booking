@@ -33,38 +33,33 @@ public class ReviewDAO {
         return null;
     }
 
-    public List<Review> findByCarId(int carId) throws SQLException {
-        return findByCarId(carId, 0, 100);
+    public List<Review> findByVehicleId(int vehicleId) throws SQLException {
+        return findByVehicleId(vehicleId, 0, 100);
     }
-    public List<Review> findByCarId(int carId, int offset, int limit) throws SQLException {
+
+    public List<Review> findByVehicleId(int vehicleId, int offset, int limit) throws SQLException {
         List<Review> reviews = new ArrayList<>();
-        String sql = "SELECT r.*, u.full_name AS customer_name FROM reviews r "
-                   + "LEFT JOIN users u ON r.customer_id = u.user_id "
-                   + "WHERE r.vehicle_id = ? AND r.is_visible = 1 ORDER BY r.created_at DESC "
-                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT review_id, booking_id, vehicle_id, customer_id, rating, comment, created_at "
+                   + "FROM reviews WHERE vehicle_id = ? ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             ps.setInt(2, offset);
             ps.setInt(3, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Review r = mapRow(rs);
-                    try {
-                        r.setCustomerName(rs.getString("customer_name"));
-                    } catch (Exception e) {}
-                    reviews.add(r);
+                    reviews.add(mapRow(rs));
                 }
             }
         }
         return reviews;
     }
 
-    public int countByCarId(int carId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
+    public int countByVehicleId(int vehicleId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
             }

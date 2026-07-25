@@ -170,7 +170,7 @@ public class ReturnDAO {
         if (!rs.wasNull()) {
             v.setContractId(cid);
         }
-        v.setCarId(rs.getInt("vehicle_id"));
+        v.setVehicleId(rs.getInt("vehicle_id"));
         int hid = rs.getInt("handover_id");
         if (!rs.wasNull()) {
             v.setHandoverId(hid);

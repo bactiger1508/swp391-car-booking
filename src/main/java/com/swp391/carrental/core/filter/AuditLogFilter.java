@@ -20,7 +20,7 @@ import com.swp391.carrental.user.model.User;
 public class AuditLogFilter implements Filter {
 
     private static final String[] ID_PARAM_NAMES = {
-        "carId", "bookingId", "contractId", "paymentId", "handoverId", "returnId",
+        "vehicleId", "bookingId", "contractId", "paymentId", "handoverId", "returnId",
         "notificationId", "maintenanceId", "brandId", "modelId", "userId", "profileId",
         "reviewId", "policyId", "id"
     };

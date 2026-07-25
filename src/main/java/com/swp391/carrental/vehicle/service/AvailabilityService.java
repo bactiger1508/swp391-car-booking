@@ -39,9 +39,7 @@ public class AvailabilityService {
         }
     }
 
-    public boolean isCarAvailableForRange(int carId, LocalDateTime startDate, LocalDateTime endDate) {
-        return isVehicleAvailableForRange(carId, startDate, endDate);
-    }
+
 
     public boolean checkAvailability(int vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
         try {
@@ -78,7 +76,5 @@ public class AvailabilityService {
         }
     }
 
-    public List<Vehicle> getAvailableCars(LocalDateTime startDate, LocalDateTime endDate) {
-        return getAvailableVehicles(startDate, endDate);
-    }
+
 }

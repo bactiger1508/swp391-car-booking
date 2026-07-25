@@ -123,20 +123,11 @@ public class VehicleService {
         }
     }
 
-    public Vehicle getCarById(int carId) { return getVehicleById(carId); }
-    public Vehicle getCarByLicensePlate(String licensePlate) { return getVehicleByLicensePlate(licensePlate); }
-    public List<Vehicle> getAllCars() { return getAllVehicles(); }
-    public List<Vehicle> getCarsByStatus(String status) { return getVehiclesByStatus(status); }
-    public List<VehicleImage> getCarImages(int carId) { return getVehicleImages(carId); }
-    public int addCar(Vehicle car) { return addVehicle(car); }
-    public boolean updateCar(Vehicle car) { return updateVehicle(car); }
-    public boolean updateCarStatus(int carId, String status) { return updateVehicleStatus(carId, status); }
-    public boolean deleteCar(int carId) { return deleteVehicle(carId); }
-    public Map<Integer, MaintenanceSchedule> getNextScheduledMaintenanceByCar() { return getNextScheduledMaintenanceByVehicle(); }
 
-    public Vehicle getVehicleById(int carId) {
+
+    public Vehicle getVehicleById(int vehicleId) {
         try {
-            Vehicle car = vehicleDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(vehicleId);
             if (car != null) {
                 car.setPrimaryImageUrl(resolvePrimaryImageUrl(car.getVehicleId()));
             }
@@ -188,9 +179,9 @@ public class VehicleService {
         }
     }
 
-    public List<VehicleImage> getVehicleImages(int carId) {
+    public List<VehicleImage> getVehicleImages(int vehicleId) {
         try {
-            return carImageDAO.findByVehicleId(carId);
+            return carImageDAO.findByVehicleId(vehicleId);
         } catch (SQLException e) {
             throw new AppException("Failed to get car images.", e);
         }
@@ -212,20 +203,20 @@ public class VehicleService {
         }
     }
 
-    public boolean updateVehicleStatus(int carId, String status) {
+    public boolean updateVehicleStatus(int vehicleId, String status) {
         try {
             // BR-09: Validate status transitions if needed
-            return vehicleDAO.updateStatus(carId, status);
+            return vehicleDAO.updateStatus(vehicleId, status);
         } catch (SQLException e) {
             throw new AppException("Failed to update car status.", e);
         }
     }
 
-    public boolean deleteVehicle(int carId) {
+    public boolean deleteVehicle(int vehicleId) {
         try {
-            carImageDAO.deleteByVehicleId(carId);
-            maintenanceDAO.deleteByVehicleId(carId);
-            return vehicleDAO.delete(carId);
+            carImageDAO.deleteByVehicleId(vehicleId);
+            maintenanceDAO.deleteByVehicleId(vehicleId);
+            return vehicleDAO.delete(vehicleId);
         } catch (SQLException e) {
             if (e.getErrorCode() == 547) {
                 // SQL Server FK violation: car still referenced by bookings/contracts/handovers/returns/reviews
@@ -255,8 +246,8 @@ public class VehicleService {
         return urls;
     }
 
-    public String resolvePrimaryImageUrl(int carId) {
-        List<VehicleImage> images = getVehicleImages(carId);
+    public String resolvePrimaryImageUrl(int vehicleId) {
+        List<VehicleImage> images = getVehicleImages(vehicleId);
         if (images != null) {
             for (VehicleImage image : images) {
                 if (image != null && image.isPrimary() && image.getImageUrl() != null && !image.getImageUrl().trim().isEmpty()) {
@@ -305,7 +296,6 @@ public class VehicleService {
     }
 
     // Image management
-    public int addCarImage(VehicleImage image) { return addVehicleImage(image); }
     public int addVehicleImage(VehicleImage image) {
         try {
             return carImageDAO.insert(image);
@@ -322,33 +312,30 @@ public class VehicleService {
         }
     }
 
-    public boolean setPrimaryImage(int carId, int imageId) {
+    public boolean setPrimaryImage(int vehicleId, int imageId) {
         try {
-            carImageDAO.clearPrimaryByCarId(carId);
+            carImageDAO.clearPrimaryByVehicleId(vehicleId);
             return carImageDAO.setPrimary(imageId, true);
         } catch (SQLException e) {
             throw new AppException("Failed to set primary image.", e);
         }
     }
 
-    public void clearPrimaryImages(int carId) {
+    public void clearPrimaryImages(int vehicleId) {
         try {
-            carImageDAO.clearPrimaryByCarId(carId);
+            carImageDAO.clearPrimaryByVehicleId(vehicleId);
         } catch (SQLException e) {
             throw new AppException("Failed to clear primary images.", e);
         }
     }
 
     // Maintenance management
-    public List<MaintenanceSchedule> getMaintenanceByCarId(int carId) {
+    public List<MaintenanceSchedule> getMaintenanceByVehicleId(int vehicleId) {
         try {
-            return maintenanceDAO.getMaintenanceByVehicle(carId);
+            return maintenanceDAO.getMaintenanceByVehicle(vehicleId);
         } catch (SQLException e) {
             throw new AppException("Failed to get maintenance schedules.", e);
         }
-    }
-    public List<MaintenanceSchedule> getMaintenanceByVehicleId(int vehicleId) {
-        return getMaintenanceByCarId(vehicleId);
     }
 
     public int addMaintenanceSchedule(MaintenanceSchedule schedule) {

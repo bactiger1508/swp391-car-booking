@@ -221,13 +221,13 @@
                     </div>
 
                     <div style="margin-top:16px;display:flex;gap:8px;">
-                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}"
+                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}"
                            class="bk-btn bk-btn-outline" style="flex:1;justify-content:center;">
                            <span class="material-symbols-outlined">visibility</span> Xem Chi Tiết
                         </a>
                         <c:choose>
                             <c:when test="${car.status == 'AVAILABLE'}">
-                                <a href="${pageContext.request.contextPath}/bookings/create?carId=${car.carId}"
+                                <a href="${pageContext.request.contextPath}/bookings/create?vehicleId=${car.vehicleId}"
                                    class="bk-btn bk-btn-primary" style="flex:1;justify-content:center;">
                                    <span class="material-symbols-outlined">event</span> Tạo Đặt Xe
                                 </a>

@@ -46,7 +46,7 @@
                     <tr>
                         <td class="code">RT-${r.returnId}</td>
                         <td><a href="${pageContext.request.contextPath}/bookings/detail?id=${r.bookingId}" style="font-weight:600;color:var(--primary);">#BK-${r.bookingId}</a></td>
-                        <td style="font-weight:500;">Xe #${r.carId}</td>
+                        <td style="font-weight:500;">Xe #${r.vehicleId}</td>
                         <td>
                             <div style="font-size:13px;">
                                 ${r.returnDate.dayOfMonth}/${r.returnDate.monthValue}/${r.returnDate.year} ${r.returnDate.hour}:${r.returnDate.minute}
@@ -65,7 +65,7 @@
                         </td>
                         <td>Nhân viên #${r.receivedBy}</td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&carId=${r.carId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
+                            <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&vehicleId=${r.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
                             <c:choose>
                                 <c:when test="${bookings[r.bookingId].status == 'COMPLETED'}">
                                     <span style="font-size:12px; color:#039C74; font-weight:600; padding: 4px 8px; background:#EAF9F5; border:1px solid rgba(5,205,153,0.2); border-radius:6px; margin-left:4px; display:inline-block; vertical-align:middle;">

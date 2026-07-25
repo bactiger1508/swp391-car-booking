@@ -146,6 +146,19 @@ public class UserService {
         try {
             return userDAO.delete(userId);
         } catch (SQLException e) {
+            if (e.getErrorCode() == 547) {
+                // SQL Server FK violation: user has active bookings/contracts/payments
+                try {
+                    User user = userDAO.findById(userId);
+                    if (user != null) {
+                        user.setActive(false);
+                        return userDAO.update(user);
+                    }
+                    return false;
+                } catch (SQLException ex) {
+                    throw new AppException("Không thể thay đổi trạng thái người dùng.", ex);
+                }
+            }
             throw new AppException("Không thể xóa người dùng.", e);
         }
     }

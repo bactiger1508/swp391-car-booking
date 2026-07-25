@@ -75,10 +75,6 @@ public class RentalContract {
     public int getVehicleId() { return vehicleId; }
     public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
-    @Deprecated
-    public int getCarId() { return vehicleId; }
-    @Deprecated
-    public void setCarId(int carId) { this.vehicleId = carId; }
 
     public LocalDateTime getStartDate() { return startDate; }
     public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }

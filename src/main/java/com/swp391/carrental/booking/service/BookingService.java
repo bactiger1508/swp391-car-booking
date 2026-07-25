@@ -52,15 +52,12 @@ public class BookingService {
     }
 
     /** Get active bookings for a specific car */
-    public List<Booking> getActiveBookingsByCar(int carId) {
+    public List<Booking> getActiveBookingsByVehicle(int vehicleId) {
         try {
-            return bookingDAO.findActiveBookingsByCarId(carId);
+            return bookingDAO.findActiveBookingsByVehicleId(vehicleId);
         } catch (SQLException e) {
             throw new AppException("Failed to get active bookings.", e);
         }
-    }
-    public List<Booking> getActiveBookingsByVehicle(int vehicleId) {
-        return getActiveBookingsByCar(vehicleId);
     }
 
     /** Get all bookings in the system */
@@ -196,6 +193,12 @@ public class BookingService {
      */
     public boolean updateBooking(Booking booking) {
         try {
+            // Check existing booking status must be PENDING
+            Booking existing = bookingDAO.findById(booking.getBookingId());
+            if (existing != null && !"PENDING".equalsIgnoreCase(existing.getStatus())) {
+                throw new AppException("Chỉ có thể chỉnh sửa đơn đặt xe khi ở trạng thái Chờ xử lý (PENDING).");
+            }
+
             // BR-01: Validate dates
             if (booking.getEndDate().isBefore(booking.getStartDate())) {
                 throw new AppException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");

@@ -43,19 +43,22 @@ public class AdditionalFeesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+                vehicleIdStr = request.getParameter("vehicleId");
+            }
 
-            if (bookingIdStr != null && carIdStr != null) {
+            if (bookingIdStr != null && vehicleIdStr != null) {
 
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int carId = Integer.parseInt(carIdStr);
+                int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(vehicleId);
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("bookingId", bookingId);
-                request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", vehicleId);
 
                 // Calculate total paid so far
                 com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
@@ -151,12 +154,20 @@ public class AdditionalFeesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         System.out.println("bookingId = " + request.getParameter("bookingId"));
-        System.out.println("carId = " + request.getParameter("carId"));
+        String vehicleIdParamVal = request.getParameter("vehicleId");
+        if (vehicleIdParamVal == null || vehicleIdParamVal.isEmpty()) {
+            vehicleIdParamVal = request.getParameter("vehicleId");
+        }
+        System.out.println("vehicleId = " + vehicleIdParamVal);
         String action = request.getParameter("action");
         if ("save".equals(action)) {
             try {
                 int bookingId = Integer.parseInt(request.getParameter("bookingId"));
-                int carId = Integer.parseInt(request.getParameter("carId"));
+                String vehicleIdParamVal2 = request.getParameter("vehicleId");
+                if (vehicleIdParamVal2 == null || vehicleIdParamVal2.isEmpty()) {
+                    vehicleIdParamVal2 = request.getParameter("vehicleId");
+                }
+                int vehicleId = Integer.parseInt(vehicleIdParamVal2);
 
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
@@ -188,7 +199,7 @@ public class AdditionalFeesServlet extends HttpServlet {
                 returnService.updateReturnVehicle(returns);
                 request.getSession().setAttribute("notification", "Đã lưu và áp dụng phụ thu vào đơn hàng!");
 
-                response.sendRedirect(request.getContextPath() + "/returns/detail?bookingId=" + bookingId + "&carId=" + carId);
+                response.sendRedirect(request.getContextPath() + "/returns/detail?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
             } catch (SQLException e) {
                 throw new ServletException(e);
             }

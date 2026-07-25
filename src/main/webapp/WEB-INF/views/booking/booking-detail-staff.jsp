@@ -69,8 +69,16 @@
                 </div>
                 <c:if test="${not empty car}">
                     <div style="display:flex;gap:16px;">
-                        <div style="width:96px;height:96px;border-radius:8px;background:var(--surface-container-high);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                            <span class="material-symbols-outlined" style="font-size:40px;color:var(--outline);">directions_car</span>
+                        <div style="width:96px;height:96px;border-radius:8px;background:var(--surface-container-high);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                            <c:choose>
+                                <c:when test="${not empty car.primaryImageUrl}">
+                                    <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                    <span class="material-symbols-outlined" style="font-size:40px;color:var(--outline);display:none;">directions_car</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="material-symbols-outlined" style="font-size:40px;color:var(--outline);">directions_car</span>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div>
                             <div style="font-weight:700;font-size:16px;color:var(--primary);">${car.brand} ${car.model}</div>
@@ -435,12 +443,39 @@
                 </c:choose>
 
                 <%-- Payment Actions (Staff/Admin) --%>
-                <c:if test="${totalPaid > finalRequired}">
-                    <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
-                        <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
-                        <span>Khách nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Cần hoàn trả tiền thừa.</span>
-                    </div>
-                </c:if>
+                <c:choose>
+                    <c:when test="${booking.status == 'CANCELLED'}">
+                        <c:choose>
+                            <c:when test="${isForfeited}">
+                                <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" style="color: var(--error);">error</span>
+                                    <c:choose>
+                                        <c:when test="${refundAmt > 0}">
+                                            <span>Đơn hàng đã hủy sát giờ (dưới 48h). Hoàn trả khách 50% cọc: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>. Tịch thu cọc còn lại: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>.</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span>Đơn hàng đã hủy sát giờ (dưới 24h). Tịch thu toàn bộ cọc của khách: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>. Không phát sinh hoàn trả.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </c:when>
+                            <c:when test="${refundAmt > 0}">
+                                <div class="bk-alert bk-alert-info" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 8px;">
+                                    <span class="material-symbols-outlined" style="color: var(--primary);">info</span>
+                                    <span>Đơn hàng đã hủy trước 48h. Cần hoàn trả 100% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
+                                </div>
+                            </c:when>
+                        </c:choose>
+                    </c:when>
+                    <c:otherwise>
+                        <c:if test="${totalPaid > finalRequired}">
+                            <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
+                                <span>Khách nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Cần hoàn trả tiền thừa.</span>
+                            </div>
+                        </c:if>
+                    </c:otherwise>
+                </c:choose>
                 <c:if test="${!depositPaid && (booking.status == 'PENDING' || booking.status == 'CONFIRMED')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#05CD99; border-color:#05CD99; padding:12px;">
                         <span class="material-symbols-outlined">payments</span> Ghi nhận đặt cọc
@@ -460,12 +495,12 @@
 
             <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
                 <c:if test="${booking.status == 'IN_PROGRESS'}">
-                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
+                    <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
                         <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
                     </a>
                 </c:if>
                 <c:if test="${not empty returns}">
-                    <a href="${pageContext.request.contextPath}/return/view?bookingId=${booking.bookingId}&carId=${booking.carId}" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center; padding:12px;">
+                    <a href="${pageContext.request.contextPath}/return/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center; padding:12px;">
                         <span class="material-symbols-outlined">assignment_return</span> Xem biên bản nhận lại xe
                     </a>
                 </c:if>

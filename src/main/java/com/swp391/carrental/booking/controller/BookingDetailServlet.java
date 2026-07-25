@@ -123,10 +123,37 @@ public class BookingDetailServlet extends HttpServlet {
                     rentalPaid = true;
                 }
             }
+            // Calculate refund and forfeiture for cancelled bookings
+            java.math.BigDecimal refundAmt = java.math.BigDecimal.ZERO;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                    java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
+                    refundAmt = refundAmt.add(effectiveAmt);
+                }
+            }
+
+            boolean isForfeited = false;
+            java.math.BigDecimal forfeitedAmount = java.math.BigDecimal.ZERO;
+            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+                if (depositPaidAmt.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    if (refundAmt.compareTo(java.math.BigDecimal.ZERO) == 0) {
+                        isForfeited = true;
+                        forfeitedAmount = depositPaidAmt;
+                    } else if (refundAmt.compareTo(depositPaidAmt) < 0) {
+                        isForfeited = true;
+                        forfeitedAmount = depositPaidAmt.subtract(refundAmt);
+                    }
+                }
+            }
+
             request.setAttribute("payments", payments);
             request.setAttribute("depositPaid", depositPaid);
             request.setAttribute("rentalPaid", rentalPaid);
             request.setAttribute("totalPaid", totalPaid);
+            request.setAttribute("refundAmt", refundAmt);
+            request.setAttribute("isForfeited", isForfeited);
+            request.setAttribute("forfeitedAmount", forfeitedAmount);
+            request.setAttribute("depositPaidAmt", depositPaidAmt);
             // Fetch return details and calculate total required amount including additional fees
             com.swp391.carrental.handover.model.VehicleReturn vehicleReturn = null;
             try {

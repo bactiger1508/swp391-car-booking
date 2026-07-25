@@ -70,11 +70,6 @@ public class VehicleReturn {
     public int getVehicleId() { return vehicleId; }
     public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
-    @Deprecated
-    public int getCarId() { return vehicleId; }
-    @Deprecated
-    public void setCarId(int carId) { this.vehicleId = carId; }
-
     public Integer getHandoverId() {
         return handoverId;
     }

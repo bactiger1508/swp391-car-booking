@@ -62,11 +62,6 @@ public class VehicleHandover {
     public int getVehicleId() { return vehicleId; }
     public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
-    @Deprecated
-    public int getCarId() { return vehicleId; }
-    @Deprecated
-    public void setCarId(int carId) { this.vehicleId = carId; }
-
     public LocalDateTime getHandoverDate() {
         return handoverDate;
     }

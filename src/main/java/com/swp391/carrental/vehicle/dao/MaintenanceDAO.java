@@ -224,16 +224,13 @@ public class MaintenanceDAO {
         }
     }
 
-    public void deleteByCarId(int carId) throws SQLException {
+    public void deleteByVehicleId(int vehicleId) throws SQLException {
         String sql = "DELETE FROM maintenance_schedules WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             ps.executeUpdate();
         }
-    }
-    public void deleteByVehicleId(int vehicleId) throws SQLException {
-        deleteByCarId(vehicleId);
     }
 
     /**

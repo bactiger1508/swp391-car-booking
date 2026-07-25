@@ -68,23 +68,23 @@
                             <label class="bk-form-label">Xe cụ thể <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">directions_car</span>
-                                <select name="carId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
+                                <select name="vehicleId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
                                     <option value="">-- Chọn xe --</option>
                                     <c:forEach var="car" items="${cars}">
-                                        <option value="${car.carId}"
+                                        <option value="${car.vehicleId}"
                                                 data-brand="${car.brand}"
                                                 data-model="${car.model}"
                                                 data-plate="${car.licensePlate}"
                                                 data-price="${car.dailyRate}"
                                                 data-location="${car.location}"
                                                 data-image="${car.primaryImageUrl}"
-                                                ${selectedCarId == car.vehicleId ? 'selected' : ''}>
+                                                ${selectedVehicleId == car.vehicleId ? 'selected' : ''}>
                                             ${car.brand} ${car.model} — ${car.licensePlate}
                                         </option>
                                     </c:forEach>
                                 </select>
                             </div>
-                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-carId"></span>
+                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-vehicleId"></span>
                         </div>
                     </div>
                     <%-- Available count hint --%>
@@ -214,7 +214,10 @@
                             <label class="bk-form-label">Điểm trả xe <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">pin_drop</span>
-                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" placeholder="Nhập địa điểm trả xe" value="${not empty returnLocation ? returnLocation : param.returnLocation}">
+                                <select name="returnLocation" id="returnLocation" class="bk-form-select">
+                                    <option value="Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" ${returnLocation == 'Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội' || param.returnLocation == 'Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội' ? 'selected' : ''}>Chi nhánh Hà Nội: 123 Đường Láng, Hà Nội</option>
+                                    <option value="Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" ${returnLocation == 'Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM' || param.returnLocation == 'Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM' ? 'selected' : ''}>Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM</option>
+                                </select>
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-returnLocation"></span>
                         </div>
@@ -343,7 +346,7 @@ var tetSurchargePct = parseFloat('${tetSurchargePercent}') || 20;
 var carsList = [];
 <c:forEach var="car" items="${cars}">
     carsList.push({
-        id: ${car.vehicleId},
+        vehicleId: ${car.vehicleId},
         brand: '${car.brand}',
         model: '${car.model}',
         plate: '${car.licensePlate}',
@@ -358,7 +361,7 @@ var carsList = [];
 
 function initFilters() {
     var brandFilter = document.getElementById('brandFilter');
-    var selectedCarId = "${selectedCarId}";
+    var selectedVehicleId = "${selectedVehicleId}";
     
     // Get unique brands
     var brands = [];
@@ -377,16 +380,16 @@ function initFilters() {
     });
 
     // If pre-selected car is passed
-    if (selectedCarId) {
-        var preSelectedCar = carsList.find(function(c) { return c.id == selectedCarId; });
+    if (selectedVehicleId) {
+        var preSelectedCar = carsList.find(function(c) { return c.vehicleId == selectedVehicleId; });
         if (preSelectedCar) {
             brandFilter.value = preSelectedCar.brand;
-            onBrandChange(preSelectedCar.model, preSelectedCar.id);
+            onBrandChange(preSelectedCar.model, preSelectedCar.vehicleId);
         }
     }
 }
 
-function onBrandChange(preSelectedModel, preSelectedCarId) {
+function onBrandChange(preSelectedModel, preSelectedVehicleId) {
     var brand = document.getElementById('brandFilter').value;
     var modelFilter = document.getElementById('modelFilter');
     var carSelect = document.getElementById('carSelect');
@@ -421,11 +424,11 @@ function onBrandChange(preSelectedModel, preSelectedCarId) {
     
     if (preSelectedModel) {
         modelFilter.value = preSelectedModel;
-        onModelChange(preSelectedCarId);
+        onModelChange(preSelectedVehicleId);
     }
 }
 
-function onModelChange(preSelectedCarId) {
+function onModelChange(preSelectedVehicleId) {
     var brand = document.getElementById('brandFilter').value;
     var model = document.getElementById('modelFilter').value;
     var carSelect = document.getElementById('carSelect');
@@ -447,7 +450,7 @@ function onModelChange(preSelectedCarId) {
     
     matchingCars.forEach(function(car) {
         var opt = document.createElement('option');
-        opt.value = car.id;
+        opt.value = car.vehicleId;
         opt.textContent = car.brand + ' ' + car.model + ' — ' + car.plate;
         opt.setAttribute('data-brand', car.brand);
         opt.setAttribute('data-model', car.model);
@@ -463,8 +466,8 @@ function onModelChange(preSelectedCarId) {
     hintText.textContent = 'Có ' + matchingCars.length + ' xe sẵn sàng cho dòng ' + brand + ' ' + model;
     hintDiv.style.display = 'block';
     
-    if (preSelectedCarId) {
-        carSelect.value = preSelectedCarId;
+    if (preSelectedVehicleId) {
+        carSelect.value = preSelectedVehicleId;
         updateCarInfo();
     }
 }
@@ -556,8 +559,12 @@ function onRentalModeChange() {
 
 var map = null;
 var deliveryMarker = null;
-var SHOWROOM_LAT = 21.028511;
-var SHOWROOM_LNG = 105.804817;
+
+// Branch coordinates
+var BRANCH_HN = { lat: 21.028511, lng: 105.804817, name: "Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" };
+var BRANCH_HCM = { lat: 10.776889, lng: 106.700806, name: "Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" };
+var SHOWROOM_LAT = BRANCH_HN.lat;
+var SHOWROOM_LNG = BRANCH_HN.lng;
 
 function onDeliveryMethodChange() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
@@ -668,6 +675,13 @@ function fetchRoadDistance(lat, lng) {
 }
 
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+    // Determine the distance to Hanoi and HCM branches, and return the minimum
+    var distToHN = getHaversine(BRANCH_HN.lat, BRANCH_HN.lng, lat2, lon2);
+    var distToHCM = getHaversine(BRANCH_HCM.lat, BRANCH_HCM.lng, lat2, lon2);
+    return Math.min(distToHN, distToHCM);
+}
+
+function getHaversine(lat1, lon1, lat2, lon2) {
     var R = 6371; // km
     var dLat = (lat2 - lat1) * Math.PI / 180;
     var dLon = (lon2 - lon1) * Math.PI / 180;
@@ -716,7 +730,7 @@ function searchAddressOnMap() {
 }
 
 function calculateBookingCost() {
-    var carId = document.getElementById('carSelect').value;
+    var vehicleId = document.getElementById('carSelect').value;
     var sd = document.getElementById('startDate').value;
     var ed = document.getElementById('endDate').value;
     var modeCombo = document.getElementById('rentalModeCombo').value;
@@ -724,7 +738,7 @@ function calculateBookingCost() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
     var deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 0;
 
-    if (!carId || !sd || !ed) {
+    if (!vehicleId || !sd || !ed) {
         return;
     }
 
@@ -735,9 +749,9 @@ function calculateBookingCost() {
         days = 1;
     }
 
-    var dailyRate = carPrices[carId] || 0;
-    var model = carModels[carId] || "";
-    var brand = carBrands[carId] || "";
+    var dailyRate = carPrices[vehicleId] || 0;
+    var model = carModels[vehicleId] || "";
+    var brand = carBrands[vehicleId] || "";
 
     var rentalMode = "DAILY";
     var pricingPackage = "";
@@ -911,7 +925,7 @@ function doCheckAvailabilityRealtime() {
     var startTimeEl = document.getElementById('startTime');
     var endTimeEl = document.getElementById('endTime');
 
-    var carId = carSelect ? carSelect.value : '';
+    var vehicleId = carSelect ? carSelect.value : '';
     var startDate = startDateEl ? startDateEl.value : '';
     var endDate = endDateEl ? endDateEl.value : '';
     var startTime = startTimeEl ? startTimeEl.value : '08:00';
@@ -921,7 +935,7 @@ function doCheckAvailabilityRealtime() {
     var errText = document.getElementById('err-availability-text');
     var submitBtn = document.getElementById('submitBookingBtn');
 
-    if (!carId || !startDate || !endDate) {
+    if (!vehicleId || !startDate || !endDate) {
         if (errAlert) errAlert.style.display = 'none';
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -932,7 +946,7 @@ function doCheckAvailabilityRealtime() {
     }
 
     var url = '${pageContext.request.contextPath}/vehicles/availability?action=checkCarAvailability'
-            + '&carId=' + encodeURIComponent(carId)
+            + '&vehicleId=' + encodeURIComponent(vehicleId)
             + '&startDate=' + encodeURIComponent(startDate)
             + '&startTime=' + encodeURIComponent(startTime)
             + '&endDate=' + encodeURIComponent(endDate)
@@ -1048,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             var carVal = document.getElementById('carSelect').value;
             if (!carVal) {
-                showError('carId', 'Vui lòng chọn xe.');
+                showError('vehicleId', 'Vui lòng chọn xe.');
             }
             
             var sdVal = document.getElementById('startDate').value;
