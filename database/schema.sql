@@ -104,7 +104,7 @@ CREATE TABLE vehicles (
     created_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_cars_vehicle_models FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id)
+    CONSTRAINT FK_vehicles_vehicle_models FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id)
 );
 GO
 
@@ -121,7 +121,7 @@ CREATE TABLE vehicle_images (
     sort_order  INT             NOT NULL DEFAULT 0,
     created_at  DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_car_images_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
+    CONSTRAINT FK_vehicle_images_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
 );
 GO
 
@@ -413,7 +413,7 @@ CREATE INDEX IX_bookings_customer ON bookings(customer_id);
 CREATE INDEX IX_bookings_car ON bookings(car_id);
 CREATE INDEX IX_bookings_status ON bookings(status);
 CREATE INDEX IX_bookings_dates ON bookings(start_date, end_date);
-CREATE INDEX IX_cars_status ON cars(status);
+CREATE INDEX IX_vehicles_status ON vehicles(status);
 CREATE INDEX IX_payments_booking ON payments(booking_id);
 CREATE INDEX IX_audit_logs_user ON audit_logs(user_id);
 CREATE INDEX IX_audit_logs_entity ON audit_logs(entity_type, entity_id);
@@ -423,4 +423,124 @@ CREATE INDEX IX_notifications_created ON notifications(created_at);
 GO
 
 PRINT 'Schema created successfully!';
+GO
+-- 1. Update payments table schema to support overpayment/underpayment tracking
+IF NOT EXISTS (
+    SELECT 1 
+    FROM sys.columns 
+    WHERE object_id = OBJECT_ID('payments') AND name = 'amount_paid'
+)
+BEGIN
+    ALTER TABLE payments ADD amount_paid DECIMAL(18,2) NULL;
+END
+GO
+
+-- Update existing completed payments to default amount_paid if null
+UPDATE payments 
+SET amount_paid = amount 
+WHERE amount_paid IS NULL AND status = 'COMPLETED';
+GO
+
+-- 2. Configure bank account and webhook policies
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_ACCOUNT_NAME')
+    UPDATE policy_settings SET policy_value = N'NGUYEN LAM TUNG' WHERE policy_key = 'BANK_ACCOUNT_NAME';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'BANK_ACCOUNT_NAME', N'NGUYEN LAM TUNG', N'Tên tài khoản ngân hàng', N'PAYMENT', 1);
+
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_ACCOUNT_NUMBER')
+    UPDATE policy_settings SET policy_value = N'00000104077' WHERE policy_key = 'BANK_ACCOUNT_NUMBER';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'BANK_ACCOUNT_NUMBER', N'00000104077', N'Số tài khoản ngân hàng', N'PAYMENT', 1);
+
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_NAME')
+    UPDATE policy_settings SET policy_value = N'TPBank' WHERE policy_key = 'BANK_NAME';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'BANK_NAME', N'TPBank', N'Tên ngân hàng', N'PAYMENT', 1);
+
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'BANK_BRANCH')
+    UPDATE policy_settings SET policy_value = N'Chi nhánh Hà Nội' WHERE policy_key = 'BANK_BRANCH';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'BANK_BRANCH', N'Chi nhánh Hà Nội', N'Chi nhánh ngân hàng', N'PAYMENT', 1);
+
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'WEBHOOK_PROVIDER')
+    UPDATE policy_settings SET policy_value = N'SEPAY' WHERE policy_key = 'WEBHOOK_PROVIDER';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'WEBHOOK_PROVIDER', N'SEPAY', N'Nhà cung cấp dịch vụ Webhook thanh toán (SEPAY, CASSO, PAYOS)', N'PAYMENT', 1);
+
+IF EXISTS (SELECT 1 FROM policy_settings WHERE policy_key = 'WEBHOOK_SECRET')
+    UPDATE policy_settings SET policy_value = N'CRS' WHERE policy_key = 'WEBHOOK_SECRET';
+ELSE
+    INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) 
+    VALUES (N'WEBHOOK_SECRET', N'CRS', N'Khóa bảo mật để xác thực request webhook từ provider', N'PAYMENT', 1);
+GO
+-- ============================================================
+-- VAT Invoice Setup & Test Data
+-- Database: CarRentalDB
+-- SQL Server (T-SQL)
+-- ============================================================
+
+USE CarRentalDB;
+GO
+
+-- 1. Create vat_invoices table if not exists
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[vat_invoices]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE vat_invoices (
+        invoice_id INT IDENTITY(1,1) PRIMARY KEY,
+        contract_id INT NOT NULL UNIQUE,
+        invoice_code NVARCHAR(50) NOT NULL UNIQUE,
+        invoice_date DATETIME2 NOT NULL DEFAULT GETDATE(),
+        invoice_status NVARCHAR(20) NOT NULL DEFAULT 'ISSUED',
+        amount_before_tax DECIMAL(18,2) NOT NULL,
+        tax_rate DECIMAL(5,2) NOT NULL,
+        tax_amount DECIMAL(18,2) NOT NULL,
+        total_amount DECIMAL(18,2) NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+        updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+        CONSTRAINT FK_vat_invoices_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id)
+    );
+    PRINT 'Table vat_invoices created successfully!';
+END
+ELSE
+BEGIN
+    PRINT 'Table vat_invoices already exists.';
+END
+GO
+
+-- 2. Insert Completed Booking for testing (if booking_id = 9 does not exist)
+IF NOT EXISTS (SELECT 1 FROM bookings WHERE booking_id = 9)
+BEGIN
+    SET IDENTITY_INSERT bookings ON;
+    INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
+    VALUES (9, 3, 1, '2026-07-10 08:00:00', '2026-07-15 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 4000000.00, 1200000.00, N'COMPLETED', 2, '2026-07-09 10:00:00');
+    SET IDENTITY_INSERT bookings OFF;
+    PRINT 'Test Booking inserted successfully!';
+END
+GO
+
+-- 3. Insert Completed Contract for testing (if contract_id = 9 does not exist)
+IF NOT EXISTS (SELECT 1 FROM rental_contracts WHERE contract_id = 9)
+BEGIN
+    SET IDENTITY_INSERT rental_contracts ON;
+    INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, car_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
+    VALUES (9, 9, N'CTR-2026-TEST9', 3, 1, '2026-07-10 08:00:00', '2026-07-15 08:00:00', 800000.00, 4000000.00, 1200000.00, N'COMPLETED', 2, '2026-07-10 07:30:00');
+    SET IDENTITY_INSERT rental_contracts OFF;
+    PRINT 'Test Contract inserted successfully!';
+END
+GO
+
+-- 4. Insert Completed Payments (if not already present for booking_id = 9)
+IF NOT EXISTS (SELECT 1 FROM payments WHERE booking_id = 9)
+BEGIN
+    INSERT INTO payments (booking_id, contract_id, amount, payment_type, payment_method, status, transaction_ref, paid_at, recorded_by)
+    VALUES 
+        (9, 9, 1200000.00, N'DEPOSIT', N'BANK_TRANSFER', N'COMPLETED', N'TXN-TEST-DEP9', '2026-07-09 11:00:00', 2),
+        (9, 9, 2800000.00, N'RENTAL', N'BANK_TRANSFER', N'COMPLETED', N'TXN-TEST-RENT9', '2026-07-15 17:00:00', 2);
+    PRINT 'Test Payments inserted successfully!';
+END
 GO
