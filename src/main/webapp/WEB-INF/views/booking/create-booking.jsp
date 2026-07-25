@@ -515,46 +515,117 @@ function updateCarInfo() {
     calculateBookingCost();
 }
 
+function getLocalDateString(d) {
+    if (!d) d = new Date();
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+}
+
+// Track previous mode to detect actual changes
+var previousRentalMode = document.getElementById('rentalModeCombo').value;
+
 function onRentalModeChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var desc = document.getElementById('modeDescription');
+    var sdInput = document.getElementById('startDate');
     var edInput = document.getElementById('endDate');
-    var sd = document.getElementById('startDate').value;
+
+    // Detect if the mode actually changed (not just init)
+    var modeActuallyChanged = (previousRentalMode !== modeCombo);
+    previousRentalMode = modeCombo;
+
+    // Reset dates when switching mode (but not on initial page load)
+    if (modeActuallyChanged && sdInput.value) {
+        sdInput.value = '';
+        edInput.value = '';
+        // Clear availability error
+        var errAlert = document.getElementById('err-availability');
+        if (errAlert) errAlert.style.display = 'none';
+        var submitBtn = document.getElementById('submitBookingBtn');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
 
     var descText = "";
+    var isCombo = false;
+    var comboDays = 0;
+
     if (modeCombo === "DAILY_STANDARD") {
         descText = "<strong>Thuê theo ngày:</strong> Phù hợp cho nhu cầu di chuyển linh hoạt. Giới hạn " + kmLimitPerDay + "km/ngày. Ưu đãi chiết khấu: " + discountShortTier + "% cho 5-9 ngày, " + discountMediumTier + "% cho 10-29 ngày, " + discountLongTier + "% từ 30 ngày trở lên. Tặng thêm chiết khấu " + lowMileageDiscountPercent + "% khi di chuyển ít (khấu hao thấp, dưới " + Math.round(kmLimitPerDay / 2) + "km/ngày).";
         edInput.readOnly = false;
+        edInput.style.background = '';
+        edInput.style.cursor = '';
     } else if (modeCombo === "TRIP_STANDARD") {
         descText = "<strong>Thuê theo chuyến:</strong> Trọn gói di chuyển ngắn hạn trong ngày hoặc chuyến nhanh. Giới hạn " + tripKmLimit + "km trọn gói. Đơn giá km phụ trội " + formatVND(extraKmFee) + "/km. Giảm " + lowMileageDiscountPercent + "% nếu di chuyển ít hơn " + Math.round(tripKmLimit / 2) + "km.";
         edInput.readOnly = false;
+        edInput.style.background = '';
+        edInput.style.cursor = '';
     } else if (modeCombo === "COMBO_7_DAYS") {
         descText = "<strong>Combo 7 ngày:</strong> Gói thuê tuần cực kỳ ưu đãi, tiết kiệm " + combo7DiscountPercent + "% so với giá thuê ngày thường. Giới hạn " + formatNumber(combo7KmLimit) + "km cho cả tuần thuê. Thích hợp đi công tác hoặc du lịch gia đình.";
-        edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
-        }
+        isCombo = true;
+        comboDays = 7;
     } else if (modeCombo === "COMBO_10_DAYS") {
         descText = "<strong>Combo 10 ngày:</strong> Gói thuê dài hạn cực tốt, tiết kiệm " + combo10DiscountPercent + "% so với giá ngày thường. Giới hạn " + formatNumber(combo10KmLimit) + "km toàn bộ chuyến đi.";
-        edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
-        }
+        isCombo = true;
+        comboDays = 10;
     } else if (modeCombo === "COMBO_30_DAYS") {
         descText = "<strong>Combo 30 ngày (Tháng):</strong> Gói thuê tháng siêu tiết kiệm, giảm giá lên tới " + combo30DiscountPercent + "% so với thuê ngày lẻ. Giới hạn " + formatNumber(combo30KmLimit) + "km cho cả tháng thuê.";
+        isCombo = true;
+        comboDays = 30;
+    }
+
+    // Handle combo mode: lock end date, auto-compute if start date exists
+    if (isCombo) {
         edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
+        edInput.style.background = 'var(--bg-body)';
+        edInput.style.cursor = 'not-allowed';
+        if (sdInput.value) {
+            autoSetEndDate(sdInput.value, comboDays);
         }
     }
+
     desc.innerHTML = descText;
     calculateBookingCost();
+}
+
+/**
+ * Auto-set endDate = startDate + comboDays
+ */
+function autoSetEndDate(startDateStr, comboDays) {
+    var edInput = document.getElementById('endDate');
+    var start = new Date(startDateStr);
+    var end = new Date(start.getTime() + comboDays * 24 * 60 * 60 * 1000);
+    edInput.value = getLocalDateString(end);
+}
+
+/**
+ * Called when startDate changes - auto-compute endDate for combo packages
+ */
+function onStartDateChange() {
+    var modeCombo = document.getElementById('rentalModeCombo').value;
+    var sdInput = document.getElementById('startDate');
+    var edInput = document.getElementById('endDate');
+
+    if (!sdInput.value) return;
+
+    // Set min for end date
+    edInput.setAttribute('min', sdInput.value);
+
+    if (modeCombo === "COMBO_7_DAYS") {
+        autoSetEndDate(sdInput.value, 7);
+    } else if (modeCombo === "COMBO_10_DAYS") {
+        autoSetEndDate(sdInput.value, 10);
+    } else if (modeCombo === "COMBO_30_DAYS") {
+        autoSetEndDate(sdInput.value, 30);
+    }
+
+    calculateBookingCost();
+    checkAvailabilityRealtime();
 }
 
 var map = null;
@@ -1001,21 +1072,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ['change', 'input', 'blur', 'keyup'].forEach(function(evt) {
                 el.addEventListener(evt, function() {
                     if (el.id === 'startDate') {
-                        // If combo package, auto update end date
-                        var modeCombo = document.getElementById('rentalModeCombo').value;
-                        if (modeCombo === "COMBO_7_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        } else if (modeCombo === "COMBO_10_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        } else if (modeCombo === "COMBO_30_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        }
+                        onStartDateChange();
                     }
                     calculateBookingCost();
                     checkAvailabilityRealtime();
