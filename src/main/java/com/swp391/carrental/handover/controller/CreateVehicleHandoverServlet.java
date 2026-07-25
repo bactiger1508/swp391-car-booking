@@ -8,10 +8,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.contract.dao.ContractDAO;
@@ -20,18 +22,24 @@ import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
 import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
+import com.swp391.carrental.payment.model.Payment;
+import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
-@WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = {"/handovers/create"})
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 1,
-        maxFileSize = 1024 * 1024 * 10,
-        maxRequestSize = 1024 * 1024 * 15
-)
-
+/**
+ * Name: CreateVehicleHandoverServlet
+ * 
+ * @Author: TamTTMHE190340
+ *          Date: 19/06/2026
+ *          Version: 1.0
+ *          Description: Controller for initializing and creating new vehicle
+ *          handover records.
+ */
+@WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = { "/handovers/create" })
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 15)
 public class CreateVehicleHandoverServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
@@ -55,18 +63,28 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
 
+                VehicleHandover existingHandover = handoverService.getHandoverByBookingId(bookingId);
+                if (existingHandover != null) {
+                    request.getSession().setAttribute("infoMessage",
+                            "Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
+                    response.sendRedirect(
+                            request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&carId=" + carId);
+                    return;
+                }
+
                 // Enforce Handover Validation Checks: active contract and paid deposit
                 if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
 
-                com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
-                java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                PaymentService paymentService = new PaymentService();
+                List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
                 boolean depositPaid = false;
                 boolean rentalPaid = false;
-                for (com.swp391.carrental.payment.model.Payment p : payments) {
+                for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                         if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
                             depositPaid = true;
@@ -76,12 +94,14 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                     }
                 }
                 if (!depositPaid) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
                 if (!rentalPaid) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
@@ -113,19 +133,29 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
             int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
 
+            VehicleHandover existingHandover = handoverService.getHandoverByBookingId(bookingId);
+            if (existingHandover != null) {
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể tạo thêm: Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
+                response.sendRedirect(
+                        request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&carId=" + carId);
+                return;
+            }
+
             // Enforce Handover Validation Checks in POST
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
 
-            com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
-            java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+            PaymentService paymentService = new PaymentService();
+            List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
             boolean depositPaid = false;
             boolean rentalPaid = false;
-            for (com.swp391.carrental.payment.model.Payment p : payments) {
+            for (Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
                         depositPaid = true;
@@ -135,12 +165,14 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 }
             }
             if (!depositPaid) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
             if (!rentalPaid) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
@@ -185,7 +217,6 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             String status = "CHƯA KÝ NHẬN";
 
             // ===== RELATION DATA =====
-
             Integer contractId = contract != null ? contract.getContractId() : null;
 
             Booking booking = bookingDAO.findById(bookingId);
@@ -226,14 +257,16 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
             if (request.getSession() != null) {
-                request.getSession().setAttribute("successMessage", "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
+                request.getSession().setAttribute("successMessage",
+                        "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
             }
 
             response.sendRedirect(request.getContextPath() + "/handovers");
 
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi bàn giao: " + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
         }
     }
 
@@ -294,7 +327,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         if (currentOdo == null || currentOdo.isBlank()) {
             loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng không để trống thông tin");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
 
@@ -304,7 +338,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         if (mileage < car.getMileage()) {
             loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng nhập số km hợp lệ");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
         return true;
@@ -317,7 +352,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         if (fuelLevel == null || fuelLevel.isBlank()) {
             loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentFuelLevelError", "Vui lòng chọn mức nhiên liệu");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
         return true;
@@ -337,10 +373,10 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
                 request.setAttribute(
                         "uploadPhotosError",
-                        "Ảnh " + part.getSubmittedFileName() + " vượt quá dung lượng 10MB."
-                );
+                        "Ảnh " + part.getSubmittedFileName() + " vượt quá dung lượng 10MB.");
 
-                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request,
+                        response);
                 return false;
             }
         }
@@ -389,7 +425,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         try {
             Notification notif = new Notification(customerId,
                     "Biên bản bàn giao xe đã được tạo",
-                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
+                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId
+                            + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
                     "HANDOVER");
             notif.setReferenceType("HANDOVER");
             notif.setReferenceId(handoverId);

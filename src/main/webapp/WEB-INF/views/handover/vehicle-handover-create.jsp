@@ -300,19 +300,21 @@
                     <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả</p>
                     <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Định dạng SVG, PNG, JPG hoặc GIF (Tối đa 10MB)</p>
                 </div>
-                <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;"></div>
-                <c:if test="${not empty handover.photosUrl}">
-                    <c:set var="photos" value="${handover.photosUrl.split(',')}" />
-                    <c:forEach var="photo" items="${photos}">
-                        <img src="${pageContext.request.contextPath}${photo}"
-                             style="width:120px;
-                             height:120px;
-                             object-fit:cover;
-                             border-radius:8px;
-                             border:1px solid #ddd;" />
-                        <button type="button" class="del-old preview-remove-btn">&times;</button>
-                    </c:forEach>
-                </c:if>
+                
+                <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;">
+                    <c:if test="${not empty handover.photosUrl}">
+                        <c:set var="photos" value="${handover.photosUrl.split(',')}" />
+                        <c:forEach var="photo" items="${photos}">
+                            <c:if test="${not empty photo}">
+                                <div class="img-wrapper" style="position:relative; display:inline-block;">
+                                    <img src="${pageContext.request.contextPath}${photo.startsWith('/') ? '' : '/'}${photo}"
+                                         style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;" />
+                                    <button type="button" class="del-old preview-remove-btn">&times;</button>
+                                </div>
+                            </c:if>
+                        </c:forEach>
+                    </c:if>
+                </div>
             </div>
 
             <!-- Ghi chú thêm -->
@@ -353,93 +355,69 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-
         const fileInput = document.getElementById("evidencePhotos");
         const previewContainer = document.getElementById("imagePreviewContainer");
         const errorDiv = document.getElementById("uploadPhotosError");
 
         let selectedFiles = [];
+        let isSyncing = false;
+
+        if (!fileInput || !previewContainer) return;
 
         fileInput.addEventListener("change", function () {
+            if (isSyncing) return;
 
             const files = Array.from(fileInput.files);
-
             files.forEach(function (file) {
-
-                // Validate dung lượng tối đa 10MB
                 if (file.size > 10 * 1024 * 1024) {
-                    showError(file.name + " vượt quá 10MB");
+                    if (errorDiv) {
+                        errorDiv.innerText = file.name + " vượt quá 10MB";
+                        setTimeout(() => errorDiv.innerText = "", 3000);
+                    }
                     return;
                 }
-
                 selectedFiles.push(file);
-
-                previewImage(file);
+                renderPreview(file);
             });
-
-            updateFileInput();
+            syncFiles();
         });
 
-        function previewImage(file) {
+        function renderPreview(file) {
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "position:relative; display:inline-block;";
 
-            const reader = new FileReader();
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.style.cssText = "width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;";
 
-            reader.onload = function (e) {
-
-                const wrapper = document.createElement("div");
-                wrapper.style.position = "relative";
-                wrapper.style.display = "inline-block";
-
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style.width = "120px";
-                img.style.height = "120px";
-                img.style.objectFit = "cover";
-
-                const deleteBtn = document.createElement("button");
-                deleteBtn.type = "button";
-                deleteBtn.innerHTML = "&times;";
-                deleteBtn.classList.add("preview-remove-btn");
-
-                deleteBtn.onclick = function () {
-
-                    selectedFiles = selectedFiles.filter(function (f) {
-                        return f !== file;
-                    });
-
-                    wrapper.remove();
-
-                    updateFileInput();
-                };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(deleteBtn);
-
-                previewContainer.appendChild(wrapper);
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.innerHTML = "&times;";
+            deleteBtn.className = "preview-remove-btn";
+            deleteBtn.onclick = function () {
+                selectedFiles = selectedFiles.filter(f => f !== file);
+                wrapper.remove();
+                syncFiles();
             };
 
-            reader.readAsDataURL(file);
+            wrapper.appendChild(img);
+            wrapper.appendChild(deleteBtn);
+            previewContainer.appendChild(wrapper);
         }
 
-        function updateFileInput() {
-
+        function syncFiles() {
+            isSyncing = true;
             const dt = new DataTransfer();
-
-            selectedFiles.forEach(function (file) {
-                dt.items.add(file);
-            });
-
+            selectedFiles.forEach(file => dt.items.add(file));
             fileInput.files = dt.files;
+            isSyncing = false;
         }
 
-        function showError(message) {
-
-            errorDiv.innerText = message;
-
-            setTimeout(function () {
-                errorDiv.innerText = "";
-            }, 3000);
-        }
+        document.querySelectorAll(".del-old").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                btn.parentElement.remove();
+            });
+        });
     });
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

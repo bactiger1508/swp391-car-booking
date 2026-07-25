@@ -1,5 +1,19 @@
 package com.swp391.carrental.handover.controller;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.math.BigDecimal;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.contract.dao.ContractDAO;
@@ -9,34 +23,26 @@ import com.swp391.carrental.handover.model.*;
 import com.swp391.carrental.handover.service.ReturnService;
 import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
+import com.swp391.carrental.policy.service.FeeCalculator;
+import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
- 
-import java.math.BigDecimal;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+/**
+ * Name: VehicleReturnDetailServlet
+ * @Author: TamTTMHE190340
+ * Date: 21/06/2026
+ * Version: 1.0
+ * Description: Controller for inspecting, processing, and confirming vehicle returns and defect checklists.
+ */
 @WebServlet(name = "VehicleReturnDetailServlet", urlPatterns = {"/returns/detail"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 1,
         maxFileSize = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 15
 )
-
 public class VehicleReturnDetailServlet extends HttpServlet {
 
     private final ReturnService returnService = new ReturnService();
@@ -54,15 +60,19 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty()) {
+                vehicleIdStr = request.getParameter("carId");
+            }
 
             if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
                 int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(vehicleId);
+                Vehicle vehicle = vehicleDAO.findById(vehicleId);
+                Vehicle car = vehicle;
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
-                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+                VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
                 int distanceDriven = 0;
@@ -73,7 +83,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     if (contract != null) {
                         returns.setContractId(contract.getContractId());
                     }
-                    if (handover != null) {
+                    if (handover != null && handover.getHandoverId() > 0) {
                         returns.setHandoverId(handover.getHandoverId());
                     }
                     returns.setExteriorCondition("");
@@ -89,24 +99,48 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     returns.setLostItemFee(BigDecimal.ZERO);
                     returns.setTotalAdditionalFee(BigDecimal.ZERO);
                 } else {
-                    int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
-                    distanceDriven = returns.getMileageAtReturn() - mileageAtHandover;
-                    if (distanceDriven < 0) distanceDriven = 0;
+                    int mReturn = returns.getMileageAtReturn();
+                    int mHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                    if (mReturn > 0) {
+                        distanceDriven = Math.max(0, mReturn - mHandover);
+                    }
                 }
 
                 request.setAttribute("booking", booking);
-                request.setAttribute("car", car);
+                request.setAttribute("vehicle", vehicle);
+                request.setAttribute("car", vehicle);
                 request.setAttribute("contract", contract);
                 request.setAttribute("handover", handover);
                 request.setAttribute("returns", returns);
                 request.setAttribute("bookingId", bookingId);
                 request.setAttribute("vehicleId", vehicleId);
+<<<<<<< HEAD
+=======
+                request.setAttribute("carId", vehicleId);
+                boolean needsMaintenance = returns != null && returns.getNotes() != null && returns.getNotes().contains("[CẦN BẢO DƯỠNG]");
+                request.setAttribute("needsMaintenance", needsMaintenance);
+>>>>>>> origin/TamDev
                 request.setAttribute("distanceDriven", distanceDriven);
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
                     request.setAttribute("customer", customer);
                 }
+
+                User staff = null;
+                if (returns != null && returns.getReceivedBy() > 0) {
+                    staff = userDAO.findById(returns.getReceivedBy());
+                }
+                if (staff == null && handover != null && handover.getHandedBy() > 0) {
+                    staff = userDAO.findById(handover.getHandedBy());
+                }
+                if (staff == null) {
+                    User currentUser = (User) request.getSession().getAttribute("currentUser");
+                    if (currentUser != null) {
+                        staff = currentUser;
+                    }
+                }
+                request.setAttribute("staff", staff);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,8 +158,18 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             int bookingId = 0;
             int vehicleId = 0;
             try {
+<<<<<<< HEAD
                 bookingId = Integer.parseInt(request.getParameter("bookingId"));
                 vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
+=======
+                String bIdStr = request.getParameter("bookingId");
+                String vIdStr = request.getParameter("vehicleId");
+                if (vIdStr == null || vIdStr.trim().isEmpty()) {
+                    vIdStr = request.getParameter("carId");
+                }
+                bookingId = Integer.parseInt(bIdStr);
+                vehicleId = Integer.parseInt(vIdStr);
+>>>>>>> origin/TamDev
 
                 // ===== VALIDATION =====
                 if (!validateOdo(request, response, bookingId, vehicleId)) {
@@ -147,28 +191,32 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     returns = new VehicleReturn();
                     returns.setBookingId(bookingId);
                     returns.setVehicleId(vehicleId);
+<<<<<<< HEAD
                     
+=======
+
+>>>>>>> origin/TamDev
                     RentalContract contract = contractDAO.findByBookingId(bookingId);
                     if (contract != null) {
                         returns.setContractId(contract.getContractId());
                     }
-                    
+
                     VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
                     if (handover != null) {
                         returns.setHandoverId(handover.getHandoverId());
                     }
-                    
+
                     Booking booking = bookingDAO.findById(bookingId);
                     if (booking != null) {
                         returns.setReturnedBy(booking.getCustomerId());
                     }
-                    
+
                     HttpSession session = request.getSession();
                     User currentUser = (User) session.getAttribute("currentUser");
                     if (currentUser != null) {
                         returns.setReceivedBy(currentUser.getUserId());
                     }
-                    
+
                     returns.setReturnDate(java.time.LocalDateTime.now());
                     returns.setLateHours(BigDecimal.ZERO);
                     returns.setExtraKmFee(BigDecimal.ZERO);
@@ -180,8 +228,10 @@ public class VehicleReturnDetailServlet extends HttpServlet {
 
                 // ===== FORM DATA =====
                 int distanceDriven = Integer.parseInt(request.getParameter("currentOdo"));
-                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
-                int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                RentalContract contract = contractDAO.findByBookingId(bookingId);
+                Vehicle vehicle = vehicleDAO.findById(vehicleId);
+                VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
+                int mileageAtHandover = handover.getMileageAtHandover();
                 int mileage = mileageAtHandover + distanceDriven;
 
                 String fuelLevel = request.getParameter("fuel");
@@ -191,9 +241,19 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     fuelLevel = "EMPTY";
                 }
 
+                boolean needsMaintenance = "true".equalsIgnoreCase(request.getParameter("needsMaintenance"));
+                request.setAttribute("needsMaintenance", needsMaintenance);
+
                 String notes = request.getParameter("notes");
                 if (notes == null || notes.isBlank()) {
                     notes = "Đã kiểm tra và nhận lại xe";
+                }
+                if (needsMaintenance) {
+                    if (!notes.contains("[CẦN BẢO DƯỠNG]")) {
+                        notes = "[CẦN BẢO DƯỠNG] " + notes;
+                    }
+                } else {
+                    notes = notes.replace("[CẦN BẢO DƯỠNG]", "").trim();
                 }
 
                 String exterior = buildExteriorCondition(request);
@@ -217,6 +277,10 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 }
 
                 // ===== UPDATE OBJECT =====
+                User currentUser = (User) request.getSession().getAttribute("currentUser");
+                if (currentUser != null) {
+                    returns.setReceivedBy(currentUser.getUserId());
+                }
                 returns.setMileageAtReturn(mileage);
                 returns.setFuelLevel(fuelLevel);
 
@@ -227,57 +291,68 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 returns.setInteriorCondition(interior);
                 returns.setMechanicalCondition(mechanical);
 
-                // Auto-calculate default return fees (late fee & extra km fee) only during "calculate" step.
-                // This prevents overwriting manual adjustments made in additional-fees page when confirming.
-                if ("calculate".equals(action)) {
-                    Booking booking = bookingDAO.findById(bookingId);
-                    com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+                // Auto-calculate default return fees (late fee & extra km fee)
+                Booking booking = bookingDAO.findById(bookingId);
+                PolicyService policyService = new PolicyService();
 
-                    BigDecimal lateHours = returns.getLateHours();
-                    BigDecimal lateFee = BigDecimal.ZERO;
-                    BigDecimal feePerHour = new BigDecimal(policyService.getPolicyValue("LATE_FEE_PER_HOUR", "100000"));
+                BigDecimal lateHours = returns.getLateHours();
+                BigDecimal lateFee = BigDecimal.ZERO;
+                BigDecimal feePerHour = new BigDecimal(policyService.getPolicyValue("LATE_FEE_PER_HOUR", "100000"));
 
-                    if (lateHours == null || (returns.getReturnId() == 0 && lateHours.compareTo(BigDecimal.ZERO) == 0)) {
-                        if (booking != null && booking.getEndDate() != null) {
-                            java.time.LocalDateTime expectedReturn = booking.getEndDate();
-                            java.time.LocalDateTime actualReturn = returns.getReturnDate() != null ? returns.getReturnDate() : java.time.LocalDateTime.now();
-                            if (actualReturn.isAfter(expectedReturn)) {
-                                long hours = java.time.Duration.between(expectedReturn, actualReturn).toHours();
-                                if (hours < 1) {
-                                    hours = 1;
-                                }
-                                lateHours = BigDecimal.valueOf(hours);
-                            } else {
-                                lateHours = BigDecimal.ZERO;
+                if (lateHours == null || (returns.getReturnId() == 0 && lateHours.compareTo(BigDecimal.ZERO) == 0)) {
+                    if (booking != null && booking.getEndDate() != null) {
+                        java.time.LocalDateTime expectedReturn = booking.getEndDate();
+                        java.time.LocalDateTime actualReturn = returns.getReturnDate() != null ? returns.getReturnDate() : java.time.LocalDateTime.now();
+                        if (actualReturn.isAfter(expectedReturn)) {
+                            long hours = java.time.Duration.between(expectedReturn, actualReturn).toHours();
+                            if (hours < 1) {
+                                hours = 1;
                             }
+                            lateHours = BigDecimal.valueOf(hours);
                         } else {
                             lateHours = BigDecimal.ZERO;
                         }
+                    } else {
+                        lateHours = BigDecimal.ZERO;
                     }
-                    lateFee = feePerHour.multiply(lateHours);
+                }
+                lateFee = feePerHour.multiply(lateHours);
 
-                    BigDecimal extraKmFee = BigDecimal.ZERO;
-                    BigDecimal extraKmCost = BigDecimal.ZERO;
-                    if (booking != null) {
-                        int kmLimit = booking.getKmLimit() != null ? booking.getKmLimit() : 0;
-                        int actualExtraKm = Math.max(0, distanceDriven - kmLimit);
-                        int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
-                        int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
-                        int additionalExtraKm = Math.max(0, actualExtraKm - alreadyPaidExtraKm);
+                BigDecimal extraKmFee = returns.getExtraKmFee();
+                BigDecimal extraKmCost = BigDecimal.ZERO;
+                BigDecimal rate = new BigDecimal(policyService.getPolicyValue("EXTRA_KM_FEE", "4000"));
+
+                if (booking != null) {
+                    long days = 1;
+                    if (booking.getStartDate() != null && booking.getEndDate() != null) {
+                        days = java.time.temporal.ChronoUnit.DAYS.between(booking.getStartDate().toLocalDate(), booking.getEndDate().toLocalDate());
+                        if (days < 1) {
+                            days = 1;
+                        }
+                    }
+                    FeeCalculator feeCalc = new FeeCalculator();
+                    int kmLimit = (booking.getKmLimit() != null && booking.getKmLimit() > 0) ? booking.getKmLimit() : feeCalc.calculateKmLimit(booking.getRentalMode(), booking.getPricingPackage(), days);
+                    int actualExtraKm = Math.max(0, distanceDriven - kmLimit);
+                    int estimatedKm = booking.getEstimatedKm() != null ? booking.getEstimatedKm() : 0;
+                    int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+                    int additionalExtraKm = Math.max(0, actualExtraKm - alreadyPaidExtraKm);
+
+                    if (extraKmFee == null || extraKmFee.compareTo(BigDecimal.ZERO) == 0 || "calculate".equals(action)) {
                         extraKmFee = BigDecimal.valueOf(additionalExtraKm);
-                        BigDecimal rate = new BigDecimal(policyService.getPolicyValue("EXTRA_KM_FEE", "4000"));
-                        extraKmCost = rate.multiply(extraKmFee);
                     }
+                    extraKmCost = rate.multiply(extraKmFee);
+                }
 
-                    BigDecimal damageFee = returns.getDamageFee() != null ? returns.getDamageFee() : BigDecimal.ZERO;
-                    BigDecimal cleaningFee = returns.getCleaningFee() != null ? returns.getCleaningFee() : BigDecimal.ZERO;
-                    BigDecimal lostItemFee = returns.getLostItemFee() != null ? returns.getLostItemFee() : BigDecimal.ZERO;
-                    BigDecimal totalAdditionalFee = lateFee.add(extraKmCost).add(damageFee).add(cleaningFee).add(lostItemFee);
+                BigDecimal damageFee = returns.getDamageFee() != null ? returns.getDamageFee() : BigDecimal.ZERO;
+                BigDecimal cleaningFee = returns.getCleaningFee() != null ? returns.getCleaningFee() : BigDecimal.ZERO;
+                BigDecimal lostItemFee = returns.getLostItemFee() != null ? returns.getLostItemFee() : BigDecimal.ZERO;
+                BigDecimal totalAdditionalFee = lateFee.add(extraKmCost).add(damageFee).add(cleaningFee).add(lostItemFee);
 
-                    returns.setLateHours(lateHours);
-                    returns.setExtraKmFee(extraKmFee);
-                    returns.setTotalAdditionalFee(totalAdditionalFee);
+                returns.setLateHours(lateHours);
+                returns.setExtraKmFee(extraKmFee);
+                returns.setTotalAdditionalFee(totalAdditionalFee);
 
+                if ("calculate".equals(action)) {
                     if (returns.getReturnId() == 0) {
                         int returnIdVal = returnDAO.insert(returns);
                         returns.setReturnId(returnIdVal);
@@ -287,7 +362,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/additional-fees?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
                     return;
                 } else {
-                    // For "confirm" action, update the check details and proceed to finalize without modifying fees
+                    // For "confirm" action, update details and finalize return
                     if (returns.getReturnId() == 0) {
                         int returnIdVal = returnDAO.insert(returns);
                         returns.setReturnId(returnIdVal);
@@ -338,36 +413,59 @@ public class VehicleReturnDetailServlet extends HttpServlet {
 
     private String buildExteriorCondition(HttpServletRequest request) {
         List<String> list = new ArrayList<>();
-        list.add(request.getParameter("chkExteriorScratch") != null ? "Không vết xước/lõm mới" : "Có vết xước/lõm");
-        list.add(request.getParameter("chkExteriorBumper") != null ? "Cản trước và cản sau nguyên vẹn" : "Cản trước hoặc cản sau hư hỏng");
-        list.add(request.getParameter("chkExteriorGlass") != null ? "Kính chắn gió và cửa kính không nứt vỡ" : "Kính chắn gió hoặc cửa kính bị nứt vỡ");
-        list.add(request.getParameter("chkExteriorLights") != null ? "Đèn pha, đèn hậu hoạt động bình thường" : "Đèn pha hoặc đèn hậu không hoạt động");
-        list.add(request.getParameter("chkExteriorMirror") != null ? "Gương chiếu hậu đầy đủ, không hư hỏng" : "Gương chiếu hậu bị thiếu hoặc hư hỏng");
-        list.add(request.getParameter("chkExteriorTireWheel") != null ? "Lốp xe và mâm xe trong tình trạng tốt" : "Lốp xe hoặc mâm xe có hư hỏng");
-        list.add(request.getParameter("chkExteriorLicensePlate") != null ? "Biển số xe đầy đủ và rõ ràng" : "Biển số xe thiếu hoặc không rõ ràng");
-        return String.join(", ", list);
+        if (request.getParameter("chkExteriorScratch") != null) {
+            list.add("Thân xe có vết trầy xước mới");
+        }
+        if (request.getParameter("chkWindshield") != null) {
+            list.add("Kính chắn gió bị nứt hoặc vỡ");
+        }
+        if (request.getParameter("chkTires") != null) {
+            list.add("Lốp xe mòn hoặc hư hỏng");
+        }
+        if (request.getParameter("chkExteriorMirror") != null) {
+            list.add("Gương chiếu hậu hư hỏng");
+        }
+        if (request.getParameter("chkExteriorLights") != null) {
+            list.add("Đèn ngoại thất hư hỏng");
+        }
+        return list.isEmpty() ? "Ngoại thất bình thường" : String.join(", ", list);
     }
 
     private String buildInteriorCondition(HttpServletRequest request) {
         List<String> list = new ArrayList<>();
-        list.add(request.getParameter("chkInteriorSeats") != null ? "Ghế ngồi sạch sẽ, không rách hỏng" : "Ghế ngồi bị bẩn hoặc rách hỏng");
-        list.add(request.getParameter("chkInteriorDashboard") != null ? "Taplo và bảng điều khiển hoạt động bình thường" : "Taplo hoặc bảng điều khiển có lỗi");
-        list.add(request.getParameter("chkInteriorAirConditioner") != null ? "Điều hòa hoạt động tốt" : "Điều hòa hoạt động không bình thường");
-        list.add(request.getParameter("chkInteriorAudioSystem") != null ? "Hệ thống âm thanh hoạt động bình thường" : "Hệ thống âm thanh gặp sự cố");
-        list.add(request.getParameter("chkInteriorCleanliness") != null ? "Không có mùi lạ hoặc rác thải trong xe" : "Có mùi lạ hoặc rác thải trong xe");
-        list.add(request.getParameter("chkInteriorAccessories") != null ? "Đầy đủ phụ kiện đi kèm" : "Thiếu phụ kiện đi kèm");
-        return String.join(", ", list);
+        if (request.getParameter("chkCleanliness") != null) {
+            list.add("Nội thất bẩn hoặc nhiều bụi");
+        }
+        if (request.getParameter("chkOdor") != null) {
+            list.add("Có mùi hôi trong xe");
+        }
+        if (request.getParameter("chkMatsAccessories") != null) {
+            list.add("Thiếu thảm hoặc phụ kiện");
+        }
+        if (request.getParameter("chkInteriorSeats") != null) {
+            list.add("Ghế ngồi bị rách hoặc hư hỏng");
+        }
+        if (request.getParameter("chkInteriorDashboard") != null) {
+            list.add("Taplo / bảng điều khiển hư hỏng");
+        }
+        return list.isEmpty() ? "Nội thất sạch sẽ/bình thường" : String.join(", ", list);
     }
 
     private String buildMechanicalCondition(HttpServletRequest request) {
         List<String> list = new ArrayList<>();
-        list.add(request.getParameter("chkEngineStart") != null ? "Động cơ khởi động bình thường" : "Động cơ khởi động bất thường");
-        list.add(request.getParameter("chkEngineWarningLight") != null ? "Không có đèn cảnh báo trên bảng đồng hồ" : "Có đèn cảnh báo trên bảng đồng hồ");
-        list.add(request.getParameter("chkEngineFuelLevel") != null ? "Mức nhiên liệu đúng theo ghi nhận" : "Mức nhiên liệu không khớp ghi nhận");
-        list.add(request.getParameter("chkEngineNoise") != null ? "Không phát hiện tiếng ồn bất thường" : "Phát hiện tiếng ồn bất thường");
-        list.add(request.getParameter("chkEngineBrakeSystem") != null ? "Hệ thống phanh hoạt động bình thường" : "Hệ thống phanh có dấu hiệu bất thường");
-        list.add(request.getParameter("chkEngineFluidLeak") != null ? "Không phát hiện rò rỉ dầu hoặc chất lỏng" : "Phát hiện rò rỉ dầu hoặc chất lỏng");
-        return String.join(", ", list);
+        if (request.getParameter("chkEngine") != null) {
+            list.add("Động cơ khởi động bất thường");
+        }
+        if (request.getParameter("chkDashboardLights") != null) {
+            list.add("Có đèn cảnh báo trên bảng điều khiển");
+        }
+        if (request.getParameter("chkEngineNoise") != null) {
+            list.add("Có tiếng ồn hoặc rung bất thường");
+        }
+        if (request.getParameter("chkEngineFluidLeak") != null) {
+            list.add("Rò rỉ dầu hoặc nước làm mát");
+        }
+        return list.isEmpty() ? "Máy móc động cơ bình thường" : String.join(", ", list);
     }
 
     private boolean validateOdo(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
@@ -435,11 +533,41 @@ public class VehicleReturnDetailServlet extends HttpServlet {
         return true;
     }
 
+<<<<<<< HEAD
     private void loadDetailData(HttpServletRequest request, int bookingId, int vehicleId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
             Vehicle car = vehicleDAO.findById(vehicleId);
+=======
+    private VehicleHandover getHandoverWithFallback(int bookingId, int vehicleId, RentalContract contract, Vehicle vehicle) throws SQLException {
+        VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
+        if (handover == null) {
+            handover = new VehicleHandover();
+            handover.setBookingId(bookingId);
+            handover.setVehicleId(vehicleId);
+            if (contract != null) {
+                handover.setContractId(contract.getContractId());
+            }
+            handover.setMileageAtHandover(vehicle != null ? vehicle.getMileage() : 0);
+            handover.setFuelLevel("FULL");
+        } else {
+            if (handover.getMileageAtHandover() <= 0 && vehicle != null) {
+                handover.setMileageAtHandover(vehicle.getMileage());
+            }
+            if (handover.getFuelLevel() == null || handover.getFuelLevel().isBlank()) {
+                handover.setFuelLevel("FULL");
+            }
+        }
+        return handover;
+    }
+
+    private void loadDetailData(HttpServletRequest request, int bookingId, int vehicleId) {
+        try {
+            Booking booking = bookingDAO.findById(bookingId);
+            Vehicle vehicle = vehicleDAO.findById(vehicleId);
+>>>>>>> origin/TamDev
             RentalContract contract = contractDAO.findByBookingId(bookingId);
+            VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
             VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
             int distanceDriven = 0;
@@ -449,6 +577,9 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 returns.setVehicleId(vehicleId);
                 if (contract != null) {
                     returns.setContractId(contract.getContractId());
+                }
+                if (handover != null && handover.getHandoverId() > 0) {
+                    returns.setHandoverId(handover.getHandoverId());
                 }
                 returns.setExteriorCondition("");
                 returns.setInteriorCondition("");
@@ -463,20 +594,25 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 returns.setLostItemFee(BigDecimal.ZERO);
                 returns.setTotalAdditionalFee(BigDecimal.ZERO);
             } else {
-                VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
-                int mileageAtHandover = handover != null ? handover.getMileageAtHandover() : 0;
+                int mileageAtHandover = handover.getMileageAtHandover();
                 distanceDriven = returns.getMileageAtReturn() - mileageAtHandover;
-                if (distanceDriven < 0) distanceDriven = 0;
+                if (distanceDriven < 0) {
+                    distanceDriven = 0;
+                }
             }
 
             request.setAttribute("booking", booking);
-            request.setAttribute("car", car);
+            request.setAttribute("vehicle", vehicle);
             request.setAttribute("contract", contract);
-//            request.setAttribute("handover", handover);
+            request.setAttribute("handover", handover);
             request.setAttribute("returns", returns);
             request.setAttribute("bookingId", bookingId);
             request.setAttribute("vehicleId", vehicleId);
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> origin/TamDev
             String inputOdo = request.getParameter("currentOdo");
             if (inputOdo != null) {
                 request.setAttribute("distanceDriven", inputOdo);
@@ -494,25 +630,20 @@ public class VehicleReturnDetailServlet extends HttpServlet {
 
             request.setAttribute("notes", request.getParameter("notes"));
             request.setAttribute("chkExteriorScratch", request.getParameter("chkExteriorScratch") != null);
-            request.setAttribute("chkExteriorBumper", request.getParameter("chkExteriorBumper") != null);
-            request.setAttribute("chkExteriorGlass", request.getParameter("chkExteriorGlass") != null);
-            request.setAttribute("chkExteriorLights", request.getParameter("chkExteriorLights") != null);
+            request.setAttribute("chkWindshield", request.getParameter("chkWindshield") != null);
+            request.setAttribute("chkTires", request.getParameter("chkTires") != null);
             request.setAttribute("chkExteriorMirror", request.getParameter("chkExteriorMirror") != null);
-            request.setAttribute("chkExteriorTireWheel", request.getParameter("chkExteriorTireWheel") != null);
-            request.setAttribute("chkExteriorLicensePlate", request.getParameter("chkExteriorLicensePlate") != null);
+            request.setAttribute("chkExteriorLights", request.getParameter("chkExteriorLights") != null);
 
+            request.setAttribute("chkCleanliness", request.getParameter("chkCleanliness") != null);
+            request.setAttribute("chkOdor", request.getParameter("chkOdor") != null);
+            request.setAttribute("chkMatsAccessories", request.getParameter("chkMatsAccessories") != null);
             request.setAttribute("chkInteriorSeats", request.getParameter("chkInteriorSeats") != null);
             request.setAttribute("chkInteriorDashboard", request.getParameter("chkInteriorDashboard") != null);
-            request.setAttribute("chkInteriorAirConditioner", request.getParameter("chkInteriorAirConditioner") != null);
-            request.setAttribute("chkInteriorAudioSystem", request.getParameter("chkInteriorAudioSystem") != null);
-            request.setAttribute("chkInteriorCleanliness", request.getParameter("chkInteriorCleanliness") != null);
-            request.setAttribute("chkInteriorAccessories", request.getParameter("chkInteriorAccessories") != null);
 
-            request.setAttribute("chkEngineStart", request.getParameter("chkEngineStart") != null);
-            request.setAttribute("chkEngineWarningLight", request.getParameter("chkEngineWarningLight") != null);
-            request.setAttribute("chkEngineFuelLevel", request.getParameter("chkEngineFuelLevel") != null);
+            request.setAttribute("chkEngine", request.getParameter("chkEngine") != null);
+            request.setAttribute("chkDashboardLights", request.getParameter("chkDashboardLights") != null);
             request.setAttribute("chkEngineNoise", request.getParameter("chkEngineNoise") != null);
-            request.setAttribute("chkEngineBrakeSystem", request.getParameter("chkEngineBrakeSystem") != null);
             request.setAttribute("chkEngineFluidLeak", request.getParameter("chkEngineFluidLeak") != null);
         } catch (SQLException ex) {
             Logger.getLogger(VehicleHandoverDetailServlet.class.getName()).log(Level.SEVERE, null, ex);

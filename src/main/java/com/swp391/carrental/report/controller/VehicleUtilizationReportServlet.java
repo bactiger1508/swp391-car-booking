@@ -1,11 +1,11 @@
 package com.swp391.carrental.report.controller;
 
-import com.swp391.carrental.report.service.ReportService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -16,12 +16,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
+import com.swp391.carrental.report.service.ReportService;
+
+/**
  * Name: VehicleUtilizationReportServlet
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 17/07/2026
  * Version: 1.0
- * Description: Handles HTTP requests and responses for VehicleUtilizationReportServlet.
+ * Description: Controller handling HTTP requests for vehicle usage, availability metrics, and utilization rate reports.
  */
 @WebServlet(name = "VehicleUtilizationReportServlet", urlPatterns = {"/reports/vehicle-utilization"})
 public class VehicleUtilizationReportServlet extends HttpServlet {
@@ -47,9 +49,7 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
             }
         }
 
-        int year = (yearParam == null || yearParam.isBlank())
-                ? today.getYear()
-                : Integer.parseInt(yearParam);
+        int year = (yearParam == null || yearParam.isBlank()) ? today.getYear() : Integer.parseInt(yearParam);
 
         int quarter;
         if (quarterParam != null && !quarterParam.isBlank()) {
@@ -145,26 +145,15 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
         try {
 
             // ===== KPI =====
-            double averageUsage
-                    = reportService.getAverageUsage(from, to);
-
-            int totalUsedDays
-                    = reportService.getTotalUsedDays(from, to);
-
-            Map<String, Object> mostUsedCar
-                    = reportService.getMostUsedCar(from, to);
-
+            double averageUsage = reportService.getAverageUsage(from, to);
+            int totalUsedDays = reportService.getTotalUsedDays(from, to);
+            Map<String, Object> mostUsedCar = reportService.getMostUsedCar(from, to);
             double previousUsage = reportService.getAverageUsage(prevFrom, prevTo);
-            double usageGrowth = previousUsage == 0 
-                ? 0 
-                : (averageUsage - previousUsage) * 100.0 / previousUsage;
+            double usageGrowth = previousUsage == 0 ? 0 : (averageUsage - previousUsage) * 100.0 / previousUsage;
 
             // ===== Donut =====
-            Map<String, Integer> segmentUsage
-                    = reportService.getUsageBySegment(from, to);
-
+            Map<String, Integer> segmentUsage = reportService.getUsageBySegment(from, to);
             int total = 0;
-
             for (Integer value : segmentUsage.values()) {
                 total += value;
             }
@@ -178,25 +167,17 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
                 "var(--outline)"
             };
 
-            StringBuilder gradient
-                    = new StringBuilder("conic-gradient(");
+            StringBuilder gradient = new StringBuilder("conic-gradient(");
 
             double start = 0;
             int i = 0;
 
-            for (Map.Entry<String, Integer> e
-                    : segmentUsage.entrySet()) {
+            for (Map.Entry<String, Integer> e : segmentUsage.entrySet()) {
 
-                double percent = total == 0
-                        ? 0
-                        : e.getValue() * 100.0 / total;
+                double percent = total == 0 ? 0 : e.getValue() * 100.0 / total;
 
-                gradient.append(colors[i % colors.length])
-                        .append(" ")
-                        .append(start)
-                        .append("% ")
-                        .append(start + percent)
-                        .append("%");
+                gradient.append(colors[i % colors.length]).append(" ").append(start).append("% ")
+                        .append(start + percent).append("%");
 
                 start += percent;
 
@@ -210,10 +191,8 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
             gradient.append(")");
 
             // ===== Table =====
-            List<Map<String, Object>> vehicleUsage
-                    = reportService.getVehicleUsage(from, to);
-            List<Map<String, Object>> chartData
-                    = reportService.getUsageChart(from, to, type);
+            List<Map<String, Object>> vehicleUsage = reportService.getVehicleUsage(from, to);
+            List<Map<String, Object>> chartData = reportService.getUsageChart(from, to, type);
             request.setAttribute("averageUsage", averageUsage);
             request.setAttribute("usageGrowth", usageGrowth);
             request.setAttribute("totalUsedDays", totalUsedDays);
@@ -227,9 +206,7 @@ public class VehicleUtilizationReportServlet extends HttpServlet {
 
         } catch (SQLException ex) {
 
-            Logger.getLogger(
-                    VehicleUtilizationReportServlet.class.getName())
-                    .log(Level.SEVERE, null, ex);
+            Logger.getLogger(VehicleUtilizationReportServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         request.setAttribute("compareLabel", compareLabel);

@@ -6,15 +6,12 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.handover.model.VehicleHandover;
 
-/*
+/**
  * Name: HandoverDAO
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Handles database operations for HandoverDAO.
- */
-/**
- * Data Access Object for VehicleHandover entities.
+ * Description: Data Access Object handling database operations for vehicle handovers and initial inspection records.
  */
 public class HandoverDAO {
 

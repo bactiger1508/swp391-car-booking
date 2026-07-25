@@ -21,7 +21,7 @@
 
 <form method="post" action="${pageContext.request.contextPath}/additional-fees">
     <input type="hidden" name="bookingId" value="${bookingId}">
-    <input type="hidden" name="vehicleId" value="${vehicleId != null ? vehicleId : vehicleId}">
+    <input type="hidden" name="vehicleId" value="${vehicleId}">
     <div class="bk-detail-grid">
         <%-- LEFT: Máy tính phụ thu tương tác --%>
         <div>
@@ -46,18 +46,9 @@
                             <span class="material-symbols-outlined">speed</span>
                             <input type="number" id="extraKmFee" name="extraKmFee"
                                    class="bk-form-input"
-                                   value="${not empty autoExtraKm ? autoExtraKm : returns.extraKmFee}"
+                                   value="${returns.extraKmFee}"
                                    min="0" style="padding-left:40px;" />
                         </div>
-                        <c:if test="${not empty actualKm}">
-                            <div style="margin-top:8px; padding:10px 12px; background:var(--surface-container); border-radius:8px; border-left:3px solid var(--primary); font-size:12px; line-height:1.7; color:var(--on-surface-variant);">
-                                <strong style="color:var(--primary); font-size:13px;">📊 Phân tích km chuyến đi</strong><br/>
-                                Km thực tế đi: <strong>${actualKm} km</strong> &nbsp;|&nbsp; Định mức: <strong>${kmLimit} km</strong><br/>
-                                Km vượt tổng: <strong>${actualExtraKm} km</strong><br/>
-                                Km vượt đã thu lúc đặt (est. ${estimatedKm} km): <strong style="color:var(--success);">-${alreadyPaidExtraKm} km</strong><br/>
-                                <strong style="color:var(--error);">→ Km vượt cần thu thêm: ${not empty autoExtraKm ? autoExtraKm : returns.extraKmFee} km</strong>
-                            </div>
-                        </c:if>
                         <span style="font-size:12px;color:var(--outline);margin-top:2px;">(Quy định phạt: <fmt:formatNumber value="${extraKmFeeRate}" pattern="#,##0"/>đ / km)</span>
                     </div>
 
@@ -66,15 +57,15 @@
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">local_laundry_service</span>
                             <select id="cleaningFee" name="cleaningFee" class="bk-form-select">
-                                <option value="0.00">Sạch sẽ - 0đ</option>
-                                <option value="300000.00">Quá bẩn / Mùi thuốc lá - 300,000đ</option>
-                                <option value="600000.00">Cực kỳ dơ / Nôn trớ - 600,000đ</option>
+                                <option value="0">Sạch sẽ - 0đ</option>
+                                <option value="300000">Quá bẩn / Mùi thuốc lá - 300,000đ</option>
+                                <option value="600000">Cực kỳ dơ / Nôn trớ - 600,000đ</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="bk-form-group">
-                        <label class="bk-form-label">Bồi thường hư hỏng linh kiện / mất đồ</label>
+                        <label class="bk-form-label">Bồi thường hư hỏng</label>
                         <div class="bk-form-input-wrap">
                             <span class="material-symbols-outlined">handyman</span>
                             <input type="number" id="damageFee" name="damageFee" class="bk-form-input" value="${returns.damageFee}" min="0" style="padding-left:40px;" placeholder="Nhập số tiền..." />
@@ -87,8 +78,10 @@
                             <input type="number" id="lostItemFee" name="lostItemFee" class="bk-form-input" value="${returns.lostItemFee}" min="0" style="padding-left:40px;" placeholder="Nhập số tiền..." />
                         </div>
                     </div>
+
                     <input type="hidden" id="totalAdditionalFee" name="totalAdditionalFee" value="0">
                     <input type="hidden" id="deposit" name="deposit" value="0">
+
                 </div>
             </div>
         </div>
@@ -166,63 +159,68 @@
 </form>
 
 <script>
-   document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("cleaningFee").value = "${returns.cleaningFee}";
+    document.addEventListener("DOMContentLoaded", function () {
+        var savedCleaning = parseFloat("${returns.cleaningFee}") || 0;
+        document.getElementById("cleaningFee").value = savedCleaning.toString();
 
-    function formatMoney(amount) {
-        return new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(amount).replace('₫', 'đ');
-    }
+        document.getElementById("cleaningFee").addEventListener("change", recalculateFees);
+        document.getElementById("damageFee").addEventListener("input", recalculateFees);
+        document.getElementById("lostItemFee").addEventListener("input", recalculateFees);
+        document.getElementById("lateHours").addEventListener("input", recalculateFees);
+        document.getElementById("extraKmFee").addEventListener("input", recalculateFees);
 
-    function recalculateFees() {
-        var lateHours = parseFloat(document.getElementById('lateHours').value) || 0;
-        var extraKmFee = parseFloat(document.getElementById('extraKmFee').value) || 0;
-        var cleaning = parseFloat(document.getElementById('cleaningFee').value) || 0;
-        var damage = parseFloat(document.getElementById('damageFee').value) || 0;
-        var lostItem = parseFloat(document.getElementById('lostItemFee').value) || 0;
-
-        var rateLate = parseFloat("${lateFeePerHour}") || 100000;
-        var rateKm = parseFloat("${extraKmFeeRate}") || 5000;
-
-        var lateFee = lateHours * rateLate;
-        var kmFee = extraKmFee * rateKm;
-
-        var total = lateFee + kmFee + cleaning + damage + lostItem;
-
-        var initialTotal = parseFloat("${booking.totalAmount}") || 0;
-        var totalPaid = parseFloat("${not empty totalPaid ? totalPaid : 0}") || 0;
-        var newTotal = initialTotal + total;
-        var refund = 0;
-        var extraPayment = 0;
-
-        if (newTotal >= totalPaid) {
-            extraPayment = newTotal - totalPaid;
-        } else {
-            refund = totalPaid - newTotal;
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(amount).replace('₫', 'đ');
         }
 
-        document.getElementById('resLate').textContent = formatMoney(lateFee);
-        document.getElementById('resKm').textContent = formatMoney(kmFee);
-        document.getElementById('resClean').textContent = formatMoney(cleaning);
-        document.getElementById('resDamage').textContent = formatMoney(damage);
-        document.getElementById('resLostItem').textContent = formatMoney(lostItem);
+        function recalculateFees() {
+            var lateHours = parseFloat(document.getElementById('lateHours').value) || 0;
+            var extraKmFee = parseFloat(document.getElementById('extraKmFee').value) || 0;
+            var cleaning = parseFloat(document.getElementById('cleaningFee').value) || 0;
+            var damage = parseFloat(document.getElementById('damageFee').value) || 0;
+            var lostItem = parseFloat(document.getElementById('lostItemFee').value) || 0;
 
-        document.getElementById('resTotal').textContent = formatMoney(total);
+            var rateLate = parseFloat("${lateFeePerHour}") || 100000;
+            var lateFee = lateHours * rateLate;
 
-        document.getElementById('resRefund').textContent = formatMoney(refund);
+            var rateKm = parseFloat("${extraKmFeeRate}") || 5000;
+            var kmFee = extraKmFee * rateKm;
 
-        if (document.getElementById('resExtraPayment')) {
+            var totalAdditional = lateFee + kmFee + cleaning + damage + lostItem;
+
+            var initialTotal = parseFloat("${booking.totalAmount}") || 0;
+            var totalPaid = parseFloat("${not empty totalPaid ? totalPaid : 0}");
+            if (totalPaid <= 0) {
+                totalPaid = parseFloat("${booking.depositAmount}") || 0;
+            }
+
+            var grandTotal = initialTotal + totalAdditional;
+
+            var refund = 0;
+            var extraPayment = 0;
+
+            if (totalPaid >= grandTotal) {
+                refund = totalPaid - grandTotal;
+            } else {
+                extraPayment = grandTotal - totalPaid;
+            }
+
+            document.getElementById('resLate').textContent = formatMoney(lateFee);
+            document.getElementById('resKm').textContent = formatMoney(kmFee);
+            document.getElementById('resClean').textContent = formatMoney(cleaning);
+            document.getElementById('resDamage').textContent = formatMoney(damage);
+            document.getElementById('resLostItem').textContent = formatMoney(lostItem);
+
+            document.getElementById('resTotal').textContent = formatMoney(totalAdditional);
+
+            document.getElementById('resRefund').textContent = formatMoney(refund);
             document.getElementById('resExtraPayment').textContent = formatMoney(extraPayment);
+
+
+            document.getElementById('totalAdditionalFee').value = totalAdditional;
         }
 
-        document.getElementById('totalAdditionalFee').value = total;
-    }
-
-    recalculateFees();
-    document.getElementById('lateHours').addEventListener('input', recalculateFees);
-    document.getElementById('extraKmFee').addEventListener('input', recalculateFees);
-    document.getElementById('cleaningFee').addEventListener('change', recalculateFees);
-    document.getElementById('damageFee').addEventListener('input', recalculateFees);
-    document.getElementById('lostItemFee').addEventListener('input', recalculateFees);
+        recalculateFees();
     });
 </script>
 
