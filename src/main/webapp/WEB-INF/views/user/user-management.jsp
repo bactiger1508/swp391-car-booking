@@ -157,16 +157,16 @@
                     <label for="fullName">Họ và Tên</label>
                     <input type="text" id="fullName" name="fullName" class="form-control"
                            placeholder="Nguyễn Văn A"
-                           value="${not empty formUser ? formUser.fullName : ''}" required ${formMode eq 'edit'
+                           value="${not empty formUser ? formUser.fullName : ''}" ${formMode eq 'edit'
                                     ? 'readonly style="background: var(--bg-body); cursor: not-allowed;"'
                                     : '' }>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="email">Địa chỉ Email</label>
-                    <input type="email" id="email" name="email" class="form-control"
+                    <input type="text" id="email" name="email" class="form-control"
                            placeholder="name@example.com"
-                           value="${not empty formUser ? formUser.email : ''}" required ${formMode eq 'edit'
+                           value="${not empty formUser ? formUser.email : ''}" ${formMode eq 'edit'
                                     ? 'readonly style="background: var(--bg-body); cursor: not-allowed;"'
                                     : '' }>
                 </div>
@@ -175,7 +175,7 @@
                     <div class="form-group" id="passwordField" style="margin-bottom: 16px;">
                         <label for="password">Mật khẩu</label>
                         <input type="password" id="password" name="password" class="form-control"
-                               placeholder="Nhập mật khẩu ít nhất 6 ký tự" required minlength="6">
+                               placeholder="Nhập mật khẩu ít nhất 6 ký tự"   minlength="6">
                     </div>
                 </c:if>
 

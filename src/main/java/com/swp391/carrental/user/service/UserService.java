@@ -22,11 +22,19 @@ public class UserService {
 
     private final UserDAO userDAO = new UserDAO();
 
+    private boolean isValidFullName(String fullName) {
+        return fullName != null && !fullName.trim().isEmpty();
+    }
+
     private boolean isValidVietnamPhone(String phone) {
         if (phone == null || phone.trim().isEmpty()) {
             return false;
         }
         return phone.matches("^(03|05|07|08|09)\\d{8}$");
+    }
+
+    private boolean isValidEmail(String email) {
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     }
 
     public User getUserById(int userId) {
@@ -71,9 +79,19 @@ public class UserService {
 
     public User createUser(User user, String rawPassword) {
         try {
+            if (!isValidFullName(user.getFullName())) {
+                throw new AppException("Họ và tên không được để trống.");
+            }
+            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+                throw new AppException("Email không được để trống.");
+            }
+            if (!isValidEmail(user.getEmail().trim())) {
+                throw new AppException("Email phải đúng định dạng (ví dụ: abc@gmail.com).");
+            }
             if (userDAO.findByEmail(user.getEmail()) != null) {
                 throw new AppException("Email đã được đăng ký.");
             }
+            
             if (rawPassword == null || rawPassword.trim().length() < 6) {
                 throw new AppException("Mật khẩu phải có ít nhất 6 ký tự.");
             }
