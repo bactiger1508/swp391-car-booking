@@ -155,9 +155,6 @@ public class PaymentSettingsServlet extends HttpServlet {
                 if (value != null) updates.put(key, value.trim());
             }
         }
-        // Checkbox for PAYMENT_PARTIAL_ALLOWED is not submitted when unchecked;
-        // default to "false" so toggling OFF is properly persisted.
-        updates.putIfAbsent("PAYMENT_PARTIAL_ALLOWED", "false");
         if (!updates.isEmpty()) {
             policyService.batchUpdatePolicies(updates, userId);
         }

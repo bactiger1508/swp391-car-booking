@@ -323,7 +323,7 @@
                                             <input type="hidden" id="editDailyRate" name="dailyRate"/>
                                         </div>
                                         <div>
-                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Tiền cọc (40%) (VND) <span style="color:var(--danger);">*</span></label>
+                                            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Tiền cọc (${not empty depositPercentage ? depositPercentage : 30}%) (VND) <span style="color:var(--danger);">*</span></label>
                                             <input type="text" id="editDepositAmountDisplay" class="form-control" autocomplete="off" style="font-weight: 700; color: var(--danger); background-color: #f1f3f5;" readonly/>
                                             <input type="hidden" id="editDepositAmount" name="depositAmount"/>
                                         </div>
@@ -403,7 +403,7 @@
                                 </tr>
                                 <tr>
                                     <td style="width: 50%;">Mã số thuế: <strong>${companyTaxId}</strong></td>
-                                    <td style="width: 50%;">Hotline: <strong>1900 1234</strong></td>
+                                    <td style="width: 50%;">Hotline: <strong>${companyHotline}</strong></td>
                                 </tr>
                                 <tr>
                                     <td colspan="2">Địa chỉ trụ sở: <strong>${companyAddress}</strong></td>

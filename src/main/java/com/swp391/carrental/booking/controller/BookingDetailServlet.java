@@ -94,19 +94,33 @@ public class BookingDetailServlet extends HttpServlet {
             boolean depositPaid = false;
             boolean rentalPaid = false;
             java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
+
             for (com.swp391.carrental.payment.model.Payment p : payments) {
-                if ("COMPLETED".equalsIgnoreCase(p.getStatus()) || "REFUNDED".equalsIgnoreCase(p.getStatus())) {
+                if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                        // Refunds reduce the net paid amount
-                        totalPaid = totalPaid.subtract(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
+                        totalPaid = totalPaid.subtract(effectiveAmt);
                     } else {
-                        totalPaid = totalPaid.add(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
+                        totalPaid = totalPaid.add(effectiveAmt);
                     }
+
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                        depositPaid = true;
+                        depositPaidAmt = depositPaidAmt.add(effectiveAmt);
                     } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                        rentalPaid = true;
+                        rentalPaidAmt = rentalPaidAmt.add(effectiveAmt);
                     }
+                }
+            }
+
+            if (booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0) {
+                depositPaid = true;
+            }
+            if (booking.getTotalAmount() != null && booking.getDepositAmount() != null) {
+                java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount());
+                if (rentalPaidAmt.compareTo(rentalRequired) >= 0) {
+                    rentalPaid = true;
                 }
             }
             request.setAttribute("payments", payments);
@@ -120,11 +134,27 @@ public class BookingDetailServlet extends HttpServlet {
             } catch (Exception e) {
                 // ignore error
             }
+            java.math.BigDecimal totalAdditionalFeeRequiredFromPayments = java.math.BigDecimal.ZERO;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("ADDITIONAL_FEE".equalsIgnoreCase(p.getPaymentType())) {
+                    totalAdditionalFeeRequiredFromPayments = totalAdditionalFeeRequiredFromPayments.add(p.getAmount());
+                }
+            }
+
             java.math.BigDecimal totalRequired = booking.getTotalAmount();
             if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
                 totalRequired = java.math.BigDecimal.ZERO;
-            } else if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
-                totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
+            } else {
+                java.math.BigDecimal returnAdditionalFee = java.math.BigDecimal.ZERO;
+                if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+                    returnAdditionalFee = vehicleReturn.getTotalAdditionalFee();
+                }
+                
+                if (totalAdditionalFeeRequiredFromPayments.compareTo(returnAdditionalFee) > 0) {
+                    totalRequired = totalRequired.add(totalAdditionalFeeRequiredFromPayments);
+                } else {
+                    totalRequired = totalRequired.add(returnAdditionalFee);
+                }
             }
             request.setAttribute("returns", vehicleReturn);
             request.setAttribute("totalRequired", totalRequired);

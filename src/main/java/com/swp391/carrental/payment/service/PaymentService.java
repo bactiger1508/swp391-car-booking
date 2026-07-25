@@ -294,28 +294,13 @@ public class PaymentService {
     }
 
     /**
-     * Validates the payment amount:
-     * - Must be positive.
-     * - For DEPOSIT payments: if PAYMENT_PARTIAL_ALLOWED = false,
-     *   the amount must be >= DEPOSIT_PERCENTAGE % of the total booking amount
-     *   (when totalAmount is provided via payment.notes — skipped if not set).
+     * Validates the payment amount: must be positive.
+     * Note: The amount field is readonly on the UI and always pre-filled
+     * with the correct remaining amount by the server.
      */
     private void validateAmount(Payment payment) {
         if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new AppException("Số tiền thanh toán phải lớn hơn 0.", 400);
-        }
-
-        // Partial payment check — only meaningful for DEPOSIT type
-        if ("DEPOSIT".equalsIgnoreCase(payment.getPaymentType())) {
-            boolean partialAllowed = Boolean.parseBoolean(
-                policyService().getPolicyValue("PAYMENT_PARTIAL_ALLOWED", "false"));
-
-            if (!partialAllowed) {
-                // If we have a way to know the required deposit amount, validate it.
-                // The booking's deposit_amount should already be pre-calculated by BookingService
-                // using DEPOSIT_PERCENTAGE, so we trust it here — just log intent.
-                // Full enforcement is done at BookingService level.
-            }
         }
     }
 

@@ -156,28 +156,62 @@
                             <th style="padding: 8px 12px;">Mã</th>
                             <th style="padding: 8px 12px;">Loại</th>
                             <th style="padding: 8px 12px;">Số tiền</th>
+                            <th style="padding: 8px 12px;">Đã thanh toán</th>
+                            <th style="padding: 8px 12px;">Chênh lệch</th>
                             <th style="padding: 8px 12px;">Phương thức</th>
+                            <th style="padding: 8px 12px;">Trạng thái</th>
                             <th style="padding: 8px 12px;">Ngày thanh toán</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="p" items="${payments}">
-                            <tr style="border-bottom: 1px solid var(--outline-variant);">
-                                <td style="padding: 8px 12px; font-weight:600;">PAY-${p.paymentId}</td>
+                            <tr style="border-bottom: 1px solid var(--outline-variant); ${p.paymentType == 'REFUND' ? 'background: rgba(238,93,80,0.05);' : ''}">
+                                <td style="padding: 8px 12px; font-weight:600; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">PAY-${p.paymentId}</td>
                                 <td style="padding: 8px 12px;">
                                     <c:choose>
-                                        <c:when test="${p.paymentType == 'DEPOSIT'}">Đặt cọc</c:when>
-                                        <c:when test="${p.paymentType == 'RENTAL'}">Tiền thuê xe</c:when>
-                                        <c:when test="${p.paymentType == 'ADDITIONAL_FEE'}">Phụ phí</c:when>
+                                        <c:when test="${p.paymentType == 'DEPOSIT'}"><span style="color:#505F76; font-weight:600;">💵 Đặt cọc</span></c:when>
+                                        <c:when test="${p.paymentType == 'RENTAL'}"><span style="color:#041638; font-weight:600;">🚗 Tiền thuê xe</span></c:when>
+                                        <c:when test="${p.paymentType == 'ADDITIONAL_FEE'}"><span style="color:var(--error); font-weight:600;">⚠ Phụ phí</span></c:when>
+                                        <c:when test="${p.paymentType == 'REFUND'}"><span style="color:#C9392D; font-weight:600;">🔄 Hoàn tiền</span></c:when>
                                         <c:otherwise>${p.paymentType}</c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td style="padding: 8px 12px; font-weight:600; color:var(--primary);"><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ</td>
+                                <td style="padding: 8px 12px; font-weight:700; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'};">
+                                    <c:if test="${p.paymentType == 'REFUND'}">-</c:if><fmt:formatNumber value="${p.amount}" pattern="#,##0"/>đ
+                                </td>
+                                <td style="padding: 8px 12px; font-weight:600; color: var(--on-surface);">
+                                    <c:choose>
+                                        <c:when test="${p.amountPaid != null}"><fmt:formatNumber value="${p.amountPaid}" pattern="#,##0"/> đ</c:when>
+                                        <c:when test="${p.status == 'COMPLETED'}"><fmt:formatNumber value="${p.amount}" pattern="#,##0"/> đ</c:when>
+                                        <c:otherwise>—</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px; font-weight:700;">
+                                    <c:choose>
+                                        <c:when test="${p.status != 'COMPLETED' && p.amountPaid == null}">—</c:when>
+                                        <c:otherwise>
+                                            <c:set var="actualPaid" value="${p.amountPaid != null ? p.amountPaid : p.amount}"/>
+                                            <c:set var="diff" value="${actualPaid - p.amount}"/>
+                                            <c:choose>
+                                                <c:when test="${diff > 0}"><span style="color: #039C74;">+<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ</span></c:when>
+                                                <c:when test="${diff < 0}"><span style="color: #C9392D;"><fmt:formatNumber value="${diff}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;">CÒN NỢ</span></span></c:when>
+                                                <c:otherwise>—</c:otherwise>
+                                            </c:choose>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                                 <td style="padding: 8px 12px;">
                                     <c:choose>
                                         <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
                                         <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
                                         <c:otherwise>${p.paymentMethod}</c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td style="padding: 8px 12px;">
+                                    <c:choose>
+                                        <c:when test="${p.status == 'COMPLETED'}"><span style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(5,205,153,0.1); color: #039C74;"><span style="width:6px; height:6px; border-radius:50%; background:#039C74;"></span> Thành công</span></c:when>
+                                        <c:when test="${p.status == 'PENDING'}"><span style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(245,158,11,0.1); color: #D97706;"><span style="width:6px; height:6px; border-radius:50%; background:#D97706;"></span> Chờ xử lý</span></c:when>
+                                        <c:otherwise><span style="display:inline-flex; align-items:center; gap:4px; padding: 2px 6px; border-radius: 4px; font-size:11px; background: rgba(239,68,68,0.1); color: #DC2626;"><span style="width:6px; height:6px; border-radius:50%; background:#DC2626;"></span> Thất bại</span></c:otherwise>
                                     </c:choose>
                                 </td>
                                 <td style="padding: 8px 12px; color:var(--text-secondary);">${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>

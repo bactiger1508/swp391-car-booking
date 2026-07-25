@@ -206,7 +206,7 @@ public class PolicySettingDAO {
         if ("CONTRACT_DEFAULT_TERMS".equals(key)) {
             return "CONTRACT";
         }
-        if ("TAX_RATE".equals(key) || "COMPANY_NAME".equals(key)) {
+        if ("TAX_RATE".equals(key) || "COMPANY_NAME".equals(key) || "COMPANY_ADDRESS".equals(key) || "COMPANY_TAX_ID".equals(key) || "COMPANY_HOTLINE".equals(key)) {
             return "TAX";
         }
         return "PAYMENT";
@@ -222,14 +222,6 @@ public class PolicySettingDAO {
                 return "Cho phép thanh toán tiền mặt";
             case "PAYMENT_METHOD_BANK_TRANSFER_ENABLED":
                 return "Cho phép thanh toán chuyển khoản ngân hàng";
-            case "PAYMENT_GRACE_PERIOD_HOURS":
-                return "Số giờ gia hạn thanh toán trước khi hủy đặt xe";
-            case "PAYMENT_CURRENCY":
-                return "Đơn vị tiền tệ sử dụng trong hệ thống";
-            case "PAYMENT_PARTIAL_ALLOWED":
-                return "Cho phép thanh toán từng phần (không đủ 100%)";
-            case "PAYMENT_AUTO_CONFIRM_AMOUNT":
-                return "Ngưỡng tự động xác nhận thanh toán (0 = tắt)";
             case "BANK_ACCOUNT_NAME":
                 return "Tên tài khoản ngân hàng";
             case "BANK_ACCOUNT_NUMBER":
@@ -246,6 +238,12 @@ public class PolicySettingDAO {
                 return "Thuế suất VAT (%)";
             case "COMPANY_NAME":
                 return "Tên công ty xuất hóa đơn";
+            case "COMPANY_ADDRESS":
+                return "Địa chỉ trụ sở công ty";
+            case "COMPANY_TAX_ID":
+                return "Mã số thuế công ty";
+            case "COMPANY_HOTLINE":
+                return "Hotline công ty";
             default:
                 return "Cài đặt thanh toán " + key;
         }

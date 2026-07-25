@@ -225,7 +225,6 @@ VALUES
     (N'COMPANY_TAX_ID',             N'0123456789',     N'Mã số thuế công ty',                                N'TAX',      1),
     (N'COMPANY_ADDRESS',            N'123 Nguyễn Huệ, Quận 1, TP.HCM', N'Địa chỉ công ty trên hóa đơn',   N'TAX',      1),
     (N'KM_LIMIT_PER_DAY',           N'300',     N'Giới hạn km mỗi ngày',                                    N'BOOKING',  1),
-    (N'CANCELLATION_FEE_PERCENTAGE',N'10',      N'Phần trăm phí hủy đặt xe (%)',                            N'PENALTY',  1),
     (N'TRIP_KM_LIMIT',              N'150',     N'Giới hạn km cho gói thuê theo chuyến',                    N'BOOKING',  1),
     (N'COMBO_7_KM_LIMIT',           N'1500',    N'Giới hạn km cho gói Combo 7 ngày',                        N'BOOKING',  1),
     (N'COMBO_10_KM_LIMIT',          N'2000',    N'Giới hạn km cho gói Combo 10 ngày',                       N'BOOKING',  1),
@@ -245,17 +244,11 @@ VALUES
     -- Payment settings
     (N'PAYMENT_METHOD_CASH_ENABLED',          N'true',  N'Cho phép thanh toán tiền mặt',                N'PAYMENT', 1),
     (N'PAYMENT_METHOD_BANK_TRANSFER_ENABLED', N'true',  N'Cho phép thanh toán chuyển khoản ngân hàng',  N'PAYMENT', 1),
-    (N'PAYMENT_GRACE_PERIOD_HOURS',   N'24',  N'Số giờ gia hạn thanh toán trước khi hủy đặt xe',   N'PAYMENT', 1),
-    (N'PAYMENT_CURRENCY',             N'VND', N'Đơn vị tiền tệ sử dụng trong hệ thống',             N'PAYMENT', 1),
-    (N'PAYMENT_PARTIAL_ALLOWED',      N'false',N'Cho phép thanh toán từng phần (không đủ 100%)',    N'PAYMENT', 1),
-    (N'PAYMENT_AUTO_CONFIRM_AMOUNT',  N'0',   N'Ngưỡng tự động xác nhận thanh toán (0 = tắt)',      N'PAYMENT', 1),
-    -- Bank account & webhook settings
+    -- Bank account settings
     (N'BANK_ACCOUNT_NAME',            N'NGUYEN LAM TUNG',    N'Tên tài khoản ngân hàng',             N'PAYMENT', 1),
     (N'BANK_ACCOUNT_NUMBER',          N'00000104077',         N'Số tài khoản ngân hàng',              N'PAYMENT', 1),
     (N'BANK_NAME',                    N'TPBank',              N'Tên ngân hàng',                       N'PAYMENT', 1),
-    (N'BANK_BRANCH',                  N'Chi nhánh Hà Nội',   N'Chi nhánh ngân hàng',                 N'PAYMENT', 1),
-    (N'WEBHOOK_PROVIDER',             N'SEPAY',               N'Nhà cung cấp dịch vụ Webhook thanh toán (SEPAY, CASSO, PAYOS)', N'PAYMENT', 1),
-    (N'WEBHOOK_SECRET',               N'CRS',                 N'Khóa bảo mật để xác thực request webhook từ provider',          N'PAYMENT', 1);
+    (N'BANK_BRANCH',                  N'Chi nhánh Hà Nội',   N'Chi nhánh ngân hàng',                 N'PAYMENT', 1);
 GO
 
 -- ============================================================
