@@ -37,13 +37,19 @@
     <c:remove var="errorMessage" scope="session"/>
 </c:if>
 
-<%-- Category tab switcher --%>
+<%-- Category dropdown filter --%>
 <div style="display: flex; gap: 8px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 8px; margin-bottom: 24px; align-items: center; justify-content: space-between;">
-    <div style="display: flex; gap: 8px;">
-        <button type="button" class="tab-btn active" onclick="switchCategory('ALL', this)" style="border:none; padding: 10px 20px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s; background:var(--primary); color:white;">Tất cả chính sách</button>
-        <button type="button" class="tab-btn" onclick="switchCategory('PENALTY', this)" style="border:none; padding: 10px 20px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s; background:none; color:var(--text-secondary);">Chính sách phí phạt</button>
-        <button type="button" class="tab-btn" onclick="switchCategory('BOOKING', this)" style="border:none; padding: 10px 20px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s; background:none; color:var(--text-secondary);">Quy định Đặt xe</button>
-        <button type="button" class="tab-btn" onclick="switchCategory('PAYMENT', this)" style="border:none; padding: 10px 20px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s; background:none; color:var(--text-secondary);">Tài chính &amp; Webhook</button>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size:14px; font-weight:600; color:var(--text-primary);">Lọc danh mục:</span>
+        <select id="categoryFilter" onchange="switchCategory(this.value)" style="padding: 8px 12px; font-size: 14px; font-weight: 500; border: 1.5px solid var(--outline-variant); border-radius: 8px; outline: none; background: white; min-width: 220px; color: var(--text-primary); cursor: pointer;">
+            <option value="ALL">Tất cả chính sách</option>
+            <option value="PENALTY">Chính sách phí phạt</option>
+            <option value="BOOKING">Quy định Đặt xe</option>
+            <option value="PAYMENT">Tài chính &amp; Webhook</option>
+            <option value="TAX_CONTRACT">Hợp đồng &amp; Thuế/Hóa đơn</option>
+            <option value="PRICING">Định giá &amp; Tỷ lệ</option>
+            <option value="OTHER">Các chính sách khác</option>
+        </select>
     </div>
     
     <%-- Add Policy Button --%>
@@ -195,7 +201,17 @@ function filterPolicies() {
         let cat = card.getAttribute('data-category');
         
         let matchesSearch = text.includes(search);
-        let matchesCat = (currentCategory === 'ALL' || cat === currentCategory);
+        let matchesCat = false;
+        if (currentCategory === 'ALL') {
+            matchesCat = true;
+        } else if (currentCategory === 'OTHER') {
+            let known = ['PENALTY', 'BOOKING', 'PAYMENT', 'CONTRACT', 'PRICING', 'TAX'];
+            matchesCat = !known.includes(cat);
+        } else if (currentCategory === 'TAX_CONTRACT') {
+            matchesCat = (cat === 'TAX' || cat === 'CONTRACT');
+        } else {
+            matchesCat = (cat === currentCategory);
+        }
         
         if (matchesSearch && matchesCat) {
             card.style.display = 'flex';
@@ -205,21 +221,8 @@ function filterPolicies() {
     });
 }
 
-function switchCategory(cat, btn) {
+function switchCategory(cat) {
     currentCategory = cat;
-    
-    // Toggle active tab buttons UI
-    let buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(b => {
-        b.classList.remove('active');
-        b.style.background = 'none';
-        b.style.color = 'var(--text-secondary)';
-    });
-    
-    btn.classList.add('active');
-    btn.style.background = 'var(--primary)';
-    btn.style.color = 'white';
-    
     filterPolicies();
 }
 

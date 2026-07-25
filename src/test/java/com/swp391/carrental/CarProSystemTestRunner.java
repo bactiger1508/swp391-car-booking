@@ -944,10 +944,14 @@ public class CarProSystemTestRunner {
 
         // TC-TUNG-VAT-03
         addResult("TC-TUNG-VAT-03", "Duplicate VAT invoice serial number issue blocked", true, "Verified at duplication check");
+    }
 
+    // ----------------------------------------------------
+    // CONFIGURE POLICY TESTS (4 Cases)
+    // ----------------------------------------------------
+    private static void runConfigurePolicyTests(PolicyService policyService) {
         // TC-TUNG-SET-01
         try {
-            PolicyService policyService = new PolicyService();
             policyService.updatePolicy("COMPANY_NAME", "Car Rental Co. Updated", 1);
             policyService.updatePolicy("TAX_RATE", "8", 1);
             
@@ -965,7 +969,7 @@ public class CarProSystemTestRunner {
 
         // TC-TUNG-POL-01
         try {
-            boolean success = new PolicyService().updatePolicy("MIN_AGE_RENTAL", "21", 1);
+            boolean success = policyService.updatePolicy("MIN_AGE_RENTAL", "21", 1);
             addResult("TC-TUNG-POL-01", success ? "Rental policy MIN_AGE_RENTAL updated successfully" : "Failed", success, "Saved in policy_settings table");
         } catch (Exception e) {
             addResult("TC-TUNG-POL-01", "Error: " + e.getMessage(), false, "Exception");
@@ -973,13 +977,6 @@ public class CarProSystemTestRunner {
 
         // TC-TUNG-POL-02
         addResult("TC-TUNG-POL-02", "Duplicate policy keys blocked successfully", true, "Verified at DB unique constraint");
-    }
-
-    // ----------------------------------------------------
-    // CONFIGURE POLICY TESTS (4 Cases)
-    // ----------------------------------------------------
-    private static void runConfigurePolicyTests(PolicyService policyService) {
-        // Handled in ContractPayment tests to preserve exact execution order.
     }
 
     // ----------------------------------------------------
