@@ -3,16 +3,25 @@ package com.swp391.carrental.contract.dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.core.util.DBContext;
 
 /*
  * Name: ContractDAO
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles database operations for ContractDAO.
+ * Created: 23/05/2026 
+ * Description: Data Access Object for handling database operations on Rental Contracts.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.3 (09/06/2026): docs(contract): add simple english comments to contract m...
+ * - v1.4 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.5 (21/06/2026): feat: standard combo packages, dynamic tet surcharge and ...
+ * - v1.6 (21/06/2026): feat: implement booking workflow with contract creation a...
+ * - v1.7 (08/07/2026): feat: implement update contract
+ * - v1.8 (21/07/2026): feat: update rental contract workflow to require customer...
+ * - v1.9 (23/07/2026): Added Javadoc and method comments.
  */
 
 
@@ -22,7 +31,9 @@ import com.swp391.carrental.core.util.DBContext;
  */
 public class ContractDAO {
 
-    // Find contract by ID
+    /**
+     * Query a contract from database by primary key ID.
+     */
     public RentalContract findById(int contractId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -36,7 +47,9 @@ public class ContractDAO {
         return null;
     }
 
-    // Find contract by booking ID
+    /**
+     * Query a contract associated with a booking ID.
+     */
     public RentalContract findByBookingId(int bookingId) throws SQLException {
         String sql = "SELECT * FROM rental_contracts WHERE booking_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -50,7 +63,9 @@ public class ContractDAO {
         return null;
     }
 
-    // Get all contracts
+    /**
+     * Query all contracts ordered by creation date descending.
+     */
     public List<RentalContract> findAll() throws SQLException {
         List<RentalContract> contracts = new ArrayList<>();
         String sql = "SELECT * FROM rental_contracts ORDER BY created_at DESC";
@@ -62,14 +77,16 @@ public class ContractDAO {
         return contracts;
     }
 
-    // Insert new contract
+    /**
+     * Insert a new contract record into database with auto-generated keys.
+     */
     public int insert(RentalContract contract) throws SQLException {
         String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, car_id, "
-                + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
-                + "terms_and_conditions, created_by, "
-                + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
-                + "delivery_fee, km_limit, estimated_km, base_amount, discount_amount, tax_amount) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                 + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
+                 + "terms_and_conditions, created_by, "
+                 + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
+                 + "delivery_fee, km_limit, estimated_km, base_amount, discount_amount, tax_amount) "
+                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, contract.getBookingId());
             ps.setString(2, contract.getContractNumber());
@@ -114,7 +131,9 @@ public class ContractDAO {
         return -1;
     }
 
-    // Update contract editable fields
+    /**
+     * Update mutable fields of an existing contract draft in the database.
+     */
     public boolean update(RentalContract contract) throws SQLException {
         String sql = "UPDATE rental_contracts SET start_date = ?, end_date = ?, daily_rate = ?, total_amount = ?, deposit_amount = ?, terms_and_conditions = ?, base_amount = ?, discount_amount = ?, updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -131,17 +150,115 @@ public class ContractDAO {
         }
     }
 
-    // Update contract status
+    private static boolean columnsChecked = false;
+
+    /**
+     * Check and create signature columns in database if not present.
+     */
+    private static synchronized void ensureSignatureColumns(Connection conn) {
+        if (columnsChecked) return;
+        try {
+            DatabaseMetaData md = conn.getMetaData();
+            try (ResultSet rs = md.getColumns(null, null, "rental_contracts", "staff_signed_at")) {
+                if (!rs.next()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate("ALTER TABLE rental_contracts ADD staff_signed_at DATETIME2 NULL");
+                    }
+                }
+            }
+            try (ResultSet rs = md.getColumns(null, null, "rental_contracts", "customer_signed_at")) {
+                if (!rs.next()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate("ALTER TABLE rental_contracts ADD customer_signed_at DATETIME2 NULL");
+                    }
+                }
+            }
+            columnsChecked = true;
+        } catch (Exception e) {
+            // Ignore if metadata check is unpermitted or column exists
+        }
+    }
+
+    /**
+     * Record staff signature timestamp in database and update status.
+     */
+    public boolean signContractByStaff(int contractId) throws SQLException {
+        try (Connection conn = DBContext.getConnection()) {
+            ensureSignatureColumns(conn);
+            String sql = "UPDATE rental_contracts SET staff_signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, contractId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    checkAndUpdateActiveStatus(conn, contractId);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Record customer signature timestamp in database and update status.
+     */
+    public boolean signContractByCustomer(int contractId) throws SQLException {
+        try (Connection conn = DBContext.getConnection()) {
+            ensureSignatureColumns(conn);
+            String sql = "UPDATE rental_contracts SET customer_signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, contractId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    checkAndUpdateActiveStatus(conn, contractId);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if both staff and customer signatures are present to transition status to ACTIVE.
+     */
+    public boolean checkAndUpdateActiveStatus(Connection conn, int contractId) throws SQLException {
+        String sql = "SELECT staff_signed_at, customer_signed_at, status FROM rental_contracts WHERE contract_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, contractId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Timestamp staffSigned = rs.getTimestamp("staff_signed_at");
+                    Timestamp customerSigned = rs.getTimestamp("customer_signed_at");
+                    String currentStatus = rs.getString("status");
+
+                    if (staffSigned != null && customerSigned != null && "DRAFT".equals(currentStatus)) {
+                        String updateSql = "UPDATE rental_contracts SET status = 'ACTIVE', signed_at = GETDATE(), updated_at = GETDATE() WHERE contract_id = ?";
+                        try (PreparedStatement ups = conn.prepareStatement(updateSql)) {
+                            ups.setInt(1, contractId);
+                            return ups.executeUpdate() > 0;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Update status and set signed_at date if transitioning to ACTIVE.
+     */
     public boolean updateStatus(int contractId, String status) throws SQLException {
-        String sql = "UPDATE rental_contracts SET status = ?, updated_at = GETDATE() WHERE contract_id = ?";
+        String sql = "UPDATE rental_contracts SET status = ?, signed_at = CASE WHEN ? = 'ACTIVE' AND signed_at IS NULL THEN GETDATE() ELSE signed_at END, updated_at = GETDATE() WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setInt(2, contractId);
+            ps.setString(2, status);
+            ps.setInt(3, contractId);
             return ps.executeUpdate() > 0;
         }
     }
 
-    // Delete contract by ID
+    /**
+     * Delete a contract by ID.
+     */
     public boolean delete(int contractId) throws SQLException {
         String sql = "DELETE FROM rental_contracts WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -150,7 +267,9 @@ public class ContractDAO {
         }
     }
 
-    // Find contracts by customer ID
+    /**
+     * Query all contracts associated with a customer ID.
+     */
     public List<RentalContract> findByCustomerId(int customerId) throws SQLException {
         List<RentalContract> contracts = new ArrayList<>();
         String sql = "SELECT * FROM rental_contracts WHERE customer_id = ? ORDER BY created_at DESC";
@@ -165,7 +284,9 @@ public class ContractDAO {
         return contracts;
     }
 
-    // Map result set to contract object
+    /**
+     * Map a JDBC ResultSet row to a RentalContract model object.
+     */
     private RentalContract mapRow(ResultSet rs) throws SQLException {
         RentalContract c = new RentalContract();
         c.setContractId(rs.getInt("contract_id"));
@@ -190,6 +311,18 @@ public class ContractDAO {
         Timestamp sa = rs.getTimestamp("signed_at");
         if (sa != null) {
             c.setSignedAt(sa.toLocalDateTime());
+        }
+        try {
+            Timestamp ssa = rs.getTimestamp("staff_signed_at");
+            if (ssa != null) {
+                c.setStaffSignedAt(ssa.toLocalDateTime());
+            }
+            Timestamp csa = rs.getTimestamp("customer_signed_at");
+            if (csa != null) {
+                c.setCustomerSignedAt(csa.toLocalDateTime());
+            }
+        } catch (SQLException ignore) {
+            // Column may not exist yet in legacy DB queries
         }
         Timestamp ca = rs.getTimestamp("created_at");
         if (ca != null) {

@@ -9,14 +9,22 @@ import java.io.IOException;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.model.User;
 
-/**
- * Servlet handling cash payment approvals by Staff or Admin.
- * Changes payment status to COMPLETED and sets the recorded_by field.
+/*
+ * Name: PaymentApproveServlet
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Controller handling HTTP POST requests for approving pending cash/transfer payments.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentApproveServlet", urlPatterns = {"/payments/approve"})
 public class PaymentApproveServlet extends HttpServlet {
     private final PaymentService paymentService = new PaymentService();
 
+    /**
+     * Handles HTTP POST requests for cash payment approvals by Staff or Admin.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

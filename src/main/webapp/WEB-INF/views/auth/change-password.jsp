@@ -1,23 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Đổi mật khẩu - CarPro</title>
+<jsp:include page="/WEB-INF/views/layout/header.jsp">
+    <jsp:param name="pageTitle" value="Đổi mật khẩu - CarPro" />
+</jsp:include>
 
-    <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/assets/css/style.css">
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
-
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-          rel="stylesheet">
-</head>
-
-<body class="auth-body">
 
 <div class="auth-container">
 
@@ -128,5 +116,4 @@
 
 </div>
 
-</body>
-</html>
+<jsp:include page="/WEB-INF/views/layout/footer.jsp" />

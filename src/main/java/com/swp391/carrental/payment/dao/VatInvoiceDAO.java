@@ -4,8 +4,20 @@ import java.sql.*;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.payment.model.VatInvoice;
 
+/*
+ * Name: VatInvoiceDAO
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Data Access Object for handling database operations on VAT Invoices.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (23/07/2026): Added Javadoc and method comments.
+ */
 public class VatInvoiceDAO {
 
+    /**
+     * Retrieve a VAT invoice record by the associated contract ID.
+     */
     public VatInvoice findByContractId(int contractId) throws SQLException {
         String sql = "SELECT * FROM vat_invoices WHERE contract_id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -19,6 +31,9 @@ public class VatInvoiceDAO {
         return null;
     }
 
+    /**
+     * Create a new VAT invoice record in the database with auto-generated keys.
+     */
     public int insert(VatInvoice invoice) throws SQLException {
         String sql = "INSERT INTO vat_invoices (contract_id, invoice_code, invoice_date, invoice_status, "
                 + "amount_before_tax, tax_rate, tax_amount, total_amount, created_at, updated_at) "
@@ -47,6 +62,9 @@ public class VatInvoiceDAO {
         return -1;
     }
 
+    /**
+     * Map a JDBC ResultSet row to a VatInvoice model object.
+     */
     private VatInvoice mapRow(ResultSet rs) throws SQLException {
         VatInvoice invoice = new VatInvoice();
         invoice.setInvoiceId(rs.getInt("invoice_id"));

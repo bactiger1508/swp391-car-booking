@@ -13,9 +13,15 @@ import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.model.User;
 
-/**
- * Servlet handling checkout page generation for customers.
- * Displays VietQR information and triggers client-side polling.
+/*
+ * Name: PaymentCheckoutServlet
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Controller handling HTTP GET requests to generate the bank transfer checkout page for customers.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (21/07/2026): feat(booking,payment,report,notification): refine cancell...
+ * - v1.2 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentCheckoutServlet", urlPatterns = {"/payments/checkout"})
 public class PaymentCheckoutServlet extends HttpServlet {
@@ -48,6 +54,9 @@ public class PaymentCheckoutServlet extends HttpServlet {
         BANK_BIN_MAP.put("MSBANK",       "970426");
     }
 
+    /**
+     * Handles HTTP GET requests to load payment details and render the checkout page.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -73,10 +82,16 @@ public class PaymentCheckoutServlet extends HttpServlet {
                 return;
             }
 
+            com.swp391.carrental.booking.model.Booking booking = 
+                    new com.swp391.carrental.booking.service.BookingService().getBookingById(payment.getBookingId());
+            if (booking != null && ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus()))) {
+                request.getSession().setAttribute("errorMessage", "Đơn đặt xe đã bị hủy hoặc từ chối. Giao dịch thanh toán không thể thực hiện.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + booking.getBookingId());
+                return;
+            }
+
             // Security Check: Customers can only view their own booking payments
             if ("CUSTOMER".equals(currentUser.getRole())) {
-                com.swp391.carrental.booking.model.Booking booking = 
-                        new com.swp391.carrental.booking.service.BookingService().getBookingById(payment.getBookingId());
                 if (booking == null || booking.getCustomerId() != currentUser.getUserId()) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thông tin thanh toán này.");
                     return;
@@ -125,6 +140,9 @@ public class PaymentCheckoutServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Helper function to lookup NAPAS bank BIN codes by matching bank names.
+     */
     private String resolveBankBin(String bankName) {
         if (bankName == null || bankName.trim().isEmpty()) return "";
         String upper = bankName.toUpperCase();

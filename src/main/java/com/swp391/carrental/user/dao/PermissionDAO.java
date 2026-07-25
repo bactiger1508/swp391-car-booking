@@ -6,7 +6,17 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.user.model.Permission;
 import com.swp391.carrental.user.model.Role;
+/*
+ * Name: PermissionDAO
+ * @Author: AnhNNHE160896
+ * Date: 01/07/2026
+ * Version: 1.0
+ * Description: Handles database operations for PermissionDAO.
+ */
 
+/**
+ * Data Access Object for PermissionDAO entities.
+ */
 public class PermissionDAO {
 
     /**
@@ -38,7 +48,7 @@ public class PermissionDAO {
      */
     public List<Permission> getAllPermissions() throws SQLException {
         List<Permission> permissions = new ArrayList<>();
-        String sql = "SELECT permission_id, permission_key, permission_name, functional_area FROM permission ORDER BY functional_area, permission_key";
+        String sql = "SELECT permission_id, permission_key, permission_name, functional_area FROM permission WHERE functional_area <> 'Notification Management' AND permission_key NOT IN ('LOCK_USER_ACCOUNT', 'UPDATE_PROFILE') ORDER BY functional_area, permission_key";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

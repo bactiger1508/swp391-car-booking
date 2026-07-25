@@ -78,7 +78,7 @@
 
         <div style="margin-top:32px;display:flex;justify-content:flex-end;gap:12px;">
             <a href="${pageContext.request.contextPath}/home" class="bk-btn bk-btn-outline">Hủy bỏ</a>
-            <button type="submit" class="bk-btn bk-btn-primary" onclick="alert('Đã lưu cấu hình hóa đơn GTGT!'); return false;">
+            <button type="submit" class="bk-btn bk-btn-primary" onclick="alert('Đã lưu cấu hình hóa đơn GTGT!');">
                 <span class="material-symbols-outlined">save</span> Lưu thiết lập
             </button>
         </div>

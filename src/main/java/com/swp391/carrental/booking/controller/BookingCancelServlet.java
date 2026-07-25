@@ -26,6 +26,7 @@ public class BookingCancelServlet extends HttpServlet {
     private final UserService userService = new UserService();
     private final NotificationService notificationService = new NotificationService();
 
+    /** Handles booking cancellation requests from customers or staff */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

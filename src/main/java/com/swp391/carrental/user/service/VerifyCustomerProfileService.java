@@ -26,7 +26,7 @@ public class VerifyCustomerProfileService {
         try {
             return profileDAO.findAll();
         } catch (SQLException e) {
-            throw new AppException("Cannot load customer profiles.", e);
+            throw new AppException("Không thể tải hồ sơ khách hàng.", e);
         }
     }
 
@@ -35,7 +35,7 @@ public class VerifyCustomerProfileService {
         try {
             return profileDAO.findByStatus(status);
         } catch (SQLException e) {
-            throw new AppException("Cannot load customer profiles.", e);
+            throw new AppException("Không thể tải hồ sơ khách hàng.", e);
         }
     }
 
@@ -48,7 +48,7 @@ public class VerifyCustomerProfileService {
         try {
             return profileDAO.search(keyword.trim());
         } catch (SQLException e) {
-            throw new AppException("Search profile failed.", e);
+            throw new AppException("Tìm kiếm hồ sơ không thành công.", e);
         }
     }
 
@@ -57,11 +57,11 @@ public class VerifyCustomerProfileService {
         try {
             CustomerProfile profile = profileDAO.findById(profileId);
             if (profile == null) {
-                throw new AppException("Customer profile not found.");
+                throw new AppException("Không tìm thấy hồ sơ khách hàng..");
             }
             return profile;
         } catch (SQLException e) {
-            throw new AppException("Cannot load customer profile.", e);
+            throw new AppException("Không thể tải hồ sơ khách hàng.", e);
         }
     }
 
@@ -76,7 +76,7 @@ public class VerifyCustomerProfileService {
                     ProfileVerificationStatus.VERIFIED,
                     staffId);
         } catch (SQLException e) {
-            throw new AppException("Verify profile failed.", e);
+            throw new AppException("Xác minh hồ sơ không thành công.", e);
         }
     }
 
@@ -91,53 +91,53 @@ public class VerifyCustomerProfileService {
                     ProfileVerificationStatus.REJECTED,
                     staffId);
         } catch (SQLException e) {
-            throw new AppException("Reject profile failed.", e);
+            throw new AppException("Hồ sơ bị từ chối không thành công.", e);
         }
     }
 
     // Validation rules for verifying a profile
     private void validateVerify(CustomerProfile profile) {
         if (profile == null) {
-            throw new AppException("Customer profile not found.");
+            throw new AppException("Không tìm thấy hồ sơ khách hàng.");
         }
 
         if (!ProfileVerificationStatus.PENDING.equals(profile.getVerificationStatus())) {
-            throw new AppException("Only PENDING profile can be verified.");
+            throw new AppException("Chỉ những hồ sơ đang chờ xử lý mới có thể được xác minh.");
         }
 
         if (isBlank(profile.getIdCardNumber())) {
-            throw new AppException("Missing ID Card Number.");
+            throw new AppException("Thiếu số thẻ căn cước.");
         }
 
         if (isBlank(profile.getIdCardImageFront())) {
-            throw new AppException("Missing ID Card Front Image.");
+            throw new AppException("Ảnh mặt trước thẻ căn cước bị thiếu.");
         }
 
         if (isBlank(profile.getIdCardImageBack())) {
-            throw new AppException("Missing ID Card Back Image.");
+            throw new AppException("Hình ảnh mặt sau thẻ căn cước bị thiếu.");
         }
 
         if (isBlank(profile.getDriverLicenseNumber())) {
-            throw new AppException("Missing Driver License Number.");
+            throw new AppException("Thiếu số giấy phép lái xe.");
         }
 
         if (isBlank(profile.getDriverLicenseImage())) {
-            throw new AppException("Missing Driver License Image.");
+            throw new AppException("Thiếu ảnh giấy phép lái xe.");
         }
 
         if (profile.getDriverLicenseExpiry() != null && profile.getDriverLicenseExpiry().isBefore(LocalDate.now())) {
-            throw new AppException("Driver License has expired.");
+            throw new AppException("Giấy phép lái xe đã hết hạn.");
         }
     }
 
     // Validation rules for rejecting a profile
     private void validateReject(CustomerProfile profile) {
         if (profile == null) {
-            throw new AppException("Customer profile not found.");
+            throw new AppException("Không tìm thấy hồ sơ khách hàng.");
         }
 
         if (!ProfileVerificationStatus.PENDING.equals(profile.getVerificationStatus())) {
-            throw new AppException("Only PENDING profile can be rejected.");
+            throw new AppException("Chỉ những hồ sơ đang ở trạng thái CHỜ XỬ LÝ mới có thể bị từ chối.");
         }
     }
 
@@ -146,7 +146,7 @@ public class VerifyCustomerProfileService {
         try {
             return profileDAO.getCustomerName(userId);
         } catch (SQLException e) {
-            throw new AppException("Cannot load customer name.", e);
+            throw new AppException("Không thể tải tên khách hàng.", e);
         }
     }
 
@@ -155,7 +155,7 @@ public class VerifyCustomerProfileService {
         try {
             return profileDAO.getCustomerEmail(userId);
         } catch (SQLException e) {
-            throw new AppException("Cannot load customer email.", e);
+            throw new AppException("Không thể tải email khách hàng.", e);
         }
     }
 

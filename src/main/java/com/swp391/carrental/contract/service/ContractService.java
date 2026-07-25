@@ -15,12 +15,20 @@ import com.swp391.carrental.core.exception.AppException;
 /*
  * Name: ContractService
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Contains business logic for ContractService.
+ * Created: 23/05/2026 
+ * Description: Contains business logic and operations for managing Rental Contracts.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.3 (09/06/2026): docs(contract): add simple english comments to contract m...
+ * - v1.4 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.5 (21/06/2026): feat: implement booking workflow with contract creation a...
+ * - v1.6 (08/07/2026): feat: implement update contract
+ * - v1.7 (21/07/2026): feat: update rental contract workflow to require customer...
+ * - v1.8 (22/07/2026): Fix: complete Java backend bug fixes and UI settings impr...
+ * - v1.9 (23/07/2026): Added Javadoc and method comments.
  */
-
-
 
 /**
  * Service for rental contract operations. BR-05: Contract can only be created
@@ -31,7 +39,9 @@ public class ContractService {
     private final ContractDAO contractDAO = new ContractDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
 
-    // Get contract by ID
+    /**
+     * Get a contract by its database primary ID.
+     */
     public RentalContract getContractById(int contractId) {
         try {
             return contractDAO.findById(contractId);
@@ -40,7 +50,9 @@ public class ContractService {
         }
     }
 
-    // Get contract by booking ID
+    /**
+     * Get a contract associated with a specific booking.
+     */
     public RentalContract getContractByBookingId(int bookingId) {
         try {
             return contractDAO.findByBookingId(bookingId);
@@ -49,7 +61,9 @@ public class ContractService {
         }
     }
 
-    // Get all contracts
+    /**
+     * Retrieve all contracts in the system.
+     */
     public List<RentalContract> getAllContracts() {
         try {
             return contractDAO.findAll();
@@ -58,7 +72,9 @@ public class ContractService {
         }
     }
 
-    // Get contracts by customer ID
+    /**
+     * Retrieve all contracts belonging to a specific customer.
+     */
     public List<RentalContract> getContractsByCustomerId(int customerId) {
         try {
             return contractDAO.findByCustomerId(customerId);
@@ -67,16 +83,25 @@ public class ContractService {
         }
     }
 
-    // Create contract from confirmed booking
+    /**
+     * Create a new contract from a confirmed booking and verified customer profile.
+     */
     public int createContract(RentalContract contract) {
         try {
-            // BR-05: Verify booking is CONFIRMED
+            // UC 2.2.1 Step 3 / Alt 1: Verify booking is CONFIRMED
             Booking booking = bookingDAO.findById(contract.getBookingId());
             if (booking == null) {
-                throw new AppException("Booking not found.");
+                throw new AppException("Không tìm thấy đơn đặt xe.");
             }
             if (!BookingStatus.CONFIRMED.equals(booking.getStatus())) {
-                throw new AppException("Contract can only be created from a Confirmed booking.");
+                throw new AppException("Chỉ có thể soạn hợp đồng cho các đơn đặt xe đã Xác nhận (Confirmed).");
+            }
+
+            // Verify customer is VERIFIED
+            com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
+            com.swp391.carrental.user.model.CustomerProfile profile = profileDAO.findByUserId(contract.getCustomerId());
+            if (profile == null || !"VERIFIED".equals(profile.getVerificationStatus())) {
+                throw new AppException("Khách hàng chưa xác minh hồ sơ, không thể lập hợp đồng.");
             }
 
             // Generate contract number
@@ -92,7 +117,31 @@ public class ContractService {
         }
     }
 
-    // Update contract status
+    /**
+     * Process electronic signature by staff member.
+     */
+    public boolean signByStaff(int contractId) {
+        try {
+            return contractDAO.signContractByStaff(contractId);
+        } catch (SQLException e) {
+            throw new AppException("Lỗi khi nhân viên ký hợp đồng.", e);
+        }
+    }
+
+    /**
+     * Process electronic signature by customer.
+     */
+    public boolean signByCustomer(int contractId) {
+        try {
+            return contractDAO.signContractByCustomer(contractId);
+        } catch (SQLException e) {
+            throw new AppException("Lỗi khi khách hàng ký hợp đồng.", e);
+        }
+    }
+
+    /**
+     * Update status of a contract.
+     */
     public boolean updateContractStatus(int contractId, String status) {
         try {
             return contractDAO.updateStatus(contractId, status);
@@ -101,7 +150,9 @@ public class ContractService {
         }
     }
 
-    // Update contract details with validation
+    /**
+     * Update draft contract details with valid date range and prices, logging the audit.
+     */
     public boolean updateContract(RentalContract contract, int editorId, String editorRole) {
         try {
             // BR7: Check if contract exists and is still editable

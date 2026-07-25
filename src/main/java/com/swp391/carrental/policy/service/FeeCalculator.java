@@ -7,10 +7,15 @@ import com.swp391.carrental.vehicle.model.Car;
 
 /*
  * Name: FeeCalculator
- * @Author: BacBXHE186736
- * Date: 21/06/2026
- * Version: 2.0
- * Description: Handles business logic and operations for FeeCalculator with multi-mode pricing, delivery and KM limits.
+ * @Author: TungNLHE186756
+ * Created: 23/05/2026 
+ * Description: Service handling complex calculation algorithms for daily rental rates, deposits, late fees, delivery fees, and mileage limit surcharges.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.3 (21/06/2026): feat: standard combo packages, dynamic tet surcharge and ...
+ * - v1.4 (23/07/2026): Added Javadoc and method comments.
  */
 
 /**

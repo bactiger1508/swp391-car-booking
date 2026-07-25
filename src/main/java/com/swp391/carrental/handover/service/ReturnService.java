@@ -6,6 +6,9 @@ import java.util.List;
 import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
+import com.swp391.carrental.contract.dao.ContractDAO;
+import com.swp391.carrental.contract.model.RentalContract;
+import com.swp391.carrental.contract.constant.ContractStatus;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleReturn;
@@ -103,6 +106,7 @@ public class ReturnService {
 
                 if (totalPaid.compareTo(totalRequired) >= 0) {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
+                    updateContractStatus(vehicleReturn.getBookingId(), ContractStatus.COMPLETED);
                 } else {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 }
@@ -111,6 +115,7 @@ public class ReturnService {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 } else {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
+                    updateContractStatus(vehicleReturn.getBookingId(), ContractStatus.COMPLETED);
                 }
             }
 
@@ -145,12 +150,25 @@ public class ReturnService {
 
                 if (totalPaid.compareTo(totalRequired) >= 0) {
                     bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.COMPLETED);
+                    updateContractStatus(returns.getBookingId(), ContractStatus.COMPLETED);
                 } else {
                     bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 }
             }
         } catch (SQLException e) {
             throw new AppException("Failed to update vehicle handover.", e);
+        }
+    }
+
+    private void updateContractStatus(int bookingId, String status) {
+        try {
+            ContractDAO contractDAO = new ContractDAO();
+            RentalContract contract = contractDAO.findByBookingId(bookingId);
+            if (contract != null) {
+                contractDAO.updateStatus(contract.getContractId(), status);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

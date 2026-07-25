@@ -5,8 +5,9 @@
     request.setAttribute("dateTimeFormatter",
         java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
 %>
+<c:set var="isCustomer" value="${sessionScope.currentUser.role == 'CUSTOMER'}"/>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
-    <jsp:param name="pageTitle" value="Lịch Sử Thanh Toán Của Tôi"/>
+    <jsp:param name="pageTitle" value="${isCustomer ? 'Lịch Sử Thanh Toán Của Tôi' : 'Nhật Ký Giao Dịch & Lịch Sử Thanh Toán'}"/>
 </jsp:include>
 
 <div class="bk-page-header">
@@ -14,12 +15,19 @@
         <div class="bk-breadcrumb">
             <a href="${pageContext.request.contextPath}/home">Trang chủ</a>
             <span class="material-symbols-outlined">chevron_right</span>
-            <a href="${pageContext.request.contextPath}/bookings/my">Chuyến Đi Của Tôi</a>
-            <span class="material-symbols-outlined">chevron_right</span>
-            <span class="current">Lịch Sử Thanh Toán</span>
+            <c:choose>
+                <c:when test="${isCustomer}">
+                    <a href="${pageContext.request.contextPath}/bookings/my">Chuyến Đi Của Tôi</a>
+                    <span class="material-symbols-outlined">chevron_right</span>
+                    <span class="current">Lịch Sử Thanh Toán</span>
+                </c:when>
+                <c:otherwise>
+                    <span class="current">Thanh toán & Giao dịch</span>
+                </c:otherwise>
+            </c:choose>
         </div>
-        <h2>Lịch Sử Thanh Toán Của Tôi</h2>
-        <p>Xem tất cả giao dịch thanh toán liên quan đến các đơn thuê xe của bạn.</p>
+        <h2>${isCustomer ? 'Lịch Sử Thanh Toán Của Tôi' : 'Nhật Ký Giao Dịch & Lịch Sử Thanh Toán'}</h2>
+        <p>${isCustomer ? 'Xem tất cả giao dịch thanh toán liên quan đến các đơn thuê xe của bạn.' : 'Xem toàn bộ lịch sử thanh toán đặt cọc, thanh toán thuê xe và phụ phí trên hệ thống.'}</p>
     </div>
 </div>
 
@@ -122,16 +130,18 @@
             <div class="bk-card" style="padding: 60px 24px; text-align: center;">
                 <span class="material-symbols-outlined" style="font-size: 56px; color: var(--outline); margin-bottom: 12px; display:block;">receipt_long</span>
                 <h4 style="color: var(--on-surface); margin-bottom: 8px;">Chưa có giao dịch nào</h4>
-                <p style="color: var(--text-secondary); font-size: 14px;">Bạn chưa có giao dịch thanh toán nào. Hãy đặt xe để bắt đầu!</p>
-                <a href="${pageContext.request.contextPath}/bookings/create" class="bk-btn bk-btn-primary" style="margin-top: 16px;">
-                    <span class="material-symbols-outlined">add</span> Đặt Xe Ngay
-                </a>
+                <p style="color: var(--text-secondary); font-size: 14px;">Chưa có giao dịch thanh toán nào được ghi nhận trên hệ thống.</p>
+                <c:if test="${isCustomer}">
+                    <a href="${pageContext.request.contextPath}/bookings/create" class="bk-btn bk-btn-primary" style="margin-top: 16px;">
+                        <span class="material-symbols-outlined">add</span> Đặt Xe Ngay
+                    </a>
+                </c:if>
             </div>
         </c:when>
         <c:otherwise>
             <div class="bk-card" style="padding: 0; overflow: hidden;">
-                <div style="overflow-x: auto;">
-                    <table id="myPaymentTable" style="width:100%; border-collapse:collapse; min-width: 860px;">
+                <div class="bk-table-responsive" style="overflow-x: auto; width: 100%;">
+                    <table id="myPaymentTable" style="width:100%; border-collapse:collapse; min-width: 1100px;">
                         <thead>
                             <tr style="background: var(--surface-container-highest); border-bottom: 2px solid var(--outline-variant);">
                                 <th style="padding:14px 16px; text-align:left; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary);">Mã GD</th>
@@ -147,19 +157,15 @@
                         </thead>
                         <tbody>
                             <c:forEach var="p" items="${myPayments}" varStatus="status">
-                                <c:set var="overpaid" value="0"/>
-                                <c:if test="${p.amountPaid != null && p.amountPaid > p.amount}">
-                                    <c:set var="overpaid" value="${p.amountPaid - p.amount}"/>
-                                </c:if>
                                 <tr class="payment-row" style="border-bottom: 1px solid var(--outline-variant); ${status.index % 2 == 1 ? 'background: var(--surface-container-low);' : ''}"
                                     data-type="${p.paymentType}"
                                     data-method="${p.paymentMethod}"
                                     data-status="${p.status}"
-                                    data-search="${p.paymentId} ${p.bookingId} ${p.paymentType} ${p.paymentMethod} ${p.status}">
+                                    data-search="PAY-${p.paymentId} #BK-${p.bookingId} ${p.paymentType} ${p.paymentMethod} ${p.status}">
 
-                                    <%-- Payment ID & Ref --%>
+                                    <%-- Payment ID --%>
                                     <td style="padding:12px 16px; font-weight:700; color:var(--primary); font-size:13px;">
-                                        #PM-${p.paymentId}
+                                        PAY-${p.paymentId}
                                         <c:if test="${not empty p.transactionRef}">
                                             <div style="font-size:11px; font-weight:normal; color: var(--text-secondary);">Ref: ${p.transactionRef}</div>
                                         </c:if>
@@ -172,7 +178,7 @@
                                            title="Xem chi tiết đơn thuê">
                                             #BK-${p.bookingId}
                                         </a>
-                                        <c:if test="${p.contractId != null}">
+                                        <c:if test="${p.contractId != null && p.contractId > 0}">
                                             <div style="font-size:11px; color:var(--text-secondary);">#CT-${p.contractId}</div>
                                         </c:if>
                                     </td>

@@ -46,7 +46,7 @@ public class AuthorizationFilter implements Filter {
         PATH_PERMISSIONS.put("/bookings/manage", "PROCESS_BOOKING_REQUEST");
         PATH_PERMISSIONS.put("/bookings/approval", "PROCESS_BOOKING_REQUEST");
         PATH_PERMISSIONS.put("/bookings/calendar", "VIEW_BOOKINGS_CALENDAR");
-        PATH_PERMISSIONS.put("/bookings/create", "CREATE_BOOKING");
+        // PATH_PERMISSIONS.put("/bookings/create", "CREATE_BOOKING"); // Bypassed for Guest-to-Customer flow
         PATH_PERMISSIONS.put("/bookings/edit", "UPDATE_BOOKING");
         PATH_PERMISSIONS.put("/contracts", "VIEW_CONTRACT");
         PATH_PERMISSIONS.put("/payments/record", "RECORD_PAYMENT");
@@ -60,6 +60,11 @@ public class AuthorizationFilter implements Filter {
         PATH_PERMISSIONS.put("/additional-fees", "RECORD_ADDITIONAL_FEE");
         PATH_PERMISSIONS.put("/reports", "VIEW_REVENUE_REPORT");
         PATH_PERMISSIONS.put("/change-password", "CHANGE_PASSWORD");
+        PATH_PERMISSIONS.put("/vehicles/brands", "MANAGE_VEHICLE_BRANDS");
+        PATH_PERMISSIONS.put("/payments/approve", "APPROVE_PAYMENT");
+        PATH_PERMISSIONS.put("/payments/checkout", "GENERATE_PAYMENT_QR_CODE");
+        PATH_PERMISSIONS.put("/audit-logs", "VIEW_ACTIVITY_HISTORY");
+        PATH_PERMISSIONS.put("/vat-invoice", "CREATE_VAT_INVOICE");
     }
 
     @Override
@@ -87,11 +92,21 @@ public class AuthorizationFilter implements Filter {
                 HttpSession session = httpRequest.getSession(false);
                 if (session != null) {
                     User user = (User) session.getAttribute("currentUser");
-                    if (user != null && !SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
-                        // User doesn't have the required permission
-                        httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
-                                .forward(httpRequest, httpResponse);
-                        return;
+                    if (user != null) {
+                        // Bypass /payments/record restriction for CUSTOMER role (servlet handles ownership check)
+                        if ("/payments/record".equals(prefix) && "CUSTOMER".equals(user.getRole())) {
+                            break;
+                        }
+                        // Bypass /vehicles/availability restriction for realtime checkCarAvailability action
+                        if ("/vehicles/availability".equals(prefix) && "checkCarAvailability".equals(httpRequest.getParameter("action"))) {
+                            break;
+                        }
+                        if (!SecurityUtils.hasPermission(httpRequest, requiredPerm)) {
+                            // User doesn't have the required permission
+                            httpRequest.getRequestDispatcher("/WEB-INF/views/error/access-denied.jsp")
+                                    .forward(httpRequest, httpResponse);
+                            return;
+                        }
                     }
                 }
                 break;

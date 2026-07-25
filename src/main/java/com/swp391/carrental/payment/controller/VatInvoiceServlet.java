@@ -21,6 +21,15 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
+/*
+ * Name: VatInvoiceServlet
+ * @Author: TungNLHE186756
+ * Created: 16/07/2026 
+ * Description: Controller handling HTTP GET and POST requests for viewing and creating VAT invoices.
+ * Version History:
+ * - v1.0 (16/07/2026): Initial version.
+ * - v1.1 (23/07/2026): Added Javadoc and method comments.
+ */
 @WebServlet(name = "VatInvoiceServlet", urlPatterns = {"/contracts/vat-invoice/create", "/contracts/vat-invoice/detail"})
 public class VatInvoiceServlet extends HttpServlet {
 
@@ -31,6 +40,9 @@ public class VatInvoiceServlet extends HttpServlet {
     private final UserService userService = new UserService();
     private final VehicleService vehicleService = new VehicleService();
 
+    /**
+     * Handles HTTP GET requests to display VAT invoice details.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -97,6 +109,9 @@ public class VatInvoiceServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Handles HTTP POST requests to create/issue a new VAT invoice.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -109,8 +124,8 @@ public class VatInvoiceServlet extends HttpServlet {
             return;
         }
 
-        // Only Staff/Admin can generate VAT Invoice
-        if (!"STAFF".equals(currentUser.getRole()) && !"ADMIN".equals(currentUser.getRole())) {
+        // Only Staff/Admin (with CREATE_VAT_INVOICE permission) can generate VAT Invoice
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_VAT_INVOICE")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hóa đơn VAT.");
             return;
         }

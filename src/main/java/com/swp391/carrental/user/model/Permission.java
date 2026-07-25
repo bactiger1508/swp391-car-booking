@@ -1,5 +1,16 @@
 package com.swp391.carrental.user.model;
+/*
+ * Name: Permission
+ * @Author: AnhNNHE160896
+ * Date: 01/07/2026
+ * Version: 1.0
+ * Description: Handles business logic and operations for Permission.
+ */
 
+/**
+ * Extended permission for admin.
+ * Maps to the 'permission ' table.
+ */
 public class Permission {
     private int permissionId;
     private String permissionKey;

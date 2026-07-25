@@ -91,19 +91,21 @@ public class NotificationDAO {
     }
 
     public boolean markAsRead(int notificationId) throws SQLException {
-        String sql = "UPDATE notifications SET is_read = 1, read_at = GETDATE() WHERE notification_id = ?";
+        String sql = "UPDATE notifications SET is_read = 1, read_at = ? WHERE notification_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, notificationId);
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, notificationId);
             return ps.executeUpdate() > 0;
         }
     }
 
     public boolean markAllAsRead(int userId) throws SQLException {
-        String sql = "UPDATE notifications SET is_read = 1, read_at = GETDATE() WHERE user_id = ? AND is_read = 0";
+        String sql = "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         }
     }
@@ -113,6 +115,15 @@ public class NotificationDAO {
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, notificationId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean deleteAllByUserId(int userId) throws SQLException {
+        String sql = "DELETE FROM notifications WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
             return ps.executeUpdate() > 0;
         }
     }

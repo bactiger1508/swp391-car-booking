@@ -78,3 +78,5 @@ Thumbs.db
 # Sensitive credentials
 src/main/resources/db.properties
 src/main/resources/mail.properties
+*.env
+.env

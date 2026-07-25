@@ -10,8 +10,6 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import com.swp391.carrental.booking.model.Booking;
-import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.policy.model.PolicySetting;
 import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.model.User;
@@ -19,16 +17,16 @@ import com.swp391.carrental.user.model.User;
 /*
  * Name: PaymentSettingsServlet
  * @Author: TungNLHE186756
- * Date: 30/05/2026
- * Version: 1.0
- * Description: Admin servlet to configure payment methods and payment-related settings.
- */
-
-
-
-/**
- * Admin-only servlet for configuring payment methods and payment-related settings.
- * URL: /admin/payment-settings
+ * Created: 31/05/2026 
+ * Description: Controller handling HTTP GET and POST requests for Admin payment settings management.
+ * Version History:
+ * - v1.0 (31/05/2026): Initial version.
+ * - v1.1 (01/06/2026): last update for iter1
+ * - v1.2 (02/06/2026): feat(payment): align payment configuration UI exactly wit...
+ * - v1.3 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.4 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.5 (17/07/2026): feat: refine payment and policy settings configuration
+ * - v1.6 (23/07/2026): Added Javadoc and method comments.
  */
 @WebServlet(name = "PaymentSettingsServlet", urlPatterns = {"/admin/payment-settings"})
 public class PaymentSettingsServlet extends HttpServlet {
@@ -41,6 +39,9 @@ public class PaymentSettingsServlet extends HttpServlet {
         "PAYMENT_METHOD_BANK_TRANSFER_ENABLED"
     };
 
+    /**
+     * Handles HTTP GET requests to retrieve payment policy settings categorised by tab and populate attributes.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -84,6 +85,9 @@ public class PaymentSettingsServlet extends HttpServlet {
                .forward(request, response);
     }
 
+    /**
+     * Handles HTTP POST requests to receive form submissions and process bulk updates to settings.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

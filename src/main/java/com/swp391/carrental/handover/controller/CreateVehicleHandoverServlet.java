@@ -225,6 +225,9 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             int handoverId = handoverService.handoverVehicle(handover);
 
             notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
+            if (request.getSession() != null) {
+                request.getSession().setAttribute("successMessage", "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
+            }
 
             response.sendRedirect(request.getContextPath() + "/handovers");
 
@@ -385,8 +388,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
     private void notifyVehicleHandedOver(int bookingId, int handoverId, int customerId) {
         try {
             Notification notif = new Notification(customerId,
-                    "Xe đã được bàn giao",
-                    "Xe cho booking #" + bookingId + " đã được bàn giao thành công. Vui lòng kiểm tra tình trạng xe.",
+                    "Biên bản bàn giao xe đã được tạo",
+                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
                     "HANDOVER");
             notif.setReferenceType("HANDOVER");
             notif.setReferenceId(handoverId);

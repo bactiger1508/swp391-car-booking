@@ -295,8 +295,6 @@
                             </div>
                             </c:if>
 
-                        </div>
-
                         <%-- Số tiền thực nhận (Staff/Admin only — for overpayment tracking) --%>
                         <c:if test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">
                         <div class="bk-form-group" style="margin-bottom: 20px; text-align: left;">
@@ -473,105 +471,13 @@
         </c:when>
 
         <c:otherwise>
-
-            <%-- CASE 2: GLOBAL TRANSACTION LOG --%>
-            <div class="bk-card" style="padding: 24px; margin-top: 28px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="material-symbols-outlined" style="color: var(--primary);">history</span>
-                        <span style="font-size: 16px; font-weight: 700; color: var(--primary);">Lịch sử thanh toán & Giao dịch</span>
-                    </div>
-                </div>
-
-                <div class="bk-table-responsive">
-                    <table class="bk-table" id="paymentTable">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--outline-variant); text-align: left;">
-                                <th style="padding: 12px 16px;">Mã Giao Dịch</th>
-                                <th style="padding: 12px 16px;">Đơn Thuê</th>
-                                <th style="padding: 12px 16px;">Số Tiền</th>
-                                <th style="padding: 12px 16px;">Loại</th>
-                                <th style="padding: 12px 16px;">Phương Thức</th>
-                                <th style="padding: 12px 16px;">Trạng Thái</th>
-                                <th style="padding: 12px 16px;">Ngày Thanh Toán</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="p" items="${payments}">
-                                <tr style="border-bottom: 1px solid var(--outline-variant); height: 60px; ${p.paymentType == 'REFUND' ? 'background: rgba(238,93,80,0.05);' : ''}" data-type="${p.paymentType}" data-method="${p.paymentMethod}" data-status="${p.status}">
-                                    <td class="code" style="padding: 12px 16px; font-weight: 700; color: var(--primary);">
-                                        PAY-${p.paymentId}
-                                        <c:if test="${not empty p.transactionRef}">
-                                            <div class="sub" style="font-size:11px; font-weight:normal; color: var(--text-secondary);">Ref: ${p.transactionRef}</div>
-                                        </c:if>
-                                    </td>
-                                    <td style="padding: 12px 16px;">
-                                        <div>
-                                            <a href="${pageContext.request.contextPath}/bookings/detail?id=${p.bookingId}" style="font-weight:600; color:var(--primary);">
-                                                #BK-${p.bookingId}
-                                            </a>
-                                        </div>
-                                        <c:if test="${not empty p.contractId && p.contractId > 0}">
-                                            <div class="sub" style="font-size:11px;">
-                                                <a href="${pageContext.request.contextPath}/contracts/detail?id=${p.contractId}" style="color: var(--text-secondary);">
-                                                    Hợp đồng: #CT-${p.contractId}
-                                                </a>
-                                            </div>
-                                        </c:if>
-                                    </td>
-                                    <td style="padding: 12px 16px; font-weight: 700; color: ${p.paymentType == 'REFUND' ? '#C9392D' : 'var(--primary)'}">
-                                        <c:if test="${p.paymentType == 'REFUND'}">-</c:if><fmt:formatNumber value="${p.amount}" pattern="#,##0"/> VND
-                                    </td>
-                                    <td style="padding: 12px 16px;">
-                                        <c:choose>
-                                            <c:when test="${p.paymentType == 'DEPOSIT'}"><span style="font-weight:600; color:#505F76;">💵 Đặt cọc</span></c:when>
-                                            <c:when test="${p.paymentType == 'RENTAL'}"><span style="font-weight:600; color:#041638;">🚗 Tiền thuê xe</span></c:when>
-                                            <c:when test="${p.paymentType == 'ADDITIONAL_FEE'}"><span style="font-weight:600; color:var(--error);"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">warning</span> Phụ phí</span></c:when>
-                                            <c:when test="${p.paymentType == 'REFUND'}"><span style="font-weight:600; color:#C9392D;">🔄 Hoàn tiền</span></c:when>
-                                            <c:otherwise>${p.paymentType}</c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td style="padding: 12px 16px; font-weight: 500;">
-                                        <c:choose>
-                                            <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
-                                            <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
-                                            <c:otherwise>${p.paymentMethod}</c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td style="padding: 12px 16px;">
-                                        <c:choose>
-                                            <c:when test="${p.status == 'COMPLETED'}"><span class="bk-badge bk-badge-progress"><span class="bk-badge-dot"></span> Thành công</span></c:when>
-                                            <c:when test="${p.status == 'PENDING'}"><span class="bk-badge bk-badge-pending"><span class="bk-badge-dot"></span> Chờ xử lý</span></c:when>
-                                            <c:otherwise><span class="bk-badge bk-badge-rejected"><span class="bk-badge-dot"></span> Thất bại</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td style="padding: 12px 16px; font-size:13px; color:var(--text-secondary);">
-                                        ${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : '—'}
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Phân trang -->
-                <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
-                    <div style="font-size:13px; color:var(--on-surface-variant);">
-                        Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> bản ghi
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="font-size:13px; color:var(--on-surface-variant);">Số hàng:</label>
-                        <select id="pageSizeSelect" onchange="changePageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--on-surface); font-size:13px; outline:none; cursor:pointer;">
-                            <option value="5">5</option>
-                            <option value="10" selected="selected">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                        </select>
-                        <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
-                            <!-- nút chuyển trang -->
-                        </div>
-                    </div>
-                </div>
+            <div class="bk-card" style="padding: 40px; text-align: center; margin-top: 28px;">
+                <span class="material-symbols-outlined" style="font-size: 56px; color: var(--outline); margin-bottom: 12px; display:block;">warning</span>
+                <h4 style="color: var(--on-surface); margin-bottom: 8px;">Không tìm thấy đơn đặt xe</h4>
+                <p style="color: var(--text-secondary); font-size: 14px;">Vui lòng truy cập trang lịch sử/nhật ký giao dịch để xem toàn bộ danh sách.</p>
+                <a href="${pageContext.request.contextPath}/payments/history" class="bk-btn bk-btn-primary" style="margin-top: 16px;">
+                    Đi đến Nhật Ký Giao Dịch
+                </a>
             </div>
         </c:otherwise>
     </c:choose>
@@ -711,132 +617,6 @@ function prepareSubmit() {
     return true;
 }
 
-let currentPage = 1;
-let pageSize = 10;
-let filteredRows = [];
-
-function changePageSize() {
-    var sizeSelect = document.getElementById('pageSizeSelect');
-    if (sizeSelect) {
-        pageSize = parseInt(sizeSelect.value);
-        currentPage = 1;
-        applyPagination();
-    }
-}
-
-function filterTable() {
-    var searchInputEl = document.getElementById('searchInput');
-    var searchInput = searchInputEl ? searchInputEl.value.toLowerCase() : '';
-    var filterType = document.getElementById('filterType') ? document.getElementById('filterType').value : 'All';
-    var filterMethod = document.getElementById('filterMethod') ? document.getElementById('filterMethod').value : 'All';
-    var filterStatus = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'All';
-    
-    var rows = document.querySelectorAll('#paymentTable tbody tr');
-    filteredRows = [];
-    
-    rows.forEach(function(row) {
-        var rowText = row.textContent.toLowerCase();
-        var type = row.getAttribute('data-type') || '';
-        var method = row.getAttribute('data-method') || '';
-        var status = row.getAttribute('data-status') || '';
-        
-        var matchesSearch = rowText.includes(searchInput);
-        var matchesType = (filterType === 'All' || type === filterType);
-        var matchesMethod = (filterMethod === 'All' || method === filterMethod);
-        var matchesStatus = (filterStatus === 'All' || status === filterStatus);
-        
-        if (matchesSearch && matchesType && matchesMethod && matchesStatus) {
-            filteredRows.push(row);
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    currentPage = 1;
-    applyPagination();
-}
-
-function applyPagination() {
-    var paymentTable = document.getElementById('paymentTable');
-    if (!paymentTable) return; // Exit if not in global log view
-    
-    const totalRows = filteredRows.length;
-    const totalPages = Math.ceil(totalRows / pageSize) || 1;
-    
-    if (currentPage > totalPages) currentPage = totalPages;
-    if (currentPage < 1) currentPage = 1;
-    
-    const allRows = document.querySelectorAll('#paymentTable tbody tr');
-    allRows.forEach(row => row.style.display = 'none');
-    
-    const startIdx = (currentPage - 1) * pageSize;
-    const endIdx = Math.min(startIdx + pageSize, totalRows);
-    
-    for (let i = startIdx; i < endIdx; i++) {
-        filteredRows[i].style.display = '';
-    }
-    
-    const startDisplay = document.getElementById('pag-start');
-    const endDisplay = document.getElementById('pag-end');
-    const totalDisplay = document.getElementById('pag-total');
-    if (startDisplay) startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
-    if (endDisplay) endDisplay.innerText = endIdx;
-    if (totalDisplay) totalDisplay.innerText = totalRows;
-    
-    const btnContainer = document.getElementById('paginationButtons');
-    if (btnContainer) {
-        btnContainer.innerHTML = '';
-        
-        const prevBtn = document.createElement('button');
-        prevBtn.type = 'button';
-        prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
-        prevBtn.style.padding = '4px 8px';
-        prevBtn.style.border = '1px solid var(--outline-variant)';
-        prevBtn.style.borderRadius = '6px';
-        prevBtn.style.cursor = 'pointer';
-        prevBtn.disabled = (currentPage === 1);
-        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
-        prevBtn.onclick = () => { currentPage--; applyPagination(); };
-        btnContainer.appendChild(prevBtn);
-        
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, startPage + 4);
-        if (endPage - startPage < 4) {
-            startPage = Math.max(1, endPage - 4);
-        }
-        
-        for (let p = startPage; p <= endPage; p++) {
-            if (p < 1) continue;
-            const pBtn = document.createElement('button');
-            pBtn.type = 'button';
-            pBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
-            pBtn.style.padding = '4px 10px';
-            pBtn.style.border = '1px solid ' + (p === currentPage ? 'var(--primary)' : 'var(--outline-variant)');
-            pBtn.style.borderRadius = '6px';
-            pBtn.style.cursor = 'pointer';
-            if (p === currentPage) {
-                pBtn.style.background = 'var(--primary)';
-                pBtn.style.color = 'var(--on-primary)';
-            }
-            pBtn.innerText = p;
-            pBtn.onclick = () => { currentPage = p; applyPagination(); };
-            btnContainer.appendChild(pBtn);
-        }
-        
-        const nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
-        nextBtn.style.padding = '4px 8px';
-        nextBtn.style.border = '1px solid var(--outline-variant)';
-        nextBtn.style.borderRadius = '6px';
-        nextBtn.style.cursor = 'pointer';
-        nextBtn.disabled = (currentPage === totalPages);
-        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
-        nextBtn.onclick = () => { currentPage++; applyPagination(); };
-        btnContainer.appendChild(nextBtn);
-    }
-}
-
 // Init on page load
 document.addEventListener('DOMContentLoaded', function() {
     var hiddenAmt = document.getElementById('amount');
@@ -845,11 +625,6 @@ document.addEventListener('DOMContentLoaded', function() {
         displayAmt.value = Number(hiddenAmt.value).toLocaleString('vi-VN') + ' đ';
     }
     
-    // Initialize global log pagination if on the global logs view
-    if (document.getElementById('paymentTable')) {
-        filterTable();
-    }
-
     // Trigger click on the active payment type card to initialize inputs
     var activeCard = document.querySelector('.payment-type-card.active');
     if (activeCard) {

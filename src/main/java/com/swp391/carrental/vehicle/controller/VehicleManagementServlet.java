@@ -88,6 +88,14 @@ public class VehicleManagementServlet extends HttpServlet {
 
         try {
             if ("create".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "ADD_VEHICLE")) {
+                    if (isAjax) {
+                        sendJsonResponse(response, false, "Bạn không có quyền thêm xe mới.");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                    return;
+                }
                 handleCreateCar(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Tạo xe thành công!");
@@ -95,6 +103,14 @@ public class VehicleManagementServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("update".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    if (isAjax) {
+                        sendJsonResponse(response, false, "Bạn không có quyền chỉnh sửa thông tin xe.");
+                    } else {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                    return;
+                }
                 handleUpdateCar(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Cập nhật xe thành công!");
@@ -102,12 +118,24 @@ public class VehicleManagementServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/vehicles/manage");
                 }
             } else if ("delete".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "DELETE_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleDeleteCar(request, response, currentUser);
                 sendJsonResponse(response, true, "Xóa xe thành công!");
             } else if ("hide".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleHideCar(request, response, currentUser);
                 sendJsonResponse(response, true, "Ẩn xe thành công!");
             } else if ("show".equals(action)) {
+                if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 handleShowCar(request, response, currentUser);
                 sendJsonResponse(response, true, "Hiện xe thành công!");
             } else if ("deleteImage".equals(action)) {
@@ -169,7 +197,11 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setSeats(Integer.parseInt(request.getParameter("seats")));
         car.setTransmission(request.getParameter("transmission"));
         car.setFuelType(request.getParameter("fuelType"));
-        car.setDailyRate(new BigDecimal(request.getParameter("dailyRate")));
+        BigDecimal dailyRate = new BigDecimal(request.getParameter("dailyRate"));
+        if (dailyRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException("Giá thuê phải lớn hơn 0.");
+        }
+        car.setDailyRate(dailyRate);
         car.setDescription(request.getParameter("description"));
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));
@@ -235,7 +267,11 @@ public class VehicleManagementServlet extends HttpServlet {
         car.setSeats(Integer.parseInt(request.getParameter("seats")));
         car.setTransmission(request.getParameter("transmission"));
         car.setFuelType(request.getParameter("fuelType"));
-        car.setDailyRate(new BigDecimal(request.getParameter("dailyRate")));
+        BigDecimal dailyRate = new BigDecimal(request.getParameter("dailyRate"));
+        if (dailyRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException("Giá thuê phải lớn hơn 0.");
+        }
+        car.setDailyRate(dailyRate);
         car.setDescription(request.getParameter("description"));
         car.setLocation(request.getParameter("location"));
         car.setFeatures(request.getParameter("features"));

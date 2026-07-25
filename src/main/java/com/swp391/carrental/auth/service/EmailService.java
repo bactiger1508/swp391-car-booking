@@ -11,11 +11,14 @@ import java.util.Properties;
 /*
  * Name: EmailService
  * @Author: AnhNNHE160896
- * Date: 17/07/2026
+ * Date: 01/07/2026
  * Version: 1.1
  * Description: Email sending utility supporting forgotten password verification emails and environment variable configs.
  */
 public class EmailService {
+    /**
+     * Cached default properties loaded from the classpath configuration file.
+     */
     private static final Properties config = new Properties();
 
     static {
@@ -34,6 +37,15 @@ public class EmailService {
         }
     }
 
+    /**
+     * Sends a password reset email containing a newly generated temporary password to the user.
+     * SMTP credentials and configuration prioritize Environment Variables first, 
+     * falling back to the mail.properties file if absent.
+     *
+     * @param toEmail     The recipient's email address.
+     * @param newPassword The newly generated password to be sent to the user.
+     * @throws Exception  If session creation or message delivery fails (e.g., MessagingException).
+     */
     public static void sendForgotPasswordEmail(
             String toEmail,
             String newPassword) throws Exception {

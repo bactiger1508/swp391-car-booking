@@ -13,15 +13,25 @@ import com.swp391.carrental.user.constant.Role;
 /*
  * Name: PolicySettingsServlet
  * @Author: TungNLHE186756
- * Date: 17/07/2026
- * Version: 1.1
- * Description: Handles HTTP requests and responses for PolicySettingsServlet, supporting dynamic policy creation and updates.
+ * Created: 23/05/2026 
+ * Description: Controller handling HTTP GET and POST requests for viewing, creating, and updating system policies.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.3 (21/06/2026): feat: standard combo packages, dynamic tet surcharge and ...
+ * - v1.4 (17/07/2026): UpdUpdate PolicySettingsServlet
+ * - v1.5 (17/07/2026): feat: refine payment and policy settings configuration
+ * - v1.6 (17/07/2026): docs(convention): update header comments and versions for...
+ * - v1.7 (23/07/2026): Added Javadoc and method comments.
  */
-
 @WebServlet(name = "PolicySettingsServlet", urlPatterns = { "/policies" })
 public class PolicySettingsServlet extends HttpServlet {
     private final PolicyService policyService = new PolicyService();
 
+    /**
+     * Handles HTTP GET requests to display policy settings list.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -29,6 +39,9 @@ public class PolicySettingsServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/policy/policy-settings.jsp").forward(request, response);
     }
 
+    /**
+     * Handles HTTP POST requests to create or update a system policy setting.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

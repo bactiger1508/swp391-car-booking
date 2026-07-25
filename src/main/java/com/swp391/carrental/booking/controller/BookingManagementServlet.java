@@ -37,6 +37,7 @@ public class BookingManagementServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
 
+    /** Hiển thị danh sách và thống kê tất cả các đơn đặt xe dành cho Quản lý / Nhân viên */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

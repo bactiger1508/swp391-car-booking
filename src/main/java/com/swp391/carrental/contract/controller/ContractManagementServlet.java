@@ -6,10 +6,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import com.swp391.carrental.booking.constant.BookingStatus;
-import com.swp391.carrental.booking.model.Booking;
-import com.swp391.carrental.booking.service.BookingService;
-import com.swp391.carrental.contract.constant.ContractStatus;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.contract.service.ContractService;
 import com.swp391.carrental.core.exception.AppException;
@@ -19,13 +15,26 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
 import com.swp391.carrental.vehicle.model.Car;
 import com.swp391.carrental.vehicle.service.VehicleService;
-
 /*
  * Name: ContractManagementServlet
  * @Author: TungNLHE186756
- * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles HTTP requests and responses for ContractManagementServlet.
+ * Created: 23/05/2026 
+ * Description: Controller handling HTTP requests and responses for preparing, viewing, editing, signing, and managing contracts.
+ * Version History:
+ * - v1.0 (23/05/2026): Initial version.
+ * - v1.1 (23/05/2026): refactor: apply project rules for controller packages and...
+ * - v1.2 (30/05/2026): feat: implement Prepare Contract
+ * - v1.3 (01/06/2026): merge code and fixbug - Tung (Contract & Payment)
+ * - v1.4 (04/06/2026): refactor: apply coding conventions and improve code docum...
+ * - v1.5 (09/06/2026): docs(contract): add simple english comments to contract m...
+ * - v1.6 (19/06/2026): Refactor codebase to hybrid package-by-feature layout wit...
+ * - v1.7 (21/06/2026): feat: implement booking workflow with contract creation a...
+ * - v1.8 (23/06/2026): feat: implement 3-image profile verification, non-expiry ...
+ * - v1.9 (08/07/2026): feat: implement update contract
+ * - v1.10 (16/07/2026): feat: implement VAT invoice generation
+ * - v1.11 (17/07/2026): Update ContractManagementServlet
+ * - v1.12 (21/07/2026): feat: update rental contract workflow to require customer...
+ * - v2.3 (23/07/2026): Added Javadoc and method comments.
  */
 
 
@@ -38,7 +47,9 @@ public class ContractManagementServlet extends HttpServlet {
     private final com.swp391.carrental.vehicle.service.VehicleService vehicleService = new com.swp391.carrental.vehicle.service.VehicleService();
     private final NotificationService notificationService = new NotificationService();
 
-    // Handle GET requests for listing and details
+    /**
+     * Handles HTTP GET requests to list contracts (for staff) or view details of a contract.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession(false);
@@ -98,9 +109,20 @@ public class ContractManagementServlet extends HttpServlet {
                             return;
                         }
                         booking = bookingService.getBookingById(bookingId);
-                        // Only confirmed bookings are eligible for contract creation
+                        // UC 2.2.1 Step 3 / Alt 1: Only confirmed bookings are eligible for contract creation
                         if (booking != null && !com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
                             request.setAttribute("error", "Chỉ có thể soạn hợp đồng cho các đơn đặt xe đã Xác nhận (Confirmed).");
+                        } else if (booking != null) {
+                            // UC 2.2.1 Step 4 / Alt 2: Verify customer profile verificationStatus == VERIFIED
+                            try {
+                                com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
+                                com.swp391.carrental.user.model.CustomerProfile customerProfile = profileDAO.findByUserId(booking.getCustomerId());
+                                if (customerProfile == null || !"VERIFIED".equalsIgnoreCase(customerProfile.getVerificationStatus())) {
+                                    request.setAttribute("error", "Không thể lập hợp đồng: Hồ sơ khách hàng chưa được xác minh (VERIFIED).");
+                                }
+                            } catch (Exception ex) {
+                                request.setAttribute("error", "Không thể lập hợp đồng: Hồ sơ khách hàng chưa được xác minh (VERIFIED).");
+                            }
                         }
                     }
                 }
@@ -208,7 +230,9 @@ public class ContractManagementServlet extends HttpServlet {
         }
     }
 
-    // Handle POST requests for activation and creation
+    /**
+     * Handles HTTP POST requests for creating, updating, and signing (activating) contracts.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession(false);
@@ -225,34 +249,67 @@ public class ContractManagementServlet extends HttpServlet {
             return;
         }
 
-        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT")
-                && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "UPDATE_CONTRACT")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
-            return;
-        }
-
         String action = request.getParameter("action");
         
-        // Activate contract action
-        if ("activate".equals(action)) {
+        // Activate / Sign contract action (Staff/Admin or Customer owner of the contract)
+        if ("activate".equals(action) || "staffSign".equals(action) || "customerSign".equals(action)) {
             String contractIdStr = request.getParameter("contractId");
             try {
                 if (contractIdStr != null && !contractIdStr.isEmpty()) {
                     int contractId = Integer.parseInt(contractIdStr);
-                    boolean updated = contractService.updateContractStatus(contractId, com.swp391.carrental.contract.constant.ContractStatus.ACTIVE);
-                    if (updated) {
-                        // Successfully updated status to ACTIVE
+                    com.swp391.carrental.contract.model.RentalContract contract = contractService.getContractById(contractId);
+                    if (contract == null) {
+                        throw new com.swp391.carrental.core.exception.AppException("Không tìm thấy hợp đồng.");
+                    }
+
+                    boolean isStaffOrAdmin = com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT")
+                            || com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "UPDATE_CONTRACT");
+                    boolean isContractCustomer = (contract.getCustomerId() == currentUser.getUserId());
+
+                    if (!isStaffOrAdmin && !isContractCustomer) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền ký kết hợp đồng này.");
+                        return;
+                    }
+
+                    String signSide = request.getParameter("signSide");
+                    boolean updated = false;
+
+                    if (isStaffOrAdmin && ("STAFF".equals(signSide) || !isContractCustomer)) {
+                        updated = contractService.signByStaff(contractId);
+                    } else if (isContractCustomer && ("CUSTOMER".equals(signSide) || !isStaffOrAdmin)) {
+                        updated = contractService.signByCustomer(contractId);
+                    } else if (isStaffOrAdmin) {
+                        updated = contractService.signByStaff(contractId);
+                    }
+
+                    com.swp391.carrental.contract.model.RentalContract updatedContract = contractService.getContractById(contractId);
+                    if (updatedContract != null && session != null) {
+                        if (com.swp391.carrental.contract.constant.ContractStatus.ACTIVE.equals(updatedContract.getStatus())) {
+                            session.setAttribute("successMessage", "Cả Nhân viên và Khách hàng đã ký! Hợp đồng chính thức có hiệu lực (ACTIVE).");
+                        } else if (updatedContract.isStaffSigned() && !updatedContract.isCustomerSigned()) {
+                            session.setAttribute("successMessage", "Nhân viên đã ký hợp đồng thành công. Đang chờ khách hàng ký!");
+                        } else if (updatedContract.isCustomerSigned() && !updatedContract.isStaffSigned()) {
+                            session.setAttribute("successMessage", "Khách hàng đã ký hợp đồng thành công. Đang chờ nhân viên ký!");
+                        } else {
+                            session.setAttribute("successMessage", "Ký kết hợp đồng thành công!");
+                        }
                     }
                     response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
                     return;
                 }
             } catch (Exception e) {
                 if (session != null) {
-                    session.setAttribute("errorMessage", "Lỗi kích hoạt hợp đồng: " + e.getMessage());
+                    session.setAttribute("errorMessage", "Lỗi ký kết hợp đồng: " + e.getMessage());
                 }
                 response.sendRedirect(request.getContextPath() + "/contracts");
                 return;
             }
+        }
+
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "PREPARE_CONTRACT")
+                && !com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "UPDATE_CONTRACT")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thực hiện hành động này.");
+            return;
         }
 
         // Update contract details action
@@ -367,23 +424,23 @@ public class ContractManagementServlet extends HttpServlet {
                 throw new com.swp391.carrental.core.exception.AppException("Không tìm thấy đơn đặt xe.");
             }
             
-            // Booking status is not confirmed
+            // UC 2.2.1 Step 3 / Alt 1: Booking status is not CONFIRMED
             if (!com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
-                throw new com.swp391.carrental.core.exception.AppException("Trạng thái đặt xe phải là Đã xác nhận (Confirmed) để tạo hợp đồng.");
+                throw new com.swp391.carrental.core.exception.AppException("A contract can only be prepared for a Confirmed booking.");
             }
 
-            // Check if customer profile is verified
+            // UC 2.2.1 Step 4 / Alt 2: Customer profile is not verified
             com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
             com.swp391.carrental.user.model.CustomerProfile customerProfile = profileDAO.findByUserId(booking.getCustomerId());
-            if (customerProfile == null || !"VERIFIED".equals(customerProfile.getVerificationStatus())) {
-                throw new com.swp391.carrental.core.exception.AppException("Không thể lập hợp đồng: Hồ sơ khách hàng chưa được xác minh (VERIFIED).");
+            if (customerProfile == null || !"VERIFIED".equalsIgnoreCase(customerProfile.getVerificationStatus())) {
+                throw new com.swp391.carrental.core.exception.AppException("Cannot prepare contract: Customer profile has not been verified.");
             }
 
             com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
             
-            // Not found car
+            // UC 2.2.1 Step 5 / Alt 3: Vehicle not found
             if (car == null) {
-                throw new com.swp391.carrental.core.exception.AppException("Không tìm thấy xe.");
+                throw new com.swp391.carrental.core.exception.AppException("Vehicle not found.");
             }
 
             com.swp391.carrental.contract.model.RentalContract contract = new com.swp391.carrental.contract.model.RentalContract();

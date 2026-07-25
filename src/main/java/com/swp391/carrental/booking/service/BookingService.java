@@ -102,6 +102,13 @@ public class BookingService {
     /** Create a new booking with date, car status, and overlapping checks */
     public int createBooking(Booking booking) {
         try {
+            // Verify customer profile is VERIFIED
+            CustomerProfileDAO profileDAO = new CustomerProfileDAO();
+            CustomerProfile profile = profileDAO.findByUserId(booking.getCustomerId());
+            if (profile == null || !"VERIFIED".equals(profile.getVerificationStatus())) {
+                throw new AppException("Khách hàng chưa xác minh hồ sơ, không thể đặt xe.");
+            }
+
             // BR-01: Validate dates
             if (booking.getEndDate().isBefore(booking.getStartDate())) {
                 throw new AppException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
@@ -139,7 +146,40 @@ public class BookingService {
             }
 
             booking.setStatus(BookingStatus.PENDING);
-            return bookingDAO.insert(booking);
+            int newBookingId = bookingDAO.insert(booking);
+
+            if (newBookingId > 0) {
+                try {
+                    com.swp391.carrental.notification.dao.NotificationDAO notiDAO = new com.swp391.carrental.notification.dao.NotificationDAO();
+                    com.swp391.carrental.user.dao.UserDAO uDAO = new com.swp391.carrental.user.dao.UserDAO();
+
+                    // Notify Customer
+                    com.swp391.carrental.notification.model.Notification notiCust = new com.swp391.carrental.notification.model.Notification();
+                    notiCust.setUserId(booking.getCustomerId());
+                    notiCust.setTitle("Đặt xe thành công #BK-" + newBookingId);
+                    notiCust.setMessage("Yêu cầu đặt xe của bạn đã được khởi tạo thành công (Trạng thái: Chờ duyệt).");
+                    notiCust.setNotificationType("BOOKING_CREATED");
+                    notiCust.setReferenceType("BOOKING");
+                    notiCust.setReferenceId(newBookingId);
+                    notiDAO.insert(notiCust);
+
+                    // Notify Staff & Admin
+                    List<com.swp391.carrental.user.model.User> staffs = uDAO.findByRole("STAFF");
+                    staffs.addAll(uDAO.findByRole("ADMIN"));
+                    for (com.swp391.carrental.user.model.User st : staffs) {
+                        com.swp391.carrental.notification.model.Notification notiStaff = new com.swp391.carrental.notification.model.Notification();
+                        notiStaff.setUserId(st.getUserId());
+                        notiStaff.setTitle("Đơn đặt xe mới #BK-" + newBookingId);
+                        notiStaff.setMessage("Có đơn đặt xe mới từ khách hàng cần được duyệt.");
+                        notiStaff.setNotificationType("NEW_BOOKING_ALERT");
+                        notiStaff.setReferenceType("BOOKING");
+                        notiStaff.setReferenceId(newBookingId);
+                        notiDAO.insert(notiStaff);
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            return newBookingId;
         } catch (SQLException e) {
             throw new AppException("Failed to create booking.", e);
         }
@@ -177,6 +217,7 @@ public class BookingService {
         }
     }
 
+    /** Cancel PENDING or CONFIRMED booking and automatically calculate deposit refund */
     public boolean cancelBooking(int bookingId, String reason) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
@@ -234,7 +275,31 @@ public class BookingService {
                 }
             }
 
-            return bookingDAO.cancel(bookingId, reason);
+            boolean cancelled = bookingDAO.cancel(bookingId, reason);
+            if (cancelled) {
+                try {
+                    com.swp391.carrental.contract.dao.ContractDAO contractDAO = new com.swp391.carrental.contract.dao.ContractDAO();
+                    com.swp391.carrental.contract.model.RentalContract contract = contractDAO.findByBookingId(bookingId);
+                    if (contract != null) {
+                        contractDAO.updateStatus(contract.getContractId(), "TERMINATED");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                try {
+                    com.swp391.carrental.notification.dao.NotificationDAO notiDAO = new com.swp391.carrental.notification.dao.NotificationDAO();
+                    com.swp391.carrental.notification.model.Notification noti = new com.swp391.carrental.notification.model.Notification();
+                    noti.setUserId(booking.getCustomerId());
+                    noti.setTitle("Đã hủy đơn đặt xe #BK-" + bookingId);
+                    noti.setMessage("Đơn đặt xe #BK-" + bookingId + " đã được hủy thành công.");
+                    noti.setNotificationType("BOOKING_CANCELLED");
+                    noti.setReferenceType("BOOKING");
+                    noti.setReferenceId(bookingId);
+                    notiDAO.insert(noti);
+                } catch (Exception ignored) {}
+            }
+
+            return cancelled;
         } catch (SQLException e) {
             throw new AppException("Failed to cancel booking.", e);
         }
@@ -262,6 +327,19 @@ public class BookingService {
             }
             
             boolean approved = bookingDAO.approve(bookingId, approvedBy);
+            if (approved) {
+                try {
+                    com.swp391.carrental.notification.dao.NotificationDAO notiDAO = new com.swp391.carrental.notification.dao.NotificationDAO();
+                    com.swp391.carrental.notification.model.Notification noti = new com.swp391.carrental.notification.model.Notification();
+                    noti.setUserId(booking.getCustomerId());
+                    noti.setTitle("Đơn đặt xe đã duyệt #BK-" + bookingId);
+                    noti.setMessage("Đơn đặt xe #BK-" + bookingId + " đã được nhân viên phê duyệt. Vui lòng tiến hành đặt cọc.");
+                    noti.setNotificationType("BOOKING_APPROVED");
+                    noti.setReferenceType("BOOKING");
+                    noti.setReferenceId(bookingId);
+                    notiDAO.insert(noti);
+                } catch (Exception ignored) {}
+            }
             return approved;
         } catch (SQLException e) {
             throw new AppException("Failed to approve booking.", e);
@@ -281,7 +359,21 @@ public class BookingService {
             if (!BookingStatus.PENDING.equals(booking.getStatus())) {
                 throw new AppException("Chỉ có thể từ chối booking đang ở trạng thái Chờ xử lý.");
             }
-            return bookingDAO.reject(bookingId, rejectedBy, reason);
+            boolean rejected = bookingDAO.reject(bookingId, rejectedBy, reason);
+            if (rejected) {
+                try {
+                    com.swp391.carrental.notification.dao.NotificationDAO notiDAO = new com.swp391.carrental.notification.dao.NotificationDAO();
+                    com.swp391.carrental.notification.model.Notification noti = new com.swp391.carrental.notification.model.Notification();
+                    noti.setUserId(booking.getCustomerId());
+                    noti.setTitle("Đơn đặt xe bị từ chối #BK-" + bookingId);
+                    noti.setMessage("Đơn đặt xe #BK-" + bookingId + " đã bị từ chối. Lý do: " + reason);
+                    noti.setNotificationType("BOOKING_REJECTED");
+                    noti.setReferenceType("BOOKING");
+                    noti.setReferenceId(bookingId);
+                    notiDAO.insert(noti);
+                } catch (Exception ignored) {}
+            }
+            return rejected;
         } catch (SQLException e) {
             throw new AppException("Failed to reject booking.", e);
         }

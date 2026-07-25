@@ -15,10 +15,6 @@ import com.swp391.carrental.user.model.User;
  * Version: 1.0
  * Description: Contains business logic for UserService.
  */
-
-
-
-
 /**
  * Service for user management operations.
  */
@@ -26,11 +22,18 @@ public class UserService {
 
     private final UserDAO userDAO = new UserDAO();
 
+    private boolean isValidVietnamPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        return phone.matches("^(03|05|07|08|09)\\d{8}$");
+    }
+
     public User getUserById(int userId) {
         try {
             return userDAO.findById(userId);
         } catch (SQLException e) {
-            throw new AppException("Failed to get user.", e);
+            throw new AppException("Không thể lấy thông tin người dùng.", e);
         }
     }
 
@@ -38,7 +41,7 @@ public class UserService {
         try {
             return userDAO.findAll();
         } catch (SQLException e) {
-            throw new AppException("Failed to get users.", e);
+            throw new AppException("Không thể tải danh sách người dùng.", e);
         }
     }
 
@@ -46,7 +49,7 @@ public class UserService {
         try {
             return userDAO.findByRole(role);
         } catch (SQLException e) {
-            throw new AppException("Failed to get users by role.", e);
+            throw new AppException("Không thể lấy danh sách người dùng theo vai trò.", e);
         }
     }
 
@@ -54,7 +57,7 @@ public class UserService {
         try {
             return userDAO.findFilteredUsers(search, role, status, page, pageSize);
         } catch (SQLException e) {
-            throw new AppException("Failed to get filtered users.", e);
+            throw new AppException("Không thể tìm kiếm người dùng.", e);
         }
     }
 
@@ -62,19 +65,23 @@ public class UserService {
         try {
             return userDAO.countFilteredUsers(search, role, status);
         } catch (SQLException e) {
-            throw new AppException("Failed to count users.", e);
+            throw new AppException("Không thể đếm số lượng người dùng.", e);
         }
     }
 
     public User createUser(User user, String rawPassword) {
         try {
             if (userDAO.findByEmail(user.getEmail()) != null) {
-                throw new AppException("Email is already registered.");
+                throw new AppException("Email đã được đăng ký.");
             }
             if (rawPassword == null || rawPassword.trim().length() < 6) {
-                throw new AppException("Password must be at least 6 characters long.");
+                throw new AppException("Mật khẩu phải có ít nhất 6 ký tự.");
             }
             user.setPasswordHash(BCrypt.hashpw(rawPassword, BCrypt.gensalt()));
+            if (!isValidVietnamPhone(user.getPhone())) {
+                throw new AppException(
+                        "Số điện thoại phải gồm 10 chữ số và là số điện thoại Việt Nam.");
+            }
             if (user.getRole() == null || user.getRole().isEmpty()) {
                 user.setRole(Role.CUSTOMER);
             }
@@ -83,12 +90,12 @@ public class UserService {
             }
             int userId = userDAO.insert(user);
             if (userId <= 0) {
-                throw new AppException("Failed to create user account.");
+                throw new AppException("Không thể tạo tài khoản.");
             }
             user.setUserId(userId);
             return user;
         } catch (SQLException e) {
-            throw new AppException("Failed to create user.", e);
+            throw new AppException("Có lỗi xảy ra khi tạo tài khoản.", e);
         }
     }
 
@@ -96,22 +103,24 @@ public class UserService {
         try {
             User existing = userDAO.findByEmail(user.getEmail());
             if (existing != null && existing.getUserId() != user.getUserId()) {
-                throw new AppException("Email is already registered by another account.");
+                throw new AppException("Email đã được sử dụng bởi tài khoản khác.");
             }
             return userDAO.update(user);
         } catch (SQLException e) {
-            throw new AppException("Failed to update user.", e);
+            throw new AppException("Có lỗi xảy ra khi cập nhật tài khoản.", e);
         }
     }
 
     public boolean toggleUserActive(int userId) {
         try {
             User user = userDAO.findById(userId);
-            if (user == null) throw new AppException("User not found.");
+            if (user == null) {
+                throw new AppException("Không tìm thấy người dùng.");
+            }
             user.setActive(!user.isActive());
             return userDAO.update(user);
         } catch (SQLException e) {
-            throw new AppException("Failed to toggle user status.", e);
+            throw new AppException("Không thể thay đổi trạng thái tài khoản.", e);
         }
     }
 
@@ -119,7 +128,7 @@ public class UserService {
         try {
             return userDAO.delete(userId);
         } catch (SQLException e) {
-            throw new AppException("Failed to delete user.", e);
+            throw new AppException("Không thể xóa người dùng.", e);
         }
     }
 }

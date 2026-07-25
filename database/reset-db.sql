@@ -7,6 +7,10 @@ USE CarRentalDB;
 GO
 
 -- Drop tables in reverse dependency order
+IF OBJECT_ID('dbo.vat_invoices', 'U') IS NOT NULL DROP TABLE vat_invoices;
+IF OBJECT_ID('dbo.role_permission', 'U') IS NOT NULL DROP TABLE role_permission;
+IF OBJECT_ID('dbo.roles', 'U') IS NOT NULL DROP TABLE roles;
+IF OBJECT_ID('dbo.permission', 'U') IS NOT NULL DROP TABLE permission;
 IF OBJECT_ID('dbo.notifications', 'U') IS NOT NULL DROP TABLE notifications;
 IF OBJECT_ID('dbo.audit_logs', 'U') IS NOT NULL DROP TABLE audit_logs;
 IF OBJECT_ID('dbo.reviews', 'U') IS NOT NULL DROP TABLE reviews;
