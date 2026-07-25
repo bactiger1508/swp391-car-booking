@@ -39,7 +39,11 @@ public class UserManagementServlet extends HttpServlet {
             int page = parsePage(request.getParameter("page"));
 
             if ("edit".equals(action) && request.getAttribute("formUser") == null) {
-
+                // Only ADMIN can edit users
+                User currentUser = (User) request.getSession().getAttribute("currentUser");
+                if (currentUser == null || !Role.ADMIN.equals(currentUser.getRole())) {
+                    request.setAttribute("error", "Bạn không có quyền chỉnh sửa thông tin người dùng.");
+                } else {
                 int userId = parseUserId(request.getParameter("userId"));
 
                 if (userId > 0) {
@@ -51,6 +55,7 @@ public class UserManagementServlet extends HttpServlet {
                     } else {
                         request.setAttribute("error", "Không tìm thấy tài khoản cần chỉnh sửa.");
                     }
+                }
                 }
             }
 
@@ -90,6 +95,13 @@ public class UserManagementServlet extends HttpServlet {
         String action = request.getParameter("action");
         String contextPath = request.getContextPath();
         try {
+            // Only ADMIN can create/edit/toggle users
+            User currentUser = (User) request.getSession().getAttribute("currentUser");
+            if (currentUser == null || !Role.ADMIN.equals(currentUser.getRole())) {
+                request.getSession().setAttribute("error", "Bạn không có quyền thực hiện thao tác này.");
+                response.sendRedirect(contextPath + "/users");
+                return;
+            }
             if ("create".equals(action)) {
                 User user = buildUserFromRequest(request);
                 userService.createUser(user, request.getParameter("password"));
