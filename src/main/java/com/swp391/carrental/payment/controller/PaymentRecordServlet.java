@@ -121,10 +121,10 @@ public class PaymentRecordServlet extends HttpServlet {
                     request.setAttribute("isStaffOrAdmin", isStaffOrAdmin);
 
                     request.setAttribute("booking", booking);
-                    com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
+                    com.swp391.carrental.vehicle.model.Vehicle car = vehicleService.getVehicleById(booking.getVehicleId());
                     request.setAttribute("car", car);
                     if (car != null) {
-                        request.setAttribute("carImageUrl", vehicleService.resolvePrimaryImageUrl(car.getCarId()));
+                        request.setAttribute("carImageUrl", vehicleService.resolvePrimaryImageUrl(car.getVehicleId()));
                     }
                     request.setAttribute("customer", userService.getUserById(booking.getCustomerId()));
 

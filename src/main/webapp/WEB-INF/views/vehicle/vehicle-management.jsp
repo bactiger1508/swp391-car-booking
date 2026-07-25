@@ -111,20 +111,10 @@
                 </thead>
                 <tbody>
                     <c:forEach var="car" items="${cars}">
-                        <c:set var="maintenance" value="${nextMaintenance[car.carId]}"/>
-                        <c:set var="carImage" value="${primaryImages[car.carId]}"/>
+                        <c:set var="maintenance" value="${nextMaintenance[car.vehicleId]}"/>
                         <tr data-status="${car.status}">
                             <td style="padding: 8px;">
-                                <c:choose>
-                                    <c:when test="${not empty carImage}">
-                                        <img src="${pageContext.request.contextPath}${carImage}" alt="${car.brand} ${car.model}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="window.open(this.src)" title="Nhấn để xem ảnh lớn">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
-                                            <span class="material-symbols-outlined" style="font-size: 24px;">image_not_supported</span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="window.open(this.src)" title="Nhấn để xem ảnh lớn" onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'">
                             </td>
                             <td class="font-semibold" style="color: var(--primary);">${car.brand} ${car.model} (${car.year})</td>
                             <td class="font-mono" style="font-weight: 600;">${car.licensePlate}</td>

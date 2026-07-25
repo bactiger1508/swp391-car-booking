@@ -33,6 +33,11 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String redirect = request.getParameter("redirect");
+        if (redirect != null && !redirect.trim().isEmpty()) {
+            request.getSession().setAttribute("redirectUrl", redirect.trim());
+        }
+
         // If already logged in, redirect to home
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
@@ -47,6 +52,10 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        String redirectParam = request.getParameter("redirect");
+        if (redirectParam != null && !redirectParam.trim().isEmpty()) {
+            request.getSession().setAttribute("redirectUrl", redirectParam.trim());
+        }
 
         try {
             User user = authService.login(email, password);
@@ -69,7 +78,13 @@ public class LoginServlet extends HttpServlet {
             session.removeAttribute("redirectUrl");
             
             if (redirectUrl != null && !redirectUrl.endsWith("index.html") && !redirectUrl.equals("/")) {
-                response.sendRedirect(request.getContextPath() + redirectUrl);
+                if (redirectUrl.startsWith(request.getContextPath())) {
+                    response.sendRedirect(redirectUrl);
+                } else if (redirectUrl.startsWith("/")) {
+                    response.sendRedirect(request.getContextPath() + redirectUrl);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/" + redirectUrl);
+                }
             } else {
                 response.sendRedirect(request.getContextPath() + "/home");
             }

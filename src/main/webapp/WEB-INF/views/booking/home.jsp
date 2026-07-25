@@ -517,11 +517,10 @@
                         <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/40 flex flex-col sm:flex-row gap-6 items-center hover:shadow-md car-card-hover duration-300 car-card-item">
                             <!-- Image Section -->
                             <div class="w-full sm:w-48 h-32 bg-slate-100 rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center">
-                                <c:set var="thumb" value="${primaryImages[car.carId]}"/>
-                                <img src="${pageContext.request.contextPath}${thumb}"
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}"
                                      alt="${car.brand} ${car.model}"
                                      class="w-full h-full object-cover"
-                                     onerror="this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg'"/>
+                                     onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'"/>
                                 <div class="absolute top-2 left-2 bg-primary/80 text-white px-2 py-0.5 rounded text-[10px] font-bold">
                                     ${car.licensePlate}
                                 </div>

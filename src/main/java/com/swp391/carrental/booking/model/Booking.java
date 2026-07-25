@@ -19,7 +19,7 @@ public class Booking {
 
     private int bookingId;
     private int customerId;
-    private int carId;
+    private int vehicleId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String pickupLocation;
@@ -59,8 +59,13 @@ public class Booking {
     public int getCustomerId() { return customerId; }
     public void setCustomerId(int customerId) { this.customerId = customerId; }
 
-    public int getCarId() { return carId; }
-    public void setCarId(int carId) { this.carId = carId; }
+    public int getVehicleId() { return vehicleId; }
+    public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
+
+    @Deprecated
+    public int getCarId() { return vehicleId; }
+    @Deprecated
+    public void setCarId(int carId) { this.vehicleId = carId; }
 
     public LocalDateTime getStartDate() { return startDate; }
     public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }

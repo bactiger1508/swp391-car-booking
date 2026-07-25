@@ -81,7 +81,7 @@ public class ContractDAO {
      * Insert a new contract record into database with auto-generated keys.
      */
     public int insert(RentalContract contract) throws SQLException {
-        String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, car_id, "
+        String sql = "INSERT INTO rental_contracts (booking_id, contract_number, customer_id, vehicle_id, "
                  + "start_date, end_date, daily_rate, total_amount, deposit_amount, status, "
                  + "terms_and_conditions, created_by, "
                  + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
@@ -91,7 +91,7 @@ public class ContractDAO {
             ps.setInt(1, contract.getBookingId());
             ps.setString(2, contract.getContractNumber());
             ps.setInt(3, contract.getCustomerId());
-            ps.setInt(4, contract.getCarId());
+            ps.setInt(4, contract.getVehicleId());
             ps.setTimestamp(5, Timestamp.valueOf(contract.getStartDate()));
             ps.setTimestamp(6, Timestamp.valueOf(contract.getEndDate()));
             ps.setBigDecimal(7, contract.getDailyRate());
@@ -293,7 +293,7 @@ public class ContractDAO {
         c.setBookingId(rs.getInt("booking_id"));
         c.setContractNumber(rs.getString("contract_number"));
         c.setCustomerId(rs.getInt("customer_id"));
-        c.setCarId(rs.getInt("car_id"));
+        c.setCarId(rs.getInt("vehicle_id"));
         Timestamp sd = rs.getTimestamp("start_date");
         if (sd != null) {
             c.setStartDate(sd.toLocalDateTime());

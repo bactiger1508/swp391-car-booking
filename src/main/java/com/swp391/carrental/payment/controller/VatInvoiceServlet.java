@@ -96,7 +96,7 @@ public class VatInvoiceServlet extends HttpServlet {
                 request.setAttribute("invoice", invoice);
                 request.setAttribute("payments", payments);
                 request.setAttribute("customer", userService.getUserById(contract.getCustomerId()));
-                request.setAttribute("car", vehicleService.getCarById(contract.getCarId()));
+                request.setAttribute("car", vehicleService.getVehicleById(contract.getVehicleId()));
                 request.setAttribute("companyName", companyName);
                 request.setAttribute("companyTaxId", companyTaxId);
                 request.setAttribute("companyAddress", companyAddress);

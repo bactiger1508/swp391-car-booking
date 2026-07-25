@@ -16,8 +16,8 @@ import com.swp391.carrental.handover.service.ReturnService;
 import com.swp391.carrental.policy.service.FeeCalculator;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
@@ -34,7 +34,7 @@ public class AdditionalFeesServlet extends HttpServlet {
     private final ReturnService returnService = new ReturnService();
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final UserDAO userDAO = new UserDAO();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final FeeCalculator feeCalculator = new FeeCalculator();
@@ -51,7 +51,7 @@ public class AdditionalFeesServlet extends HttpServlet {
                 int carId = Integer.parseInt(carIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("bookingId", bookingId);

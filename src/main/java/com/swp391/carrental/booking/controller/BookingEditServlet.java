@@ -30,7 +30,7 @@ import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.policy.service.FeeCalculator;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 @WebServlet(name = "BookingEditServlet", urlPatterns = {"/bookings/edit"})
@@ -83,16 +83,16 @@ public class BookingEditServlet extends HttpServlet {
                 return;
             }
 
-            List<Car> availableCars = vehicleService.getCarsByStatus("AVAILABLE");
+            List<Vehicle> availableVehicles = vehicleService.getVehiclesByStatus("AVAILABLE");
             // Also include current booked car in available list to let customer re-select it
-            Car currentCar = vehicleService.getCarById(booking.getCarId());
-            if (currentCar != null && availableCars.stream().noneMatch(c -> c.getCarId() == currentCar.getCarId())) {
-                availableCars.add(currentCar);
+            Vehicle currentVehicle = vehicleService.getVehicleById(booking.getVehicleId());
+            if (currentVehicle != null && availableVehicles.stream().noneMatch(c -> c.getVehicleId() == currentVehicle.getVehicleId())) {
+                availableVehicles.add(currentVehicle);
             }
 
             request.setAttribute("booking", booking);
-            request.setAttribute("cars", availableCars);
-            request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableCars));
+            request.setAttribute("cars", availableVehicles);
+            request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableVehicles));
 
             // Load policy values
             request.setAttribute("depositPercentage", policyService.getPolicyValue("DEPOSIT_PERCENTAGE", "30"));
@@ -220,8 +220,8 @@ public class BookingEditServlet extends HttpServlet {
             LocalDateTime endDate = LocalDateTime.parse(endDateVal + "T" + endTimeVal);
 
             // Time & Date Logical Validation
-            LocalDate today = LocalDate.now();
-            if (startDate.toLocalDate().isBefore(today)) throw new AppException("Ngày bắt đầu không được ở quá khứ.");
+            LocalDateTime now = LocalDateTime.now();
+            if (startDate.isBefore(now)) throw new AppException("Thời gian nhận xe (" + startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + ") không được ở trước thời điểm hiện tại.");
             if (endDate.isBefore(startDate)) throw new AppException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
             if (endDate.toLocalDate().isEqual(startDate.toLocalDate()) && !endDate.toLocalTime().isAfter(startDate.toLocalTime())) {
                 throw new AppException("Giờ kết thúc phải lớn hơn giờ bắt đầu khi chọn cùng ngày.");
@@ -242,7 +242,7 @@ public class BookingEditServlet extends HttpServlet {
                 }
             }
 
-            Car car = vehicleService.getCarById(carId);
+            Vehicle car = vehicleService.getVehicleById(carId);
             if (car == null) throw new AppException("Xe không tồn tại.");
 
             long rentalDays = ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());

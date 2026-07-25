@@ -80,6 +80,11 @@ public class AuthorizationFilter implements Filter {
 
         String path = httpRequest.getServletPath();
 
+        if (path.startsWith("/assets/") || path.startsWith("/uploads/") || path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") || path.endsWith(".webp") || path.endsWith(".css") || path.endsWith(".js")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         // Sort prefixes by length descending to match most specific prefix first
         java.util.List<String> sortedPrefixes = PATH_PERMISSIONS.keySet().stream()
                 .sorted((a, b) -> Integer.compare(b.length(), a.length()))

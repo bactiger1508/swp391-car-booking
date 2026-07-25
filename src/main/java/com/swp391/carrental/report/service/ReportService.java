@@ -15,8 +15,8 @@ import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -41,7 +41,7 @@ public class ReportService {
     private final BookingDAO bookingDAO = new BookingDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final UserDAO userDAO = new UserDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
     private final PaymentService paymentService = new PaymentService();
     private final BookingService bookingService = new BookingService();
@@ -202,13 +202,16 @@ public class ReportService {
     }
 
     public Map<String, BigDecimal> getRevenueByCarSegment(LocalDate from, LocalDate to) throws SQLException {
+        return getRevenueByVehicleSegment(from, to);
+    }
+    public Map<String, BigDecimal> getRevenueByVehicleSegment(LocalDate from, LocalDate to) throws SQLException {
 
         Map<String, BigDecimal> segmentRevenue = new LinkedHashMap<>();
 
-        List<Car> cars = carDAO.findAll();
+        List<Vehicle> cars = vehicleDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
 
-        for (Car car : cars) {
+        for (Vehicle car : cars) {
             segmentRevenue.put(car.getBrand(), BigDecimal.ZERO);
         }
 
@@ -219,7 +222,7 @@ public class ReportService {
                 continue;
             }
 
-            Car car = cars.stream().filter(c -> c.getCarId() == booking.getCarId()).findFirst().orElse(null);
+            Vehicle car = cars.stream().filter(c -> c.getVehicleId() == booking.getVehicleId()).findFirst().orElse(null);
 
             if (car == null) {
                 continue;
@@ -389,7 +392,7 @@ public class ReportService {
             }
 
             User customer = userDAO.findById(booking.getCustomerId());
-            Car car = carDAO.findById(booking.getCarId());
+            Vehicle car = vehicleDAO.findById(booking.getVehicleId());
 
             Map<String, Object> row = new HashMap<>();
 
@@ -407,10 +410,10 @@ public class ReportService {
 
         Map<String, Integer> result = new LinkedHashMap<>();
 
-        List<Car> cars = carDAO.findAll();
+        List<Vehicle> cars = vehicleDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
 
-        for (Car car : cars) {
+        for (Vehicle car : cars) {
             result.put(car.getBrand(), 0);
         }
 
@@ -438,8 +441,8 @@ public class ReportService {
 
             int days = (int) ChronoUnit.DAYS.between(actualStart, actualEnd) + 1;
 
-            Car car = cars.stream()
-                    .filter(c -> c.getCarId() == b.getCarId())
+            Vehicle car = cars.stream()
+                    .filter(c -> c.getVehicleId() == b.getVehicleId())
                     .findFirst()
                     .orElse(null);
 
@@ -462,18 +465,18 @@ public class ReportService {
 
         List<Map<String, Object>> result = new ArrayList<>();
 
-        List<Car> cars = carDAO.findAll();
+        List<Vehicle> cars = vehicleDAO.findAll();
         List<Booking> bookings = bookingDAO.findAll();
 
         long totalDays = ChronoUnit.DAYS.between(from, to) + 1;
 
-        for (Car car : cars) {
+        for (Vehicle car : cars) {
 
             int usedDays = 0;
 
             for (Booking b : bookings) {
 
-                if (b.getCarId() != car.getCarId()) {
+                if (b.getVehicleId() != car.getVehicleId()) {
                     continue;
                 }
 
@@ -566,7 +569,10 @@ public class ReportService {
         return total;
     }
 
-    public Map<String, Object> getMostUsedCar(
+    public Map<String, Object> getMostUsedCar(LocalDateTime from, LocalDateTime to) throws SQLException {
+        return getMostUsedVehicle(from, to);
+    }
+    public Map<String, Object> getMostUsedVehicle(
             LocalDateTime from,
             LocalDateTime to) throws SQLException {
 
@@ -586,8 +592,8 @@ public class ReportService {
             String type) throws SQLException {
 
         List<Map<String, Object>> chart = new ArrayList<>();
-        List<Car> cars = carDAO.findAll();
-        int totalCars = cars.isEmpty() ? 1 : cars.size();
+        List<Vehicle> cars = vehicleDAO.findAll();
+        int totalVehicles = cars.isEmpty() ? 1 : cars.size();
 
         if (type.equals("MONTH")) {
 
@@ -632,7 +638,7 @@ public class ReportService {
                 }
 
                 long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
-                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                double usagePercent = (days * 100.0) / (totalVehicles * periodDays);
                 if (usagePercent > 100.0) {
                     usagePercent = 100.0;
                 }
@@ -665,7 +671,7 @@ public class ReportService {
                         start, end);
 
                 long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
-                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                double usagePercent = (days * 100.0) / (totalVehicles * periodDays);
                 if (usagePercent > 100.0) {
                     usagePercent = 100.0;
                 }
@@ -702,7 +708,7 @@ public class ReportService {
                         = calculateUsedDays(start, end);
 
                 long periodDays = ChronoUnit.DAYS.between(start, end) + 1;
-                double usagePercent = (days * 100.0) / (totalCars * periodDays);
+                double usagePercent = (days * 100.0) / (totalVehicles * periodDays);
                 if (usagePercent > 100.0) {
                     usagePercent = 100.0;
                 }

@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import com.swp391.carrental.core.exception.AppException;
-import com.swp391.carrental.vehicle.dao.CarDAO;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.dao.MaintenanceDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 
 /*
@@ -27,13 +27,13 @@ public class MaintenanceScheduleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            CarDAO carDAO = new CarDAO();
+            VehicleDAO vehicleDAO = new VehicleDAO();
             MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
 
-            List<Car> maintenanceCars = carDAO.findByStatus("MAINTENANCE");
+            List<Vehicle> maintenanceVehicles = vehicleDAO.findByStatus("MAINTENANCE");
             List<MaintenanceSchedule> schedules = maintenanceDAO.getAllMaintenanceSchedules();
 
-            request.setAttribute("maintenanceCars", maintenanceCars);
+            request.setAttribute("maintenanceVehicles", maintenanceVehicles);
             request.setAttribute("schedules", schedules);
         } catch (Exception e) {
             request.setAttribute("error", e.getMessage());

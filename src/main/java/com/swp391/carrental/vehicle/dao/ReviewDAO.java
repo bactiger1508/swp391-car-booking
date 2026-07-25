@@ -34,25 +34,63 @@ public class ReviewDAO {
     }
 
     public List<Review> findByCarId(int carId) throws SQLException {
+        return findByCarId(carId, 0, 100);
+    }
+    public List<Review> findByCarId(int carId, int offset, int limit) throws SQLException {
         List<Review> reviews = new ArrayList<>();
-        String sql = "SELECT * FROM reviews WHERE car_id = ? AND is_visible = 1 ORDER BY created_at DESC";
+        String sql = "SELECT r.*, u.full_name AS customer_name FROM reviews r "
+                   + "LEFT JOIN users u ON r.customer_id = u.user_id "
+                   + "WHERE r.vehicle_id = ? AND r.is_visible = 1 ORDER BY r.created_at DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, carId);
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) reviews.add(mapRow(rs));
+                while (rs.next()) {
+                    Review r = mapRow(rs);
+                    try {
+                        r.setCustomerName(rs.getString("customer_name"));
+                    } catch (Exception e) {}
+                    reviews.add(r);
+                }
             }
         }
         return reviews;
     }
 
+    public int countByCarId(int carId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, carId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public double getAverageRating(int vehicleId) throws SQLException {
+        String sql = "SELECT AVG(CAST(rating AS FLOAT)) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vehicleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getDouble(1);
+            }
+        }
+        return 0.0;
+    }
+
     public int insert(Review review) throws SQLException {
-        String sql = "INSERT INTO reviews (booking_id, customer_id, car_id, rating, comment) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reviews (booking_id, customer_id, vehicle_id, rating, comment) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, review.getBookingId());
             ps.setInt(2, review.getCustomerId());
-            ps.setInt(3, review.getCarId());
+            ps.setInt(3, review.getVehicleId());
             ps.setInt(4, review.getRating());
             ps.setString(5, review.getComment());
             ps.executeUpdate();
@@ -77,7 +115,7 @@ public class ReviewDAO {
         r.setReviewId(rs.getInt("review_id"));
         r.setBookingId(rs.getInt("booking_id"));
         r.setCustomerId(rs.getInt("customer_id"));
-        r.setCarId(rs.getInt("car_id"));
+        r.setVehicleId(rs.getInt("vehicle_id"));
         r.setRating(rs.getInt("rating"));
         r.setComment(rs.getString("comment"));
         r.setVisible(rs.getBoolean("is_visible"));

@@ -56,7 +56,7 @@ public class ReturnDAO {
     }
 
     public int insert(VehicleReturn vr) throws SQLException {
-        String sql = "INSERT INTO vehicle_returns (booking_id, contract_id, car_id, handover_id, return_date, "
+        String sql = "INSERT INTO vehicle_returns (booking_id, contract_id, vehicle_id, handover_id, return_date, "
                 + "mileage_at_return, fuel_level, exterior_condition, interior_condition, mechanical_condition, "
                 + " damage_description, photos_url, late_fee, extra_km_fee, damage_fee, cleaning_fee, lost_item_fee, "
                 + "total_additional_fee, notes, received_by, returned_by) "
@@ -68,7 +68,7 @@ public class ReturnDAO {
             } else {
                 ps.setNull(2, Types.INTEGER);
             }
-            ps.setInt(3, vr.getCarId());
+            ps.setInt(3, vr.getVehicleId());
             if (vr.getHandoverId() != null) {
                 ps.setInt(4, vr.getHandoverId());
             } else {
@@ -102,7 +102,7 @@ public class ReturnDAO {
     }
 
     public int update(VehicleReturn vr) throws SQLException {
-        String sql = "UPDATE vehicle_returns SET booking_id = ?, contract_id = ?, car_id = ?, "
+        String sql = "UPDATE vehicle_returns SET booking_id = ?, contract_id = ?, vehicle_id = ?, "
                 + "handover_id = ?, return_date = ?, mileage_at_return = ?, fuel_level = ?, "
                 + "exterior_condition = ?, interior_condition = ?, mechanical_condition = ?, "
                 + "damage_description = ?, photos_url = ?, late_fee = ?, "
@@ -120,7 +120,7 @@ public class ReturnDAO {
                 ps.setNull(2, Types.INTEGER);
             }
 
-            ps.setInt(3, vr.getCarId());
+            ps.setInt(3, vr.getVehicleId());
 
             if (vr.getHandoverId() != null) {
                 ps.setInt(4, vr.getHandoverId());
@@ -170,7 +170,7 @@ public class ReturnDAO {
         if (!rs.wasNull()) {
             v.setContractId(cid);
         }
-        v.setCarId(rs.getInt("car_id"));
+        v.setCarId(rs.getInt("vehicle_id"));
         int hid = rs.getInt("handover_id");
         if (!rs.wasNull()) {
             v.setHandoverId(hid);

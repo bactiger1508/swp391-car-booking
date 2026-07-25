@@ -77,8 +77,8 @@
                                                 data-plate="${car.licensePlate}"
                                                 data-price="${car.dailyRate}"
                                                 data-location="${car.location}"
-                                                data-image="${primaryImages[car.carId]}"
-                                                ${selectedCarId == car.carId ? 'selected' : ''}>
+                                                data-image="${car.primaryImageUrl}"
+                                                ${selectedCarId == car.vehicleId ? 'selected' : ''}>
                                             ${car.brand} ${car.model} — ${car.licensePlate}
                                         </option>
                                     </c:forEach>
@@ -343,17 +343,17 @@ var tetSurchargePct = parseFloat('${tetSurchargePercent}') || 20;
 var carsList = [];
 <c:forEach var="car" items="${cars}">
     carsList.push({
-        id: ${car.carId},
+        id: ${car.vehicleId},
         brand: '${car.brand}',
         model: '${car.model}',
         plate: '${car.licensePlate}',
         price: parseFloat('${car.dailyRate}'),
         location: '${car.location}',
-        image: '${primaryImages[car.carId]}'
+        image: '${car.primaryImageUrl}'
     });
-    carPrices[${car.carId}] = parseFloat('${car.dailyRate}');
-    carModels[${car.carId}] = '${car.model}'.toLowerCase();
-    carBrands[${car.carId}] = '${car.brand}'.toLowerCase();
+    carPrices[${car.vehicleId}] = parseFloat('${car.dailyRate}');
+    carModels[${car.vehicleId}] = '${car.model}'.toLowerCase();
+    carBrands[${car.vehicleId}] = '${car.brand}'.toLowerCase();
 </c:forEach>
 
 function initFilters() {
@@ -490,7 +490,7 @@ function updateCarInfo() {
     var plate = opt.getAttribute('data-plate');
     var price = parseFloat(opt.getAttribute('data-price')) || 0;
     var location = opt.getAttribute('data-location') || 'Văn phòng chính';
-    var imgUrl = opt.getAttribute('data-image') || '/assets/images/cars/placeholder.jpg';
+    var imgUrl = opt.getAttribute('data-image') || '/assets/images/vehicles/placeholder.jpg';
     var contextPath = '${pageContext.request.contextPath}';
     
     // Auto-fill pickup location for showroom
@@ -502,7 +502,7 @@ function updateCarInfo() {
     
     info.innerHTML =
         '<div style="width:100%;height:140px;background:var(--surface-container-high);border-radius:8px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);">' +
-            '<img src="' + contextPath + imgUrl + '" alt="' + brand + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.src=\'' + contextPath + '/assets/images/cars/placeholder.jpg\';"/>' +
+            '<img src="' + contextPath + imgUrl + '" alt="' + brand + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.src=\'' + contextPath + '/assets/images/vehicles/placeholder.jpg\';"/>' +
         '</div>' +
         '<div style="font-size:24px;font-weight:600;color:var(--on-surface);letter-spacing:-0.01em;">' + brand + ' ' + model + '</div>' +
         '<div class="bk-vehicle-specs" style="margin-top:12px;">' +

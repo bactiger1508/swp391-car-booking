@@ -56,7 +56,7 @@ public class HandoverDAO {
     }
 
     public int insert(VehicleHandover h) throws SQLException {
-        String sql = "INSERT INTO vehicle_handovers (booking_id, contract_id, car_id, handover_date, "
+        String sql = "INSERT INTO vehicle_handovers (booking_id, contract_id, vehicle_id, handover_date, "
                 + "mileage_at_handover, fuel_level, exterior_condition, interior_condition, "
                 + "accessories_checklist, photos_url, notes, handed_by, received_by, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -67,7 +67,7 @@ public class HandoverDAO {
             } else {
                 ps.setNull(2, Types.INTEGER);
             }
-            ps.setInt(3, h.getCarId());
+            ps.setInt(3, h.getVehicleId());
             ps.setTimestamp(4, Timestamp.valueOf(h.getHandoverDate()));
             ps.setInt(5, h.getMileageAtHandover());
             ps.setString(6, h.getFuelLevel());
@@ -91,7 +91,7 @@ public class HandoverDAO {
 
     public int update(VehicleHandover h) throws SQLException {
 
-        String sql = "UPDATE vehicle_handovers SET booking_id=?, contract_id=?, car_id=?, handover_date=?, "
+        String sql = "UPDATE vehicle_handovers SET booking_id=?, contract_id=?, vehicle_id=?, handover_date=?, "
                 + "mileage_at_handover=?, fuel_level=?, exterior_condition=?, interior_condition=?, "
                 + "accessories_checklist=?, photos_url=?, notes=?, handed_by=?, received_by=?, status=? "
                 + "WHERE handover_id=?";
@@ -106,7 +106,7 @@ public class HandoverDAO {
                 ps.setNull(2, Types.INTEGER);
             }
 
-            ps.setInt(3, h.getCarId());
+            ps.setInt(3, h.getVehicleId());
             ps.setTimestamp(4, Timestamp.valueOf(h.getHandoverDate()));
             ps.setInt(5, h.getMileageAtHandover());
             ps.setString(6, h.getFuelLevel());
@@ -149,7 +149,7 @@ public class HandoverDAO {
         if (!rs.wasNull()) {
             h.setContractId(cid);
         }
-        h.setCarId(rs.getInt("car_id"));
+        h.setCarId(rs.getInt("vehicle_id"));
         Timestamp hd = rs.getTimestamp("handover_date");
         if (hd != null) {
             h.setHandoverDate(hd.toLocalDateTime());

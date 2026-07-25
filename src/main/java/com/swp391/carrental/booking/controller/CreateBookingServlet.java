@@ -22,7 +22,7 @@ import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 import com.swp391.carrental.policy.service.FeeCalculator;
 import jakarta.servlet.http.HttpSession;
@@ -65,9 +65,9 @@ public class CreateBookingServlet extends HttpServlet {
         }
 
         // Always load available cars for dropdown
-        List<Car> availableCars = vehicleService.getCarsByStatus("AVAILABLE");
-        request.setAttribute("cars", availableCars);
-        request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableCars));
+        List<Vehicle> availableVehicles = vehicleService.getVehiclesByStatus("AVAILABLE");
+        request.setAttribute("cars", availableVehicles);
+        request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(availableVehicles));
 
         // Restore pre-filled booking data from Guest session if exists
         HttpSession session = request.getSession();
@@ -91,8 +91,8 @@ public class CreateBookingServlet extends HttpServlet {
         if (carIdParam != null && !carIdParam.isEmpty()) {
             try {
                 int carId = Integer.parseInt(carIdParam);
-                request.setAttribute("selectedCarId", carId);
-                Car car = vehicleService.getCarById(carId);
+                request.setAttribute("selectedVehicleId", carId);
+                Vehicle car = vehicleService.getVehicleById(carId);
                 if (car != null) {
                     request.setAttribute("car", car);
                 } else {
@@ -268,9 +268,9 @@ public class CreateBookingServlet extends HttpServlet {
             java.time.LocalDateTime endDate = java.time.LocalDateTime.parse(endDateVal + "T" + endTimeVal);
 
             // Time & Date Logical Validation
-            java.time.LocalDate today = java.time.LocalDate.now();
-            if (startDate.toLocalDate().isBefore(today)) {
-                throw new AppException("Ngày bắt đầu không được ở quá khứ.");
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            if (startDate.isBefore(now)) {
+                throw new AppException("Thời gian nhận xe (" + startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + ") không được ở trước thời điểm hiện tại.");
             }
             if (endDate.isBefore(startDate)) {
                 throw new AppException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
@@ -295,7 +295,7 @@ public class CreateBookingServlet extends HttpServlet {
             }
 
             // Load car to calculate costs
-            Car car = vehicleService.getCarById(carId);
+            Vehicle car = vehicleService.getVehicleById(carId);
             if (car == null) {
                 throw new AppException("Xe không tồn tại.");
             }

@@ -13,7 +13,7 @@ import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 /*
  * Name: ContractManagementServlet
@@ -131,7 +131,7 @@ public class ContractManagementServlet extends HttpServlet {
                 if (booking != null) {
                     request.setAttribute("booking", booking);
                     request.setAttribute("customer", userService.getUserById(booking.getCustomerId()));
-                    request.setAttribute("car", vehicleService.getCarById(booking.getCarId()));
+                    request.setAttribute("car", vehicleService.getVehicleById(booking.getVehicleId()));
                     
                     try {
                         com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
@@ -196,6 +196,29 @@ public class ContractManagementServlet extends HttpServlet {
                 request.setAttribute("error", "Đã xảy ra lỗi: " + e.getMessage());
             }
 
+            try {
+                com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+                com.swp391.carrental.policy.model.PolicySetting termsPolicy = policyService.getPolicyByKey("CONTRACT_DEFAULT_TERMS");
+                String defaultTerms = "- Phí trả xe trễ giờ thỏa thuận: 100.000 đ/giờ.\n- Phí phụ trội quãng đường: 5.000 đ/km (vượt quá 300km/ngày).\n- Phí rửa xe, dọn vệ sinh nếu trả xe bẩn: 200.000 đ.\n- Khách hàng cam kết chịu các chi phí cầu đường, phạt nguội phát sinh trong thời gian thuê.";
+                if (termsPolicy != null && termsPolicy.getPolicyValue() != null && !termsPolicy.getPolicyValue().trim().isEmpty()) {
+                    defaultTerms = termsPolicy.getPolicyValue();
+                }
+                request.setAttribute("defaultTerms", defaultTerms);
+                
+                com.swp391.carrental.policy.model.PolicySetting cNamePolicy = policyService.getPolicyByKey("COMPANY_NAME");
+                com.swp391.carrental.policy.model.PolicySetting cAddressPolicy = policyService.getPolicyByKey("COMPANY_ADDRESS");
+                com.swp391.carrental.policy.model.PolicySetting cTaxIdPolicy = policyService.getPolicyByKey("COMPANY_TAX_ID");
+                
+                request.setAttribute("companyName", (cNamePolicy != null && cNamePolicy.getPolicyValue() != null && !cNamePolicy.getPolicyValue().trim().isEmpty()) ? cNamePolicy.getPolicyValue() : "CÔNG TY TNHH CARPRO VIỆT NAM");
+                request.setAttribute("companyAddress", (cAddressPolicy != null && cAddressPolicy.getPolicyValue() != null && !cAddressPolicy.getPolicyValue().trim().isEmpty()) ? cAddressPolicy.getPolicyValue() : "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
+                request.setAttribute("companyTaxId", (cTaxIdPolicy != null && cTaxIdPolicy.getPolicyValue() != null && !cTaxIdPolicy.getPolicyValue().trim().isEmpty()) ? cTaxIdPolicy.getPolicyValue() : "0123456789");
+            } catch (Exception e) {
+                request.setAttribute("defaultTerms", "- Phí trả xe trễ giờ thỏa thuận: 100.000 đ/giờ.\n- Phí phụ trội quãng đường: 5.000 đ/km (vượt quá 300km/ngày).\n- Phí rửa xe, dọn vệ sinh nếu trả xe bẩn: 200.000 đ.\n- Khách hàng cam kết chịu các chi phí cầu đường, phạt nguội phát sinh trong thời gian thuê.");
+                request.setAttribute("companyName", "CÔNG TY TNHH CARPRO VIỆT NAM");
+                request.setAttribute("companyAddress", "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
+                request.setAttribute("companyTaxId", "0123456789");
+            }
+
             request.getRequestDispatcher("/WEB-INF/views/contract/contract-detail.jsp").forward(request, response);
         } // Display contract management page
         else {
@@ -210,14 +233,14 @@ public class ContractManagementServlet extends HttpServlet {
 
             // Populate userMap and carMap
             java.util.Map<Integer, com.swp391.carrental.user.model.User> userMap = new java.util.HashMap<>();
-            java.util.Map<Integer, com.swp391.carrental.vehicle.model.Car> carMap = new java.util.HashMap<>();
+            java.util.Map<Integer, com.swp391.carrental.vehicle.model.Vehicle> carMap = new java.util.HashMap<>();
             for (com.swp391.carrental.contract.model.RentalContract c : contracts) {
                 try {
                     if (c.getCustomerId() > 0 && !userMap.containsKey(c.getCustomerId())) {
                         userMap.put(c.getCustomerId(), userService.getUserById(c.getCustomerId()));
                     }
-                    if (c.getCarId() > 0 && !carMap.containsKey(c.getCarId())) {
-                        carMap.put(c.getCarId(), vehicleService.getCarById(c.getCarId()));
+                    if (c.getVehicleId() > 0 && !carMap.containsKey(c.getVehicleId())) {
+                        carMap.put(c.getVehicleId(), vehicleService.getVehicleById(c.getVehicleId()));
                     }
                 } catch (Exception ex) {
                     // Skip individual lookup errors to avoid 500 on the whole page
@@ -436,7 +459,7 @@ public class ContractManagementServlet extends HttpServlet {
                 throw new com.swp391.carrental.core.exception.AppException("Cannot prepare contract: Customer profile has not been verified.");
             }
 
-            com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
+            com.swp391.carrental.vehicle.model.Vehicle car = vehicleService.getVehicleById(booking.getVehicleId());
             
             // UC 2.2.1 Step 5 / Alt 3: Vehicle not found
             if (car == null) {
@@ -446,7 +469,7 @@ public class ContractManagementServlet extends HttpServlet {
             com.swp391.carrental.contract.model.RentalContract contract = new com.swp391.carrental.contract.model.RentalContract();
             contract.setBookingId(bookingId);
             contract.setCustomerId(booking.getCustomerId());
-            contract.setCarId(booking.getCarId());
+            contract.setVehicleId(booking.getVehicleId());
             contract.setStartDate(booking.getStartDate());
             contract.setEndDate(booking.getEndDate());
             contract.setDailyRate(car.getDailyRate());

@@ -12,7 +12,7 @@ import java.util.Map;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -46,12 +46,12 @@ public class MyBookingsServlet extends HttpServlet {
             request.setAttribute("bookings", bookings);
 
             // Build car info map for display
-            Map<Integer, Car> carMap = new HashMap<>();
+            Map<Integer, Vehicle> carMap = new HashMap<>();
             for (Booking b : bookings) {
-                if (!carMap.containsKey(b.getCarId())) {
-                    Car car = vehicleService.getCarById(b.getCarId());
+                if (!carMap.containsKey(b.getVehicleId())) {
+                    Vehicle car = vehicleService.getVehicleById(b.getVehicleId());
                     if (car != null) {
-                        carMap.put(b.getCarId(), car);
+                        carMap.put(b.getVehicleId(), car);
                     }
                 }
             }

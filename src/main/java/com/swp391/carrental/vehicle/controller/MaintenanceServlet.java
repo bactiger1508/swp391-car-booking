@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
@@ -44,7 +44,7 @@ public class MaintenanceServlet extends HttpServlet {
             } else if ("list".equals(action) && carIdStr != null) {
                 handleViewMaintenanceList(request, response, Integer.parseInt(carIdStr));
             } else {
-                handleViewAllCarsWithMaintenance(request, response);
+                handleViewAllVehiclesWithMaintenance(request, response);
             }
         } catch (AppException e) {
             request.setAttribute("error", e.getMessage());
@@ -100,39 +100,39 @@ public class MaintenanceServlet extends HttpServlet {
         }
     }
 
-    private void handleViewAllCarsWithMaintenance(HttpServletRequest request, HttpServletResponse response)
+    private void handleViewAllVehiclesWithMaintenance(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Car> cars = vehicleService.getAllCars();
+        List<Vehicle> cars = vehicleService.getAllVehicles();
         request.setAttribute("cars", cars);
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
     private void handleViewMaintenanceList(HttpServletRequest request, HttpServletResponse response, int carId)
             throws ServletException, IOException {
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại");
         }
 
-        List<MaintenanceSchedule> maintenanceList = vehicleService.getMaintenanceByCarId(carId);
-        List<Car> cars = vehicleService.getAllCars();
+        List<MaintenanceSchedule> maintenanceList = vehicleService.getMaintenanceByVehicleId(carId);
+        List<Vehicle> cars = vehicleService.getAllVehicles();
 
         request.setAttribute("cars", cars);
-        request.setAttribute("selectedCar", car);
+        request.setAttribute("selectedVehicle", car);
         request.setAttribute("maintenanceList", maintenanceList);
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
     private void handleGetMaintenanceSchedule(HttpServletRequest request, HttpServletResponse response, int carId)
             throws IOException {
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Xe không tồn tại\"}");
             return;
         }
 
-        List<MaintenanceSchedule> schedules = vehicleService.getMaintenanceByCarId(carId);
+        List<MaintenanceSchedule> schedules = vehicleService.getMaintenanceByVehicleId(carId);
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < schedules.size(); i++) {
@@ -177,7 +177,7 @@ public class MaintenanceServlet extends HttpServlet {
         }
 
         int carId = Integer.parseInt(carIdStr);
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại");
         }
