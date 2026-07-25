@@ -61,18 +61,18 @@
         </div>
 
         <c:choose>
-            <c:when test="${empty availableCars}">
+            <c:when test="${empty availableVehicles && empty availableCars}">
                 <div style="text-align:center;padding:48px 24px;color:var(--on-surface-variant);">
-                    <span class="material-symbols-outlined" style="font-size:48px;margin-bottom:12px;display:block;">no_cars</span>
+                    <span class="material-symbols-outlined" style="font-size:48px;margin-bottom:12px;display:block;color:var(--outline);">directions_car_off</span>
                     Rất tiếc! Hiện không có xe nào trống trong khoảng thời gian được chọn. Vui lòng chọn lịch trình khác.
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="bk-form-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
-                    <c:forEach var="car" items="${availableCars}">
-                        <div class="bk-card" style="padding:16px;border:1px solid var(--outline-variant);display:flex;flex-direction:column;justify-content:between;height:100%;">
+                <div id="availabilityGrid" class="bk-form-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+                    <c:forEach var="car" items="${not empty availableVehicles ? availableVehicles : availableCars}">
+                        <div class="bk-card avail-car-item" style="padding:16px;border:1px solid var(--outline-variant);display:flex;flex-direction:column;justify-content:between;height:100%;">
                             <div style="width:100%;height:160px;border-radius:8px;background:var(--surface-container-high);overflow:hidden;margin-bottom:16px;display:flex;align-items:center;justify-content:center;">
-                                <img src="${pageContext.request.contextPath}${primaryImages[car.carId]}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;border:none;" onerror="this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg'">
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;border:none;" onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'">
                             </div>
                             <div>
                                 <div style="font-weight:700;font-size:18px;color:var(--primary);">${car.brand} ${car.model}</div>
@@ -97,19 +97,78 @@
                             </div>
                             
                             <div style="display:flex;gap:8px;">
-                                <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}" class="bk-btn bk-btn-outline" style="flex:1;justify-content:center;font-size:13px;padding:8px 12px;">
+                                <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="bk-btn bk-btn-outline" style="flex:1;justify-content:center;font-size:13px;padding:8px 12px;">
                                     <span class="material-symbols-outlined" style="font-size:18px;">visibility</span> Chi tiết
                                 </a>
-                                <a href="${pageContext.request.contextPath}/bookings/create?carId=${car.carId}&startDate=${startDate}&endDate=${endDate}" class="bk-btn bk-btn-primary" style="flex:1;justify-content:center;font-size:13px;padding:8px 12px;">
+                                <a href="${pageContext.request.contextPath}/bookings/create?vehicleId=${car.vehicleId}&startDate=${startDate}&endDate=${endDate}" class="bk-btn bk-btn-primary" style="flex:1;justify-content:center;font-size:13px;padding:8px 12px;">
                                     <span class="material-symbols-outlined" style="font-size:18px;">event</span> Đặt ngay
                                 </a>
                             </div>
                         </div>
                     </c:forEach>
                 </div>
+
+                <!-- Pagination UI for Available Vehicles -->
+                <div id="availPaginationContainer" style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:24px;"></div>
             </c:otherwise>
         </c:choose>
     </div>
 </c:if>
+
+<script>
+let currentAvailPage = 1;
+const availPageSize = 8;
+
+function applyAvailPagination() {
+    const items = document.querySelectorAll('.avail-car-item');
+    if (!items || items.length === 0) return;
+    
+    const totalItems = items.length;
+    const totalPages = Math.ceil(totalItems / availPageSize) || 1;
+    
+    if (currentAvailPage > totalPages) currentAvailPage = totalPages;
+    if (currentAvailPage < 1) currentAvailPage = 1;
+    
+    const startIdx = (currentAvailPage - 1) * availPageSize;
+    const endIdx = Math.min(startIdx + availPageSize, totalItems);
+    
+    items.forEach((item, idx) => {
+        if (idx >= startIdx && idx < endIdx) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    const container = document.getElementById('availPaginationContainer');
+    if (container) {
+        if (totalPages <= 1) {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = 'flex';
+        let html = '';
+        if (currentAvailPage > 1) {
+            html += `<button type="button" class="bk-btn bk-btn-outline" style="padding:6px 12px; font-size:13px;" onclick="goToAvailPage(\${currentAvailPage - 1})">&laquo; Trang trước</button>`;
+        }
+        for (let p = 1; p <= totalPages; p++) {
+            let activeStyle = p === currentAvailPage ? 'bk-btn-primary' : 'bk-btn-outline';
+            html += `<button type="button" class="bk-btn \${activeStyle}" style="padding:6px 12px; font-size:13px; font-weight:600;" onclick="goToAvailPage(\${p})">\${p}</button>`;
+        }
+        if (currentAvailPage < totalPages) {
+            html += `<button type="button" class="bk-btn bk-btn-outline" style="padding:6px 12px; font-size:13px;" onclick="goToAvailPage(\${currentAvailPage + 1})">Trang sau &raquo;</button>`;
+        }
+        container.innerHTML = html;
+    }
+}
+
+function goToAvailPage(page) {
+    currentAvailPage = page;
+    applyAvailPagination();
+    window.scrollTo({ top: document.getElementById('availabilityGrid').offsetTop - 100, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', applyAvailPagination);
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

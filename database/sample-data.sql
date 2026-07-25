@@ -110,7 +110,7 @@ GO
 -- ============================================================
 SET IDENTITY_INSERT vehicles ON;
 
-INSERT INTO vehicles (car_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
+INSERT INTO vehicles (vehicle_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
 VALUES
     (1, N'51A-12345', 1,  2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2023, xe gia đình phổ biến, tiết kiệm nhiên liệu.',                    N'AVAILABLE',   15000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi'),
     (2, N'51A-23456', 2,  2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Honda City 2023, thiết kế thể thao, nội thất rộng rãi.',                           N'AVAILABLE',   12000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Cảm biến va chạm'),
@@ -155,7 +155,7 @@ GO
 -- ============================================================
 -- VEHICLE IMAGES (sample image URLs)
 -- ============================================================
-INSERT INTO vehicle_images (car_id, image_url, caption, is_primary, sort_order)
+INSERT INTO vehicle_images (vehicle_id, image_url, caption, is_primary, sort_order)
 VALUES
     (1, N'/assets/images/vehicles/vios-front.jpg',     N'Mặt trước',  1, 1),
     (1, N'/assets/images/vehicles/vios-interior.jpg',  N'Nội thất',   0, 2),
@@ -199,7 +199,7 @@ GO
 -- ============================================================
 -- MAINTENANCE SCHEDULES
 -- ============================================================
-INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
+INSERT INTO maintenance_schedules (vehicle_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
 VALUES
     (5, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay dầu động cơ và lọc dầu',           1500000.00, N'Xe đang ở trạng thái bảo trì', N'staff@carrental.com'),
     (4, N'INSPECTION',   DATEADD(DAY, 14, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ sau chuyến thuê',  500000.00,  NULL, N'staff@carrental.com'),
@@ -263,7 +263,7 @@ GO
 -- ============================================================
 SET IDENTITY_INSERT bookings ON;
 
-INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
 VALUES
     (1, 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 6000000.00, 1800000.00, N'IN_PROGRESS', 2, '2026-05-19 14:00:00'),
     (2, 3, 1, '2026-06-01 08:00:00', '2026-06-03 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 1600000.00, 480000.00,  N'CONFIRMED',   2, '2026-05-22 10:00:00'),
@@ -282,7 +282,7 @@ GO
 -- ============================================================
 SET IDENTITY_INSERT rental_contracts ON;
 
-INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, car_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
+INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, vehicle_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
 VALUES
     (1, 1, N'CTR-2026-0001', 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', 1200000.00, 6000000.00, 1800000.00, N'ACTIVE', 2, '2026-05-20 07:30:00');
 
@@ -300,7 +300,7 @@ GO
 -- ============================================================
 -- SAMPLE HANDOVER
 -- ============================================================
-INSERT INTO vehicle_handovers (booking_id, contract_id, car_id, handover_date, mileage_at_handover, fuel_level, exterior_condition, interior_condition, notes, handed_by, received_by)
+INSERT INTO vehicle_handovers (booking_id, contract_id, vehicle_id, handover_date, mileage_at_handover, fuel_level, exterior_condition, interior_condition, notes, handed_by, received_by)
 VALUES
     (1, 1, 4, '2026-05-20 08:00:00', 8000, N'FULL', N'Tình trạng tốt, không trầy xước', N'Sạch sẽ, đầy đủ phụ kiện', N'Đã kiểm tra và bàn giao xe', 2, 3);
 GO
@@ -485,7 +485,7 @@ GO
 SET IDENTITY_INSERT bookings ON;
 
 INSERT INTO bookings
-(booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
 VALUES
 (9, 3, 7 ,'2026-07-02','2026-07-05',N'Q1',N'Q1',5400000,1600000,'COMPLETED'),
 (10, 4, 14,'2026-07-06','2026-07-08',N'Q1',N'Q1',4800000,1400000,'COMPLETED'),
@@ -516,7 +516,7 @@ GO
 SET IDENTITY_INSERT bookings ON;
 
 INSERT INTO bookings
-(booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
 VALUES
 (14, 3, 22,'2026-08-02','2026-08-05',N'Q1',N'Q1',5000000,1500000,'COMPLETED'),
 (15, 4, 23,'2026-08-07','2026-08-10',N'Q7',N'Q7',5600000,1700000,'IN_PROGRESS'),
@@ -541,7 +541,7 @@ GO
 SET IDENTITY_INSERT bookings ON;
 
 INSERT INTO bookings
-(booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
 VALUES
 (17, 3, 31,'2026-09-03','2026-09-07',N'Q1',N'Q1',7000000,2100000,'IN_PROGRESS'),
 (18, 4, 32,'2026-09-12','2026-09-15',N'Q7',N'Q7',4800000,1400000,'COMPLETED');

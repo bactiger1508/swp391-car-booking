@@ -13,8 +13,8 @@ import com.swp391.carrental.contract.dao.ContractDAO;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.vehicle.constant.CarStatus;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.user.dao.CustomerProfileDAO;
 import com.swp391.carrental.user.model.CustomerProfile;
 
@@ -39,7 +39,7 @@ import com.swp391.carrental.payment.model.Payment;
 public class BookingService {
 
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
 
     /** Get a single booking by ID */
@@ -56,8 +56,11 @@ public class BookingService {
         try {
             return bookingDAO.findActiveBookingsByCarId(carId);
         } catch (SQLException e) {
-            throw new AppException("Failed to get active bookings for car.", e);
+            throw new AppException("Failed to get active bookings.", e);
         }
+    }
+    public List<Booking> getActiveBookingsByVehicle(int vehicleId) {
+        return getActiveBookingsByCar(vehicleId);
     }
 
     /** Get all bookings in the system */
@@ -76,6 +79,9 @@ public class BookingService {
         } catch (SQLException e) {
             throw new AppException("Failed to get customer bookings.", e);
         }
+    }
+    public List<Booking> getCustomerBookings(int customerId) {
+        return getBookingsByCustomer(customerId);
     }
 
     /** Get bookings filtered by status */
@@ -114,13 +120,13 @@ public class BookingService {
                 throw new AppException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
             }
 
-            // Validate start date is not in the past
-            if (booking.getStartDate().toLocalDate().isBefore(LocalDate.now())) {
-                throw new AppException("Ngày bắt đầu không được trước ngày hiện tại.");
+            // Validate start date and time is not in the past
+            if (booking.getStartDate().isBefore(LocalDateTime.now())) {
+                throw new AppException("Thời gian nhận xe không được ở trong quá khứ.");
             }
 
             // BR-09: Check car status
-            Car car = carDAO.findById(booking.getCarId());
+            Vehicle car = vehicleDAO.findById(booking.getVehicleId());
             if (car == null) {
                 throw new AppException("Xe không tồn tại.");
             }
@@ -136,7 +142,7 @@ public class BookingService {
 
             // BR-02: Check for overlapping bookings
             boolean hasOverlap = bookingDAO.hasOverlappingBooking(
-                    booking.getCarId(),
+                    booking.getVehicleId(),
                     Timestamp.valueOf(booking.getStartDate()),
                     Timestamp.valueOf(booking.getEndDate()),
                     null
@@ -202,7 +208,7 @@ public class BookingService {
 
             // BR-02: Check for overlapping bookings (excluding this booking)
             boolean hasOverlap = bookingDAO.hasOverlappingBooking(
-                    booking.getCarId(),
+                    booking.getVehicleId(),
                     Timestamp.valueOf(booking.getStartDate()),
                     Timestamp.valueOf(booking.getEndDate()),
                     booking.getBookingId()

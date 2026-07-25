@@ -153,12 +153,11 @@
                  
                 <%-- Ảnh xe --%>
                 <div style="height:220px;background:var(--surface-container-high);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-                    <c:set var="thumb" value="${primaryImages[car.carId]}"/>
-                    <img src="${pageContext.request.contextPath}${thumb}"
+                    <img src="${pageContext.request.contextPath}${car.primaryImageUrl}"
                          alt="${car.brand} ${car.model}"
                          style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;"
                          class="car-image-hover"
-                         onerror="this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg'"/>
+                         onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'"/>
                          
                     <div style="position:absolute;top:12px;left:12px;background:rgba(4,22,56,0.85);color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:0.5px;">
                         ${car.licensePlate}

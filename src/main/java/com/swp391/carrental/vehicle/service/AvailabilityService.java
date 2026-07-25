@@ -6,81 +6,79 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.core.exception.AppException;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 /*
  * Name: AvailabilityService
- * @Author: BacBXHE186736
+ * @Author: TinhHNHE172394
  * Date: 23/05/2026
- * Version: 1.0
- * Description: Contains business logic for AvailabilityService.
+ * Version: 2.0
+ * Description: Handles availability check logic for vehicles.
  */
 
-/**
- * Service for checking vehicle availability.
- */
 public class AvailabilityService {
 
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
 
-    /**
-     * Check if a specific car is available for a date range (combining Car status and Booking overlaps).
-     * BR-02: No overlapping Pending/Confirmed/InProgress bookings.
-     * BR-09: Car with Maintenance/Inactive/Rented status cannot be booked.
-     */
-    public boolean isCarAvailableForRange(int carId, LocalDateTime startDate, LocalDateTime endDate) {
+    public boolean isVehicleAvailableForRange(int vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
         try {
-            Car car = carDAO.findById(carId);
-            if (car == null) return false;
-            if (!"AVAILABLE".equals(car.getStatus())) return false;
+            Vehicle vehicle = vehicleDAO.findById(vehicleId);
+            if (vehicle == null) return false;
+            if (!"AVAILABLE".equals(vehicle.getStatus())) return false;
 
-            boolean hasOverlap = bookingDAO.hasOverlappingBooking(
-                    carId,
+            return !bookingDAO.hasOverlappingBooking(
+                    vehicleId,
                     Timestamp.valueOf(startDate),
                     Timestamp.valueOf(endDate),
                     null
             );
-            return !hasOverlap;
         } catch (SQLException e) {
-            throw new AppException("Failed to check car availability.", e);
+            throw new AppException("Failed to check vehicle availability.", e);
         }
     }
 
-    /**
-     * Check if a specific car is available for a date range.
-     * BR-02: No overlapping Confirmed/InProgress bookings.
-     * BR-09: Car with Maintenance status cannot be booked.
-     */
-    public boolean checkAvailability(int carId, LocalDateTime startDate, LocalDateTime endDate) {
-        try {
-            Car car = carDAO.findById(carId);
-            if (car == null) return false;
-            if (!"AVAILABLE".equals(car.getStatus())) return false;
+    public boolean isCarAvailableForRange(int carId, LocalDateTime startDate, LocalDateTime endDate) {
+        return isVehicleAvailableForRange(carId, startDate, endDate);
+    }
 
-            List<Car> available = carDAO.findAvailable(
+    public boolean checkAvailability(int vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
+        try {
+            Vehicle vehicle = vehicleDAO.findById(vehicleId);
+            if (vehicle == null) return false;
+            if (!"AVAILABLE".equals(vehicle.getStatus())) return false;
+
+            List<Vehicle> available = vehicleDAO.findAvailable(
                     Timestamp.valueOf(startDate),
                     Timestamp.valueOf(endDate)
             );
-            return available.stream().anyMatch(c -> c.getCarId() == carId);
+            return available.stream().anyMatch(v -> v.getVehicleId() == vehicleId);
         } catch (SQLException e) {
             throw new AppException("Failed to check availability.", e);
         }
     }
 
-    /**
-     * Get all available cars for a date range.
-     */
-    public List<Car> getAvailableCars(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<Vehicle> getAvailableVehicles(LocalDateTime startDate, LocalDateTime endDate) {
         try {
-            return carDAO.findAvailable(
+            List<Vehicle> list = vehicleDAO.findAvailable(
                     Timestamp.valueOf(startDate),
                     Timestamp.valueOf(endDate)
             );
+            // Populate primaryImageUrl for each vehicle
+            VehicleService vs = new VehicleService();
+            for (Vehicle v : list) {
+                if (v != null) {
+                    v.setPrimaryImageUrl(vs.resolvePrimaryImageUrl(v.getVehicleId()));
+                }
+            }
+            return list;
         } catch (SQLException e) {
-            throw new AppException("Failed to get available cars.", e);
+            throw new AppException("Failed to get available vehicles.", e);
         }
     }
-}
 
+    public List<Vehicle> getAvailableCars(LocalDateTime startDate, LocalDateTime endDate) {
+        return getAvailableVehicles(startDate, endDate);
+    }
+}

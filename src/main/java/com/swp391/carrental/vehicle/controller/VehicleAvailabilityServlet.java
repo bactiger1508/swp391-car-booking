@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.AvailabilityService;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
@@ -36,7 +36,7 @@ public class VehicleAvailabilityServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String action = request.getParameter("action");
-        if ("checkCarAvailability".equals(action)) {
+        if ("checkCarAvailability".equals(action) || "checkVehicleAvailability".equals(action)) {
             handleCheckCarAvailability(request, response);
             return;
         }
@@ -65,10 +65,11 @@ public class VehicleAvailabilityServlet extends HttpServlet {
                 } else if (sDate.isBefore(LocalDate.now())) {
                     error = "Ngày nhận xe không được trước ngày hiện tại.";
                 } else {
-                    List<Car> availableCars = availabilityService.getAvailableCars(start, end);
-                    Map<Integer, String> primaryImages = vehicleService.getPrimaryImageUrls(availableCars);
+                    List<Vehicle> availableVehicles = availabilityService.getAvailableVehicles(start, end);
+                    Map<Integer, String> primaryImages = vehicleService.getPrimaryImageUrls(availableVehicles);
                     
-                    request.setAttribute("availableCars", availableCars);
+                    request.setAttribute("availableVehicles", availableVehicles);
+                    request.setAttribute("availableCars", availableVehicles);
                     request.setAttribute("primaryImages", primaryImages);
                     request.setAttribute("searched", true);
                 }

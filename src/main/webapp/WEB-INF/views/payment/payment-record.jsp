@@ -449,7 +449,7 @@
                     <div style="border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow); position: relative; height: 260px;">
                         <img src="${pageContext.request.contextPath}${carImageUrl}" alt="${car.brand}" 
                              style="width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7);"
-                             onerror="this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg'">
+                             onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'">
                         
                         <div style="position: absolute; top: 16px; left: 16px;">
                             <span class="bk-badge bk-badge-progress" style="background: rgba(255,255,255,0.9); color: var(--primary); border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700;">

@@ -15,7 +15,7 @@ import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.payment.dao.PaymentDAO;
 import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.vehicle.constant.CarStatus;
-import com.swp391.carrental.vehicle.dao.CarDAO;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
 
 /*
  * Name: ReturnService
@@ -33,7 +33,7 @@ public class ReturnService {
 
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
 
     public VehicleReturn getReturnById(int returnId) {
@@ -78,11 +78,10 @@ public class ReturnService {
             }
 
             // Update car status to AVAILABLE and update its mileage to match return mileage
-            com.swp391.carrental.vehicle.model.Car car = carDAO.findById(vehicleReturn.getCarId());
-            if (car != null) {
-                car.setStatus(CarStatus.AVAILABLE);
+            com.swp391.carrental.vehicle.model.Vehicle car = vehicleDAO.findById(vehicleReturn.getVehicleId());
+            if (car != null && vehicleReturn.getMileageAtReturn() > car.getMileage()) {
                 car.setMileage(vehicleReturn.getMileageAtReturn());
-                carDAO.update(car);
+                vehicleDAO.update(car);
             }
 
             Booking booking = bookingDAO.findById(vehicleReturn.getBookingId());
@@ -111,7 +110,8 @@ public class ReturnService {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 }
             } else {
-                if (vehicleReturn.getTotalAdditionalFee() != null && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
+                if (vehicleReturn.getTotalAdditionalFee() != null
+                        && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 } else {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);

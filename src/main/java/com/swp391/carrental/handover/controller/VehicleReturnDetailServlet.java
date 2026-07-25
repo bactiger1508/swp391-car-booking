@@ -11,8 +11,8 @@ import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
  
 import java.math.BigDecimal;
 
@@ -43,7 +43,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
     private final NotificationService notificationService = new NotificationService();
@@ -60,7 +60,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 int carId = Integer.parseInt(carIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
                 VehicleReturn returns = returnDAO.findByBookingId(bookingId);
@@ -69,7 +69,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 if (returns == null) {
                     returns = new VehicleReturn();
                     returns.setBookingId(bookingId);
-                    returns.setCarId(carId);
+                    returns.setVehicleId(carId);
                     if (contract != null) {
                         returns.setContractId(contract.getContractId());
                     }
@@ -146,7 +146,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 if (returns == null) {
                     returns = new VehicleReturn();
                     returns.setBookingId(bookingId);
-                    returns.setCarId(carId);
+                    returns.setVehicleId(carId);
                     
                     RentalContract contract = contractDAO.findByBookingId(bookingId);
                     if (contract != null) {
@@ -438,7 +438,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
     private void loadDetailData(HttpServletRequest request, int bookingId, int carId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Car car = carDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(carId);
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             VehicleReturn returns = returnDAO.findByBookingId(bookingId);
 
@@ -446,7 +446,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             if (returns == null) {
                 returns = new VehicleReturn();
                 returns.setBookingId(bookingId);
-                returns.setCarId(carId);
+                returns.setVehicleId(carId);
                 if (contract != null) {
                     returns.setContractId(contract.getContractId());
                 }

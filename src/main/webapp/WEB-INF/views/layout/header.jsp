@@ -263,18 +263,18 @@
                 <div class="bk-header-actions">
                     <c:if test="${sessionScope.currentUser != null}">
                         <div class="bk-header-noti-wrapper" style="position:relative; display:inline-block;">
-                            <button type="button" class="bk-header-icon" id="notiBellBtn" onclick="toggleNotiDropdown(event)" style="position:relative; cursor:pointer; background:none; border:none; color:inherit;">
-                                <span class="material-symbols-outlined" style="font-size:22px;">notifications</span>
-                                <span id="notiBadgeCount" class="bk-noti-badge" style="position:absolute; top:-2px; right:-2px; background:#EE5D50; color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:14px; height:14px; line-height:12px; text-align:center; border:2px solid var(--surface, #fff); display:none;">0</span>
+                            <button type="button" class="bk-header-icon" id="notiBellBtn" onclick="toggleNotiDropdown(event)" style="position:relative; cursor:pointer; background:none; border:none; color:inherit; padding:6px;">
+                                <span class="material-symbols-outlined" style="font-size:24px;">notifications</span>
+                                <span id="notiBadgeCount" class="bk-noti-badge" style="position:absolute; top:-2px; right:-2px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:16px; height:16px; line-height:14px; text-align:center; border:2px solid var(--surface, #fff); box-shadow:0 2px 5px rgba(0,0,0,0.2); display:none;">0</span>
                             </button>
 
                             <%-- Popup Dropdown --%>
-                            <div id="notiDropdownPopup" class="bk-noti-dropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:340px; background:var(--surface, #fff); border:1px solid var(--outline-variant, #e0e0e0); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.15); z-index:10000; overflow:hidden;">
+                            <div id="notiDropdownPopup" class="bk-noti-dropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:380px; background:var(--surface, #fff); border:1px solid var(--outline-variant, #e0e0e0); border-radius:14px; box-shadow:0 12px 32px rgba(15,23,42,0.18); z-index:10000; overflow:hidden;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
                                     <strong style="font-size:14px; color:var(--on-surface);">Thông báo</strong>
-                                    <button type="button" onclick="markAllNotisReadHeader()" style="background:none; border:none; color:var(--primary, #2F5ACD); font-size:12px; font-weight:600; cursor:pointer;">Đánh dấu tất cả đã đọc</button>
+                                    <button type="button" onclick="markAllNotisReadHeader()" style="background:none; border:none; color:var(--primary, #2F5ACD); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">Đánh dấu tất cả</button>
                                 </div>
-                                <div id="notiDropdownList" style="max-height:300px; overflow-y:auto;">
+                                <div id="notiDropdownList" style="max-height:320px; overflow-y:auto;">
                                     <div style="padding:20px; text-align:center; color:var(--secondary); font-size:13px;">Đang tải thông báo...</div>
                                 </div>
                                 <div style="padding:10px; text-align:center; border-top:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
@@ -375,8 +375,16 @@
 
                 function markAllNotisReadHeader() {
                     fetch('${pageContext.request.contextPath}/notifications?action=markAllAsRead', {method: 'POST'})
+                        .then(r => r.json())
                         .then(() => {
+                            var badge = document.getElementById('notiBadgeCount');
+                            if (badge) badge.style.display = 'none';
                             fetchUnreadCountHeader();
+                            loadNotiListHeader();
+                        })
+                        .catch(() => {
+                            var badge = document.getElementById('notiBadgeCount');
+                            if (badge) badge.style.display = 'none';
                             loadNotiListHeader();
                         });
                 }

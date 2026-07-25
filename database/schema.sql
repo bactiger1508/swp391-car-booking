@@ -89,7 +89,7 @@ GO
 -- Vehicle inventory for the rental shop
 -- ============================================================
 CREATE TABLE vehicles (
-    car_id              INT IDENTITY(1,1) PRIMARY KEY,
+    vehicle_id              INT IDENTITY(1,1) PRIMARY KEY,
     license_plate       NVARCHAR(20)    NOT NULL UNIQUE,
     model_id            INT             NOT NULL,
     year                INT             NOT NULL,
@@ -116,14 +116,14 @@ GO
 -- ============================================================
 CREATE TABLE vehicle_images (
     image_id    INT IDENTITY(1,1) PRIMARY KEY,
-    car_id      INT             NOT NULL,
+    vehicle_id      INT             NOT NULL,
     image_url   NVARCHAR(500)   NOT NULL,
     caption     NVARCHAR(255)   NULL,
     is_primary  BIT             NOT NULL DEFAULT 0,
     sort_order  INT             NOT NULL DEFAULT 0,
     created_at  DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_vehicle_images_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
+    CONSTRAINT FK_vehicle_images_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
 );
 GO
 
@@ -133,7 +133,7 @@ GO
 -- ============================================================
 CREATE TABLE maintenance_schedules (
     maintenance_id   INT IDENTITY(1,1) PRIMARY KEY,
-    car_id           INT             NOT NULL,
+    vehicle_id           INT             NOT NULL,
     maintenance_type NVARCHAR(100)   NOT NULL,
     scheduled_date   DATE            NOT NULL,
     completed_date   DATE            NULL,
@@ -146,7 +146,7 @@ CREATE TABLE maintenance_schedules (
     created_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
+    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
 );
 GO
 
@@ -157,7 +157,7 @@ GO
 CREATE TABLE bookings (
     booking_id      INT IDENTITY(1,1) PRIMARY KEY,
     customer_id     INT             NOT NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     start_date      DATETIME2       NOT NULL,
     end_date        DATETIME2       NOT NULL,
     pickup_location NVARCHAR(500)   NULL,
@@ -188,7 +188,7 @@ CREATE TABLE bookings (
     tax_amount        DECIMAL(18,2)   NOT NULL DEFAULT 0,
 
     CONSTRAINT FK_bookings_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_bookings_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
+    CONSTRAINT FK_bookings_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_bookings_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id),
     CONSTRAINT CHK_bookings_dates CHECK (end_date >= start_date)
 );
@@ -203,7 +203,7 @@ CREATE TABLE rental_contracts (
     booking_id          INT             NOT NULL UNIQUE,
     contract_number     NVARCHAR(50)    NOT NULL UNIQUE,
     customer_id         INT             NOT NULL,
-    car_id              INT             NOT NULL,
+    vehicle_id              INT             NOT NULL,
     start_date          DATETIME2       NOT NULL,
     end_date            DATETIME2       NOT NULL,
     daily_rate          DECIMAL(18,2)   NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE rental_contracts (
 
     CONSTRAINT FK_contracts_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_contracts_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_contracts_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
+    CONSTRAINT FK_contracts_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_contracts_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 GO
@@ -271,7 +271,7 @@ CREATE TABLE vehicle_handovers (
     handover_id     INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     handover_date   DATETIME2       NOT NULL,
     mileage_at_handover INT         NOT NULL DEFAULT 0,
     fuel_level      NVARCHAR(20)    NULL,       -- FULL, 3/4, 1/2, 1/4, EMPTY
@@ -287,7 +287,7 @@ CREATE TABLE vehicle_handovers (
 
     CONSTRAINT FK_handovers_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_handovers_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
+    CONSTRAINT FK_handovers_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_handovers_handed_by FOREIGN KEY (handed_by) REFERENCES users(user_id),
     CONSTRAINT FK_handovers_received_by FOREIGN KEY (received_by) REFERENCES users(user_id)
 );
@@ -301,7 +301,7 @@ CREATE TABLE vehicle_returns (
     return_id       INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     handover_id     INT             NULL,
     return_date     DATETIME2       NOT NULL,
     mileage_at_return INT           NOT NULL DEFAULT 0,
@@ -324,7 +324,7 @@ CREATE TABLE vehicle_returns (
 
     CONSTRAINT FK_returns_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_returns_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
+    CONSTRAINT FK_returns_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_returns_handover FOREIGN KEY (handover_id) REFERENCES vehicle_handovers(handover_id),
     CONSTRAINT FK_returns_received_by FOREIGN KEY (received_by) REFERENCES users(user_id),
     CONSTRAINT FK_returns_returned_by FOREIGN KEY (returned_by) REFERENCES users(user_id)
@@ -339,7 +339,7 @@ CREATE TABLE reviews (
     review_id       INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     customer_id     INT             NOT NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     rating          INT             NOT NULL,       -- 1-5
     comment         NVARCHAR(MAX)   NULL,
     is_visible      BIT             NOT NULL DEFAULT 1,
@@ -348,7 +348,7 @@ CREATE TABLE reviews (
 
     CONSTRAINT FK_reviews_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_reviews_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_reviews_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
+    CONSTRAINT FK_reviews_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT CHK_reviews_rating CHECK (rating >= 1 AND rating <= 5)
 );
 GO
@@ -476,7 +476,7 @@ GO
 -- INDEXES for performance
 -- ============================================================
 CREATE INDEX IX_bookings_customer ON bookings(customer_id);
-CREATE INDEX IX_bookings_car ON bookings(car_id);
+CREATE INDEX IX_bookings_vehicle ON bookings(vehicle_id);
 CREATE INDEX IX_bookings_status ON bookings(status);
 CREATE INDEX IX_bookings_dates ON bookings(start_date, end_date);
 CREATE INDEX IX_vehicles_status ON vehicles(status);

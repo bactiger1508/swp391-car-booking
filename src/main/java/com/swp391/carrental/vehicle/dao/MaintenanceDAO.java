@@ -46,7 +46,7 @@ public class MaintenanceDAO {
      */
     public List<MaintenanceSchedule> getMaintenanceByVehicle(int vehicleId) throws SQLException {
         List<MaintenanceSchedule> schedules = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance_schedules WHERE car_id = ? ORDER BY scheduled_date ASC";
+        String sql = "SELECT * FROM maintenance_schedules WHERE vehicle_id = ? ORDER BY scheduled_date ASC";
         
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -103,7 +103,7 @@ public class MaintenanceDAO {
      * Create new maintenance schedule.
      */
     public int createMaintenance(MaintenanceSchedule maintenance) throws SQLException {
-        String sql = "INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, " +
+        String sql = "INSERT INTO maintenance_schedules (vehicle_id, maintenance_type, scheduled_date, " +
                     "status, description, cost, notes, created_by, created_at) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
         
@@ -225,12 +225,15 @@ public class MaintenanceDAO {
     }
 
     public void deleteByCarId(int carId) throws SQLException {
-        String sql = "DELETE FROM maintenance_schedules WHERE car_id = ?";
+        String sql = "DELETE FROM maintenance_schedules WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, carId);
             ps.executeUpdate();
         }
+    }
+    public void deleteByVehicleId(int vehicleId) throws SQLException {
+        deleteByCarId(vehicleId);
     }
 
     /**
@@ -239,7 +242,7 @@ public class MaintenanceDAO {
     private MaintenanceSchedule mapRow(ResultSet rs) throws SQLException {
         MaintenanceSchedule maintenance = new MaintenanceSchedule();
         maintenance.setMaintenanceId(rs.getInt("maintenance_id"));
-        maintenance.setVehicleId(rs.getInt("car_id"));
+        maintenance.setVehicleId(rs.getInt("vehicle_id"));
         maintenance.setMaintenanceType(rs.getString("maintenance_type"));
         
         Date scheduledDate = rs.getDate("scheduled_date");

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.core.util.DBContext;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 @WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
@@ -26,9 +26,10 @@ public class HomeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Car> featuredCars = vehicleService.getCarsByStatus("AVAILABLE");
-        request.setAttribute("featuredCars", featuredCars);
-        request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(featuredCars));
+        List<Vehicle> featuredVehicles = vehicleService.getVehiclesByStatus("AVAILABLE");
+        request.setAttribute("featuredVehicles", featuredVehicles);
+        request.setAttribute("featuredCars", featuredVehicles);
+        request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(featuredVehicles));
         
         Map<String, Object> stats = getDashboardStats();
         request.setAttribute("stats", stats);
@@ -63,7 +64,7 @@ public class HomeServlet extends HttpServlet {
         stats.put("activeBookings", 0);
         stats.put("monthlyRevenue", BigDecimal.ZERO);
 
-        String sqlCars = "SELECT COUNT(*) FROM cars WHERE status = 'AVAILABLE'";
+        String sqlCars = "SELECT COUNT(*) FROM vehicles WHERE status = 'AVAILABLE'";
         String sqlPending = "SELECT COUNT(*) FROM bookings WHERE status = 'PENDING'";
         String sqlActive = "SELECT COUNT(*) FROM bookings WHERE status IN ('CONFIRMED', 'IN_PROGRESS')";
         String sqlRevenue = "SELECT SUM(amount) FROM payments WHERE status = 'COMPLETED'";

@@ -61,7 +61,7 @@ public class UserDAO {
      */
     public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users ORDER BY created_at DESC";
+        String sql = "SELECT * FROM users WHERE email NOT LIKE 'testuser_%@carrental.com' ORDER BY created_at DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -77,7 +77,7 @@ public class UserDAO {
      */
     public List<User> findByRole(String role) throws SQLException {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM users WHERE role = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM users WHERE role = ? AND email NOT LIKE 'testuser_%@carrental.com' ORDER BY created_at DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, role);
@@ -95,7 +95,7 @@ public class UserDAO {
      */
     public List<User> findFilteredUsers(String search, String role, String status, int page, int pageSize) throws SQLException {
         List<User> users = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
         
         if (search != null && !search.trim().isEmpty()) {
             sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
@@ -140,7 +140,7 @@ public class UserDAO {
      * Count total matching users for structural pagination calculation
      */
     public int countFilteredUsers(String search, String role, String status) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
         
         if (search != null && !search.trim().isEmpty()) {
             sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
