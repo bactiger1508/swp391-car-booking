@@ -35,7 +35,7 @@ public class AuditLogServlet extends HttpServlet {
             return;
         }
 
-        if (!"ADMIN".equals(currentUser.getRole())) {
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "VIEW_ACTIVITY_HISTORY")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }

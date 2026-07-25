@@ -76,8 +76,8 @@
                                                 data-plate="${car.licensePlate}"
                                                 data-price="${car.dailyRate}"
                                                 data-location="${car.location}"
-                                                data-image="${primaryImages[car.carId]}"
-                                                ${booking.carId == car.carId ? 'selected' : ''}>
+                                                data-image="${car.primaryImageUrl}"
+                                                ${booking.vehicleId == car.vehicleId ? 'selected' : ''}>
                                             ${car.brand} ${car.model} — ${car.licensePlate}
                                         </option>
                                     </c:forEach>
@@ -320,22 +320,22 @@ var tetSurchargePercent = parseFloat('${tetSurchargePercent}') || 20;
 var carsList = [];
 <c:forEach var="car" items="${cars}">
     carsList.push({
-        id: ${car.carId},
+        id: ${car.vehicleId},
         brand: '${car.brand}',
         model: '${car.model}',
         plate: '${car.licensePlate}',
         price: parseFloat('${car.dailyRate}'),
         location: '${car.location}',
-        image: '${primaryImages[car.carId]}'
+        image: '${car.primaryImageUrl}'
     });
-    carPrices[${car.carId}] = parseFloat('${car.dailyRate}');
-    carModels[${car.carId}] = '${car.model}'.toLowerCase();
-    carBrands[${car.carId}] = '${car.brand}'.toLowerCase();
+    carPrices[${car.vehicleId}] = parseFloat('${car.dailyRate}');
+    carModels[${car.vehicleId}] = '${car.model}'.toLowerCase();
+    carBrands[${car.vehicleId}] = '${car.brand}'.toLowerCase();
 </c:forEach>
 
 function initFilters() {
     var brandFilter = document.getElementById('brandFilter');
-    var selectedCarId = "${booking.carId}";
+    var selectedCarId = "${booking.vehicleId}";
     
     var brands = new Set();
     carsList.forEach(function(c) {
@@ -439,7 +439,7 @@ function updateCarInfo() {
     if (car) {
         infoDiv.innerHTML = '<div style="display:flex;gap:12px;align-items:center;">' +
             '<div style="width:64px;height:64px;border-radius:6px;background:var(--surface-container-high);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
-            '<img src="${pageContext.request.contextPath}' + car.image + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.src=\'${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg\'">' +
+            '<img src="${pageContext.request.contextPath}' + car.image + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.src=\'${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg\'">' +
             '</div>' +
             '<div>' +
             '<div style="font-weight:700;color:var(--primary);">' + car.brand + ' ' + car.model + '</div>' +

@@ -56,7 +56,7 @@ public class VehicleBrandModelServlet extends HttpServlet {
             return;
         }
 
-        if (!("ADMIN".equals(currentUser.getRole()))) {
+        if (!SecurityUtils.hasPermission(request, "MANAGE_VEHICLE_BRANDS")) {
             sendJsonResponse(response, false, "Bạn không có quyền thực hiện thao tác này.");
             return;
         }

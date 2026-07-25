@@ -1,7 +1,9 @@
 -- ============================================================
--- Car Rental Management System — Database Schema
+-- Vehicle Rental Management System — Database Schema
 -- Database: CarRentalDB
 -- SQL Server (T-SQL)
+-- NOTE: This file contains ONLY DDL (CREATE TABLE, INDEX, CONSTRAINT).
+--       Run sample-data.sql after this to insert data.
 -- ============================================================
 
 USE CarRentalDB;
@@ -53,7 +55,7 @@ GO
 
 -- ============================================================
 -- 3. VEHICLE_BRANDS
--- Lookup table for car manufacturers
+-- Lookup table for vehicle manufacturers
 -- ============================================================
 CREATE TABLE vehicle_brands (
     brand_id     INT IDENTITY(1,1) PRIMARY KEY,
@@ -66,7 +68,7 @@ GO
 
 -- ============================================================
 -- 4. VEHICLE_MODELS
--- Lookup table for car models, each belongs to one brand
+-- Lookup table for vehicle models, each belongs to one brand
 -- ============================================================
 CREATE TABLE vehicle_models (
     model_id     INT IDENTITY(1,1) PRIMARY KEY,
@@ -83,11 +85,11 @@ CREATE INDEX IX_vehicle_models_brand ON vehicle_models(brand_id);
 GO
 
 -- ============================================================
--- 5. CARS
+-- 5. VEHICLES
 -- Vehicle inventory for the rental shop
 -- ============================================================
-CREATE TABLE cars (
-    car_id              INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE vehicles (
+    vehicle_id              INT IDENTITY(1,1) PRIMARY KEY,
     license_plate       NVARCHAR(20)    NOT NULL UNIQUE,
     model_id            INT             NOT NULL,
     year                INT             NOT NULL,
@@ -104,34 +106,34 @@ CREATE TABLE cars (
     created_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at          DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_cars_vehicle_models FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id)
+    CONSTRAINT FK_vehicles_vehicle_models FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id)
 );
 GO
 
 -- ============================================================
--- 6. CAR_IMAGES
--- Multiple images per car
+-- 6. VEHICLE_IMAGES
+-- Multiple images per vehicle
 -- ============================================================
-CREATE TABLE car_images (
+CREATE TABLE vehicle_images (
     image_id    INT IDENTITY(1,1) PRIMARY KEY,
-    car_id      INT             NOT NULL,
+    vehicle_id      INT             NOT NULL,
     image_url   NVARCHAR(500)   NOT NULL,
     caption     NVARCHAR(255)   NULL,
     is_primary  BIT             NOT NULL DEFAULT 0,
     sort_order  INT             NOT NULL DEFAULT 0,
     created_at  DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_car_images_car FOREIGN KEY (car_id) REFERENCES cars(car_id)
+    CONSTRAINT FK_vehicle_images_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
 );
 GO
 
 -- ============================================================
--- 4b. MAINTENANCE_SCHEDULES
+-- 7. MAINTENANCE_SCHEDULES
 -- Tracks vehicle maintenance schedules
 -- ============================================================
 CREATE TABLE maintenance_schedules (
     maintenance_id   INT IDENTITY(1,1) PRIMARY KEY,
-    car_id           INT             NOT NULL,
+    vehicle_id           INT             NOT NULL,
     maintenance_type NVARCHAR(100)   NOT NULL,
     scheduled_date   DATE            NOT NULL,
     completed_date   DATE            NULL,
@@ -144,18 +146,18 @@ CREATE TABLE maintenance_schedules (
     created_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (car_id) REFERENCES cars(car_id)
+    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
 );
 GO
 
 -- ============================================================
--- 5. BOOKINGS
+-- 8. BOOKINGS
 -- Rental reservations
 -- ============================================================
 CREATE TABLE bookings (
     booking_id      INT IDENTITY(1,1) PRIMARY KEY,
     customer_id     INT             NOT NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     start_date      DATETIME2       NOT NULL,
     end_date        DATETIME2       NOT NULL,
     pickup_location NVARCHAR(500)   NULL,
@@ -186,14 +188,14 @@ CREATE TABLE bookings (
     tax_amount        DECIMAL(18,2)   NOT NULL DEFAULT 0,
 
     CONSTRAINT FK_bookings_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_bookings_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_bookings_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_bookings_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id),
     CONSTRAINT CHK_bookings_dates CHECK (end_date >= start_date)
 );
 GO
 
 -- ============================================================
--- 6. RENTAL_CONTRACTS
+-- 9. RENTAL_CONTRACTS
 -- Formal rental contracts linked to confirmed bookings
 -- ============================================================
 CREATE TABLE rental_contracts (
@@ -201,7 +203,7 @@ CREATE TABLE rental_contracts (
     booking_id          INT             NOT NULL UNIQUE,
     contract_number     NVARCHAR(50)    NOT NULL UNIQUE,
     customer_id         INT             NOT NULL,
-    car_id              INT             NOT NULL,
+    vehicle_id              INT             NOT NULL,
     start_date          DATETIME2       NOT NULL,
     end_date            DATETIME2       NOT NULL,
     daily_rate          DECIMAL(18,2)   NOT NULL,
@@ -230,13 +232,13 @@ CREATE TABLE rental_contracts (
 
     CONSTRAINT FK_contracts_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_contracts_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_contracts_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_contracts_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_contracts_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 GO
 
 -- ============================================================
--- 7. PAYMENTS
+-- 10. PAYMENTS
 -- Payment records for bookings/contracts
 -- ============================================================
 CREATE TABLE payments (
@@ -244,6 +246,7 @@ CREATE TABLE payments (
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
     amount          DECIMAL(18,2)   NOT NULL,
+    amount_paid     DECIMAL(18,2)   NULL,
     payment_type    NVARCHAR(30)    NOT NULL,     -- DEPOSIT, RENTAL, ADDITIONAL_FEE, REFUND
     payment_method  NVARCHAR(30)    NULL,         -- CASH, BANK_TRANSFER, CARD
     status          NVARCHAR(20)    NOT NULL DEFAULT 'PENDING',  -- PENDING, COMPLETED, FAILED, REFUNDED
@@ -261,14 +264,14 @@ CREATE TABLE payments (
 GO
 
 -- ============================================================
--- 8. VEHICLE_HANDOVERS
+-- 11. VEHICLE_HANDOVERS
 -- Records when vehicle is handed over to customer
 -- ============================================================
 CREATE TABLE vehicle_handovers (
     handover_id     INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     handover_date   DATETIME2       NOT NULL,
     mileage_at_handover INT         NOT NULL DEFAULT 0,
     fuel_level      NVARCHAR(20)    NULL,       -- FULL, 3/4, 1/2, 1/4, EMPTY
@@ -284,21 +287,21 @@ CREATE TABLE vehicle_handovers (
 
     CONSTRAINT FK_handovers_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_handovers_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_handovers_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_handovers_handed_by FOREIGN KEY (handed_by) REFERENCES users(user_id),
     CONSTRAINT FK_handovers_received_by FOREIGN KEY (received_by) REFERENCES users(user_id)
 );
 GO
 
 -- ============================================================
--- 9. VEHICLE_RETURNS
+-- 12. VEHICLE_RETURNS
 -- Records when vehicle is returned by customer
 -- ============================================================
 CREATE TABLE vehicle_returns (
     return_id       INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     contract_id     INT             NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     handover_id     INT             NULL,
     return_date     DATETIME2       NOT NULL,
     mileage_at_return INT           NOT NULL DEFAULT 0,
@@ -315,13 +318,13 @@ CREATE TABLE vehicle_returns (
     lost_item_fee   DECIMAL(18,2)   NOT NULL DEFAULT 0,
     total_additional_fee DECIMAL(18,2) NOT NULL DEFAULT 0,
     notes           NVARCHAR(MAX)   NULL,
-    received_by     INT             NOT NULL,   -- staff who received the car
+    received_by     INT             NOT NULL,   -- staff who received the vehicle
     returned_by     INT             NOT NULL,   -- customer
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
 
     CONSTRAINT FK_returns_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_returns_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_returns_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT FK_returns_handover FOREIGN KEY (handover_id) REFERENCES vehicle_handovers(handover_id),
     CONSTRAINT FK_returns_received_by FOREIGN KEY (received_by) REFERENCES users(user_id),
     CONSTRAINT FK_returns_returned_by FOREIGN KEY (returned_by) REFERENCES users(user_id)
@@ -329,14 +332,14 @@ CREATE TABLE vehicle_returns (
 GO
 
 -- ============================================================
--- 10. REVIEWS
+-- 13. REVIEWS
 -- Customer reviews for completed rentals
 -- ============================================================
 CREATE TABLE reviews (
     review_id       INT IDENTITY(1,1) PRIMARY KEY,
     booking_id      INT             NOT NULL,
     customer_id     INT             NOT NULL,
-    car_id          INT             NOT NULL,
+    vehicle_id          INT             NOT NULL,
     rating          INT             NOT NULL,       -- 1-5
     comment         NVARCHAR(MAX)   NULL,
     is_visible      BIT             NOT NULL DEFAULT 1,
@@ -345,13 +348,13 @@ CREATE TABLE reviews (
 
     CONSTRAINT FK_reviews_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_reviews_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_reviews_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_reviews_car FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),
     CONSTRAINT CHK_reviews_rating CHECK (rating >= 1 AND rating <= 5)
 );
 GO
 
 -- ============================================================
--- 11. POLICY_SETTINGS
+-- 14. POLICY_SETTINGS
 -- Configurable business policies (rates, limits, rules)
 -- ============================================================
 CREATE TABLE policy_settings (
@@ -359,7 +362,7 @@ CREATE TABLE policy_settings (
     policy_key      NVARCHAR(100)   NOT NULL UNIQUE,
     policy_value    NVARCHAR(500)   NOT NULL,
     description     NVARCHAR(500)   NULL,
-    category        NVARCHAR(50)    NULL,          -- PRICING, BOOKING, PENALTY, TAX, GENERAL
+    category        NVARCHAR(50)    NULL,          -- PRICING, BOOKING, PENALTY, TAX, GENERAL, PAYMENT
     updated_by      INT             NULL,
     created_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at      DATETIME2       NOT NULL DEFAULT GETDATE(),
@@ -369,14 +372,14 @@ CREATE TABLE policy_settings (
 GO
 
 -- ============================================================
--- 12. AUDIT_LOGS
+-- 15. AUDIT_LOGS
 -- Tracks important actions in the system
 -- ============================================================
 CREATE TABLE audit_logs (
     log_id          INT IDENTITY(1,1) PRIMARY KEY,
     user_id         INT             NULL,
     action          NVARCHAR(100)   NOT NULL,
-    entity_type     NVARCHAR(50)    NULL,     -- e.g., BOOKING, CAR, USER
+    entity_type     NVARCHAR(50)    NULL,     -- e.g., BOOKING, VEHICLE, USER
     entity_id       INT             NULL,
     old_value       NVARCHAR(MAX)   NULL,
     new_value       NVARCHAR(MAX)   NULL,
@@ -389,7 +392,7 @@ CREATE TABLE audit_logs (
 GO
 
 -- ============================================================
--- 15. NOTIFICATIONS
+-- 16. NOTIFICATIONS
 -- System notifications for users (bookings, payments, etc.)
 -- ============================================================
 CREATE TABLE notifications (
@@ -409,13 +412,74 @@ CREATE TABLE notifications (
 GO
 
 -- ============================================================
+-- 17. VAT_INVOICES
+-- VAT invoices linked to rental contracts
+-- ============================================================
+CREATE TABLE vat_invoices (
+    invoice_id INT IDENTITY(1,1) PRIMARY KEY,
+    contract_id INT NOT NULL UNIQUE,
+    invoice_code NVARCHAR(50) NOT NULL UNIQUE,
+    invoice_date DATETIME2 NOT NULL DEFAULT GETDATE(),
+    invoice_status NVARCHAR(20) NOT NULL DEFAULT 'ISSUED',
+    amount_before_tax DECIMAL(18,2) NOT NULL,
+    tax_rate DECIMAL(5,2) NOT NULL,
+    tax_amount DECIMAL(18,2) NOT NULL,
+    total_amount DECIMAL(18,2) NOT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_vat_invoices_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id)
+);
+GO
+
+-- ============================================================
+-- 18. ROLES
+-- User roles for permission management
+-- ============================================================
+CREATE TABLE roles (
+    role_id INT IDENTITY(1,1) PRIMARY KEY,
+    role NVARCHAR(20) NOT NULL,
+    description NVARCHAR(255) NULL,
+    created_at DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ============================================================
+-- 19. PERMISSION
+-- Detailed permissions for each functional area
+-- ============================================================
+CREATE TABLE permission (
+    permission_id INT IDENTITY(1,1) PRIMARY KEY,
+    permission_key VARCHAR(100) NOT NULL UNIQUE,
+    permission_name NVARCHAR(100) NOT NULL,
+    functional_area NVARCHAR(100) NOT NULL
+);
+GO
+
+-- ============================================================
+-- 20. ROLE_PERMISSION
+-- Maps roles to permissions (many-to-many)
+-- ============================================================
+CREATE TABLE role_permission (
+    role_id INT NOT NULL,
+    permission_id INT NOT NULL,
+    assigned_at DATETIME DEFAULT GETDATE(),
+    PRIMARY KEY (role_id, permission_id),
+    CONSTRAINT FK_RolePermission_Role FOREIGN KEY (role_id) 
+        REFERENCES roles(role_id) ON DELETE CASCADE,
+    CONSTRAINT FK_RolePermission_Permission FOREIGN KEY (permission_id) 
+        REFERENCES permission(permission_id) ON DELETE CASCADE
+);
+GO
+
+-- ============================================================
 -- INDEXES for performance
 -- ============================================================
 CREATE INDEX IX_bookings_customer ON bookings(customer_id);
-CREATE INDEX IX_bookings_car ON bookings(car_id);
+CREATE INDEX IX_bookings_vehicle ON bookings(vehicle_id);
 CREATE INDEX IX_bookings_status ON bookings(status);
 CREATE INDEX IX_bookings_dates ON bookings(start_date, end_date);
-CREATE INDEX IX_cars_status ON cars(status);
+CREATE INDEX IX_vehicles_status ON vehicles(status);
 CREATE INDEX IX_payments_booking ON payments(booking_id);
 CREATE INDEX IX_audit_logs_user ON audit_logs(user_id);
 CREATE INDEX IX_audit_logs_entity ON audit_logs(entity_type, entity_id);

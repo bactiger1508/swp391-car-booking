@@ -37,32 +37,36 @@
     <c:remove var="errorMessage" scope="session"/>
 </c:if>
 
-<%-- Category dropdown filter --%>
-<div style="display: flex; gap: 8px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 8px; margin-bottom: 24px; align-items: center; justify-content: space-between;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size:14px; font-weight:600; color:var(--text-primary);">Lọc danh mục:</span>
-        <select id="categoryFilter" onchange="switchCategory(this.value)" style="padding: 8px 12px; font-size: 14px; font-weight: 500; border: 1.5px solid var(--outline-variant); border-radius: 8px; outline: none; background: white; min-width: 220px; color: var(--text-primary); cursor: pointer;">
-            <option value="ALL">Tất cả chính sách</option>
-            <option value="PENALTY">Chính sách phí phạt</option>
-            <option value="BOOKING">Quy định Đặt xe</option>
-            <option value="PAYMENT">Tài chính &amp; Webhook</option>
-            <option value="TAX_CONTRACT">Hợp đồng &amp; Thuế/Hóa đơn</option>
-            <option value="PRICING">Định giá &amp; Tỷ lệ</option>
-            <option value="OTHER">Các chính sách khác</option>
-        </select>
+<%-- Toolbar: Dropdown Filter, Search Input & Add Button --%>
+<div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+    <div style="display: flex; gap: 12px; flex: 1; min-width: 280px; align-items: center;">
+        <%-- Category Dropdown Filter --%>
+        <div style="position: relative; min-width: 220px;">
+            <select id="categoryFilter" onchange="switchCategory(this.value)" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--outline-variant); background: var(--surface-container-low, #f8f9fa); color: var(--on-surface, #0f172a); font-size: 14px; font-weight: 600; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none;">
+                <option value="ALL">📌 Tất cả chính sách</option>
+                <option value="PENALTY">⚠️ Chính sách phí phạt</option>
+                <option value="BOOKING">🚗 Quy định Đặt xe</option>
+                <option value="PAYMENT">💳 Tài chính &amp; Webhook</option>
+                <option value="TAX_CONTRACT">📜 Hợp đồng &amp; Thuế/Hóa đơn</option>
+                <option value="PRICING">🏷️ Định giá &amp; Tỷ lệ</option>
+                <option value="OTHER">⚙️ Các chính sách khác</option>
+            </select>
+            <span class="material-symbols-outlined" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-secondary);">expand_more</span>
+        </div>
+
+        <%-- Search Input --%>
+        <div style="flex: 1; background: var(--surface-container-low, #f8f9fa); border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 10px;">
+            <span class="material-symbols-outlined" style="color: var(--text-secondary);">search</span>
+            <input type="text" id="searchInput" placeholder="Gõ từ khóa để tìm nhanh chính sách..." oninput="filterPolicies()" style="border: none; background: none; width: 100%; outline: none; font-size: 14px; font-weight: 500; color: var(--on-surface);">
+        </div>
+    </div>
     </div>
     
     <%-- Add Policy Button --%>
-    <button type="button" onclick="openCreateModal()" style="display: flex; align-items: center; gap: 6px; background: #34A853; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-        <span class="material-symbols-outlined" style="font-size:18px;">add_box</span>
+    <button type="button" onclick="openCreateModal()" style="display: flex; align-items: center; gap: 6px; background: #34A853; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 6px rgba(52,168,83,0.25);">
+        <span class="material-symbols-outlined" style="font-size: 18px;">add_box</span>
         Tạo cấu hình mới
     </button>
-</div>
-
-<%-- Search Toolbar --%>
-<div style="margin-bottom: 20px; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 12px; padding: 12px 16px; display:flex; align-items:center; gap:10px;">
-    <span class="material-symbols-outlined" style="color:var(--text-secondary);">search</span>
-    <input type="text" id="searchInput" placeholder="Gõ từ khóa để tìm nhanh chính sách..." oninput="filterPolicies()" style="border:none; background:none; width:100%; outline:none; font-size:14px; font-weight:500; color:var(--on-surface);">
 </div>
 
 <%-- Card Container layout --%>
@@ -198,19 +202,28 @@ function filterPolicies() {
     
     cards.forEach(card => {
         let text = card.textContent.toLowerCase();
-        let cat = card.getAttribute('data-category');
+        let cat = (card.getAttribute('data-category') || '').toUpperCase();
+        let key = (card.querySelector('code') ? card.querySelector('code').textContent : '').toUpperCase();
         
         let matchesSearch = text.includes(search);
         let matchesCat = false;
         if (currentCategory === 'ALL') {
             matchesCat = true;
-        } else if (currentCategory === 'OTHER') {
-            let known = ['PENALTY', 'BOOKING', 'PAYMENT', 'CONTRACT', 'PRICING', 'TAX'];
-            matchesCat = !known.includes(cat);
+        } else if (currentCategory === 'PENALTY') {
+            matchesCat = cat.includes('PENALTY') || cat.includes('FEE') || key.includes('FEE') || key.includes('KM') || text.includes('phạt') || text.includes('phí');
+        } else if (currentCategory === 'BOOKING') {
+            matchesCat = cat.includes('BOOKING') || cat.includes('RENTAL') || cat.includes('SYSTEM') || key.includes('LIMIT') || key.includes('AGE') || key.includes('TRIP') || text.includes('đặt xe') || text.includes('thuê');
+        } else if (currentCategory === 'PAYMENT') {
+            matchesCat = cat.includes('PAYMENT') || cat.includes('FINANCE') || key.includes('DEPOSIT') || text.includes('thanh toán') || text.includes('cọc');
         } else if (currentCategory === 'TAX_CONTRACT') {
-            matchesCat = (cat === 'TAX' || cat === 'CONTRACT');
+            matchesCat = cat.includes('TAX') || cat.includes('CONTRACT') || key.includes('TAX') || key.includes('VAT') || text.includes('thuế') || text.includes('hóa đơn');
+        } else if (currentCategory === 'PRICING') {
+            matchesCat = cat.includes('PRICING') || key.includes('RATE') || key.includes('PRICE') || text.includes('định giá') || text.includes('giá');
+        } else if (currentCategory === 'OTHER') {
+            let known = ['PENALTY', 'BOOKING', 'PAYMENT', 'TAX', 'CONTRACT', 'PRICING'];
+            matchesCat = !known.some(k => cat.includes(k));
         } else {
-            matchesCat = (cat === currentCategory);
+            matchesCat = cat.includes(currentCategory);
         }
         
         if (matchesSearch && matchesCat) {

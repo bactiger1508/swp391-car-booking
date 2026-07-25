@@ -54,6 +54,7 @@ public class AuthFilter implements Filter {
      */
     private static final List<String> STATIC_PREFIXES = Arrays.asList(
             "/assets/",
+            "/uploads/",
             "/favicon.ico"
     );
 

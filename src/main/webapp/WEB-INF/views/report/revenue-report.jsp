@@ -206,29 +206,28 @@
                      background:var(--surface-variant);
                      border:1px solid var(--outline-variant);">
 
+                    <input type="hidden" name="type" id="revenueFilterType" value="${type}">
+
                     <!-- BUTTONS -->
                     <div style="display:flex;gap:2px;">
 
                         <button
-                            type="submit"
-                            name="type"
-                            value="MONTH"
+                            type="button"
+                            onclick="document.getElementById('revenueFilterType').value='MONTH'; this.form.submit();"
                             class="bk-btn bk-btn-sm filter-btn ${type=='MONTH'?'active':''}">
                             Tháng
                         </button>
 
                         <button
-                            type="submit"
-                            name="type"
-                            value="QUARTER"
+                            type="button"
+                            onclick="document.getElementById('revenueFilterType').value='QUARTER'; this.form.submit();"
                             class="bk-btn bk-btn-sm filter-btn ${type=='QUARTER'?'active':''}">
                             Quý
                         </button>
 
                         <button
-                            type="submit"
-                            name="type"
-                            value="YEAR"
+                            type="button"
+                            onclick="document.getElementById('revenueFilterType').value='YEAR'; this.form.submit();"
                             class="bk-btn bk-btn-sm filter-btn ${type=='YEAR'?'active':''}">
                             Năm
                         </button>

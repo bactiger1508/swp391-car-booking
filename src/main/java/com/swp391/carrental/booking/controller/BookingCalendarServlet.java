@@ -17,7 +17,7 @@ import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -80,27 +80,27 @@ public class BookingCalendarServlet extends HttpServlet {
             List<Booking> bookings = bookingService.getBookingsByDateRange(rangeStart, rangeEnd);
 
             // Load all cars
-            List<Car> allCars = vehicleService.getAllCars();
+            List<Vehicle> allVehicles = vehicleService.getAllVehicles();
 
             if (isAjax) {
                 // Return JSON response
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 PrintWriter out = response.getWriter();
-                out.print(buildJson(bookings, allCars, ym));
+                out.print(buildJson(bookings, allVehicles, ym));
                 out.flush();
                 return;
             }
 
             // Normal page render
             request.setAttribute("bookings", bookings != null ? bookings : new java.util.ArrayList<>());
-            request.setAttribute("cars", allCars != null ? allCars : new java.util.ArrayList<>());
+            request.setAttribute("cars", allVehicles != null ? allVehicles : new java.util.ArrayList<>());
 
             // Build car map
-            Map<Integer, Car> carMap = new HashMap<>();
-            if (allCars != null) {
-                for (Car car : allCars) {
-                    carMap.put(car.getCarId(), car);
+            Map<Integer, Vehicle> carMap = new HashMap<>();
+            if (allVehicles != null) {
+                for (Vehicle car : allVehicles) {
+                    carMap.put(car.getVehicleId(), car);
                 }
             }
             request.setAttribute("carMap", carMap);
@@ -145,20 +145,20 @@ public class BookingCalendarServlet extends HttpServlet {
     /**
      * Build a JSON string with bookings and cars data for AJAX calendar updates.
      */
-    private String buildJson(List<Booking> bookings, List<Car> cars, YearMonth ym) {
+    private String buildJson(List<Booking> bookings, List<Vehicle> cars, YearMonth ym) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append("\"month\":").append(ym.getMonthValue()).append(",");
         sb.append("\"year\":").append(ym.getYear()).append(",");
         sb.append("\"daysInMonth\":").append(ym.lengthOfMonth()).append(",");
 
-        // Cars array
+        // Vehicles array
         sb.append("\"cars\":[");
         if (cars != null) {
             for (int i = 0; i < cars.size(); i++) {
-                Car c = cars.get(i);
+                Vehicle c = cars.get(i);
                 if (i > 0) sb.append(",");
-                sb.append("{\"carId\":").append(c.getCarId());
+                sb.append("{\"carId\":").append(c.getVehicleId());
                 sb.append(",\"brand\":\"").append(escapeJson(c.getBrand())).append("\"");
                 sb.append(",\"model\":\"").append(escapeJson(c.getModel())).append("\"");
                 sb.append(",\"licensePlate\":\"").append(escapeJson(c.getLicensePlate())).append("\"");
@@ -175,7 +175,7 @@ public class BookingCalendarServlet extends HttpServlet {
                 Booking b = bookings.get(i);
                 if (i > 0) sb.append(",");
                 sb.append("{\"bookingId\":").append(b.getBookingId());
-                sb.append(",\"carId\":").append(b.getCarId());
+                sb.append(",\"carId\":").append(b.getVehicleId());
                 sb.append(",\"customerId\":").append(b.getCustomerId());
                 sb.append(",\"status\":\"").append(escapeJson(b.getStatus())).append("\"");
                 if (b.getStartDate() != null) {

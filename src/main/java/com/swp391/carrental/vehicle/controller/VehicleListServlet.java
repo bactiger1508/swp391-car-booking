@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -29,7 +29,7 @@ public class VehicleListServlet extends HttpServlet {
             throws ServletException, IOException {
         String startParam = request.getParameter("startDate");
         String endParam = request.getParameter("endDate");
-        List<Car> cars;
+        List<Vehicle> cars;
 
         if (startParam != null && !startParam.isEmpty() && endParam != null && !endParam.isEmpty()) {
             try {
@@ -40,15 +40,15 @@ public class VehicleListServlet extends HttpServlet {
                     new com.swp391.carrental.vehicle.service.AvailabilityService();
                 
                 // Fetch cars available in this period
-                cars = availabilityService.getAvailableCars(startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
+                cars = availabilityService.getAvailableVehicles(startDate.atStartOfDay(), endDate.atTime(23, 59, 59));
                 
                 request.setAttribute("startDate", startParam);
                 request.setAttribute("endDate", endParam);
             } catch (Exception e) {
-                cars = vehicleService.getAllCars();
+                cars = vehicleService.getAllVehicles();
             }
         } else {
-            cars = vehicleService.getAllCars();
+            cars = vehicleService.getAllVehicles();
         }
 
         request.setAttribute("cars", cars);

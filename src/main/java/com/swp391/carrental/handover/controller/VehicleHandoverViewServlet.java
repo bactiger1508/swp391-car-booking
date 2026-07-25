@@ -16,8 +16,8 @@ import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -29,7 +29,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
     private final HandoverService handoverService = new HandoverService();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
 
@@ -59,7 +59,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                         return;
                     }
                 }
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -113,9 +113,17 @@ public class VehicleHandoverViewServlet extends HttpServlet {
 
                 if (handover != null) {
                     handoverService.updateStatusConfirm(handover.getHandoverId());
-                    Car car = carDAO.findById(carId);
-                    car.setMileage(handover.getMileageAtHandover());
-                    carDAO.update(car);
+                    Vehicle car = vehicleDAO.findById(carId);
+                    if (car != null) {
+                        car.setMileage(handover.getMileageAtHandover());
+                        vehicleDAO.update(car);
+                    }
+                    
+                    // Send notifications & session message
+                    notifyHandoverSigned(handover, bookingId);
+                    if (request.getSession() != null) {
+                        request.getSession().setAttribute("successMessage", "Ký nhận biên bản bàn giao xe thành công!");
+                    }
                 }
 
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
@@ -123,6 +131,35 @@ public class VehicleHandoverViewServlet extends HttpServlet {
             } catch (SQLException e) {
                 throw new ServletException(e);
             }
+        }
+    }
+
+    private void notifyHandoverSigned(VehicleHandover handover, int bookingId) {
+        try {
+            com.swp391.carrental.notification.service.NotificationService notificationService = new com.swp391.carrental.notification.service.NotificationService();
+            // Notify customer
+            com.swp391.carrental.notification.model.Notification notifCustomer = new com.swp391.carrental.notification.model.Notification(
+                    handover.getReceivedBy(),
+                    "Ký nhận bàn giao xe thành công",
+                    "Bạn đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId + ". Chúc bạn có chuyến đi an toàn!",
+                    "HANDOVER");
+            notifCustomer.setReferenceType("HANDOVER");
+            notifCustomer.setReferenceId(handover.getHandoverId());
+            notificationService.createNotification(notifCustomer);
+
+            // Notify staff who handed over the vehicle
+            if (handover.getHandedBy() > 0) {
+                com.swp391.carrental.notification.model.Notification notifStaff = new com.swp391.carrental.notification.model.Notification(
+                        handover.getHandedBy(),
+                        "Khách hàng đã ký nhận bàn giao xe",
+                        "Khách hàng đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId + ".",
+                        "HANDOVER");
+                notifStaff.setReferenceType("HANDOVER");
+                notifStaff.setReferenceId(handover.getHandoverId());
+                notificationService.createNotification(notifStaff);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send handover signed notification: " + e.getMessage());
         }
     }
 }

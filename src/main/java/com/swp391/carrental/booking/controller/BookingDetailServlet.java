@@ -11,7 +11,7 @@ import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -40,7 +40,7 @@ public class BookingDetailServlet extends HttpServlet {
     private final com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
     private final com.swp391.carrental.contract.service.ContractService contractService = new com.swp391.carrental.contract.service.ContractService();
 
-    /** Hiển thị trang chi tiết đơn đặt xe (xem thông tin, lịch trình, hợp đồng, thanh toán) */
+    /** Display booking detail page (view details, schedule, contract, payment status) */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -84,7 +84,7 @@ public class BookingDetailServlet extends HttpServlet {
             }
 
             // Load related info
-            Car car = vehicleService.getCarById(booking.getCarId());
+            Vehicle car = vehicleService.getVehicleById(booking.getVehicleId());
             request.setAttribute("booking", booking);
             request.setAttribute("car", car);
             request.setAttribute("taxRate", policyService.getPolicyValue("TAX_RATE", "10"));

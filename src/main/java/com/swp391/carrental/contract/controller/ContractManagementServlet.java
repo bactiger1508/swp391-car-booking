@@ -6,7 +6,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.contract.service.ContractService;
+import com.swp391.carrental.core.exception.AppException;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
+import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.user.service.UserService;
+import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.service.VehicleService;
 /*
  * Name: ContractManagementServlet
  * @Author: TungNLHE186756
@@ -37,6 +45,7 @@ public class ContractManagementServlet extends HttpServlet {
     private final com.swp391.carrental.booking.service.BookingService bookingService = new com.swp391.carrental.booking.service.BookingService();
     private final com.swp391.carrental.user.service.UserService userService = new com.swp391.carrental.user.service.UserService();
     private final com.swp391.carrental.vehicle.service.VehicleService vehicleService = new com.swp391.carrental.vehicle.service.VehicleService();
+    private final NotificationService notificationService = new NotificationService();
 
     /**
      * Handles HTTP GET requests to list contracts (for staff) or view details of a contract.
@@ -122,7 +131,7 @@ public class ContractManagementServlet extends HttpServlet {
                 if (booking != null) {
                     request.setAttribute("booking", booking);
                     request.setAttribute("customer", userService.getUserById(booking.getCustomerId()));
-                    request.setAttribute("car", vehicleService.getCarById(booking.getCarId()));
+                    request.setAttribute("car", vehicleService.getVehicleById(booking.getVehicleId()));
                     
                     try {
                         com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
@@ -230,14 +239,14 @@ public class ContractManagementServlet extends HttpServlet {
 
             // Populate userMap and carMap
             java.util.Map<Integer, com.swp391.carrental.user.model.User> userMap = new java.util.HashMap<>();
-            java.util.Map<Integer, com.swp391.carrental.vehicle.model.Car> carMap = new java.util.HashMap<>();
+            java.util.Map<Integer, com.swp391.carrental.vehicle.model.Vehicle> carMap = new java.util.HashMap<>();
             for (com.swp391.carrental.contract.model.RentalContract c : contracts) {
                 try {
                     if (c.getCustomerId() > 0 && !userMap.containsKey(c.getCustomerId())) {
                         userMap.put(c.getCustomerId(), userService.getUserById(c.getCustomerId()));
                     }
-                    if (c.getCarId() > 0 && !carMap.containsKey(c.getCarId())) {
-                        carMap.put(c.getCarId(), vehicleService.getCarById(c.getCarId()));
+                    if (c.getVehicleId() > 0 && !carMap.containsKey(c.getVehicleId())) {
+                        carMap.put(c.getVehicleId(), vehicleService.getVehicleById(c.getVehicleId()));
                     }
                 } catch (Exception ex) {
                     // Skip individual lookup errors to avoid 500 on the whole page
@@ -405,6 +414,29 @@ public class ContractManagementServlet extends HttpServlet {
 
         String bookingIdStr = request.getParameter("bookingId");
         String termsAndConditions = request.getParameter("termsAndConditions");
+
+        // Activate contract notification
+        if ("activate".equals(action)) {
+            String contractIdStr = request.getParameter("contractId");
+            try {
+                if (contractIdStr != null && !contractIdStr.isEmpty()) {
+                    int contractId = Integer.parseInt(contractIdStr);
+                    com.swp391.carrental.contract.model.RentalContract activeContract = contractService.getContractById(contractId);
+                    boolean updated = contractService.updateContractStatus(contractId, com.swp391.carrental.contract.constant.ContractStatus.ACTIVE);
+                    if (updated && activeContract != null) {
+                        notifyContractActivated(activeContract, contractId);
+                    }
+                    response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
+                    return;
+                }
+            } catch (Exception e) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Lỗi kích hoạt hợp đồng: " + e.getMessage());
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts");
+                return;
+            }
+        }
         
         // Booking ID is required for contract creation
         if (bookingIdStr == null || bookingIdStr.isEmpty()) {
@@ -433,7 +465,7 @@ public class ContractManagementServlet extends HttpServlet {
                 throw new com.swp391.carrental.core.exception.AppException("Cannot prepare contract: Customer profile has not been verified.");
             }
 
-            com.swp391.carrental.vehicle.model.Car car = vehicleService.getCarById(booking.getCarId());
+            com.swp391.carrental.vehicle.model.Vehicle car = vehicleService.getVehicleById(booking.getVehicleId());
             
             // UC 2.2.1 Step 5 / Alt 3: Vehicle not found
             if (car == null) {
@@ -443,7 +475,7 @@ public class ContractManagementServlet extends HttpServlet {
             com.swp391.carrental.contract.model.RentalContract contract = new com.swp391.carrental.contract.model.RentalContract();
             contract.setBookingId(bookingId);
             contract.setCustomerId(booking.getCustomerId());
-            contract.setCarId(booking.getCarId());
+            contract.setVehicleId(booking.getVehicleId());
             contract.setStartDate(booking.getStartDate());
             contract.setEndDate(booking.getEndDate());
             contract.setDailyRate(car.getDailyRate());
@@ -454,6 +486,7 @@ public class ContractManagementServlet extends HttpServlet {
 
             int contractId = contractService.createContract(contract);
             if (contractId > 0) {
+                notifyContractPrepared(contract, contractId, booking.getCustomerId());
                 response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractId);
             } else {
                 throw new com.swp391.carrental.core.exception.AppException("Không thể lưu hợp đồng vào cơ sở dữ liệu.");
@@ -463,6 +496,34 @@ public class ContractManagementServlet extends HttpServlet {
                 session.setAttribute("errorMessage", "Lỗi tạo hợp đồng: " + e.getMessage());
             }
             response.sendRedirect(request.getContextPath() + "/contracts");
+        }
+    }
+
+    private void notifyContractPrepared(RentalContract contract, int contractId, int customerId) {
+        try {
+            Notification notif = new Notification(customerId,
+                    "Hợp đồng đã được chuẩn bị",
+                    "Hợp đồng #" + contractId + " cho booking #" + contract.getBookingId() + " đã được soạn thảo. Vui lòng kiểm tra và ký kết.",
+                    "CONTRACT");
+            notif.setReferenceType("CONTRACT");
+            notif.setReferenceId(contractId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send contract-prepared notification: " + e.getMessage());
+        }
+    }
+
+    private void notifyContractActivated(RentalContract contract, int contractId) {
+        try {
+            Notification notif = new Notification(contract.getCustomerId(),
+                    "Hợp đồng đã được kích hoạt",
+                    "Hợp đồng #" + contractId + " đã được ký kết và kích hoạt. Bạn có thể tiến hành bàn giao xe.",
+                    "CONTRACT");
+            notif.setReferenceType("CONTRACT");
+            notif.setReferenceId(contractId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send contract-activated notification: " + e.getMessage());
         }
     }
 }

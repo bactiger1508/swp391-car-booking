@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.core.util.DBContext;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 /*
  * Name: BookingDAO
@@ -52,7 +52,7 @@ public class BookingDAO {
         List<Booking> bookings = new ArrayList<>();
         String sql = "SELECT * FROM bookings WHERE start_date < ? AND end_date > ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED') "
-                   + "ORDER BY car_id, start_date ASC";
+                   + "ORDER BY vehicle_id, start_date ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setTimestamp(1, rangeEnd);
@@ -81,7 +81,7 @@ public class BookingDAO {
     /** Get active bookings (PENDING, CONFIRMED, IN_PROGRESS) for a specific car */
     public List<Booking> findActiveBookingsByCarId(int carId) throws SQLException {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE car_id = ? "
+        String sql = "SELECT * FROM bookings WHERE vehicle_id = ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
                    + "ORDER BY start_date ASC";
         try (Connection conn = DBContext.getConnection();
@@ -110,7 +110,7 @@ public class BookingDAO {
 
     /** Check if a car has any overlapping active bookings in a given time range */
     public boolean hasOverlappingBooking(int carId, Timestamp startDate, Timestamp endDate, Integer excludeBookingId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM bookings WHERE car_id = ? "
+        String sql = "SELECT COUNT(*) FROM bookings WHERE vehicle_id = ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
                    + "AND start_date < ? AND end_date > ?";
         if (excludeBookingId != null) {
@@ -133,7 +133,7 @@ public class BookingDAO {
 
     /** Insert a new booking into the database and return the generated ID */
     public int insert(Booking booking) throws SQLException {
-        String sql = "INSERT INTO bookings (customer_id, car_id, start_date, end_date, pickup_location, "
+        String sql = "INSERT INTO bookings (customer_id, vehicle_id, start_date, end_date, pickup_location, "
                    + "return_location, total_amount, deposit_amount, status, notes, "
                    + "rental_mode, pricing_package, delivery_method, delivery_address, delivery_distance, "
                    + "delivery_fee, km_limit, estimated_km, base_amount, discount_amount, tax_amount) "
@@ -141,7 +141,7 @@ public class BookingDAO {
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, booking.getCustomerId());
-            ps.setInt(2, booking.getCarId());
+            ps.setInt(2, booking.getVehicleId());
             ps.setTimestamp(3, Timestamp.valueOf(booking.getStartDate()));
             ps.setTimestamp(4, Timestamp.valueOf(booking.getEndDate()));
             ps.setString(5, booking.getPickupLocation());
@@ -181,7 +181,7 @@ public class BookingDAO {
      * Update an existing booking in the database.
      */
     public boolean update(Booking booking) throws SQLException {
-        String sql = "UPDATE bookings SET car_id = ?, start_date = ?, end_date = ?, pickup_location = ?, "
+        String sql = "UPDATE bookings SET vehicle_id = ?, start_date = ?, end_date = ?, pickup_location = ?, "
                    + "return_location = ?, total_amount = ?, deposit_amount = ?, status = ?, notes = ?, "
                    + "rental_mode = ?, pricing_package = ?, delivery_method = ?, delivery_address = ?, "
                    + "delivery_distance = ?, delivery_fee = ?, km_limit = ?, estimated_km = ?, "
@@ -189,7 +189,7 @@ public class BookingDAO {
                    + "updated_at = GETDATE() WHERE booking_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, booking.getCarId());
+            ps.setInt(1, booking.getVehicleId());
             ps.setTimestamp(2, Timestamp.valueOf(booking.getStartDate()));
             ps.setTimestamp(3, Timestamp.valueOf(booking.getEndDate()));
             ps.setString(4, booking.getPickupLocation());
@@ -297,7 +297,7 @@ public class BookingDAO {
         Booking b = new Booking();
         b.setBookingId(rs.getInt("booking_id"));
         b.setCustomerId(rs.getInt("customer_id"));
-        b.setCarId(rs.getInt("car_id"));
+        b.setCarId(rs.getInt("vehicle_id"));
         Timestamp sd = rs.getTimestamp("start_date");
         if (sd != null) b.setStartDate(sd.toLocalDateTime());
         Timestamp ed = rs.getTimestamp("end_date");

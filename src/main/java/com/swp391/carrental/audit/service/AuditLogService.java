@@ -7,9 +7,11 @@ import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.audit.dao.AuditLogDAO;
 import com.swp391.carrental.audit.model.AuditLog;
 
+// Service for managing system audit logs and tracking user actions on resources.
 public class AuditLogService {
     private final AuditLogDAO auditLogDAO = new AuditLogDAO();
 
+    // Retrieves all audit logs in reverse chronological order.
     public List<AuditLog> getAllLogs() {
         try {
             return auditLogDAO.findAll();
@@ -18,6 +20,7 @@ public class AuditLogService {
         }
     }
 
+    // Filters audit logs by user, action, entity type, and date range (any parameter can be null).
     public List<AuditLog> getLogsByFilters(Integer userId, String action, String entityType,
                                             LocalDateTime startDate, LocalDateTime endDate) {
         try {
@@ -27,6 +30,7 @@ public class AuditLogService {
         }
     }
 
+    // Retrieves all audit logs created by a specific user.
     public List<AuditLog> getLogsByUserId(int userId) {
         try {
             return auditLogDAO.findByUserId(userId);
@@ -35,6 +39,7 @@ public class AuditLogService {
         }
     }
 
+    // Retrieves all audit logs for a specific entity type (VEHICLE, BOOKING, PAYMENT, etc).
     public List<AuditLog> getLogsByEntityType(String entityType) {
         try {
             return auditLogDAO.findByEntityType(entityType);
@@ -43,6 +48,7 @@ public class AuditLogService {
         }
     }
 
+    // Retrieves a single audit log entry by its ID.
     public AuditLog getLogById(int auditId) {
         try {
             return auditLogDAO.findById(auditId);
@@ -51,6 +57,7 @@ public class AuditLogService {
         }
     }
 
+    // Creates new audit log entry and returns the generated audit log ID.
     public int createLog(AuditLog auditLog) {
         try {
             return auditLogDAO.insert(auditLog);
@@ -59,6 +66,7 @@ public class AuditLogService {
         }
     }
 
+    // Logs a system action with user, action type, entity type, entity ID, and rich description details.
     public void logAction(int userId, String action, String entityType, Integer entityId, String details) {
         AuditLog log = new AuditLog(userId, action, entityType, entityId, details);
         createLog(log);

@@ -9,7 +9,7 @@ import com.swp391.carrental.handover.constant.HandoverStatus;
 import com.swp391.carrental.handover.dao.HandoverDAO;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.vehicle.constant.CarStatus;
-import com.swp391.carrental.vehicle.dao.CarDAO;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
 
 /*
  * Name: HandoverService
@@ -26,7 +26,7 @@ public class HandoverService {
 
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
 
     public VehicleHandover getHandoverById(int handoverId) {
         try {
@@ -60,7 +60,7 @@ public class HandoverService {
             int handoverId = handoverDAO.insert(handover);
 
             // BR-06: Update car status to RENTED
-            carDAO.updateStatus(handover.getCarId(), CarStatus.RENTED);
+            vehicleDAO.updateStatus(handover.getVehicleId(), CarStatus.RENTED);
 
             // Update booking status to IN_PROGRESS
             bookingDAO.updateStatus(handover.getBookingId(), BookingStatus.IN_PROGRESS);

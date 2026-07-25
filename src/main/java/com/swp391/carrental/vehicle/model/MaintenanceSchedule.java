@@ -1,51 +1,35 @@
 package com.swp391.carrental.vehicle.model;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /*
  * Name: MaintenanceSchedule
- * @Author: TinhNVHE160000 (Vehicle Module)
- * Date: 31/05/2026
- * Version: 1.0
- * Description: Model class for Maintenance Schedule entity
+ * @Author: TinhHNHE172394
+ * Date: 23/05/2026
+ * Version: 2.0
+ * Description: Represents a vehicle maintenance schedule.
  */
 
-
-/**
- * Represents a maintenance schedule for a vehicle.
- */
-public class MaintenanceSchedule implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class MaintenanceSchedule {
 
     private int maintenanceId;
     private int vehicleId;
-    private String maintenanceType;  // OIL_CHANGE, TIRE_CHANGE, INSPECTION, REPAIR, etc.
+    private String maintenanceType;
     private LocalDate scheduledDate;
     private LocalDate completedDate;
-    private String status;  // SCHEDULED, COMPLETED, CANCELLED
+    private String status;
     private String description;
     private double cost;
     private String notes;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private String createdBy;
     private String updatedBy;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // Constructors
-    public MaintenanceSchedule() {}
-
-    public MaintenanceSchedule(int maintenanceId, int vehicleId, String maintenanceType, 
-                              LocalDate scheduledDate, String status) {
-        this.maintenanceId = maintenanceId;
-        this.vehicleId = vehicleId;
-        this.maintenanceType = maintenanceType;
-        this.scheduledDate = scheduledDate;
-        this.status = status;
+    public MaintenanceSchedule() {
     }
 
-    // Getters and Setters
     public int getMaintenanceId() {
         return maintenanceId;
     }
@@ -54,13 +38,8 @@ public class MaintenanceSchedule implements Serializable {
         this.maintenanceId = maintenanceId;
     }
 
-    public int getVehicleId() {
-        return vehicleId;
-    }
-
-    public void setVehicleId(int vehicleId) {
-        this.vehicleId = vehicleId;
-    }
+    public int getVehicleId() { return vehicleId; }
+    public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
     public String getMaintenanceType() {
         return maintenanceType;
@@ -118,22 +97,6 @@ public class MaintenanceSchedule implements Serializable {
         this.notes = notes;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public String getCreatedBy() {
         return createdBy;
     }
@@ -150,14 +113,19 @@ public class MaintenanceSchedule implements Serializable {
         this.updatedBy = updatedBy;
     }
 
-    @Override
-    public String toString() {
-        return "MaintenanceSchedule{" +
-                "maintenanceId=" + maintenanceId +
-                ", vehicleId=" + vehicleId +
-                ", maintenanceType='" + maintenanceType + '\'' +
-                ", scheduledDate=" + scheduledDate +
-                ", status='" + status + '\'' +
-                '}';
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

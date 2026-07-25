@@ -6,7 +6,17 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.user.model.Permission;
 import com.swp391.carrental.user.model.Role;
+/*
+ * Name: PermissionDAO
+ * @Author: AnhNNHE160896
+ * Date: 01/07/2026
+ * Version: 1.0
+ * Description: Handles database operations for PermissionDAO.
+ */
 
+/**
+ * Data Access Object for PermissionDAO entities.
+ */
 public class PermissionDAO {
 
     /**

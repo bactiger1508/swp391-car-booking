@@ -18,10 +18,12 @@ import com.swp391.carrental.contract.dao.ContractDAO;
 import com.swp391.carrental.contract.model.RentalContract;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
+import com.swp391.carrental.notification.model.Notification;
+import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 @WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = {"/handovers/create"})
 @MultipartConfig(
@@ -34,9 +36,10 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final NotificationService notificationService = new NotificationService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,7 +52,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 int carId = Integer.parseInt(carIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
 
                 // Enforce Handover Validation Checks: active contract and paid deposit
@@ -201,7 +204,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             handover.setBookingId(bookingId);
             handover.setContractId(contractId);
-            handover.setCarId(carId);
+            handover.setVehicleId(carId);
 
             handover.setMileageAtHandover(mileage);
             handover.setFuelLevel(fuelLevel);
@@ -219,7 +222,12 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             handover.setHandoverDate(LocalDateTime.now());
 
-            handoverService.handoverVehicle(handover);
+            int handoverId = handoverService.handoverVehicle(handover);
+
+            notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
+            if (request.getSession() != null) {
+                request.getSession().setAttribute("successMessage", "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
+            }
 
             response.sendRedirect(request.getContextPath() + "/handovers");
 
@@ -290,7 +298,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             return false;
         }
 
-        Car car = carDAO.findById(carId);
+        Vehicle car = vehicleDAO.findById(carId);
         int mileage = Integer.parseInt(currentOdo);
 
         if (mileage < car.getMileage()) {
@@ -342,7 +350,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
     private void loadCreateData(HttpServletRequest request, int bookingId, int carId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Car car = carDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(carId);
             RentalContract contract = contractDAO.findByBookingId(bookingId);
 
             request.setAttribute("booking", booking);
@@ -374,6 +382,20 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             request.setAttribute("chkDashboardLights", request.getParameter("chkDashboardLights") != null);
         } catch (SQLException ex) {
             Logger.getLogger(CreateVehicleHandoverServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void notifyVehicleHandedOver(int bookingId, int handoverId, int customerId) {
+        try {
+            Notification notif = new Notification(customerId,
+                    "Biên bản bàn giao xe đã được tạo",
+                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
+                    "HANDOVER");
+            notif.setReferenceType("HANDOVER");
+            notif.setReferenceId(handoverId);
+            notificationService.createNotification(notif);
+        } catch (Exception e) {
+            System.err.println("Failed to send vehicle-handed-over notification: " + e.getMessage());
         }
     }
 }

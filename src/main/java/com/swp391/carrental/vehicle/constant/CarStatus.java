@@ -1,7 +1,5 @@
 package com.swp391.carrental.vehicle.constant;
 
-import com.swp391.carrental.vehicle.model.Car;
-
 /*
  * Name: CarStatus
  * @Author: TinhHNHE172394

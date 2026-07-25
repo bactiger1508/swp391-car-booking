@@ -7,22 +7,18 @@ import java.time.LocalDateTime;
  * @Author: TamTTMHE190340
  * Date: 23/05/2026
  * Version: 1.0
- * Description: Handles business logic and operations for Review.
+ * Description: Customer review for a completed rental.
  */
 
-
-/**
- * Customer review for a completed rental.
- * Maps to the 'reviews' table.
- */
 public class Review {
 
     private int reviewId;
     private int bookingId;
     private int customerId;
-    private int carId;
+    private int vehicleId;
     private int rating;
     private String comment;
+    private String customerName;
     private boolean isVisible;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -39,8 +35,11 @@ public class Review {
     public int getCustomerId() { return customerId; }
     public void setCustomerId(int customerId) { this.customerId = customerId; }
 
-    public int getCarId() { return carId; }
-    public void setCarId(int carId) { this.carId = carId; }
+    public int getVehicleId() { return vehicleId; }
+    public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
+
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
 
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }

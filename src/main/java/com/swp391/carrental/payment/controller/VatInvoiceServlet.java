@@ -96,7 +96,7 @@ public class VatInvoiceServlet extends HttpServlet {
                 request.setAttribute("invoice", invoice);
                 request.setAttribute("payments", payments);
                 request.setAttribute("customer", userService.getUserById(contract.getCustomerId()));
-                request.setAttribute("car", vehicleService.getCarById(contract.getCarId()));
+                request.setAttribute("car", vehicleService.getVehicleById(contract.getVehicleId()));
                 request.setAttribute("companyName", companyName);
                 request.setAttribute("companyTaxId", companyTaxId);
                 request.setAttribute("companyAddress", companyAddress);
@@ -124,8 +124,8 @@ public class VatInvoiceServlet extends HttpServlet {
             return;
         }
 
-        // Only Staff/Admin can generate VAT Invoice
-        if (!"STAFF".equals(currentUser.getRole()) && !"ADMIN".equals(currentUser.getRole())) {
+        // Only Staff/Admin (with CREATE_VAT_INVOICE permission) can generate VAT Invoice
+        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_VAT_INVOICE")) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hóa đơn VAT.");
             return;
         }

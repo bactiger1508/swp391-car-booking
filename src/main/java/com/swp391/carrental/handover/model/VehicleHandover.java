@@ -18,7 +18,7 @@ public class VehicleHandover {
     private int handoverId;
     private int bookingId;
     private Integer contractId;
-    private int carId;
+    private int vehicleId;
     private LocalDateTime handoverDate;
     private int mileageAtHandover;
     private String fuelLevel;
@@ -59,14 +59,13 @@ public class VehicleHandover {
     public void setContractId(Integer contractId) {
         this.contractId = contractId;
     }
+    public int getVehicleId() { return vehicleId; }
+    public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
 
-    public int getCarId() {
-        return carId;
-    }
-
-    public void setCarId(int carId) {
-        this.carId = carId;
-    }
+    @Deprecated
+    public int getCarId() { return vehicleId; }
+    @Deprecated
+    public void setCarId(int carId) { this.vehicleId = carId; }
 
     public LocalDateTime getHandoverDate() {
         return handoverDate;
