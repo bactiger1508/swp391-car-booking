@@ -222,12 +222,6 @@ public class PolicySettingDAO {
                 return "Cho phép thanh toán tiền mặt";
             case "PAYMENT_METHOD_BANK_TRANSFER_ENABLED":
                 return "Cho phép thanh toán chuyển khoản ngân hàng";
-            case "PAYMENT_GRACE_PERIOD_HOURS":
-                return "Số giờ gia hạn thanh toán trước khi hủy đặt xe";
-            case "PAYMENT_CURRENCY":
-                return "Đơn vị tiền tệ sử dụng trong hệ thống";
-            case "PAYMENT_AUTO_CONFIRM_AMOUNT":
-                return "Ngưỡng tự động xác nhận thanh toán (0 = tắt)";
             case "BANK_ACCOUNT_NAME":
                 return "Tên tài khoản ngân hàng";
             case "BANK_ACCOUNT_NUMBER":
