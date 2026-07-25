@@ -86,7 +86,7 @@ GO
 -- 5. CARS
 -- Vehicle inventory for the rental shop
 -- ============================================================
-CREATE TABLE cars (
+CREATE TABLE vehicles (
     car_id              INT IDENTITY(1,1) PRIMARY KEY,
     license_plate       NVARCHAR(20)    NOT NULL UNIQUE,
     model_id            INT             NOT NULL,
@@ -112,7 +112,7 @@ GO
 -- 6. CAR_IMAGES
 -- Multiple images per car
 -- ============================================================
-CREATE TABLE car_images (
+CREATE TABLE vehicle_images (
     image_id    INT IDENTITY(1,1) PRIMARY KEY,
     car_id      INT             NOT NULL,
     image_url   NVARCHAR(500)   NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE car_images (
     sort_order  INT             NOT NULL DEFAULT 0,
     created_at  DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_car_images_car FOREIGN KEY (car_id) REFERENCES cars(car_id)
+    CONSTRAINT FK_car_images_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
 );
 GO
 
@@ -144,7 +144,7 @@ CREATE TABLE maintenance_schedules (
     created_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
     updated_at       DATETIME2       NOT NULL DEFAULT GETDATE(),
 
-    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (car_id) REFERENCES cars(car_id)
+    CONSTRAINT FK_maintenance_schedules_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id)
 );
 GO
 
@@ -186,7 +186,7 @@ CREATE TABLE bookings (
     tax_amount        DECIMAL(18,2)   NOT NULL DEFAULT 0,
 
     CONSTRAINT FK_bookings_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_bookings_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_bookings_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
     CONSTRAINT FK_bookings_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id),
     CONSTRAINT CHK_bookings_dates CHECK (end_date >= start_date)
 );
@@ -228,7 +228,7 @@ CREATE TABLE rental_contracts (
 
     CONSTRAINT FK_contracts_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_contracts_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_contracts_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_contracts_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
     CONSTRAINT FK_contracts_created_by FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 GO
@@ -282,7 +282,7 @@ CREATE TABLE vehicle_handovers (
 
     CONSTRAINT FK_handovers_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_handovers_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_handovers_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
     CONSTRAINT FK_handovers_handed_by FOREIGN KEY (handed_by) REFERENCES users(user_id),
     CONSTRAINT FK_handovers_received_by FOREIGN KEY (received_by) REFERENCES users(user_id)
 );
@@ -319,7 +319,7 @@ CREATE TABLE vehicle_returns (
 
     CONSTRAINT FK_returns_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_returns_contract FOREIGN KEY (contract_id) REFERENCES rental_contracts(contract_id),
-    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_returns_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
     CONSTRAINT FK_returns_handover FOREIGN KEY (handover_id) REFERENCES vehicle_handovers(handover_id),
     CONSTRAINT FK_returns_received_by FOREIGN KEY (received_by) REFERENCES users(user_id),
     CONSTRAINT FK_returns_returned_by FOREIGN KEY (returned_by) REFERENCES users(user_id)
@@ -343,7 +343,7 @@ CREATE TABLE reviews (
 
     CONSTRAINT FK_reviews_booking FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
     CONSTRAINT FK_reviews_customer FOREIGN KEY (customer_id) REFERENCES users(user_id),
-    CONSTRAINT FK_reviews_car FOREIGN KEY (car_id) REFERENCES cars(car_id),
+    CONSTRAINT FK_reviews_car FOREIGN KEY (car_id) REFERENCES vehicles(car_id),
     CONSTRAINT CHK_reviews_rating CHECK (rating >= 1 AND rating <= 5)
 );
 GO
