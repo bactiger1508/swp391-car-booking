@@ -30,10 +30,11 @@ public class PolicySettingDAO {
     public PolicySetting findByKey(String policyKey) throws SQLException {
         String sql = "SELECT * FROM policy_settings WHERE policy_key = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, policyKey);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
+                if (rs.next())
+                    return mapRow(rs);
             }
         }
         return null;
@@ -46,9 +47,10 @@ public class PolicySettingDAO {
         List<PolicySetting> list = new ArrayList<>();
         String sql = "SELECT * FROM policy_settings ORDER BY category, policy_key";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) list.add(mapRow(rs));
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(mapRow(rs));
         }
         return list;
     }
@@ -60,10 +62,11 @@ public class PolicySettingDAO {
         List<PolicySetting> list = new ArrayList<>();
         String sql = "SELECT * FROM policy_settings WHERE category = ? ORDER BY policy_key";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, category);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(mapRow(rs));
+                while (rs.next())
+                    list.add(mapRow(rs));
             }
         }
         return list;
@@ -77,11 +80,12 @@ public class PolicySettingDAO {
         String updateSql = "UPDATE policy_settings SET policy_value = ?, updated_by = ?, updated_at = GETDATE() WHERE policy_key = ?";
         String insertSql = "INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement selectPs = conn.prepareStatement(selectSql)) {
+                PreparedStatement selectPs = conn.prepareStatement(selectSql)) {
             selectPs.setString(1, policyKey);
             boolean exists = false;
             try (ResultSet rs = selectPs.executeQuery()) {
-                if (rs.next()) exists = true;
+                if (rs.next())
+                    exists = true;
             }
             if (exists) {
                 try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
@@ -109,15 +113,19 @@ public class PolicySettingDAO {
     public int insert(PolicySetting ps2) throws SQLException {
         String sql = "INSERT INTO policy_settings (policy_key, policy_value, description, category, updated_by) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, ps2.getPolicyKey());
             ps.setString(2, ps2.getPolicyValue());
             ps.setString(3, ps2.getDescription());
             ps.setString(4, ps2.getCategory());
-            if (ps2.getUpdatedBy() != null) ps.setInt(5, ps2.getUpdatedBy()); else ps.setNull(5, Types.INTEGER);
+            if (ps2.getUpdatedBy() != null)
+                ps.setInt(5, ps2.getUpdatedBy());
+            else
+                ps.setNull(5, Types.INTEGER);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) return keys.getInt(1);
+                if (keys.next())
+                    return keys.getInt(1);
             }
         }
         return -1;
@@ -129,7 +137,7 @@ public class PolicySettingDAO {
     public boolean delete(int policyId) throws SQLException {
         String sql = "DELETE FROM policy_settings WHERE policy_id = ?";
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, policyId);
             return ps.executeUpdate() > 0;
         }
@@ -137,7 +145,8 @@ public class PolicySettingDAO {
 
     /**
      * Updates multiple policy values in a single transaction.
-     * @param updates map of policyKey -> newValue
+     * 
+     * @param updates   map of policyKey -> newValue
      * @param updatedBy user performing the update
      */
     public int batchUpdateValues(Map<String, String> updates, int updatedBy) throws SQLException {
@@ -148,12 +157,12 @@ public class PolicySettingDAO {
         try (Connection conn = DBContext.getConnection()) {
             conn.setAutoCommit(false);
             try (PreparedStatement selectPs = conn.prepareStatement(selectSql);
-                 PreparedStatement updatePs = conn.prepareStatement(updateSql);
-                 PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+                    PreparedStatement updatePs = conn.prepareStatement(updateSql);
+                    PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
                 for (Map.Entry<String, String> entry : updates.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
-                    
+
                     selectPs.setString(1, key);
                     boolean exists = false;
                     try (ResultSet rs = selectPs.executeQuery()) {
@@ -161,7 +170,7 @@ public class PolicySettingDAO {
                             exists = true;
                         }
                     }
-                    
+
                     if (exists) {
                         updatePs.setString(1, value);
                         updatePs.setInt(2, updatedBy);
@@ -194,11 +203,18 @@ public class PolicySettingDAO {
         if ("DEPOSIT_PERCENTAGE".equals(key)) {
             return "PRICING";
         }
+        if ("CONTRACT_DEFAULT_TERMS".equals(key)) {
+            return "CONTRACT";
+        }
+        if ("TAX_RATE".equals(key) || "COMPANY_NAME".equals(key)) {
+            return "TAX";
+        }
         return "PAYMENT";
     }
 
     /**
-     * Helper function to resolve user-friendly descriptions for standard policy keys.
+     * Helper function to resolve user-friendly descriptions for standard policy
+     * keys.
      */
     private String getDescriptionForKey(String key) {
         switch (key) {
@@ -224,6 +240,12 @@ public class PolicySettingDAO {
                 return "Chi nhánh ngân hàng";
             case "DEPOSIT_PERCENTAGE":
                 return "Phần trăm đặt cọc (%)";
+            case "CONTRACT_DEFAULT_TERMS":
+                return "Điều khoản và cam kết mặc định (Hợp đồng)";
+            case "TAX_RATE":
+                return "Thuế suất VAT (%)";
+            case "COMPANY_NAME":
+                return "Tên công ty xuất hóa đơn";
             default:
                 return "Cài đặt thanh toán " + key;
         }
@@ -239,9 +261,15 @@ public class PolicySettingDAO {
         p.setPolicyValue(rs.getString("policy_value"));
         p.setDescription(rs.getString("description"));
         p.setCategory(rs.getString("category"));
-        int ub = rs.getInt("updated_by"); if (!rs.wasNull()) p.setUpdatedBy(ub);
-        Timestamp ca = rs.getTimestamp("created_at"); if (ca != null) p.setCreatedAt(ca.toLocalDateTime());
-        Timestamp ua = rs.getTimestamp("updated_at"); if (ua != null) p.setUpdatedAt(ua.toLocalDateTime());
+        int ub = rs.getInt("updated_by");
+        if (!rs.wasNull())
+            p.setUpdatedBy(ub);
+        Timestamp ca = rs.getTimestamp("created_at");
+        if (ca != null)
+            p.setCreatedAt(ca.toLocalDateTime());
+        Timestamp ua = rs.getTimestamp("updated_at");
+        if (ua != null)
+            p.setUpdatedAt(ua.toLocalDateTime());
         return p;
     }
 }
