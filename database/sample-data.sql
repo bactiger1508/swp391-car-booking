@@ -107,9 +107,9 @@ GO
 -- ============================================================
 -- CARS
 -- ============================================================
-SET IDENTITY_INSERT cars ON;
+SET IDENTITY_INSERT vehicles ON;
 
-INSERT INTO cars (car_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
+INSERT INTO vehicles (car_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
 VALUES
     (1, N'51A-12345', 1,  2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2023, xe gia đình phổ biến, tiết kiệm nhiên liệu.',                    N'AVAILABLE',   15000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi'),
     (2, N'51A-23456', 2,  2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Honda City 2023, thiết kế thể thao, nội thất rộng rãi.',                           N'AVAILABLE',   12000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Cảm biến va chạm'),
@@ -148,13 +148,13 @@ VALUES
     (35, N'51L-001.23', 34, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 3000000.00, N'Ford Explorer Limited 2023, SUV cỡ lớn cao cấp nhập Mỹ, đầy uy lực.',                N'AVAILABLE',   15000, N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, Ghế mát-xa, Cửa sổ trời'),
     (36, N'51L-012.34', 35, 2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 3500000.00, N'Mercedes GLC 300 4MATIC 2023, SUV sang trọng bán chạy hàng đầu.',                   N'AVAILABLE',   8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Loa Burmester, Ghế da nâng điện');
 
-SET IDENTITY_INSERT cars OFF;
+SET IDENTITY_INSERT vehicles OFF;
 GO
 
 -- ============================================================
 -- CAR IMAGES (sample image URLs — use placeholder paths)
 -- ============================================================
-INSERT INTO car_images (car_id, image_url, caption, is_primary, sort_order)
+INSERT INTO vehicle_images (car_id, image_url, caption, is_primary, sort_order)
 VALUES
     (1, N'/assets/images/cars/vios-front.jpg',     N'Mặt trước',  1, 1),
     (1, N'/assets/images/cars/vios-interior.jpg',  N'Nội thất',   0, 2),
