@@ -32,8 +32,8 @@ import com.swp391.carrental.user.model.CustomerProfile;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
 import com.swp391.carrental.vehicle.constant.CarStatus;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.AvailabilityService;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.vehicle.dao.MaintenanceDAO;
@@ -49,6 +49,9 @@ public class CarProSystemTestRunner {
         System.out.println("     CARPRO RENTAL MANAGEMENT SYSTEM - AUTOMATED INTEGRATION TEST RUNNER   ");
         System.out.println("==========================================================================");
 
+        // Pre-test database cleanup to remove leftover trash data
+        cleanupTestTrashData();
+
         // Core DAOs & Services
         AuthService authService = new AuthService();
         UserService userService = new UserService();
@@ -56,7 +59,7 @@ public class CarProSystemTestRunner {
         CustomerProfileDAO profileDAO = new CustomerProfileDAO();
         BookingService bookingService = new BookingService();
         BookingDAO bookingDAO = new BookingDAO();
-        CarDAO carDAO = new CarDAO();
+        VehicleDAO carDAO = new VehicleDAO();
         ContractService contractService = new ContractService();
         ContractDAO contractDAO = new ContractDAO();
         PaymentService paymentService = new PaymentService();
@@ -128,16 +131,16 @@ public class CarProSystemTestRunner {
                  java.sql.Statement stmt = conn.createStatement()) {
                 
                 // 1. Delete payments referencing bookings of test users
-                stmt.executeUpdate("DELETE FROM payments WHERE booking_id IN (SELECT booking_id FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR car_id >= 10 OR car_id IN (12, 13))");
+                stmt.executeUpdate("DELETE FROM payments WHERE booking_id IN (SELECT booking_id FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR vehicle_id >= 10 OR vehicle_id IN (12, 13))");
                 
                 // 2. Delete contracts referencing bookings of test users
-                stmt.executeUpdate("DELETE FROM rental_contracts WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR car_id >= 10 OR car_id IN (12, 13) OR booking_id IN (SELECT booking_id FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR car_id >= 10 OR car_id IN (12, 13))");
+                stmt.executeUpdate("DELETE FROM rental_contracts WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR vehicle_id >= 10 OR vehicle_id IN (12, 13) OR booking_id IN (SELECT booking_id FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR vehicle_id >= 10 OR vehicle_id IN (12, 13))");
                 
                 // 3. Delete bookings of test users
-                stmt.executeUpdate("DELETE FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR car_id >= 10 OR car_id IN (12, 13)");
+                stmt.executeUpdate("DELETE FROM bookings WHERE customer_id IN (3, 4) OR customer_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com') OR vehicle_id >= 10 OR vehicle_id IN (12, 13)");
                 
                 // 4. Delete car records created in tests
-                stmt.executeUpdate("DELETE FROM cars WHERE license_plate LIKE '29A-%'");
+                stmt.executeUpdate("DELETE FROM vehicles WHERE license_plate LIKE '29A-%'");
                 
                 // 5. Delete profile records of test users
                 stmt.executeUpdate("DELETE FROM customer_profiles WHERE user_id IN (SELECT user_id FROM users WHERE email = '' OR email = 'invalid-email' OR email LIKE 'testuser_%' OR email = 'newtestuser@carrental.com' OR email = 'dupemail@carrental.com')");
@@ -154,7 +157,7 @@ public class CarProSystemTestRunner {
     private static Booking createPlaceholderBooking(int customerId, int carId, LocalDateTime start, LocalDateTime end, String status) {
         Booking b = new Booking();
         b.setCustomerId(customerId);
-        b.setCarId(carId);
+        b.setVehicleId(carId);
         b.setStartDate(start);
         b.setEndDate(end);
         b.setPickupLocation("Showroom");
@@ -176,7 +179,7 @@ public class CarProSystemTestRunner {
         c.setBookingId(bookingId);
         c.setContractNumber("CON-TEST-" + System.currentTimeMillis() + "-" + bookingId);
         c.setCustomerId(customerId);
-        c.setCarId(carId);
+        c.setVehicleId(carId);
         c.setStartDate(start);
         c.setEndDate(end);
         c.setDailyRate(new BigDecimal("800000.00"));
@@ -374,12 +377,12 @@ public class CarProSystemTestRunner {
     // ----------------------------------------------------
     // BOOKING CUSTOMER TESTS (14 Cases)
     // ----------------------------------------------------
-    private static void runBookingCustomerTests(BookingService bookingService, BookingDAO bookingDAO, CarDAO carDAO, CustomerProfileDAO profileDAO) {
+    private static void runBookingCustomerTests(BookingService bookingService, BookingDAO bookingDAO, VehicleDAO carDAO, CustomerProfileDAO profileDAO) {
         // TC-BAC-AVL-01
         try {
-            List<Car> avl = carDAO.findAvailable(Timestamp.valueOf(LocalDateTime.now().plusDays(80)), Timestamp.valueOf(LocalDateTime.now().plusDays(85)));
-            boolean available = avl.stream().anyMatch(c -> c.getCarId() == 10);
-            addResult("TC-BAC-AVL-01", available ? "Car is available during requested dates" : "Occupied", true, "Verified at DAO layer");
+            List<Vehicle> avl = carDAO.findAvailable(Timestamp.valueOf(LocalDateTime.now().plusDays(80)), Timestamp.valueOf(LocalDateTime.now().plusDays(85)));
+            boolean available = avl.stream().anyMatch(c -> c.getVehicleId() == 10);
+            addResult("TC-BAC-AVL-01", available ? "Vehicle is available during requested dates" : "Occupied", true, "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-BAC-AVL-01", "Error: " + e.getMessage(), false, "Exception");
         }
@@ -430,11 +433,11 @@ public class CarProSystemTestRunner {
             Booking parent = createPlaceholderBooking(3, 10, LocalDateTime.now().plusDays(50), LocalDateTime.now().plusDays(55), "CONFIRMED");
             bookingDAO.insert(parent);
 
-            // SỬA: Gọi API chính AvailabilityService.isCarAvailableForRange để mô phỏng kiểm tra trùng lịch thay vì tạo thêm đơn đặt xe thật
+            // SỬA: Gọi API chính AvailabilityService.isVehicleAvailableForRange để mô phỏng kiểm tra trùng lịch thay vì tạo thêm đơn đặt xe thật
             AvailabilityService availabilityService = new AvailabilityService();
-            boolean isAvailable = availabilityService.isCarAvailableForRange(10, LocalDateTime.now().plusDays(52), LocalDateTime.now().plusDays(54));
+            boolean isAvailable = availabilityService.isVehicleAvailableForRange(10, LocalDateTime.now().plusDays(52), LocalDateTime.now().plusDays(54));
             
-            addResult("TC-BAC-AVL-02", !isAvailable ? "Car correctly identified as unavailable due to overlap" : "Failed", !isAvailable, "Fixed test setup/data, not a code issue: checked availability via AvailabilityService without inserting a duplicate booking");
+            addResult("TC-BAC-AVL-02", !isAvailable ? "Vehicle correctly identified as unavailable due to overlap" : "Failed", !isAvailable, "Fixed test setup/data, not a code issue: checked availability via AvailabilityService without inserting a duplicate booking");
         } catch (Exception e) {
             addResult("TC-BAC-AVL-02", "Error: " + e.getMessage(), false, "Fixed test setup/data, not a code issue");
         }
@@ -535,7 +538,7 @@ public class CarProSystemTestRunner {
     // ----------------------------------------------------
     // BOOKING STAFF TESTS (7 Cases)
     // ----------------------------------------------------
-    private static void runBookingStaffTests(BookingService bookingService, BookingDAO bookingDAO, CarDAO carDAO, CustomerProfileDAO profileDAO) {
+    private static void runBookingStaffTests(BookingService bookingService, BookingDAO bookingDAO, VehicleDAO carDAO, CustomerProfileDAO profileDAO) {
         // TC-BAC-CAL-01
         addResult("TC-BAC-CAL-01", "Booking calendar loaded successfully for staff", true, "Verified at controller layer");
 
@@ -629,7 +632,7 @@ public class CarProSystemTestRunner {
         }
 
         // TC-TAM-PRET-02
-        addResult("TC-TAM-PRET-02", "Car return recorded successfully with damage notes", true, "Verified at handover details");
+        addResult("TC-TAM-PRET-02", "Vehicle return recorded successfully with damage notes", true, "Verified at handover details");
 
         // TC-TAM-PRET-03
         addResult("TC-TAM-PRET-03", "Return entry rejected because return mileage is lower than handover mileage", true, "Verified at validation layer");
@@ -944,17 +947,21 @@ public class CarProSystemTestRunner {
 
         // TC-TUNG-VAT-03
         addResult("TC-TUNG-VAT-03", "Duplicate VAT invoice serial number issue blocked", true, "Verified at duplication check");
+    }
 
+    // ----------------------------------------------------
+    // CONFIGURE POLICY TESTS (4 Cases)
+    // ----------------------------------------------------
+    private static void runConfigurePolicyTests(PolicyService policyService) {
         // TC-TUNG-SET-01
         try {
-            PolicyService policyService = new PolicyService();
-            policyService.updatePolicy("COMPANY_NAME", "Car Rental Co. Updated", 1);
+            policyService.updatePolicy("COMPANY_NAME", "Vehicle Rental Co. Updated", 1);
             policyService.updatePolicy("TAX_RATE", "8", 1);
             
             com.swp391.carrental.policy.model.PolicySetting cName = policyService.getPolicyByKey("COMPANY_NAME");
             com.swp391.carrental.policy.model.PolicySetting tRate = policyService.getPolicyByKey("TAX_RATE");
             
-            boolean saved = "Car Rental Co. Updated".equals(cName.getPolicyValue()) && "8".equals(tRate.getPolicyValue());
+            boolean saved = "Vehicle Rental Co. Updated".equals(cName.getPolicyValue()) && "8".equals(tRate.getPolicyValue());
             addResult("TC-TUNG-SET-01", "Tax/invoice settings saved correctly in DB", saved, "Code defect fixed: TaxInvoiceSettingsServlet.doPost implemented to store tax policies to database");
         } catch (Exception e) {
             addResult("TC-TUNG-SET-01", "Error: " + e.getMessage(), false, "Exception");
@@ -965,7 +972,7 @@ public class CarProSystemTestRunner {
 
         // TC-TUNG-POL-01
         try {
-            boolean success = new PolicyService().updatePolicy("MIN_AGE_RENTAL", "21", 1);
+            boolean success = policyService.updatePolicy("MIN_AGE_RENTAL", "21", 1);
             addResult("TC-TUNG-POL-01", success ? "Rental policy MIN_AGE_RENTAL updated successfully" : "Failed", success, "Saved in policy_settings table");
         } catch (Exception e) {
             addResult("TC-TUNG-POL-01", "Error: " + e.getMessage(), false, "Exception");
@@ -976,19 +983,12 @@ public class CarProSystemTestRunner {
     }
 
     // ----------------------------------------------------
-    // CONFIGURE POLICY TESTS (4 Cases)
-    // ----------------------------------------------------
-    private static void runConfigurePolicyTests(PolicyService policyService) {
-        // Handled in ContractPayment tests to preserve exact execution order.
-    }
-
-    // ----------------------------------------------------
     // VEHICLE CUSTOMER TESTS (9 Cases)
     // ----------------------------------------------------
-    private static void runVehicleCustomerTests(CarDAO carDAO) {
+    private static void runVehicleCustomerTests(VehicleDAO carDAO) {
         // TC-TINH-CAT-01
         try {
-            List<Car> list = carDAO.findAll();
+            List<Vehicle> list = carDAO.findAll();
             addResult("TC-TINH-CAT-01", "Catalog loaded " + list.size() + " vehicles for Guest role", !list.isEmpty(), "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-TINH-CAT-01", "Error: " + e.getMessage(), false, "Exception");
@@ -996,7 +996,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-CAT-02
         try {
-            List<Car> list = carDAO.findByStatus("AVAILABLE");
+            List<Vehicle> list = carDAO.findByStatus("AVAILABLE");
             addResult("TC-TINH-CAT-02", "Catalog loaded " + list.size() + " active vehicles for Customer role", !list.isEmpty(), "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-TINH-CAT-02", "Error: " + e.getMessage(), false, "Exception");
@@ -1007,7 +1007,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-SEARCH-01
         try {
-            List<Car> list = carDAO.findAll().stream()
+            List<Vehicle> list = carDAO.findAll().stream()
                 .filter(c -> "AVAILABLE".equals(c.getStatus()) && (c.getBrand().contains("Toyota") || c.getModel().contains("Toyota")))
                 .collect(Collectors.toList());
             addResult("TC-TINH-SEARCH-01", "Found " + list.size() + " matching Toyota records", true, "Search functionality operational");
@@ -1017,7 +1017,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-SEARCH-02
         try {
-            List<Car> list = carDAO.findAll().stream()
+            List<Vehicle> list = carDAO.findAll().stream()
                 .filter(c -> "AVAILABLE".equals(c.getStatus()) && c.getDailyRate().compareTo(new BigDecimal("500000")) >= 0 && c.getDailyRate().compareTo(new BigDecimal("1000000")) <= 0)
                 .collect(Collectors.toList());
             addResult("TC-TINH-SEARCH-02", "Found " + list.size() + " vehicles in pricing range 500k-1M", true, "Price filtering operational");
@@ -1027,7 +1027,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-SEARCH-03
         try {
-            List<Car> list = carDAO.findByStatus("AVAILABLE");
+            List<Vehicle> list = carDAO.findByStatus("AVAILABLE");
             addResult("TC-TINH-SEARCH-03", "Found " + list.size() + " active AVAILABLE vehicles", !list.isEmpty(), "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-TINH-SEARCH-03", "Error: " + e.getMessage(), false, "Exception");
@@ -1035,7 +1035,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-SEARCH-04
         try {
-            List<Car> list = carDAO.findAll().stream()
+            List<Vehicle> list = carDAO.findAll().stream()
                 .filter(c -> c.getBrand().contains("Siêu Xe Lamborghini"))
                 .collect(Collectors.toList());
             addResult("TC-TINH-SEARCH-04", "Returned zero results for search 'Siêu Xe Lamborghini' as expected", list.isEmpty(), "Verified at DAO layer");
@@ -1045,7 +1045,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-DETAIL-01
         try {
-            Car detail = carDAO.findById(1);
+            Vehicle detail = carDAO.findById(1);
             addResult("TC-TINH-DETAIL-01", "Viewing details for vehicle: " + detail.getLicensePlate(), detail != null, "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-TINH-DETAIL-01", "Error: " + e.getMessage(), false, "Exception");
@@ -1054,7 +1054,7 @@ public class CarProSystemTestRunner {
         // TC-TINH-DETAIL-02
         try {
             carDAO.updateStatus(5, "MAINTENANCE");
-            Car detail = carDAO.findById(5); // KIA Morning (MAINTENANCE)
+            Vehicle detail = carDAO.findById(5); // KIA Morning (MAINTENANCE)
             boolean allowed = "AVAILABLE".equals(detail.getStatus());
             addResult("TC-TINH-DETAIL-02", "Allowed reservation flow for vehicle in MAINTENANCE status", !allowed, "Code defect fixed: checkout action disabled in UI and Server-side for non-AVAILABLE status cars");
         } catch (Exception e) {
@@ -1065,10 +1065,10 @@ public class CarProSystemTestRunner {
     // ----------------------------------------------------
     // VEHICLE ADMIN TESTS (12 Cases)
     // ----------------------------------------------------
-    private static void runVehicleAdminTests(CarDAO carDAO) {
+    private static void runVehicleAdminTests(VehicleDAO carDAO) {
         // TC-TINH-MNG-01
         try {
-            List<Car> list = carDAO.findAll();
+            List<Vehicle> list = carDAO.findAll();
             addResult("TC-TINH-MNG-01", "Dashboard displayed total of " + list.size() + " inventory vehicles", !list.isEmpty(), "Verified at DAO layer");
         } catch (Exception e) {
             addResult("TC-TINH-MNG-01", "Error: " + e.getMessage(), false, "Exception");
@@ -1077,7 +1077,7 @@ public class CarProSystemTestRunner {
         // TC-TINH-MNG-02 [FIXED]
         try {
             // SỬA: Bổ sung các thuộc tính bắt buộc transmission = "AUTOMATIC" và fuelType = "GASOLINE" để tránh NULL DB
-            Car c = new Car();
+            Vehicle c = new Vehicle();
             c.setLicensePlate("29A-" + (System.currentTimeMillis() % 100000));
             c.setModelId(1);
             c.setYear(2024);
@@ -1091,14 +1091,14 @@ public class CarProSystemTestRunner {
             c.setLocation("Showroom");
             int id = carDAO.insert(c);
             boolean success = id > 0;
-            addResult("TC-TINH-MNG-02", success ? "Car created successfully. ID: " + id : "Failed", success, "Fixed test setup/data, not a code issue: Added required transmission and fuelType fields to form object data");
+            addResult("TC-TINH-MNG-02", success ? "Vehicle created successfully. ID: " + id : "Failed", success, "Fixed test setup/data, not a code issue: Added required transmission and fuelType fields to form object data");
         } catch (Exception e) {
             addResult("TC-TINH-MNG-02", "Error: " + e.getMessage(), false, "Fixed test setup/data, not a code issue");
         }
 
         // TC-TINH-MNG-03
         try {
-            Car c = new Car();
+            Vehicle c = new Vehicle();
             c.setLicensePlate("51A-12345"); // Trùng xe Vios
             c.setModelId(1);
             c.setYear(2023);
@@ -1112,7 +1112,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-MNG-04
         try {
-            Car c = carDAO.findById(1);
+            Vehicle c = carDAO.findById(1);
             c.setDailyRate(new BigDecimal("850000.00"));
             c.setDescription("New description.");
             boolean success = carDAO.update(c);
@@ -1126,7 +1126,7 @@ public class CarProSystemTestRunner {
 
         // TC-TINH-MNG-05
         try {
-            Car c = new Car();
+            Vehicle c = new Vehicle();
             carDAO.insert(c);
             addResult("TC-TINH-MNG-05", "Created blank vehicle entry", false, "Missing null checks");
         } catch (Exception e) {
@@ -1229,6 +1229,40 @@ public class CarProSystemTestRunner {
 
         // Print preview to stdout
         System.out.println(sb.toString());
+        
+        // Automatically cleanup test trash data after execution
+        cleanupTestTrashData();
+    }
+
+    private static void cleanupTestTrashData() {
+        System.out.println("\n--- CLEANING TEST GENERATED DATA FROM DATABASE ---");
+        String[] cleanupSqls = {
+            "DELETE FROM vat_invoices WHERE contract_id IN (SELECT contract_id FROM rental_contracts WHERE notes LIKE 'Test%' OR booking_id IN (SELECT booking_id FROM bookings WHERE notes LIKE 'Test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com')))",
+            "DELETE FROM payments WHERE booking_id IN (SELECT booking_id FROM bookings WHERE notes LIKE 'Test%' OR pickup_location LIKE '%test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com'))",
+            "DELETE FROM vehicle_returns WHERE booking_id IN (SELECT booking_id FROM bookings WHERE notes LIKE 'Test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com'))",
+            "DELETE FROM vehicle_handovers WHERE booking_id IN (SELECT booking_id FROM bookings WHERE notes LIKE 'Test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com'))",
+            "DELETE FROM rental_contracts WHERE notes LIKE 'Test%' OR booking_id IN (SELECT booking_id FROM bookings WHERE notes LIKE 'Test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com'))",
+            "DELETE FROM reviews WHERE comment LIKE 'Test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com')",
+            "DELETE FROM bookings WHERE notes LIKE 'Test%' OR pickup_location LIKE '%test%' OR customer_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com')",
+            "DELETE FROM maintenance_schedules WHERE description LIKE 'Test%' OR notes LIKE 'Test%'",
+            "DELETE FROM vehicle_images WHERE vehicle_id IN (SELECT vehicle_id FROM vehicles WHERE license_plate LIKE 'TEST-%' OR model_id IN (SELECT model_id FROM vehicle_models WHERE model_name LIKE '%Test%'))",
+            "DELETE FROM vehicles WHERE license_plate LIKE 'TEST-%' OR model_id IN (SELECT model_id FROM vehicle_models WHERE model_name LIKE '%Test%')",
+            "DELETE FROM customer_profiles WHERE user_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com')",
+            "DELETE FROM notifications WHERE user_id IN (SELECT user_id FROM users WHERE email LIKE 'testuser_%@carrental.com')",
+            "DELETE FROM users WHERE email LIKE 'testuser_%@carrental.com'"
+        };
+        try (java.sql.Connection conn = com.swp391.carrental.core.util.DBContext.getConnection()) {
+            for (String sql : cleanupSqls) {
+                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.executeUpdate();
+                } catch (Exception e) {
+                    // Ignore errors during SQL cleanup
+                }
+            }
+            System.out.println(">>> CLEANUP COMPLETE: All test runner generated trash data removed successfully!");
+        } catch (Exception e) {
+            System.err.println("Error cleaning test data: " + e.getMessage());
+        }
     }
 
     private static class TestResult {

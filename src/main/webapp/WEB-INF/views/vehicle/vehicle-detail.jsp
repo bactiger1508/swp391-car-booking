@@ -44,11 +44,11 @@
                         <img src="${pageContext.request.contextPath}${images[0].imageUrl}"
                              alt="${car.brand} ${car.model}"
                              id="mainCarImage"
-                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg';"
+                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg';"
                              style="width: 100%; height: 100%; object-fit: cover;">
                     </c:when>
                     <c:otherwise>
-                        <img src="${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg"
+                        <img src="${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg"
                              alt="${car.brand} ${car.model}"
                              id="mainCarImage"
                              style="width: 100%; height: 100%; object-fit: cover;">
@@ -67,7 +67,7 @@
                              alt="Thumbnail ${status.index + 1}"
                              class="car-thumb ${status.first ? 'active' : ''}"
                              onclick="changeMainImage('${pageContext.request.contextPath}${img.imageUrl}', this)"
-                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/cars/placeholder.jpg';"
+                             onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg';"
                              style="width: 96px; height: 64px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid ${status.first ? 'var(--primary)' : 'transparent'}; opacity: ${status.first ? '1' : '0.7'}; transition: all 0.2s;">
                     </c:forEach>
                 </div>
@@ -191,9 +191,137 @@
             
             <div style="margin-top: 16px; padding: 12px; background: var(--surface-container-low); border-radius: 8px; border: 1px solid var(--outline-variant);">
                 <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary); display: block; margin-bottom: 4px;">Ghi chú của nhân viên</span>
-                <span style="font-size: 13px; color: var(--on-surface);">Vết xước nhẹ ở cản xe. Tất cả hệ thống vận hành hoàn hảo.</span>
+                <span style="font-size: 13px; color: var(--on-surface);">Tất cả hệ thống vận hành hoàn hảo, xe được vệ sinh sạch sẽ trước mỗi chuyến đi.</span>
             </div>
         </div>
+    </div>
+
+    <!-- Review & Rating Section -->
+    <div class="bento-card" style="margin-top: 24px; padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--outline-variant); padding-bottom: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">star</span> Đánh Giá Từ Khách Hàng
+                </h3>
+                <span class="bk-badge bk-badge-info" style="font-size: 13px; font-weight: 600;">
+                    ⭐ ${not empty avgRating ? avgRating : '0.0'} / 5.0 (${reviewCount} lượt đánh giá)
+                </span>
+            </div>
+            <c:choose>
+                <c:when test="${!isLoggedIn}">
+                    <a href="${pageContext.request.contextPath}/login?redirect=${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="bk-btn bk-btn-primary" style="font-size: 13px; padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">rate_review</span> Viết Đánh Giá
+                    </a>
+                </c:when>
+                <c:when test="${canReview}">
+                    <button type="button" class="bk-btn bk-btn-primary" style="font-size: 13px; padding: 8px 16px;" onclick="document.getElementById('reviewFormContainer').style.display='block'">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">rate_review</span> Viết Đánh Giá
+                    </button>
+                </c:when>
+                <c:otherwise>
+                    <button type="button" class="bk-btn bk-btn-outline" style="font-size: 13px; padding: 8px 16px; opacity: 0.8;" onclick="showAppModalAlert('Chưa Thể Đánh Giá', 'Bạn cần hoàn tất ít nhất 1 chuyến thuê xe này trước khi gửi đánh giá!', 'warning')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">rate_review</span> Viết Đánh Giá
+                    </button>
+                </c:otherwise>
+            </c:choose>
+        </div>
+
+        <!-- Add Review Form Modal / Box -->
+        <c:if test="${canReview}">
+            <div id="reviewFormContainer" style="display: none; background: var(--surface-container-low); border: 1px solid var(--primary-container); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="margin-top: 0; font-size: 15px; color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined">edit_note</span> Gửi đánh giá trải nghiệm thuê xe của bạn
+                </h4>
+                <form action="${pageContext.request.contextPath}/vehicles/detail" method="post">
+                    <input type="hidden" name="action" value="addReview" />
+                    <input type="hidden" name="carId" value="${car.vehicleId}" />
+                    <input type="hidden" name="bookingId" value="${reviewBookingId}" />
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Đánh giá số sao:</label>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <c:forEach var="i" begin="1" end="5">
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px; font-weight: 600; color: #f59e0b;">
+                                    <input type="radio" name="rating" value="${6 - i}" ${i == 1 ? 'checked' : ''} /> ${6 - i} ★
+                                </label>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Nội dung nhận xét:</label>
+                        <textarea name="comment" rows="3" class="bk-form-control" placeholder="Chia sẻ trải nghiệm sử dụng xe, thái độ phục vụ..." required style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid var(--outline-variant);"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="bk-btn bk-btn-primary" style="font-size: 13px; padding: 8px 20px;">Gửi Đánh Giá</button>
+                        <button type="button" class="bk-btn bk-btn-outline" style="font-size: 13px; padding: 8px 16px;" onclick="document.getElementById('reviewFormContainer').style.display='none'">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </c:if>
+
+        <!-- Reviews List -->
+        <c:choose>
+            <c:when test="${empty reviews}">
+                <div style="text-align: center; padding: 32px; background: var(--surface-container-low); border-radius: 12px; color: var(--on-surface-variant);">
+                    <span class="material-symbols-outlined" style="font-size: 48px; color: var(--outline); display: block; margin-bottom: 8px;">chat_bubble_outline</span>
+                    <p style="margin: 0; font-size: 14px;">Chưa có đánh giá nào cho xe này. Hãy là người đầu tiên trải nghiệm và để lại nhận xét!</p>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <c:forEach var="rev" items="${reviews}">
+                        <div style="padding: 16px; background: var(--surface-container-low); border-radius: 12px; border: 1px solid var(--outline-variant);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
+                                        ${not empty rev.customerName ? rev.customerName.substring(0, 1) : 'U'}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 14px; color: var(--on-surface);">
+                                            ${not empty rev.customerName ? rev.customerName : 'Khách hàng'}
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--on-surface-variant);">
+                                            <fmt:parseDate value="${rev.createdAt}" pattern="yyyy-MM-dd'T'HH:mm" var="pRevDate" type="both"/>
+                                            <fmt:formatDate value="${pRevDate}" pattern="dd/MM/yyyy HH:mm"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="color: #f59e0b; font-size: 14px; font-weight: 700; letter-spacing: 2px;">
+                                    <c:forEach begin="1" end="${rev.rating}">★</c:forEach>
+                                    <c:forEach begin="${rev.rating + 1}" end="5"><span style="color: #cbd5e1;">★</span></c:forEach>
+                                </div>
+                            </div>
+                            <p style="margin: 0; font-size: 14px; color: var(--on-surface); line-height: 1.5; padding-left: 46px;">
+                                ${rev.comment}
+                            </p>
+                        </div>
+                    </c:forEach>
+                </div>
+
+                <!-- Pagination UI for Reviews -->
+                <c:if test="${totalReviewPages > 1}">
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 24px;">
+                        <c:if test="${currentReviewPage > 1}">
+                            <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}&reviewPage=${currentReviewPage - 1}" class="bk-btn bk-btn-outline" style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+                                &laquo; Trang trước
+                            </a>
+                        </c:if>
+                        <c:forEach var="p" begin="1" end="${totalReviewPages}">
+                            <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}&reviewPage=${p}" class="bk-btn ${p == currentReviewPage ? 'bk-btn-primary' : 'bk-btn-outline'}" style="padding: 6px 12px; font-size: 13px; text-decoration: none; font-weight: 600;">
+                                ${p}
+                            </a>
+                        </c:forEach>
+                        <c:if test="${currentReviewPage < totalReviewPages}">
+                            <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}&reviewPage=${currentReviewPage + 1}" class="bk-btn bk-btn-outline" style="padding: 6px 12px; font-size: 13px; text-decoration: none;">
+                                Trang sau &raquo;
+                            </a>
+                        </c:if>
+                    </div>
+                </c:if>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <!-- Active Bookings/Schedule Calendar Modal -->
@@ -292,6 +420,61 @@
     </div>
 </c:if>
 
+<!-- Custom App Modal Alert Dialog UI -->
+<div id="appAlertModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); z-index:99999; backdrop-filter:blur(6px); align-items:center; justify-content:center; animation: fadeIn 0.2s ease-out;">
+    <div style="background:var(--surface, #ffffff); width:90%; max-width:440px; border-radius:20px; padding:28px 24px 24px 24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); text-align:center; position:relative; border:1px solid var(--outline-variant, #e2e8f0); animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div id="appAlertIconContainer" style="width:64px; height:64px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
+            <span id="appAlertIcon" class="material-symbols-outlined" style="font-size:36px;">warning</span>
+        </div>
+        <h3 id="appAlertTitle" style="margin:0 0 8px 0; font-size:18px; font-weight:700; color:var(--on-surface, #0f172a);">Thông báo</h3>
+        <p id="appAlertMessage" style="margin:0 0 24px 0; font-size:14px; color:var(--on-surface-variant, #475569); line-height:1.6;"></p>
+        <button type="button" class="bk-btn" style="width:100%; padding:12px; font-size:14px; font-weight:600; border-radius:12px; background:linear-gradient(135deg, var(--primary, #0f2c59) 0%, #1e3a8a 100%); color:#ffffff; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(15,44,89,0.25); transition:all 0.2s ease;" onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)';" onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)';" onclick="closeAppModalAlert()">
+            Đóng thông báo
+        </button>
+    </div>
+</div>
+
+<style>
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+</style>
+
+<script>
+function showAppModalAlert(title, message, type = 'warning') {
+    document.getElementById('appAlertTitle').innerText = title || 'Thông báo';
+    document.getElementById('appAlertMessage').innerText = message || '';
+    
+    var iconElem = document.getElementById('appAlertIcon');
+    var containerElem = document.getElementById('appAlertIconContainer');
+    
+    if (type === 'warning') {
+        iconElem.innerText = 'warning';
+        containerElem.style.background = '#fef3c7';
+        containerElem.style.color = '#d97706';
+    } else if (type === 'error') {
+        iconElem.innerText = 'error';
+        containerElem.style.background = '#fee2e2';
+        containerElem.style.color = '#dc2626';
+    } else if (type === 'success') {
+        iconElem.innerText = 'check_circle';
+        containerElem.style.background = '#dcfce7';
+        containerElem.style.color = '#16a34a';
+    } else {
+        iconElem.innerText = 'info';
+        containerElem.style.background = '#e0f2fe';
+        containerElem.style.color = '#0284c7';
+    }
+    
+    document.getElementById('appAlertModal').style.display = 'flex';
+}
+
+function closeAppModalAlert() {
+    document.getElementById('appAlertModal').style.display = 'none';
+}
+</script>
+
 <script>
 function changeMainImage(url, thumb) {
     document.getElementById('mainCarImage').src = url;
@@ -318,6 +501,10 @@ window.addEventListener('click', function(event) {
     var modal = document.getElementById('calendarModal');
     if (event.target === modal) {
         closeCalendarModal();
+    }
+    var alertModal = document.getElementById('appAlertModal');
+    if (event.target === alertModal) {
+        closeAppModalAlert();
     }
 });
 </script>

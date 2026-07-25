@@ -32,7 +32,18 @@ public class PaymentWebhookService {
      * @return true if verified, false otherwise
      */
     public boolean verifyWebhook(HttpServletRequest request, String payload) {
-        String configuredSecret = policyService.getPolicyValue("WEBHOOK_SECRET", "");
+        String configuredSecret = System.getenv("WEBHOOK_API_KEY");
+        if (configuredSecret == null || configuredSecret.trim().isEmpty()) {
+            try (java.io.InputStream input = PaymentWebhookService.class.getClassLoader().getResourceAsStream("db.properties")) {
+                if (input != null) {
+                    java.util.Properties props = new java.util.Properties();
+                    props.load(input);
+                    configuredSecret = props.getProperty("webhook.api.key");
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+        }
 
         // Deny verification if secret is not set
         if (configuredSecret == null || configuredSecret.trim().isEmpty()) {

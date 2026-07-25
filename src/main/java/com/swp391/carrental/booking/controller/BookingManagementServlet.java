@@ -13,7 +13,7 @@ import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -70,7 +70,7 @@ public class BookingManagementServlet extends HttpServlet {
 
         // Build user and car info maps for all bookings for display
         Map<Integer, User> userMap = new HashMap<>();
-        Map<Integer, Car> carMap = new HashMap<>();
+        Map<Integer, Vehicle> carMap = new HashMap<>();
 
         for (Booking b : bookings) {
             if (!userMap.containsKey(b.getCustomerId())) {
@@ -83,10 +83,10 @@ public class BookingManagementServlet extends HttpServlet {
                     // Skip if user lookup fails
                 }
             }
-            if (!carMap.containsKey(b.getCarId())) {
-                Car car = vehicleService.getCarById(b.getCarId());
+            if (!carMap.containsKey(b.getVehicleId())) {
+                Vehicle car = vehicleService.getVehicleById(b.getVehicleId());
                 if (car != null) {
-                    carMap.put(b.getCarId(), car);
+                    carMap.put(b.getVehicleId(), car);
                 }
             }
         }

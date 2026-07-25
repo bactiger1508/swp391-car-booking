@@ -22,8 +22,8 @@ import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 @WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = {"/handovers/create"})
 @MultipartConfig(
@@ -36,7 +36,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
     private final NotificationService notificationService = new NotificationService();
@@ -52,7 +52,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 int carId = Integer.parseInt(carIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
 
                 // Enforce Handover Validation Checks: active contract and paid deposit
@@ -204,7 +204,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             handover.setBookingId(bookingId);
             handover.setContractId(contractId);
-            handover.setCarId(carId);
+            handover.setVehicleId(carId);
 
             handover.setMileageAtHandover(mileage);
             handover.setFuelLevel(fuelLevel);
@@ -298,7 +298,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             return false;
         }
 
-        Car car = carDAO.findById(carId);
+        Vehicle car = vehicleDAO.findById(carId);
         int mileage = Integer.parseInt(currentOdo);
 
         if (mileage < car.getMileage()) {
@@ -350,7 +350,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
     private void loadCreateData(HttpServletRequest request, int bookingId, int carId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Car car = carDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(carId);
             RentalContract contract = contractDAO.findByBookingId(bookingId);
 
             request.setAttribute("booking", booking);

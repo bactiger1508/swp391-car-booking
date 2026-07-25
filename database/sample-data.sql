@@ -1,6 +1,7 @@
 -- ============================================================
--- Car Rental Management System — Sample Data
+-- Vehicle Rental Management System — Sample Data
 -- Database: CarRentalDB
+-- NOTE: Run schema.sql FIRST before running this file.
 -- ============================================================
 
 USE CarRentalDB;
@@ -105,11 +106,11 @@ SET IDENTITY_INSERT vehicle_models OFF;
 GO
 
 -- ============================================================
--- CARS
+-- VEHICLES
 -- ============================================================
-SET IDENTITY_INSERT cars ON;
+SET IDENTITY_INSERT vehicles ON;
 
-INSERT INTO cars (car_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
+INSERT INTO vehicles (vehicle_id, license_plate, model_id, year, color, seats, transmission, fuel_type, daily_rate, description, status, mileage, location, features)
 VALUES
     (1, N'51A-12345', 1,  2023, N'Trắng',  5, N'AUTOMATIC', N'GASOLINE', 800000.00,  N'Toyota Vios 2023, xe gia đình phổ biến, tiết kiệm nhiên liệu.',                    N'AVAILABLE',   15000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi'),
     (2, N'51A-23456', 2,  2023, N'Đen',    5, N'AUTOMATIC', N'GASOLINE', 900000.00,  N'Honda City 2023, thiết kế thể thao, nội thất rộng rãi.',                           N'AVAILABLE',   12000, N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera lùi, Cảm biến va chạm'),
@@ -148,57 +149,57 @@ VALUES
     (35, N'51L-001.23', 34, 2023, N'Trắng',  7, N'AUTOMATIC', N'GASOLINE', 3000000.00, N'Ford Explorer Limited 2023, SUV cỡ lớn cao cấp nhập Mỹ, đầy uy lực.',                N'AVAILABLE',   15000, N'Chi nhánh Cầu Giấy', N'GPS, Bluetooth, Camera 360, Ghế mát-xa, Cửa sổ trời'),
     (36, N'51L-012.34', 35, 2023, N'Đỏ',     5, N'AUTOMATIC', N'GASOLINE', 3500000.00, N'Mercedes GLC 300 4MATIC 2023, SUV sang trọng bán chạy hàng đầu.',                   N'AVAILABLE',   8000,  N'Chi nhánh Quận 1',  N'GPS, Bluetooth, Camera 360, Loa Burmester, Ghế da nâng điện');
 
-SET IDENTITY_INSERT cars OFF;
+SET IDENTITY_INSERT vehicles OFF;
 GO
 
 -- ============================================================
--- CAR IMAGES (sample image URLs — use placeholder paths)
+-- VEHICLE IMAGES (sample image URLs)
 -- ============================================================
-INSERT INTO car_images (car_id, image_url, caption, is_primary, sort_order)
+INSERT INTO vehicle_images (vehicle_id, image_url, caption, is_primary, sort_order)
 VALUES
-    (1, N'/assets/images/cars/vios-front.jpg',     N'Mặt trước',  1, 1),
-    (1, N'/assets/images/cars/vios-interior.jpg',  N'Nội thất',   0, 2),
-    (2, N'/assets/images/cars/city-front.jpg',     N'Mặt trước',  1, 1),
-    (3, N'/assets/images/cars/accent-front.jpg',   N'Mặt trước',  1, 1),
-    (4, N'/assets/images/cars/cx5-front.jpg',      N'Mặt trước',  1, 1),
-    (5, N'/assets/images/cars/morning-front.jpg',  N'Mặt trước',  1, 1),
-    (6, N'/assets/images/cars/ranger-front.jpg',   N'Mặt trước',  1, 1),
-    (7, N'/assets/images/cars/vf8-front.jpg',      N'Mặt trước',  1, 1),
-    (8, N'/assets/images/cars/fortuner-front.jpg', N'Mặt trước',  1, 1),
-    (9, N'/assets/images/cars/vf5-front.jpg',      N'Mặt trước',  1, 1),
-    (10, N'/assets/images/cars/vfe34-front.jpg',   N'Mặt trước',  1, 1),
-    (11, N'/assets/images/cars/vf9-front.jpg',     N'Mặt trước',  1, 1),
-    (12, N'/assets/images/cars/vf8plus-front.jpg', N'Mặt trước',  1, 1),
-    (13, N'/assets/images/cars/vios-front2.jpg',   N'Mặt trước',  1, 1),
-    (14, N'/assets/images/cars/camry-front.jpg',   N'Mặt trước',  1, 1),
-    (15, N'/assets/images/cars/santafe-front.jpg', N'Mặt trước',  1, 1),
-    (16, N'/assets/images/cars/cerato-front.jpg',  N'Mặt trước',  1, 1),
-    (17, N'/assets/images/cars/c200-front.jpg',    N'Mặt trước',  1, 1),
-    (18, N'/assets/images/cars/xpander-front.jpg', N'Mặt trước',  1, 1),
-    (19, N'/assets/images/cars/ertiga-front.jpg',  N'Mặt trước',  1, 1),
-    (20, N'/assets/images/cars/320i-front.jpg',    N'Mặt trước',  1, 1),
-    (21, N'/assets/images/cars/carnival-front.jpg', N'Mặt trước', 1, 1),
-    (22, N'/assets/images/cars/tucson-front.jpg',  N'Mặt trước',  1, 1),
-    (23, N'/assets/images/cars/cx8-front.jpg',     N'Mặt trước',  1, 1),
-    (24, N'/assets/images/cars/innova-front.jpg',  N'Mặt trước',  1, 1),
-    (25, N'/assets/images/cars/crv-front.jpg',     N'Mặt trước',  1, 1),
-    (26, N'/assets/images/cars/vf6-front.jpg',     N'Mặt trước',  1, 1),
-    (27, N'/assets/images/cars/everest-front.jpg', N'Mặt trước',  1, 1),
-    (28, N'/assets/images/cars/stargazer-front.jpg', N'Mặt trước', 1, 1),
-    (29, N'/assets/images/cars/veloz-front.jpg',   N'Mặt trước',  1, 1),
-    (30, N'/assets/images/cars/seltos-front.jpg',  N'Mặt trước',  1, 1),
-    (31, N'/assets/images/cars/custin-front.jpg',  N'Mặt trước',  1, 1),
-    (32, N'/assets/images/cars/mazda3-front.jpg',  N'Mặt trước',  1, 1),
-    (33, N'/assets/images/cars/vf7-front.jpg',     N'Mặt trước',  1, 1),
-    (34, N'/assets/images/cars/corollacross-front.jpg', N'Mặt trước', 1, 1),
-    (35, N'/assets/images/cars/explorer-front.jpg', N'Mặt trước', 1, 1),
-    (36, N'/assets/images/cars/glc300-front.jpg',  N'Mặt trước',  1, 1);
+    (1, N'/assets/images/vehicles/vios-front.jpg',     N'Mặt trước',  1, 1),
+    (1, N'/assets/images/vehicles/vios-interior.jpg',  N'Nội thất',   0, 2),
+    (2, N'/assets/images/vehicles/city-front.jpg',     N'Mặt trước',  1, 1),
+    (3, N'/assets/images/vehicles/accent-front.jpg',   N'Mặt trước',  1, 1),
+    (4, N'/assets/images/vehicles/cx5-front.jpg',      N'Mặt trước',  1, 1),
+    (5, N'/assets/images/vehicles/morning-front.jpg',  N'Mặt trước',  1, 1),
+    (6, N'/assets/images/vehicles/ranger-front.jpg',   N'Mặt trước',  1, 1),
+    (7, N'/assets/images/vehicles/vf8-front.jpg',      N'Mặt trước',  1, 1),
+    (8, N'/assets/images/vehicles/fortuner-front.jpg', N'Mặt trước',  1, 1),
+    (9, N'/assets/images/vehicles/vf5-front.jpg',      N'Mặt trước',  1, 1),
+    (10, N'/assets/images/vehicles/vfe34-front.jpg',   N'Mặt trước',  1, 1),
+    (11, N'/assets/images/vehicles/vf9-front.jpg',     N'Mặt trước',  1, 1),
+    (12, N'/assets/images/vehicles/vf8plus-front.jpg', N'Mặt trước',  1, 1),
+    (13, N'/assets/images/vehicles/vios-front2.jpg',   N'Mặt trước',  1, 1),
+    (14, N'/assets/images/vehicles/camry-front.jpg',   N'Mặt trước',  1, 1),
+    (15, N'/assets/images/vehicles/santafe-front.jpg', N'Mặt trước',  1, 1),
+    (16, N'/assets/images/vehicles/cerato-front.jpg',  N'Mặt trước',  1, 1),
+    (17, N'/assets/images/vehicles/c200-front.jpg',    N'Mặt trước',  1, 1),
+    (18, N'/assets/images/vehicles/xpander-front.jpg', N'Mặt trước',  1, 1),
+    (19, N'/assets/images/vehicles/ertiga-front.jpg',  N'Mặt trước',  1, 1),
+    (20, N'/assets/images/vehicles/320i-front.jpg',    N'Mặt trước',  1, 1),
+    (21, N'/assets/images/vehicles/carnival-front.jpg', N'Mặt trước', 1, 1),
+    (22, N'/assets/images/vehicles/tucson-front.jpg',  N'Mặt trước',  1, 1),
+    (23, N'/assets/images/vehicles/cx8-front.jpg',     N'Mặt trước',  1, 1),
+    (24, N'/assets/images/vehicles/innova-front.jpg',  N'Mặt trước',  1, 1),
+    (25, N'/assets/images/vehicles/crv-front.jpg',     N'Mặt trước',  1, 1),
+    (26, N'/assets/images/vehicles/vf6-front.jpg',     N'Mặt trước',  1, 1),
+    (27, N'/assets/images/vehicles/everest-front.jpg', N'Mặt trước',  1, 1),
+    (28, N'/assets/images/vehicles/stargazer-front.jpg', N'Mặt trước', 1, 1),
+    (29, N'/assets/images/vehicles/veloz-front.jpg',   N'Mặt trước',  1, 1),
+    (30, N'/assets/images/vehicles/seltos-front.jpg',  N'Mặt trước',  1, 1),
+    (31, N'/assets/images/vehicles/custin-front.jpg',  N'Mặt trước',  1, 1),
+    (32, N'/assets/images/vehicles/mazda3-front.jpg',  N'Mặt trước',  1, 1),
+    (33, N'/assets/images/vehicles/vf7-front.jpg',     N'Mặt trước',  1, 1),
+    (34, N'/assets/images/vehicles/corollacross-front.jpg', N'Mặt trước', 1, 1),
+    (35, N'/assets/images/vehicles/explorer-front.jpg', N'Mặt trước', 1, 1),
+    (36, N'/assets/images/vehicles/glc300-front.jpg',  N'Mặt trước',  1, 1);
 GO
 
 -- ============================================================
 -- MAINTENANCE SCHEDULES
 -- ============================================================
-INSERT INTO maintenance_schedules (car_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
+INSERT INTO maintenance_schedules (vehicle_id, maintenance_type, scheduled_date, status, description, cost, notes, created_by)
 VALUES
     (5, N'OIL_CHANGE',   CAST(GETDATE() AS DATE),              N'SCHEDULED', N'Thay dầu động cơ và lọc dầu',           1500000.00, N'Xe đang ở trạng thái bảo trì', N'staff@carrental.com'),
     (4, N'INSPECTION',   DATEADD(DAY, 14, CAST(GETDATE() AS DATE)), N'SCHEDULED', N'Kiểm tra định kỳ sau chuyến thuê',  500000.00,  NULL, N'staff@carrental.com'),
@@ -248,10 +249,13 @@ VALUES
     (N'PAYMENT_CURRENCY',             N'VND', N'Đơn vị tiền tệ sử dụng trong hệ thống',             N'PAYMENT', 1),
     (N'PAYMENT_PARTIAL_ALLOWED',      N'false',N'Cho phép thanh toán từng phần (không đủ 100%)',    N'PAYMENT', 1),
     (N'PAYMENT_AUTO_CONFIRM_AMOUNT',  N'0',   N'Ngưỡng tự động xác nhận thanh toán (0 = tắt)',      N'PAYMENT', 1),
-    (N'BANK_ACCOUNT_NAME',            N'CÔNG TY TNHH CAR RENTAL',   N'Tên tài khoản ngân hàng',     N'PAYMENT', 1),
-    (N'BANK_ACCOUNT_NUMBER',          N'1234567890',                 N'Số tài khoản ngân hàng',      N'PAYMENT', 1),
-    (N'BANK_NAME',                    N'Vietcombank',                N'Tên ngân hàng',               N'PAYMENT', 1),
-    (N'BANK_BRANCH',                  N'Chi nhánh TP.HCM',          N'Chi nhánh ngân hàng',         N'PAYMENT', 1);
+    -- Bank account & webhook settings
+    (N'BANK_ACCOUNT_NAME',            N'NGUYEN LAM TUNG',    N'Tên tài khoản ngân hàng',             N'PAYMENT', 1),
+    (N'BANK_ACCOUNT_NUMBER',          N'00000104077',         N'Số tài khoản ngân hàng',              N'PAYMENT', 1),
+    (N'BANK_NAME',                    N'TPBank',              N'Tên ngân hàng',                       N'PAYMENT', 1),
+    (N'BANK_BRANCH',                  N'Chi nhánh Hà Nội',   N'Chi nhánh ngân hàng',                 N'PAYMENT', 1),
+    (N'WEBHOOK_PROVIDER',             N'SEPAY',               N'Nhà cung cấp dịch vụ Webhook thanh toán (SEPAY, CASSO, PAYOS)', N'PAYMENT', 1),
+    (N'WEBHOOK_SECRET',               N'CRS',                 N'Khóa bảo mật để xác thực request webhook từ provider',          N'PAYMENT', 1);
 GO
 
 -- ============================================================
@@ -259,7 +263,7 @@ GO
 -- ============================================================
 SET IDENTITY_INSERT bookings ON;
 
-INSERT INTO bookings (booking_id, customer_id, car_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status, approved_by, approved_at)
 VALUES
     (1, 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 6000000.00, 1800000.00, N'IN_PROGRESS', 2, '2026-05-19 14:00:00'),
     (2, 3, 1, '2026-06-01 08:00:00', '2026-06-03 08:00:00', N'Chi nhánh Quận 1', N'Chi nhánh Quận 1', 1600000.00, 480000.00,  N'CONFIRMED',   2, '2026-05-22 10:00:00'),
@@ -278,7 +282,7 @@ GO
 -- ============================================================
 SET IDENTITY_INSERT rental_contracts ON;
 
-INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, car_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
+INSERT INTO rental_contracts (contract_id, booking_id, contract_number, customer_id, vehicle_id, start_date, end_date, daily_rate, total_amount, deposit_amount, status, created_by, signed_at)
 VALUES
     (1, 1, N'CTR-2026-0001', 3, 4, '2026-05-20 08:00:00', '2026-05-25 08:00:00', 1200000.00, 6000000.00, 1800000.00, N'ACTIVE', 2, '2026-05-20 07:30:00');
 
@@ -296,9 +300,263 @@ GO
 -- ============================================================
 -- SAMPLE HANDOVER
 -- ============================================================
-INSERT INTO vehicle_handovers (booking_id, contract_id, car_id, handover_date, mileage_at_handover, fuel_level, exterior_condition, interior_condition, notes, handed_by, received_by)
+INSERT INTO vehicle_handovers (booking_id, contract_id, vehicle_id, handover_date, mileage_at_handover, fuel_level, exterior_condition, interior_condition, notes, handed_by, received_by)
 VALUES
     (1, 1, 4, '2026-05-20 08:00:00', 8000, N'FULL', N'Tình trạng tốt, không trầy xước', N'Sạch sẽ, đầy đủ phụ kiện', N'Đã kiểm tra và bàn giao xe', 2, 3);
+GO
+
+-- ============================================================
+-- ROLES & PERMISSIONS SEED DATA
+-- ============================================================
+
+-- Seed roles
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role = N'ADMIN')
+    INSERT INTO roles (role, description) VALUES (N'ADMIN', N'Quản trị viên toàn quyền hệ thống');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role = N'STAFF')
+    INSERT INTO roles (role, description) VALUES (N'STAFF', N'Nhân viên vận hành');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role = N'CUSTOMER')
+    INSERT INTO roles (role, description) VALUES (N'CUSTOMER', N'Khách thuê xe đã đăng ký tài khoản');
+GO
+
+-- Seed permissions
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CHECK_VEHICLE_AVAILABILITY')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CHECK_VEHICLE_AVAILABILITY', N'Kiểm tra tình trạng của xe', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CREATE_BOOKING')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CREATE_BOOKING', N'Tạo đơn đặt xe mới', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_BOOKING')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_BOOKING', N'Xem lịch sử booking cá nhân', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_BOOKINGS_CALENDAR')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_BOOKINGS_CALENDAR', N'Xem lịch đặt xe', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_BOOKINGS_POLICE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_BOOKINGS_POLICE', N'Xem thông tin đặt xe', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'UPDATE_BOOKING')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('UPDATE_BOOKING', N'Cập nhật đơn đặt xe', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CANCEL_BOOKING')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CANCEL_BOOKING', N'Hủy đơn đặt xe', N'Bookings & Availability');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'PROCESS_BOOKING_REQUEST')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('PROCESS_BOOKING_REQUEST', N'Xử lý yêu cầu đặt xe', N'Bookings & Availability');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'PREPARE_CONTRACT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('PREPARE_CONTRACT', N'Chuẩn bị hợp đồng', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_CONTRACT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_CONTRACT', N'Xem hợp đồng', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'UPDATE_CONTRACT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('UPDATE_CONTRACT', N'Cập nhật hợp đồng', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'PROCESS_ELECTRONIC_SIGNATURE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('PROCESS_ELECTRONIC_SIGNATURE', N'Chữ ký điện tử', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'RECORD_PAYMENT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('RECORD_PAYMENT', N'Ghi nhận thanh toán', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'GENERATE_PAYMENT_QR_CODE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('GENERATE_PAYMENT_QR_CODE', N'Tạo mã QR thanh toán', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'RECORD_REFUND')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('RECORD_REFUND', N'Ghi nhận hoàn tiền', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CONFIGURE_PAYMENT_METHOD')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CONFIGURE_PAYMENT_METHOD', N'Phương thức thanh toán', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CONFIGURE_RENTAL_POLICY')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CONFIGURE_RENTAL_POLICY', N'Chính sách cho thuê', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'EXPORT_VAT_INVOICE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('EXPORT_VAT_INVOICE', N'Hoá đơn VAT', N'Contract and Payment');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'APPROVE_PAYMENT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('APPROVE_PAYMENT', N'Duyệt thanh toán/hoàn tiền', N'Contract and Payment');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'PROCESS_HANDOVER')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('PROCESS_HANDOVER', N'Quy trình bàn giao xe', N'Handover and Return');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'PROCESS_RETURN')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('PROCESS_RETURN', N'Quy trình trả xe', N'Handover and Return');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'RECORD_ADDITIONAL_FEE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('RECORD_ADDITIONAL_FEE', N'Phí bổ sung', N'Handover and Return');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'SETTLE_DEPOSIT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('SETTLE_DEPOSIT', N'Thanh toán tiền gửi', N'Handover and Return');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_REVENUE_REPORT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_REVENUE_REPORT', N'Xem báo cáo doanh thu', N'Handover and Return');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_VEHICLE_UTILIZATION_REPORT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_VEHICLE_UTILIZATION_REPORT', N'Báo cáo sử dụng xe', N'Handover and Return');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_VEHICLE_CATALOG')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_VEHICLE_CATALOG', N'Xem danh mục xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_VEHICLE_DETAIL_CUSTOMER')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_VEHICLE_DETAIL_CUSTOMER', N'Xem chi tiết xe của khách hàng', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_VEHICLE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_VEHICLE', N'Xem xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'MONITOR_VEHICLE_STATUS')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('MONITOR_VEHICLE_STATUS', N'Giám sát tình trạng xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'RECORD_VEHICLE_MAINTENANCE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('RECORD_VEHICLE_MAINTENANCE', N'Ghi chép bảo dưỡng xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'SEARCH_VEHICLE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('SEARCH_VEHICLE', N'Tìm kiếm xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_VEHICLE_DETAIL_STAFF')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_VEHICLE_DETAIL_STAFF', N'Xem chi tiết xe của nhân viên', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'ADD_VEHICLE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('ADD_VEHICLE', N'Thêm xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'EDIT_VEHICLE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('EDIT_VEHICLE', N'Chỉnh sửa xe', N'Vehicle Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'DELETE_VEHICLE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('DELETE_VEHICLE', N'Xoá xe', N'Vehicle Management');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'UPDATE_PROFILE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('UPDATE_PROFILE', N'Cập nhật hồ sơ', N'Authentication & Profile Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VERIFY_CUSTOMER_PROFILE')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VERIFY_CUSTOMER_PROFILE', N'Xác minh hồ sơ khách hàng', N'Authentication & Profile Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_USER_LIST')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_USER_LIST', N'Xem danh sách người dùng', N'Authentication & Profile Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'UPDATE_USER_ACCOUNT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('UPDATE_USER_ACCOUNT', N'Cập nhật tài khoản người dùng', N'Authentication & Profile Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'LOCK_USER_ACCOUNT')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('LOCK_USER_ACCOUNT', N'Khoá tài khoản người dùng', N'Authentication & Profile Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'CHANGE_PASSWORD')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('CHANGE_PASSWORD', N'Thay đổi mật khẩu', N'Authentication & Profile Management');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_NOTIFICATION')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_NOTIFICATION', N'Xem thông báo', N'Notification Management');
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'MARK_NOTIFICATION_AS_READ')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('MARK_NOTIFICATION_AS_READ', N'Đánh dấu thông báo đã đọc', N'Notification Management');
+
+IF NOT EXISTS (SELECT 1 FROM permission WHERE permission_key = 'VIEW_ACTIVITY_HISTORY')
+    INSERT INTO permission (permission_key, permission_name, functional_area) VALUES ('VIEW_ACTIVITY_HISTORY', N'Xem lịch sử hoạt động', N'Audit & Activity History');
+GO
+
+-- ============================================================
+-- ROLE-PERMISSION MAPPING
+-- ============================================================
+
+-- Customer permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.role_id, p.permission_id
+FROM roles r, permission p
+WHERE r.role = N'CUSTOMER'
+AND p.permission_key IN (
+    'CHECK_VEHICLE_AVAILABILITY', 'CREATE_BOOKING', 'VIEW_BOOKING', 'UPDATE_BOOKING', 
+    'VIEW_VEHICLE_CATALOG', 'CANCEL_BOOKING', 'VIEW_BOOKINGS_POLICE', 'VIEW_CONTRACT', 
+    'GENERATE_PAYMENT_QR_CODE', 'VIEW_VEHICLE_DETAIL_CUSTOMER', 'SEARCH_VEHICLE', 
+    'VIEW_VEHICLE', 'UPDATE_PROFILE', 'CHANGE_PASSWORD', 'VIEW_NOTIFICATION', 
+    'MARK_NOTIFICATION_AS_READ'
+)
+AND NOT EXISTS (
+    SELECT 1 FROM role_permission rp 
+    WHERE rp.role_id = r.role_id AND rp.permission_id = p.permission_id
+);
+
+-- Staff permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.role_id, p.permission_id
+FROM roles r, permission p
+WHERE r.role = N'STAFF'
+AND p.permission_key IN (
+    'CHECK_VEHICLE_AVAILABILITY', 'VIEW_BOOKING', 'VIEW_BOOKINGS_CALENDAR', 'PROCESS_BOOKING_REQUEST',
+    'RECORD_VEHICLE_MAINTENANCE', 'VIEW_BOOKINGS_POLICE', 'PREPARE_CONTRACT', 'VIEW_CONTRACT', 
+    'UPDATE_CONTRACT', 'PROCESS_ELECTRONIC_SIGNATURE', 'RECORD_PAYMENT', 'GENERATE_PAYMENT_QR_CODE', 
+    'RECORD_REFUND', 'EXPORT_VAT_INVOICE', 'PROCESS_HANDOVER', 'PROCESS_RETURN', 
+    'RECORD_ADDITIONAL_FEE', 'SETTLE_DEPOSIT', 'VIEW_VEHICLE_UTILIZATION_REPORT', 
+    'MONITOR_VEHICLE_STATUS', 'VIEW_VEHICLE_DETAIL_STAFF', 'VERIFY_CUSTOMER_PROFILE', 
+    'CHANGE_PASSWORD', 'VIEW_NOTIFICATION', 'MARK_NOTIFICATION_AS_READ', 'UPDATE_BOOKING', 
+    'CREATE_BOOKING', 'CANCEL_BOOKING', 'UPDATE_PROFILE', 'VIEW_USER_LIST', 'SEARCH_VEHICLE', 
+    'VIEW_VEHICLE', 'VIEW_VEHICLE_CATALOG', 'VIEW_VEHICLE_DETAIL_CUSTOMER', 'APPROVE_PAYMENT'
+)
+AND NOT EXISTS (
+    SELECT 1 FROM role_permission rp 
+    WHERE rp.role_id = r.role_id AND rp.permission_id = p.permission_id
+);
+
+-- Admin gets ALL permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.role_id, p.permission_id
+FROM roles r, permission p
+WHERE r.role = N'ADMIN'
+AND NOT EXISTS (
+    SELECT 1 FROM role_permission rp 
+    WHERE rp.role_id = r.role_id AND rp.permission_id = p.permission_id
+);
+GO
+
+-- ============================================================
+-- REVENUE TEST DATA (Tháng 7, 8, 9)
+-- ============================================================
+
+-- Cleanup revenue test data first
+DELETE FROM reviews WHERE booking_id BETWEEN 9 AND 18;
+DELETE FROM vehicle_returns WHERE booking_id BETWEEN 9 AND 18;
+DELETE FROM vehicle_handovers WHERE booking_id BETWEEN 9 AND 18;
+DELETE FROM payments WHERE booking_id BETWEEN 9 AND 18;
+DELETE FROM rental_contracts WHERE booking_id BETWEEN 9 AND 18;
+DELETE FROM bookings WHERE booking_id BETWEEN 9 AND 18;
+GO
+
+-- Tháng 7 (Bookings 9 to 13)
+SET IDENTITY_INSERT bookings ON;
+
+INSERT INTO bookings
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+VALUES
+(9, 3, 7 ,'2026-07-02','2026-07-05',N'Q1',N'Q1',5400000,1600000,'COMPLETED'),
+(10, 4, 14,'2026-07-06','2026-07-08',N'Q1',N'Q1',4800000,1400000,'COMPLETED'),
+(11, 3, 20,'2026-07-10','2026-07-13',N'Q7',N'Q7',8400000,2500000,'COMPLETED'),
+(12, 4, 35,'2026-07-18','2026-07-22',N'Q1',N'Q1',9000000,2700000,'IN_PROGRESS'),
+(13, 3, 33,'2026-07-24','2026-07-27',N'Q1',N'Q1',6000000,1800000,'IN_PROGRESS');
+
+SET IDENTITY_INSERT bookings OFF;
+GO
+
+INSERT INTO payments
+(booking_id, contract_id, amount, payment_type, payment_method, status, transaction_ref, paid_at, recorded_by)
+VALUES
+(9, NULL, 5400000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN7001', '2026-07-02', 2),
+(10, NULL, 4800000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN7002', '2026-07-06', 2),
+(11, NULL, 8400000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN7003', '2026-07-10', 2),
+(12, NULL, 9000000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN7004', '2026-07-18', 2),
+(13, NULL, 6000000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN7005', '2026-07-24', 2),
+
+(9, NULL, 300000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN7011', '2026-07-05', 2),
+(10, NULL, 500000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN7012', '2026-07-08', 2),
+(11, NULL, 200000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN7013', '2026-07-13', 2),
+(12, NULL, 700000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN7014', '2026-07-22', 2),
+(13, NULL, 400000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN7015', '2026-07-27', 2);
+GO
+
+-- Tháng 8 (Bookings 14 to 16)
+SET IDENTITY_INSERT bookings ON;
+
+INSERT INTO bookings
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+VALUES
+(14, 3, 22,'2026-08-02','2026-08-05',N'Q1',N'Q1',5000000,1500000,'COMPLETED'),
+(15, 4, 23,'2026-08-07','2026-08-10',N'Q7',N'Q7',5600000,1700000,'IN_PROGRESS'),
+(16, 3, 25,'2026-08-15','2026-08-18',N'Q1',N'Q1',6500000,1900000,'COMPLETED');
+
+SET IDENTITY_INSERT bookings OFF;
+GO
+
+INSERT INTO payments
+(booking_id, contract_id, amount, payment_type, payment_method, status, transaction_ref, paid_at, recorded_by)
+VALUES
+(14, NULL, 5000000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN8001', '2026-08-02', 2),
+(15, NULL, 5600000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN8002', '2026-08-07', 2),
+(16, NULL, 6500000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN8003', '2026-08-15', 2),
+
+(14, NULL, 300000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN8011', '2026-08-05', 2),
+(15, NULL, 200000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN8012', '2026-08-10', 2),
+(16, NULL, 500000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN8013', '2026-08-18', 2);
+GO
+
+-- Tháng 9 (Bookings 17 to 18)
+SET IDENTITY_INSERT bookings ON;
+
+INSERT INTO bookings
+(booking_id, customer_id, vehicle_id, start_date, end_date, pickup_location, return_location, total_amount, deposit_amount, status)
+VALUES
+(17, 3, 31,'2026-09-03','2026-09-07',N'Q1',N'Q1',7000000,2100000,'IN_PROGRESS'),
+(18, 4, 32,'2026-09-12','2026-09-15',N'Q7',N'Q7',4800000,1400000,'COMPLETED');
+
+SET IDENTITY_INSERT bookings OFF;
+GO
+
+INSERT INTO payments
+(booking_id, contract_id, amount, payment_type, payment_method, status, transaction_ref, paid_at, recorded_by)
+VALUES
+(17, NULL, 7000000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN9001', '2026-09-03', 2),
+(18, NULL, 4800000, 'RENTAL', 'BANK_TRANSFER', 'COMPLETED', 'TXN9002', '2026-09-12', 2),
+
+(17, NULL, 600000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN9011', '2026-09-07', 2),
+(18, NULL, 100000, 'ADDITIONAL_FEE', 'BANK_TRANSFER', 'COMPLETED', 'TXN9012', '2026-09-15', 2);
 GO
 
 PRINT 'Sample data inserted successfully!';

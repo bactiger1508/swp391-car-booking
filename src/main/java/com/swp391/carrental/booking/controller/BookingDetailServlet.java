@@ -11,7 +11,7 @@ import com.swp391.carrental.booking.service.BookingService;
 import com.swp391.carrental.user.constant.Role;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -84,7 +84,7 @@ public class BookingDetailServlet extends HttpServlet {
             }
 
             // Load related info
-            Car car = vehicleService.getCarById(booking.getCarId());
+            Vehicle car = vehicleService.getVehicleById(booking.getVehicleId());
             request.setAttribute("booking", booking);
             request.setAttribute("car", car);
             request.setAttribute("taxRate", policyService.getPolicyValue("TAX_RATE", "10"));

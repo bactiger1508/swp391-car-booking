@@ -3,7 +3,7 @@ package com.swp391.carrental.policy.service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 /*
  * Name: FeeCalculator
@@ -103,7 +103,7 @@ public class FeeCalculator {
     /**
      * Calculate base rental amount depending on the mode.
      */
-    public BigDecimal calculateBaseAmount(Car car, String rentalMode, String pricingPackage, long days) {
+    public BigDecimal calculateBaseAmount(Vehicle car, String rentalMode, String pricingPackage, long days) {
         BigDecimal dailyRate = car.getDailyRate();
         if ("TRIP".equalsIgnoreCase(rentalMode)) {
             String markupPercentStr = policyService.getPolicyValue("TRIP_RATE_MULTIPLIER_PERCENT", "20");
@@ -198,7 +198,7 @@ public class FeeCalculator {
     /**
      * Get the surcharge rate per extra KM.
      */
-    public BigDecimal calculateExtraKmRate(Car car, String pricingPackage) {
+    public BigDecimal calculateExtraKmRate(Vehicle car, String pricingPackage) {
         String val = policyService.getPolicyValue("EXTRA_KM_FEE", "4000");
         return new BigDecimal(val);
     }
@@ -206,7 +206,7 @@ public class FeeCalculator {
     /**
      * Estimate excess KM fee during booking creation.
      */
-    public BigDecimal calculateEstimatedExtraKmFee(Car car, String pricingPackage, int estimatedKm, int kmLimit) {
+    public BigDecimal calculateEstimatedExtraKmFee(Vehicle car, String pricingPackage, int estimatedKm, int kmLimit) {
         if (estimatedKm > kmLimit) {
             int extraKm = estimatedKm - kmLimit;
             BigDecimal rate = calculateExtraKmRate(car, pricingPackage);
@@ -218,7 +218,7 @@ public class FeeCalculator {
     /**
      * Calculate Lunar New Year surcharge based on overlapping days.
      */
-    public BigDecimal calculateTetSurcharge(Car car, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+    public BigDecimal calculateTetSurcharge(Vehicle car, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
         String startStr = policyService.getPolicyValue("TET_START_DATE", "2026-02-12");
         String endStr = policyService.getPolicyValue("TET_END_DATE", "2026-02-22");
         String surchargePctStr = policyService.getPolicyValue("TET_SURCHARGE_PERCENT", "20");

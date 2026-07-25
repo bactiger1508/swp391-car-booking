@@ -16,8 +16,8 @@ import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.dao.CarDAO;
-import com.swp391.carrental.vehicle.model.Car;
+import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -29,7 +29,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
     private final HandoverService handoverService = new HandoverService();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
-    private final CarDAO carDAO = new CarDAO();
+    private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
 
@@ -59,7 +59,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                         return;
                     }
                 }
-                Car car = carDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(carId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -113,10 +113,10 @@ public class VehicleHandoverViewServlet extends HttpServlet {
 
                 if (handover != null) {
                     handoverService.updateStatusConfirm(handover.getHandoverId());
-                    Car car = carDAO.findById(carId);
+                    Vehicle car = vehicleDAO.findById(carId);
                     if (car != null) {
                         car.setMileage(handover.getMileageAtHandover());
-                        carDAO.update(car);
+                        vehicleDAO.update(car);
                     }
                     
                     // Send notifications & session message

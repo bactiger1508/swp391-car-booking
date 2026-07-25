@@ -20,8 +20,8 @@ import java.util.Map;
 import com.swp391.carrental.audit.service.AuditLogService;
 import com.swp391.carrental.core.exception.AppException;
 import com.swp391.carrental.user.model.User;
-import com.swp391.carrental.vehicle.model.Car;
-import com.swp391.carrental.vehicle.model.CarImage;
+import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.model.VehicleImage;
 import com.swp391.carrental.vehicle.model.VehicleModel;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
@@ -47,8 +47,8 @@ public class VehicleManagementServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
-        if ("getCarImages".equals(action)) {
-            handleGetCarImages(request, response);
+        if ("getVehicleImages".equals(action)) {
+            handleGetVehicleImages(request, response);
             return;
         }
 
@@ -57,17 +57,17 @@ public class VehicleManagementServlet extends HttpServlet {
             return;
         }
 
-        List<Car> cars = vehicleService.getAllCars();
+        List<Vehicle> cars = vehicleService.getAllVehicles();
 
         Map<Integer, BigDecimal> depositAmounts = new HashMap<>();
-        for (Car car : cars) {
-            depositAmounts.put(car.getCarId(), vehicleService.calculateOneDayDeposit(car.getDailyRate()));
+        for (Vehicle car : cars) {
+            depositAmounts.put(car.getVehicleId(), vehicleService.calculateOneDayDeposit(car.getDailyRate()));
         }
 
         request.setAttribute("cars", cars);
         request.setAttribute("depositAmounts", depositAmounts);
         request.setAttribute("depositPercentage", vehicleService.getDepositPercentage());
-        request.setAttribute("nextMaintenance", vehicleService.getNextScheduledMaintenanceByCar());
+        request.setAttribute("nextMaintenance", vehicleService.getNextScheduledMaintenanceByVehicle());
         request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(cars));
         request.setAttribute("brands", vehicleService.getAllBrands());
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-management.jsp").forward(request, response);
@@ -96,7 +96,7 @@ public class VehicleManagementServlet extends HttpServlet {
                     }
                     return;
                 }
-                handleCreateCar(request, response, currentUser);
+                handleCreateVehicle(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Tạo xe thành công!");
                 } else {
@@ -111,7 +111,7 @@ public class VehicleManagementServlet extends HttpServlet {
                     }
                     return;
                 }
-                handleUpdateCar(request, response, currentUser);
+                handleUpdateVehicle(request, response, currentUser);
                 if (isAjax) {
                     sendJsonResponse(response, true, "Cập nhật xe thành công!");
                 } else {
@@ -122,21 +122,21 @@ public class VehicleManagementServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
-                handleDeleteCar(request, response, currentUser);
+                handleDeleteVehicle(request, response, currentUser);
                 sendJsonResponse(response, true, "Xóa xe thành công!");
             } else if ("hide".equals(action)) {
                 if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
-                handleHideCar(request, response, currentUser);
+                handleHideVehicle(request, response, currentUser);
                 sendJsonResponse(response, true, "Ẩn xe thành công!");
             } else if ("show".equals(action)) {
                 if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
-                handleShowCar(request, response, currentUser);
+                handleShowVehicle(request, response, currentUser);
                 sendJsonResponse(response, true, "Hiện xe thành công!");
             } else if ("deleteImage".equals(action)) {
                 if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "EDIT_VEHICLE")) {
@@ -171,7 +171,7 @@ public class VehicleManagementServlet extends HttpServlet {
     }
 
     // Creates new vehicle with validation, license plate uniqueness check, and image upload handling.
-    private void handleCreateCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+    private void handleCreateVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         String licensePlate = request.getParameter("licensePlate");
 
@@ -179,8 +179,8 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Biển số xe không được trống.");
         }
 
-        Car existingCar = vehicleService.getCarByLicensePlate(licensePlate.trim());
-        if (existingCar != null) {
+        Vehicle existingVehicle = vehicleService.getVehicleByLicensePlate(licensePlate.trim());
+        if (existingVehicle != null) {
             throw new AppException("Biển số xe '" + licensePlate + "' đã tồn tại. Vui lòng sử dụng biển số khác.");
         }
 
@@ -189,7 +189,7 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Vui lòng chọn hãng xe và mẫu xe.");
         }
 
-        Car car = new Car();
+        Vehicle car = new Vehicle();
         car.setLicensePlate(licensePlate.trim());
         car.setModelId(Integer.parseInt(modelIdStr.trim()));
         car.setYear(Integer.parseInt(request.getParameter("year")));
@@ -214,7 +214,7 @@ public class VehicleManagementServlet extends HttpServlet {
         }
         car.setMileage(mileage);
 
-        int carId = vehicleService.addCar(car);
+        int carId = vehicleService.addVehicle(car);
 
         // Handle image uploads
         try {
@@ -226,17 +226,17 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }
 
-        Car created = vehicleService.getCarById(carId);
+        Vehicle created = vehicleService.getVehicleById(carId);
         String carName = created != null ? (created.getBrand() + " " + created.getModel()) : "";
         logVehicleAudit(request, currentUser, "CREATE", carId,
                 "Tạo mới xe " + carName + " - Biển số " + licensePlate.trim() + " (#" + carId + ")");
     }
 
     // Updates vehicle details with license plate uniqueness check and image management (add/remove/reorder).
-    private void handleUpdateCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+    private void handleUpdateVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         int carId = Integer.parseInt(request.getParameter("carId"));
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
 
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
@@ -249,8 +249,8 @@ public class VehicleManagementServlet extends HttpServlet {
 
         licensePlate = licensePlate.trim();
         if (!licensePlate.equals(car.getLicensePlate())) {
-            Car existingCar = vehicleService.getCarByLicensePlate(licensePlate);
-            if (existingCar != null) {
+            Vehicle existingVehicle = vehicleService.getVehicleByLicensePlate(licensePlate);
+            if (existingVehicle != null) {
                 throw new AppException("Biển số xe '" + licensePlate + "' đã tồn tại. Vui lòng sử dụng biển số khác.");
             }
         }
@@ -284,7 +284,7 @@ public class VehicleManagementServlet extends HttpServlet {
         }
         car.setMileage(mileage);
 
-        vehicleService.updateCar(car);
+        vehicleService.updateVehicle(car);
 
         // Handle new image uploads
         try {
@@ -296,14 +296,14 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }
 
-        Car updatedCar = vehicleService.getCarById(carId);
-        String carName = updatedCar != null ? (updatedCar.getBrand() + " " + updatedCar.getModel()) : "";
+        Vehicle updatedVehicle = vehicleService.getVehicleById(carId);
+        String carName = updatedVehicle != null ? (updatedVehicle.getBrand() + " " + updatedVehicle.getModel()) : "";
         logVehicleAudit(request, currentUser, "UPDATE", carId,
                 "Cập nhật xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
     }
 
     // Deletes vehicle permanently (ADMIN only, cannot delete RENTED vehicles).
-    private void handleDeleteCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+    private void handleDeleteVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         // Only ADMIN can delete vehicles
         if (!"ADMIN".equals(currentUser.getRole())) {
@@ -312,7 +312,7 @@ public class VehicleManagementServlet extends HttpServlet {
 
         int carId = Integer.parseInt(request.getParameter("carId"));
 
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -325,7 +325,7 @@ public class VehicleManagementServlet extends HttpServlet {
         String carName = car.getBrand() + " " + car.getModel();
         String licensePlate = car.getLicensePlate();
 
-        boolean deleted = vehicleService.deleteCar(carId);
+        boolean deleted = vehicleService.deleteVehicle(carId);
         if (!deleted) {
             throw new AppException("Không tìm thấy xe để xóa.");
         }
@@ -335,11 +335,11 @@ public class VehicleManagementServlet extends HttpServlet {
     }
 
     // Hides vehicle by setting status to INACTIVE (invisible to customers, staff can still manage).
-    private void handleHideCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+    private void handleHideVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         int carId = Integer.parseInt(request.getParameter("carId"));
 
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -348,7 +348,7 @@ public class VehicleManagementServlet extends HttpServlet {
         String licensePlate = car.getLicensePlate();
 
         // Update car status to INACTIVE
-        boolean updated = vehicleService.updateCarStatus(carId, "INACTIVE");
+        boolean updated = vehicleService.updateVehicleStatus(carId, "INACTIVE");
         if (!updated) {
             throw new AppException("Không thể ẩn xe.");
         }
@@ -358,11 +358,11 @@ public class VehicleManagementServlet extends HttpServlet {
     }
 
     // Shows hidden vehicle by setting status to AVAILABLE (makes it visible to customers again).
-    private void handleShowCar(HttpServletRequest request, HttpServletResponse response, User currentUser)
+    private void handleShowVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         int carId = Integer.parseInt(request.getParameter("carId"));
 
-        Car car = vehicleService.getCarById(carId);
+        Vehicle car = vehicleService.getVehicleById(carId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -371,7 +371,7 @@ public class VehicleManagementServlet extends HttpServlet {
         String licensePlate = car.getLicensePlate();
 
         // Update car status to AVAILABLE
-        boolean updated = vehicleService.updateCarStatus(carId, "AVAILABLE");
+        boolean updated = vehicleService.updateVehicleStatus(carId, "AVAILABLE");
         if (!updated) {
             throw new AppException("Không thể hiện xe.");
         }
@@ -396,7 +396,7 @@ public class VehicleManagementServlet extends HttpServlet {
         return uploadPath;
     }
 
-    private CarImage storeImagePart(Part part, int carId, Path uploadPath, int sortOrder, boolean isPrimary) throws IOException {
+    private VehicleImage storeImagePart(Part part, int carId, Path uploadPath, int sortOrder, boolean isPrimary) throws IOException {
         String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
         String sanitizedFileName = fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
         String uniqueFileName = System.currentTimeMillis() + "_" + sanitizedFileName;
@@ -425,9 +425,9 @@ public class VehicleManagementServlet extends HttpServlet {
             System.err.println("[VehicleManagementServlet] Failed to duplicate upload to source folder: " + e.getMessage());
         }
 
-        CarImage image = new CarImage();
-        image.setCarId(carId);
-        image.setImageUrl("/assets/images/cars/" + uniqueFileName);
+        VehicleImage image = new VehicleImage();
+        image.setVehicleId(carId);
+        image.setImageUrl("/assets/images/vehicles/" + uniqueFileName);
         image.setCaption(fileName);
         image.setPrimary(isPrimary);
         image.setSortOrder(sortOrder);
@@ -447,26 +447,26 @@ public class VehicleManagementServlet extends HttpServlet {
             vehicleService.clearPrimaryImages(carId);
         }
 
-        int sortOrder = vehicleService.getCarImages(carId).size();
-        CarImage image = storeImagePart(part, carId, uploadPath, sortOrder, makePrimary);
-        vehicleService.addCarImage(image);
+        int sortOrder = vehicleService.getVehicleImages(carId).size();
+        VehicleImage image = storeImagePart(part, carId, uploadPath, sortOrder, makePrimary);
+        vehicleService.addVehicleImage(image);
     }
 
     private void saveMultipleImages(int carId, HttpServletRequest request, String partName)
             throws IOException, ServletException {
         Path uploadPath = resolveUploadPath();
-        int sortOrder = vehicleService.getCarImages(carId).size();
+        int sortOrder = vehicleService.getVehicleImages(carId).size();
 
         for (Part part : request.getParts()) {
             if (part.getName().equals(partName) && part.getSize() > 0) {
-                CarImage image = storeImagePart(part, carId, uploadPath, sortOrder++, false);
-                vehicleService.addCarImage(image);
+                VehicleImage image = storeImagePart(part, carId, uploadPath, sortOrder++, false);
+                vehicleService.addVehicleImage(image);
             }
         }
     }
 
     // Retrieves vehicle images as JSON for image management modal display.
-    private void handleGetCarImages(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleGetVehicleImages(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String carIdStr = request.getParameter("carId");
         if (carIdStr == null || carIdStr.isEmpty()) {
             response.setContentType("application/json");
@@ -475,11 +475,11 @@ public class VehicleManagementServlet extends HttpServlet {
         }
 
         int carId = Integer.parseInt(carIdStr);
-        List<CarImage> images = vehicleService.getCarImages(carId);
+        List<VehicleImage> images = vehicleService.getVehicleImages(carId);
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < images.size(); i++) {
-            CarImage img = images.get(i);
+            VehicleImage img = images.get(i);
             json.append("{")
                 .append("\"imageId\":").append(img.getImageId()).append(",")
                 .append("\"imageUrl\":\"").append(img.getImageUrl()).append("\",")

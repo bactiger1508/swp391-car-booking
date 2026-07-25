@@ -4,29 +4,24 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
-import com.swp391.carrental.vehicle.model.CarImage;
+import com.swp391.carrental.vehicle.model.VehicleImage;
 
 /*
- * Name: CarImageDAO
+ * Name: VehicleImageDAO
  * @Author: TinhHNHE172394
  * Date: 23/05/2026
- * Version: 1.0
- * Description: Handles database operations for CarImageDAO.
+ * Version: 2.0
+ * Description: Data Access Object for VehicleImage entities.
  */
 
+public class VehicleImageDAO {
 
-
-/**
- * Data Access Object for CarImage entities.
- */
-public class CarImageDAO {
-
-    public List<CarImage> findByCarId(int carId) throws SQLException {
-        List<CarImage> images = new ArrayList<>();
-        String sql = "SELECT * FROM car_images WHERE car_id = ? ORDER BY is_primary DESC, sort_order ASC";
+    public List<VehicleImage> findByVehicleId(int vehicleId) throws SQLException {
+        List<VehicleImage> images = new ArrayList<>();
+        String sql = "SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC, sort_order ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) images.add(mapRow(rs));
             }
@@ -34,11 +29,15 @@ public class CarImageDAO {
         return images;
     }
 
-    public int insert(CarImage image) throws SQLException {
-        String sql = "INSERT INTO car_images (car_id, image_url, caption, is_primary, sort_order) VALUES (?, ?, ?, ?, ?)";
+    public List<VehicleImage> findByCarId(int carId) throws SQLException {
+        return findByVehicleId(carId);
+    }
+
+    public int insert(VehicleImage image) throws SQLException {
+        String sql = "INSERT INTO vehicle_images (vehicle_id, image_url, caption, is_primary, sort_order) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, image.getCarId());
+            ps.setInt(1, image.getVehicleId());
             ps.setString(2, image.getImageUrl());
             ps.setString(3, image.getCaption());
             ps.setBoolean(4, image.isPrimary());
@@ -52,7 +51,7 @@ public class CarImageDAO {
     }
 
     public boolean delete(int imageId) throws SQLException {
-        String sql = "DELETE FROM car_images WHERE image_id = ?";
+        String sql = "DELETE FROM vehicle_images WHERE image_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, imageId);
@@ -60,17 +59,21 @@ public class CarImageDAO {
         }
     }
 
-    public boolean deleteByCarId(int carId) throws SQLException {
-        String sql = "DELETE FROM car_images WHERE car_id = ?";
+    public boolean deleteByVehicleId(int vehicleId) throws SQLException {
+        String sql = "DELETE FROM vehicle_images WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             return ps.executeUpdate() > 0;
         }
     }
 
+    public boolean deleteByCarId(int carId) throws SQLException {
+        return deleteByVehicleId(carId);
+    }
+
     public boolean setPrimary(int imageId, boolean isPrimary) throws SQLException {
-        String sql = "UPDATE car_images SET is_primary = ? WHERE image_id = ?";
+        String sql = "UPDATE vehicle_images SET is_primary = ? WHERE image_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, isPrimary);
@@ -79,17 +82,21 @@ public class CarImageDAO {
         }
     }
 
-    public boolean clearPrimaryByCarId(int carId) throws SQLException {
-        String sql = "UPDATE car_images SET is_primary = 0 WHERE car_id = ?";
+    public boolean clearPrimaryByVehicleId(int vehicleId) throws SQLException {
+        String sql = "UPDATE vehicle_images SET is_primary = 0 WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             return ps.executeUpdate() > 0;
         }
     }
 
-    public boolean update(CarImage image) throws SQLException {
-        String sql = "UPDATE car_images SET caption = ?, sort_order = ? WHERE image_id = ?";
+    public boolean clearPrimaryByCarId(int carId) throws SQLException {
+        return clearPrimaryByVehicleId(carId);
+    }
+
+    public boolean update(VehicleImage image) throws SQLException {
+        String sql = "UPDATE vehicle_images SET caption = ?, sort_order = ? WHERE image_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, image.getCaption());
@@ -99,16 +106,16 @@ public class CarImageDAO {
         }
     }
 
-    private CarImage mapRow(ResultSet rs) throws SQLException {
-        CarImage img = new CarImage();
+    private VehicleImage mapRow(ResultSet rs) throws SQLException {
+        VehicleImage img = new VehicleImage();
         img.setImageId(rs.getInt("image_id"));
-        img.setCarId(rs.getInt("car_id"));
+        img.setVehicleId(rs.getInt("vehicle_id"));
         img.setImageUrl(rs.getString("image_url"));
         img.setCaption(rs.getString("caption"));
         img.setPrimary(rs.getBoolean("is_primary"));
         img.setSortOrder(rs.getInt("sort_order"));
-        Timestamp createdAt = rs.getTimestamp("created_at");
-        if (createdAt != null) img.setCreatedAt(createdAt.toLocalDateTime());
+        Timestamp ca = rs.getTimestamp("created_at");
+        if (ca != null) img.setCreatedAt(ca.toLocalDateTime());
         return img;
     }
 }
