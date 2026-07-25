@@ -20,8 +20,8 @@ IF OBJECT_ID('dbo.maintenance_schedules', 'U') IS NOT NULL DROP TABLE maintenanc
 IF OBJECT_ID('dbo.payments', 'U') IS NOT NULL DROP TABLE payments;
 IF OBJECT_ID('dbo.rental_contracts', 'U') IS NOT NULL DROP TABLE rental_contracts;
 IF OBJECT_ID('dbo.bookings', 'U') IS NOT NULL DROP TABLE bookings;
-IF OBJECT_ID('dbo.car_images', 'U') IS NOT NULL DROP TABLE car_images;
-IF OBJECT_ID('dbo.cars', 'U') IS NOT NULL DROP TABLE cars;
+IF OBJECT_ID('dbo.vehicle_images', 'U') IS NOT NULL DROP TABLE vehicle_images;
+IF OBJECT_ID('dbo.vehicles', 'U') IS NOT NULL DROP TABLE vehicles;
 IF OBJECT_ID('dbo.vehicle_models', 'U') IS NOT NULL DROP TABLE vehicle_models;
 IF OBJECT_ID('dbo.vehicle_brands', 'U') IS NOT NULL DROP TABLE vehicle_brands;
 IF OBJECT_ID('dbo.policy_settings', 'U') IS NOT NULL DROP TABLE policy_settings;
