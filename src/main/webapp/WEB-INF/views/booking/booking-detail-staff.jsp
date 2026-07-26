@@ -527,6 +527,23 @@
                         <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD; padding:12px;">
                             <span class="material-symbols-outlined">description</span> Xem hợp đồng (#${contract.contractNumber})
                         </a>
+
+                        <%-- Show Handover button right after Contract is signed --%>
+                        <c:set var="isContractSigned" value="${contract.status == 'SIGNED' || (not empty contract.customerSignature && not empty contract.staffSignature)}" />
+                        <c:if test="${isContractSigned || booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS'}">
+                            <c:choose>
+                                <c:when test="${not empty handover && handover.handoverId > 0}">
+                                    <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
+                                        <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao xe
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#00897B; border-color:#00897B; padding:12px; font-weight:700;">
+                                        <span class="material-symbols-outlined">key</span> Tạo biên bản bàn giao xe
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                     </c:when>
                     <c:otherwise>
                         <c:if test="${booking.status == 'CONFIRMED'}">
