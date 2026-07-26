@@ -425,6 +425,8 @@ CREATE TABLE vat_invoices (
     tax_rate DECIMAL(5,2) NOT NULL,
     tax_amount DECIMAL(18,2) NOT NULL,
     total_amount DECIMAL(18,2) NOT NULL,
+    customer_signed BIT NOT NULL DEFAULT 0,
+    customer_signed_at DATETIME2 NULL,
     created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME2 NOT NULL DEFAULT GETDATE(),
 

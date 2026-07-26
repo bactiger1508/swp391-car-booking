@@ -22,6 +22,8 @@ public class VatInvoice {
     private BigDecimal taxRate;
     private BigDecimal taxAmount;
     private BigDecimal totalAmount;
+    private boolean customerSigned;
+    private LocalDateTime customerSignedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -114,5 +116,21 @@ public class VatInvoice {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isCustomerSigned() {
+        return customerSigned;
+    }
+
+    public void setCustomerSigned(boolean customerSigned) {
+        this.customerSigned = customerSigned;
+    }
+
+    public LocalDateTime getCustomerSignedAt() {
+        return customerSignedAt;
+    }
+
+    public void setCustomerSignedAt(LocalDateTime customerSignedAt) {
+        this.customerSignedAt = customerSignedAt;
     }
 }
