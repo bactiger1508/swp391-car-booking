@@ -324,7 +324,7 @@
                                     <c:otherwise>${p.paymentType}</c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>${p.paymentMethod == 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}</td>
+                            <td>${p.paymentMethod == 'CASH' ? 'Tiền mặt' : (p.paymentMethod == 'DEDUCTION' ? 'Khấu trừ' : 'Chuyển khoản')}</td>
                             <td>${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>
                             <td style="text-align: right; font-weight: 600;">
                                 <c:if test="${p.paymentType == 'REFUND'}">-</c:if>

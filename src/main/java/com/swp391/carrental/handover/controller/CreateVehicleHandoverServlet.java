@@ -82,17 +82,27 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
                 PaymentService paymentService = new PaymentService();
                 List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
-                boolean depositPaid = false;
-                boolean rentalPaid = false;
+                java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
                 for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        java.math.BigDecimal completedAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                            depositPaid = true;
+                            depositPaidAmt = depositPaidAmt.add(completedAmt);
                         } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                            rentalPaid = true;
+                            rentalPaidAmt = rentalPaidAmt.add(completedAmt);
                         }
                     }
                 }
+                boolean depositPaid = booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0;
+                
+                java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+                java.math.BigDecimal excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+                java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+                if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+                }
+                boolean rentalPaid = effectiveRentalPaid.compareTo(rentalRequired) >= 0;
                 if (!depositPaid) {
                     request.getSession().setAttribute("errorMessage",
                             "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
@@ -144,6 +154,12 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             // Enforce Handover Validation Checks in POST
             RentalContract contract = contractDAO.findByBookingId(bookingId);
+            Booking booking = bookingDAO.findById(bookingId);
+            if (booking == null) {
+                request.getSession().setAttribute("errorMessage", "Không tìm thấy đơn đặt xe.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
             if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
                 request.getSession().setAttribute("errorMessage",
                         "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
@@ -153,17 +169,27 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             PaymentService paymentService = new PaymentService();
             List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
-            boolean depositPaid = false;
-            boolean rentalPaid = false;
+            java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
             for (Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    java.math.BigDecimal completedAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                        depositPaid = true;
+                        depositPaidAmt = depositPaidAmt.add(completedAmt);
                     } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                        rentalPaid = true;
+                        rentalPaidAmt = rentalPaidAmt.add(completedAmt);
                     }
                 }
             }
+            boolean depositPaid = booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0;
+            
+            java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+            java.math.BigDecimal excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+            java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+            if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+            }
+            boolean rentalPaid = effectiveRentalPaid.compareTo(rentalRequired) >= 0;
             if (!depositPaid) {
                 request.getSession().setAttribute("errorMessage",
                         "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
@@ -219,7 +245,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             // ===== RELATION DATA =====
             Integer contractId = contract != null ? contract.getContractId() : null;
 
-            Booking booking = bookingDAO.findById(bookingId);
+            booking = bookingDAO.findById(bookingId);
 
             int receivedBy = booking != null ? booking.getCustomerId() : null;
 
