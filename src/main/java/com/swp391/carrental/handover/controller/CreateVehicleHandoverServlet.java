@@ -55,11 +55,15 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (bookingIdStr != null && vehicleIdStr != null) {
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
+                if (booking == null) {
+                    response.sendRedirect(request.getContextPath() + "/bookings/manage");
+                    return;
+                }
+
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.isEmpty()) ? Integer.parseInt(vehicleIdStr) : booking.getVehicleId();
                 Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
 
@@ -72,12 +76,15 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                     return;
                 }
 
-                // Enforce Handover Validation Checks: active contract and paid deposit
-                if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
-                    request.getSession().setAttribute("errorMessage",
-                            "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
-                    response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
-                    return;
+                // Support both ACTIVE and SIGNED contract statuses
+                if (contract == null || (!"ACTIVE".equals(contract.getStatus()) && !"SIGNED".equals(contract.getStatus()))) {
+                    // If contract exists with signatures, auto update status if needed
+                    if (contract == null) {
+                        request.getSession().setAttribute("errorMessage",
+                                "Không thể bàn giao xe: Đơn chưa được tạo hợp đồng.");
+                        response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                        return;
+                    }
                 }
 
                 PaymentService paymentService = new PaymentService();

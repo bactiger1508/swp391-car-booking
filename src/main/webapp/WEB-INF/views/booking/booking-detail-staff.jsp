@@ -531,12 +531,12 @@
                         <%-- Show Handover button right after Contract exists --%>
                         <c:choose>
                             <c:when test="${not empty handover && handover.handoverId > 0}">
-                                <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px; margin-top:4px;">
+                                <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px; margin-top:4px;">
                                     <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao xe
                                 </a>
                             </c:when>
                             <c:otherwise>
-                                <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#00897B; border-color:#00897B; padding:12px; font-weight:700; margin-top:4px;">
+                                <a href="${pageContext.request.contextPath}/handovers/create?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#00897B; border-color:#00897B; padding:12px; font-weight:700; margin-top:4px;">
                                     <span class="material-symbols-outlined">key</span> Tạo biên bản bàn giao xe
                                 </a>
                             </c:otherwise>
