@@ -9,6 +9,7 @@ import com.swp391.carrental.notification.model.Notification;
 
 public class NotificationDAO {
 
+    // Retrieves all notifications for a user, newest first.
     public List<Notification> findByUserId(int userId) throws SQLException {
         List<Notification> notifications = new ArrayList<>();
         String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC";
@@ -24,21 +25,7 @@ public class NotificationDAO {
         return notifications;
     }
 
-    public List<Notification> findUnreadByUserId(int userId) throws SQLException {
-        List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT * FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    notifications.add(mapRow(rs));
-                }
-            }
-        }
-        return notifications;
-    }
-
+    // Counts unread notifications for a user.
     public int getUnreadCount(int userId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0";
         try (Connection conn = DBContext.getConnection();
@@ -53,6 +40,7 @@ public class NotificationDAO {
         return 0;
     }
 
+    // Finds a single notification by its ID.
     public Notification findById(int notificationId) throws SQLException {
         String sql = "SELECT * FROM notifications WHERE notification_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -67,6 +55,7 @@ public class NotificationDAO {
         return null;
     }
 
+    // Inserts a new notification and returns the generated notification_id.
     public int insert(Notification notification) throws SQLException {
         String sql = "INSERT INTO notifications (user_id, title, message, notification_type, reference_type, reference_id, is_read, created_at) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -90,6 +79,7 @@ public class NotificationDAO {
         return -1;
     }
 
+    // Marks a single notification as read and records the read timestamp.
     public boolean markAsRead(int notificationId) throws SQLException {
         String sql = "UPDATE notifications SET is_read = 1, read_at = ? WHERE notification_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -100,6 +90,7 @@ public class NotificationDAO {
         }
     }
 
+    // Marks all unread notifications for a user as read.
     public boolean markAllAsRead(int userId) throws SQLException {
         String sql = "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0";
         try (Connection conn = DBContext.getConnection();
@@ -110,24 +101,7 @@ public class NotificationDAO {
         }
     }
 
-    public boolean delete(int notificationId) throws SQLException {
-        String sql = "DELETE FROM notifications WHERE notification_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, notificationId);
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    public boolean deleteAllByUserId(int userId) throws SQLException {
-        String sql = "DELETE FROM notifications WHERE user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            return ps.executeUpdate() > 0;
-        }
-    }
-
+    // Maps a notifications table row to a Notification object.
     private Notification mapRow(ResultSet rs) throws SQLException {
         Notification n = new Notification();
         n.setNotificationId(rs.getInt("notification_id"));
