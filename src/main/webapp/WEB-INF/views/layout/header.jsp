@@ -34,9 +34,11 @@
                 <a href="${pageContext.request.contextPath}/home" class="bk-sidebar-link ${_cp == '/home' || _cp == '/' ? 'active' : ''}">
                     <span class="material-symbols-outlined">home</span> Trang chủ
                 </a>
-                <a href="${pageContext.request.contextPath}/vehicles" class="bk-sidebar-link ${_cp == '/vehicles' ? 'active' : ''}">
-                    <span class="material-symbols-outlined">directions_car</span> Danh sách xe
-                </a>
+                <c:if test="${sessionScope.currentUser == null || sessionScope.currentUser.role == 'CUSTOMER'}">
+                    <a href="${pageContext.request.contextPath}/vehicles" class="bk-sidebar-link ${_cp == '/vehicles' ? 'active' : ''}">
+                        <span class="material-symbols-outlined">directions_car</span> Danh sách xe
+                    </a>
+                </c:if>
 
                 <c:if test="${sessionScope.currentUser == null}">
                     <a href="${pageContext.request.contextPath}/bookings/my" class="bk-sidebar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">
