@@ -147,15 +147,10 @@
                     <span class="value" id="resRefund" style="color:var(--success);font-size:20px;font-weight:800;">0đ</span>
                 </div>
 
-                <div class="bk-summary-total">
-                    <span class="label" style="font-size: 16px; font-weight: 700;">Khách cần thanh toán thêm</span>
-                    <span class="value" id="resExtraPayment" style="color:var(--error);font-size:20px;font-weight:800;">0đ</span>
-                </div>
-
                 <div>${notification}</div>
 
                 <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
-                    <button type="submit" name="action" value="save" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;">
+                    <button type="submit" id="btnSaveFee" name="action" value="save" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center;font-weight:600;">
                         <span class="material-symbols-outlined">check_circle</span> Áp dụng
                     </button>
                     <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${bookingId}&vehicleId=${vehicleId}" class="bk-btn bk-btn-outline" style="width:100%;justify-content:center;">
@@ -172,6 +167,7 @@
         var savedCleaning = parseFloat("${returns.cleaningFee}") || 0;
         document.getElementById("cleaningFee").value = savedCleaning.toString();
 
+        // Real-time live calculation on every input/change event
         document.getElementById("cleaningFee").addEventListener("change", recalculateFees);
         document.getElementById("damageFee").addEventListener("input", recalculateFees);
         document.getElementById("lostItemFee").addEventListener("input", recalculateFees);
@@ -224,7 +220,6 @@
 
             document.getElementById('resRefund').textContent = formatMoney(refund);
             document.getElementById('resExtraPayment').textContent = formatMoney(extraPayment);
-
 
             document.getElementById('totalAdditionalFee').value = totalAdditional;
         }

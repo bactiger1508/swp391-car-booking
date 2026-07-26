@@ -14,10 +14,10 @@ import com.swp391.carrental.vehicle.dao.VehicleDAO;
 
 /**
  * Name: HandoverService
- * @Author: TamTTMHE190340
- * Date: 19/06/2026
- * Version: 1.0
- * Description: Service layer handling vehicle handover recording, draft management, and confirmation-driven status transitions.
+ *
+ * @Author: TamTTMHE190340 Date: 19/06/2026 Version: 1.0 Description: Service
+ * layer handling vehicle handover recording, draft management, and
+ * confirmation-driven status transitions.
  */
 public class HandoverService {
 

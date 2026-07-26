@@ -14,9 +14,6 @@ import com.swp391.carrental.user.model.User;
  * Version: 1.0
  * Description: Handles database operations for UserDAO.
  */
-
-
-
 /**
  * Data Access Object for User entities.
  */
@@ -27,8 +24,7 @@ public class UserDAO {
      */
     public User findById(int userId) throws SQLException {
         String sql = "SELECT * FROM users WHERE user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -44,8 +40,7 @@ public class UserDAO {
      */
     public User findByEmail(String email) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -62,9 +57,7 @@ public class UserDAO {
     public List<User> findAll() throws SQLException {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE email NOT LIKE 'testuser_%@carrental.com' ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 users.add(mapRow(rs));
             }
@@ -78,8 +71,7 @@ public class UserDAO {
     public List<User> findByRole(String role) throws SQLException {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE role = ? AND email NOT LIKE 'testuser_%@carrental.com' ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, role);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -89,88 +81,123 @@ public class UserDAO {
         }
         return users;
     }
-    
+
     /**
      * Advanced Search, Filter and Pagination for User Management UI Dashboard
      */
-    public List<User> findFilteredUsers(String search, String role, String status, int page, int pageSize) throws SQLException {
+    public List<User> findFilteredUsers(String search, String role, String status,
+            int page, int pageSize) throws SQLException {
+
         List<User> users = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
-        
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT * FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
+
         if (search != null && !search.trim().isEmpty()) {
             sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
         }
-        if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+
+        if (role != null && !role.trim().isEmpty() && !"All roles".equals(role)) {
             sql.append(" AND role = ?");
         }
-        if (status != null && !status.trim().isEmpty() && !status.equals("All status")) {
-            if (status.equals("Active")) sql.append(" AND is_active = 1");
-            else if (status.equals("Locked") || status.equals("Inactive")) sql.append(" AND is_active = 0");
-        }
-        
-        sql.append(" ORDER BY user_id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
-            int pIndex = 1;
+        if (status != null && !status.trim().isEmpty() && !"All status".equals(status)) {
+            if ("Active".equals(status)) {
+                sql.append(" AND is_active = 1");
+            } else {
+                sql.append(" AND is_active = 0");
+            }
+        }
+
+        sql.append(" ORDER BY user_id ASC");
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
             if (search != null && !search.trim().isEmpty()) {
-                String val = "%" + search.trim() + "%";
-                ps.setString(pIndex++, val);
-                ps.setString(pIndex++, val);
-                ps.setString(pIndex++, val);
+                String keyword = "%" + search.trim() + "%";
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
             }
-            if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
-                ps.setString(pIndex++, role);
+
+            if (role != null && !role.trim().isEmpty() && !"All roles".equals(role)) {
+                ps.setString(index++, role);
             }
-            
-            ps.setInt(pIndex++, (page - 1) * pageSize);
-            ps.setInt(pIndex++, pageSize);
+
+            int offset = (page - 1) * pageSize;
+
+            ps.setInt(index++, offset);
+            ps.setInt(index++, pageSize);
+
+            System.out.println("PAGE = " + page);
+            System.out.println("OFFSET = " + offset);
+            System.out.println(sql);
 
             try (ResultSet rs = ps.executeQuery()) {
+
                 while (rs.next()) {
                     users.add(mapRow(rs));
                 }
+
             }
         }
+
         return users;
     }
 
     /**
      * Count total matching users for structural pagination calculation
      */
-    public int countFilteredUsers(String search, String role, String status) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
-        
+    public int countFilteredUsers(String search, String role, String status)
+            throws SQLException {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM users WHERE email NOT LIKE 'testuser_%@carrental.com'");
+
         if (search != null && !search.trim().isEmpty()) {
             sql.append(" AND (full_name LIKE ? OR email LIKE ? OR phone LIKE ?)");
         }
-        if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
+
+        if (role != null && !role.trim().isEmpty() && !"All roles".equals(role)) {
             sql.append(" AND role = ?");
         }
-        if (status != null && !status.trim().isEmpty() && !status.equals("All status")) {
-            if (status.equals("Active")) sql.append(" AND is_active = 1");
-            else if (status.equals("Locked") || status.equals("Inactive")) sql.append(" AND is_active = 0");
+
+        if (status != null && !status.trim().isEmpty() && !"All status".equals(status)) {
+            if ("Active".equals(status)) {
+                sql.append(" AND is_active = 1");
+            } else {
+                sql.append(" AND is_active = 0");
+            }
         }
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
-            int pIndex = 1;
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
             if (search != null && !search.trim().isEmpty()) {
-                String val = "%" + search.trim() + "%";
-                ps.setString(pIndex++, val);
-                ps.setString(pIndex++, val);
-                ps.setString(pIndex++, val);
+                String keyword = "%" + search.trim() + "%";
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
+                ps.setString(index++, keyword);
             }
-            if (role != null && !role.trim().isEmpty() && !role.equals("All roles")) {
-                ps.setString(pIndex++, role);
+
+            if (role != null && !role.trim().isEmpty() && !"All roles".equals(role)) {
+                ps.setString(index++, role);
             }
 
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
             }
+
         }
+
         return 0;
     }
 
@@ -179,9 +206,8 @@ public class UserDAO {
      */
     public int insert(User user) throws SQLException {
         String sql = "INSERT INTO users (email, password_hash, full_name, phone, role, is_active, avatar_url) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getPasswordHash());
             ps.setString(3, user.getFullName());
@@ -205,9 +231,8 @@ public class UserDAO {
      */
     public boolean update(User user) throws SQLException {
         String sql = "UPDATE users SET email = ?, full_name = ?, phone = ?, role = ?, "
-                   + "is_active = ?, avatar_url = ?, updated_at = GETDATE() WHERE user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                + "is_active = ?, avatar_url = ?, updated_at = GETDATE() WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getFullName());
             ps.setString(3, user.getPhone());
@@ -224,8 +249,7 @@ public class UserDAO {
      */
     public boolean updatePassword(int userId, String newPasswordHash) throws SQLException {
         String sql = "UPDATE users SET password_hash = ?, updated_at = GETDATE() WHERE user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newPasswordHash);
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
@@ -237,8 +261,7 @@ public class UserDAO {
      */
     public boolean delete(int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE user_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             return ps.executeUpdate() > 0;
         }
@@ -258,9 +281,13 @@ public class UserDAO {
         user.setActive(rs.getBoolean("is_active"));
         user.setAvatarUrl(rs.getString("avatar_url"));
         Timestamp createdAt = rs.getTimestamp("created_at");
-        if (createdAt != null) user.setCreatedAt(createdAt.toLocalDateTime());
+        if (createdAt != null) {
+            user.setCreatedAt(createdAt.toLocalDateTime());
+        }
         Timestamp updatedAt = rs.getTimestamp("updated_at");
-        if (updatedAt != null) user.setUpdatedAt(updatedAt.toLocalDateTime());
+        if (updatedAt != null) {
+            user.setUpdatedAt(updatedAt.toLocalDateTime());
+        }
         return user;
     }
 }
