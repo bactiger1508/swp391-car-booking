@@ -3,6 +3,7 @@ package com.swp391.carrental.handover.service;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+
 import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
@@ -14,20 +15,15 @@ import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.payment.dao.PaymentDAO;
 import com.swp391.carrental.payment.model.Payment;
-import com.swp391.carrental.vehicle.constant.CarStatus;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
+import com.swp391.carrental.vehicle.model.Vehicle;
 
-/*
+/**
  * Name: ReturnService
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Contains business logic for ReturnService.
- */
-/**
- * Service for vehicle return operations. BR-07: Return fee includes late fee,
- * extra km fee, damage fee, cleaning fee, lost item fee. BR-08: Booking becomes
- * Completed only after vehicle return and required payments.
+ * Description: Service layer handling vehicle return processing, surcharge evaluation, settlement status transitions, and final ODO synchronization.
  */
 public class ReturnService {
 
@@ -77,23 +73,20 @@ public class ReturnService {
                 returnId = existing.getReturnId();
             }
 
-            // Update car status to AVAILABLE and update its mileage to match return mileage
-            com.swp391.carrental.vehicle.model.Vehicle car = vehicleDAO.findById(vehicleReturn.getVehicleId());
-            if (car != null && vehicleReturn.getMileageAtReturn() > car.getMileage()) {
-                car.setMileage(vehicleReturn.getMileageAtReturn());
-                vehicleDAO.update(car);
-            }
-
             Booking booking = bookingDAO.findById(vehicleReturn.getBookingId());
             if (booking != null) {
                 List<Payment> payments = paymentDAO.findByBookingId(vehicleReturn.getBookingId());
                 BigDecimal totalPaid = BigDecimal.ZERO;
                 for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                            continue;
+                        }
+                        BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
+                            totalPaid = totalPaid.subtract(effectiveAmt);
                         } else {
-                            totalPaid = totalPaid.add(p.getAmount());
+                            totalPaid = totalPaid.add(effectiveAmt);
                         }
                     }
                 }
@@ -103,20 +96,30 @@ public class ReturnService {
                     totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
                 }
 
-                if (totalPaid.compareTo(totalRequired) >= 0) {
+                // ONLY mark COMPLETED if net totalPaid equals totalRequired exactly
+                // If totalPaid > totalRequired (needs refund) OR totalPaid < totalRequired
+                // (needs extra payment): set PENDING_SETTLEMENT!
+                if (totalPaid.compareTo(totalRequired) == 0) {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
                     updateContractStatus(vehicleReturn.getBookingId(), ContractStatus.COMPLETED);
+
+                    Vehicle vehicle = vehicleDAO.findById(vehicleReturn.getVehicleId());
+                    if (vehicle != null) {
+                        if (vehicleReturn.getMileageAtReturn() > vehicle.getMileage()) {
+                            vehicle.setMileage(vehicleReturn.getMileageAtReturn());
+                        }
+                        if (vehicleReturn.getNotes() != null && vehicleReturn.getNotes().contains("[CẦN BẢO DƯỠNG]")) {
+                            vehicle.setStatus(com.swp391.carrental.vehicle.constant.CarStatus.MAINTENANCE);
+                        } else {
+                            vehicle.setStatus(com.swp391.carrental.vehicle.constant.CarStatus.AVAILABLE);
+                        }
+                        vehicleDAO.update(vehicle);
+                    }
                 } else {
                     bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
                 }
             } else {
-                if (vehicleReturn.getTotalAdditionalFee() != null
-                        && vehicleReturn.getTotalAdditionalFee().doubleValue() > 0) {
-                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
-                } else {
-                    bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.COMPLETED);
-                    updateContractStatus(vehicleReturn.getBookingId(), ContractStatus.COMPLETED);
-                }
+                bookingDAO.updateStatus(vehicleReturn.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
             }
 
             return returnId;
@@ -131,32 +134,10 @@ public class ReturnService {
 
             Booking booking = bookingDAO.findById(returns.getBookingId());
             if (booking != null) {
-                List<Payment> payments = paymentDAO.findByBookingId(returns.getBookingId());
-                BigDecimal totalPaid = BigDecimal.ZERO;
-                for (Payment p : payments) {
-                    if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
-                        if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
-                        } else {
-                            totalPaid = totalPaid.add(p.getAmount());
-                        }
-                    }
-                }
-
-                BigDecimal totalRequired = booking.getTotalAmount();
-                if (returns.getTotalAdditionalFee() != null) {
-                    totalRequired = totalRequired.add(returns.getTotalAdditionalFee());
-                }
-
-                if (totalPaid.compareTo(totalRequired) >= 0) {
-                    bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.COMPLETED);
-                    updateContractStatus(returns.getBookingId(), ContractStatus.COMPLETED);
-                } else {
-                    bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
-                }
+                bookingDAO.updateStatus(returns.getBookingId(), BookingStatus.PENDING_SETTLEMENT);
             }
         } catch (SQLException e) {
-            throw new AppException("Failed to update vehicle handover.", e);
+            throw new AppException("Failed to update vehicle return.", e);
         }
     }
 

@@ -36,7 +36,7 @@
                     <th>Ngày nhận xe</th>
                     <th>Quãng đường đi</th>
                     <th>Phụ thu phát sinh</th>
-                    <th>Tiền cọc</th>
+                    <th>Số tiền cần hoàn lại</th>
                     <th>Nhân viên nhận xe</th>
                     <th>Thao tác</th>
                 </tr>
@@ -46,26 +46,26 @@
                     <tr>
                         <td class="code">RT-${r.returnId}</td>
                         <td><a href="${pageContext.request.contextPath}/bookings/detail?id=${r.bookingId}" style="font-weight:600;color:var(--primary);">#BK-${r.bookingId}</a></td>
-                        <td style="font-weight:500;">Xe #${r.carId}</td>
+                        <td style="font-weight:500;">Xe #${r.vehicleId}</td>
                         <td>
                             <div style="font-size:13px;">
                                 ${r.returnDate.dayOfMonth}/${r.returnDate.monthValue}/${r.returnDate.year} ${r.returnDate.hour}:${r.returnDate.minute}
                             </div>
                         </td>
-                        <td><div style="font-weight:600;color:var(--primary);">${r.mileageAtReturn} km</div></td>
+                        <td><div style="font-weight:600;color:var(--primary);"><fmt:formatNumber value="${distanceDrivenMap[r.bookingId]}" pattern="#,##0"/> km</div></td>
                         <td>
                             <div style="font-weight:700;color:var(--error);">
                                 <fmt:formatNumber value="${r.totalAdditionalFee}" type="number" groupingUsed="true"/>đ
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight:700;color:var(--error);">
-                                <fmt:formatNumber value="${deposits[r.bookingId]}" type="number" groupingUsed="true"/>đ
+                            <div style="font-weight:700; color:#2E7D32; font-size:13px; background:#EAF9F5; padding: 4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(5,205,153,0.25);">
+                                <fmt:formatNumber value="${refundsMap[r.bookingId]}" type="number" groupingUsed="true"/>đ
                             </div>
                         </td>
                         <td>Nhân viên #${r.receivedBy}</td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&carId=${r.carId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
+                            <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${r.bookingId}&vehicleId=${r.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary">Xem</a>
                             <c:choose>
                                 <c:when test="${bookings[r.bookingId].status == 'COMPLETED'}">
                                     <span style="font-size:12px; color:#039C74; font-weight:600; padding: 4px 8px; background:#EAF9F5; border:1px solid rgba(5,205,153,0.2); border-radius:6px; margin-left:4px; display:inline-block; vertical-align:middle;">

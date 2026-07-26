@@ -43,6 +43,7 @@ public class VehicleManagementServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final AuditLogService auditLogService = new AuditLogService();
 
+    // Routes GET requests: returns vehicle images as JSON for AJAX, otherwise renders the vehicle management list page.
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -73,6 +74,7 @@ public class VehicleManagementServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-management.jsp").forward(request, response);
     }
 
+    // Routes ADMIN/STAFF POST actions: create, update, delete, hide/show a vehicle, and image management, each gated by permission checks.
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
@@ -214,29 +216,38 @@ public class VehicleManagementServlet extends HttpServlet {
         }
         car.setMileage(mileage);
 
-        int carId = vehicleService.addVehicle(car);
+        int vehicleId = vehicleService.addVehicle(car);
 
         // Handle image uploads
         try {
-            saveSingleImage(carId, request, "primaryImage", true);
-            saveMultipleImages(carId, request, "secondaryImages");
+            saveSingleImage(vehicleId, request, "primaryImage", true);
+            saveMultipleImages(vehicleId, request, "secondaryImages");
         } catch (Exception e) {
-            System.err.println("Error uploading images for car " + carId + ": " + e.getMessage());
+            System.err.println("Error uploading images for car " + vehicleId + ":");
             e.printStackTrace();
             throw new AppException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }
 
-        Vehicle created = vehicleService.getVehicleById(carId);
+        Vehicle created = vehicleService.getVehicleById(vehicleId);
         String carName = created != null ? (created.getBrand() + " " + created.getModel()) : "";
-        logVehicleAudit(request, currentUser, "CREATE", carId,
-                "Tạo mới xe " + carName + " - Biển số " + licensePlate.trim() + " (#" + carId + ")");
+        logVehicleAudit(request, currentUser, "CREATE", vehicleId,
+                "Tạo mới xe " + carName + " - Biển số " + licensePlate.trim() + " (#" + vehicleId + ")");
     }
 
-    // Updates vehicle details with license plate uniqueness check and image management (add/remove/reorder).
+    // Extracts and validates the vehicleId parameter from the request (throws if missing or invalid).
+    private int parseVehicleId(HttpServletRequest request) {
+        String val = request.getParameter("vehicleId");
+        if (val == null || val.trim().isEmpty()) {
+            throw new AppException("Mã phương tiện không hợp lệ.");
+        }
+        return Integer.parseInt(val.trim());
+    }
+
+    // Updates an existing vehicle with new form data, handles new images, and logs an audit entry.
     private void handleUpdateVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        int carId = Integer.parseInt(request.getParameter("carId"));
-        Vehicle car = vehicleService.getVehicleById(carId);
+        int vehicleId = parseVehicleId(request);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
 
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
@@ -288,18 +299,18 @@ public class VehicleManagementServlet extends HttpServlet {
 
         // Handle new image uploads
         try {
-            saveSingleImage(carId, request, "newPrimaryImage", true);
-            saveMultipleImages(carId, request, "newSecondaryImages");
+            saveSingleImage(vehicleId, request, "newPrimaryImage", true);
+            saveMultipleImages(vehicleId, request, "newSecondaryImages");
         } catch (Exception e) {
-            System.err.println("Error uploading images for car " + carId + ": " + e.getMessage());
+            System.err.println("Error uploading images for car " + vehicleId + ":");
             e.printStackTrace();
             throw new AppException("Lỗi khi upload ảnh: " + e.getMessage(), e);
         }
 
-        Vehicle updatedVehicle = vehicleService.getVehicleById(carId);
+        Vehicle updatedVehicle = vehicleService.getVehicleById(vehicleId);
         String carName = updatedVehicle != null ? (updatedVehicle.getBrand() + " " + updatedVehicle.getModel()) : "";
-        logVehicleAudit(request, currentUser, "UPDATE", carId,
-                "Cập nhật xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+        logVehicleAudit(request, currentUser, "UPDATE", vehicleId,
+                "Cập nhật xe " + carName + " - Biển số " + licensePlate + " (#" + vehicleId + ")");
     }
 
     // Deletes vehicle permanently (ADMIN only, cannot delete RENTED vehicles).
@@ -310,9 +321,9 @@ public class VehicleManagementServlet extends HttpServlet {
             throw new AppException("Chỉ quản trị viên mới được phép xóa xe. STAFF có thể ẩn xe bằng nút 'Ẩn'.");
         }
 
-        int carId = Integer.parseInt(request.getParameter("carId"));
+        int vehicleId = parseVehicleId(request);
 
-        Vehicle car = vehicleService.getVehicleById(carId);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -325,21 +336,21 @@ public class VehicleManagementServlet extends HttpServlet {
         String carName = car.getBrand() + " " + car.getModel();
         String licensePlate = car.getLicensePlate();
 
-        boolean deleted = vehicleService.deleteVehicle(carId);
+        boolean deleted = vehicleService.deleteVehicle(vehicleId);
         if (!deleted) {
             throw new AppException("Không tìm thấy xe để xóa.");
         }
 
-        logVehicleAudit(request, currentUser, "DELETE", carId,
-                "Xóa xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+        logVehicleAudit(request, currentUser, "DELETE", vehicleId,
+                "Xóa xe " + carName + " - Biển số " + licensePlate + " (#" + vehicleId + ")");
     }
 
     // Hides vehicle by setting status to INACTIVE (invisible to customers, staff can still manage).
     private void handleHideVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        int carId = Integer.parseInt(request.getParameter("carId"));
+        int vehicleId = parseVehicleId(request);
 
-        Vehicle car = vehicleService.getVehicleById(carId);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -348,21 +359,21 @@ public class VehicleManagementServlet extends HttpServlet {
         String licensePlate = car.getLicensePlate();
 
         // Update car status to INACTIVE
-        boolean updated = vehicleService.updateVehicleStatus(carId, "INACTIVE");
+        boolean updated = vehicleService.updateVehicleStatus(vehicleId, "INACTIVE");
         if (!updated) {
             throw new AppException("Không thể ẩn xe.");
         }
 
-        logVehicleAudit(request, currentUser, "HIDE", carId,
-                "Ẩn xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+        logVehicleAudit(request, currentUser, "HIDE", vehicleId,
+                "Ẩn xe " + carName + " - Biển số " + licensePlate + " (#" + vehicleId + ")");
     }
 
     // Shows hidden vehicle by setting status to AVAILABLE (makes it visible to customers again).
     private void handleShowVehicle(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        int carId = Integer.parseInt(request.getParameter("carId"));
+        int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
 
-        Vehicle car = vehicleService.getVehicleById(carId);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             throw new AppException("Xe không tồn tại.");
         }
@@ -371,24 +382,24 @@ public class VehicleManagementServlet extends HttpServlet {
         String licensePlate = car.getLicensePlate();
 
         // Update car status to AVAILABLE
-        boolean updated = vehicleService.updateVehicleStatus(carId, "AVAILABLE");
+        boolean updated = vehicleService.updateVehicleStatus(vehicleId, "AVAILABLE");
         if (!updated) {
             throw new AppException("Không thể hiện xe.");
         }
 
-        logVehicleAudit(request, currentUser, "SHOW", carId,
-                "Hiện xe " + carName + " - Biển số " + licensePlate + " (#" + carId + ")");
+        logVehicleAudit(request, currentUser, "SHOW", vehicleId,
+                "Hiện xe " + carName + " - Biển số " + licensePlate + " (#" + vehicleId + ")");
     }
 
     // Records vehicle audit entry with rich details (name, plate) and prevents duplicate logging.
-    private void logVehicleAudit(HttpServletRequest request, User currentUser, String action, int carId, String description) {
-        auditLogService.logAction(currentUser.getUserId(), action, "VEHICLE", carId, description);
+    private void logVehicleAudit(HttpServletRequest request, User currentUser, String action, int vehicleId, String description) {
+        auditLogService.logAction(currentUser.getUserId(), action, "VEHICLE", vehicleId, description);
         request.setAttribute("auditLogged", Boolean.TRUE);
     }
 
     // Resolves upload directory path for vehicle images and creates it if missing.
     private Path resolveUploadPath() throws IOException {
-        String uploadDir = getServletContext().getRealPath("") + "/assets/images/cars";
+        String uploadDir = getServletContext().getRealPath("") + "/assets/images/vehicles";
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
@@ -396,7 +407,8 @@ public class VehicleManagementServlet extends HttpServlet {
         return uploadPath;
     }
 
-    private VehicleImage storeImagePart(Part part, int carId, Path uploadPath, int sortOrder, boolean isPrimary) throws IOException {
+    // Saves an uploaded image file to both the deployment (target/) and source (src/) directories with a unique filename, returns the VehicleImage.
+    private VehicleImage storeImagePart(Part part, int vehicleId, Path uploadPath, int sortOrder, boolean isPrimary) throws IOException {
         String fileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
         String sanitizedFileName = fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
         String uniqueFileName = System.currentTimeMillis() + "_" + sanitizedFileName;
@@ -411,7 +423,7 @@ public class VehicleManagementServlet extends HttpServlet {
         try {
             String realPath = getServletContext().getRealPath("");
             if (realPath != null && realPath.contains("target")) {
-                String srcPathStr = realPath.substring(0, realPath.indexOf("target")) + "src/main/webapp/assets/images/cars";
+                String srcPathStr = realPath.substring(0, realPath.indexOf("target")) + "src/main/webapp/assets/images/vehicles";
                 Path srcPath = Paths.get(srcPathStr);
                 if (Files.exists(srcPath.getParent())) {
                     if (!Files.exists(srcPath)) {
@@ -426,7 +438,7 @@ public class VehicleManagementServlet extends HttpServlet {
         }
 
         VehicleImage image = new VehicleImage();
-        image.setVehicleId(carId);
+        image.setVehicleId(vehicleId);
         image.setImageUrl("/assets/images/vehicles/" + uniqueFileName);
         image.setCaption(fileName);
         image.setPrimary(isPrimary);
@@ -435,7 +447,8 @@ public class VehicleManagementServlet extends HttpServlet {
     }
 
 
-    private void saveSingleImage(int carId, HttpServletRequest request, String partName, boolean makePrimary)
+    // Processes a single named image part: clears any existing primary if needed, stores it, and adds it to the database.
+    private void saveSingleImage(int vehicleId, HttpServletRequest request, String partName, boolean makePrimary)
             throws IOException, ServletException {
         Part part = request.getPart(partName);
         if (part == null || part.getSize() == 0) {
@@ -444,22 +457,23 @@ public class VehicleManagementServlet extends HttpServlet {
 
         Path uploadPath = resolveUploadPath();
         if (makePrimary) {
-            vehicleService.clearPrimaryImages(carId);
+            vehicleService.clearPrimaryImages(vehicleId);
         }
 
-        int sortOrder = vehicleService.getVehicleImages(carId).size();
-        VehicleImage image = storeImagePart(part, carId, uploadPath, sortOrder, makePrimary);
+        int sortOrder = vehicleService.getVehicleImages(vehicleId).size();
+        VehicleImage image = storeImagePart(part, vehicleId, uploadPath, sortOrder, makePrimary);
         vehicleService.addVehicleImage(image);
     }
 
-    private void saveMultipleImages(int carId, HttpServletRequest request, String partName)
+    // Processes multiple image parts sharing the same field name: stores each and adds it with an incrementing sort order.
+    private void saveMultipleImages(int vehicleId, HttpServletRequest request, String partName)
             throws IOException, ServletException {
         Path uploadPath = resolveUploadPath();
-        int sortOrder = vehicleService.getVehicleImages(carId).size();
+        int sortOrder = vehicleService.getVehicleImages(vehicleId).size();
 
         for (Part part : request.getParts()) {
             if (part.getName().equals(partName) && part.getSize() > 0) {
-                VehicleImage image = storeImagePart(part, carId, uploadPath, sortOrder++, false);
+                VehicleImage image = storeImagePart(part, vehicleId, uploadPath, sortOrder++, false);
                 vehicleService.addVehicleImage(image);
             }
         }
@@ -467,15 +481,15 @@ public class VehicleManagementServlet extends HttpServlet {
 
     // Retrieves vehicle images as JSON for image management modal display.
     private void handleGetVehicleImages(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String carIdStr = request.getParameter("carId");
-        if (carIdStr == null || carIdStr.isEmpty()) {
+        String vehicleIdStr = request.getParameter("vehicleId");
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
             response.setContentType("application/json");
             response.getWriter().write("[]");
             return;
         }
 
-        int carId = Integer.parseInt(carIdStr);
-        List<VehicleImage> images = vehicleService.getVehicleImages(carId);
+        int vehicleId = Integer.parseInt(vehicleIdStr);
+        List<VehicleImage> images = vehicleService.getVehicleImages(vehicleId);
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < images.size(); i++) {
@@ -525,7 +539,7 @@ public class VehicleManagementServlet extends HttpServlet {
 
             response.getWriter().write(json.toString());
         } catch (Exception e) {
-            System.err.println("Error loading models for brand " + brandIdStr + ": " + e.getMessage());
+            System.err.println("Error loading models for brand " + brandIdStr + ":");
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
@@ -550,22 +564,23 @@ public class VehicleManagementServlet extends HttpServlet {
     // Sets selected image as primary vehicle display image for catalog listings.
     private void handleSetPrimaryImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String imageIdStr = request.getParameter("imageId");
-        String carIdStr = request.getParameter("carId");
+        String vehicleIdStr = request.getParameter("vehicleId");
 
-        if (imageIdStr == null || carIdStr == null || imageIdStr.isEmpty() || carIdStr.isEmpty()) {
+        if (imageIdStr == null || vehicleIdStr == null || imageIdStr.isEmpty() || vehicleIdStr.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
         int imageId = Integer.parseInt(imageIdStr);
-        int carId = Integer.parseInt(carIdStr);
-        boolean success = vehicleService.setPrimaryImage(carId, imageId);
+        int vehicleId = Integer.parseInt(vehicleIdStr);
+        boolean success = vehicleService.setPrimaryImage(vehicleId, imageId);
 
         response.setContentType("application/json");
         response.getWriter().write("{\"success\":" + success + "}");
     }
 
     // Escapes special characters in text for safe JSON response output (prevents XSS).
+    // Escapes special characters (quotes, newlines, tabs) for safe JSON response output (prevents XSS).
     private String escapeJson(String text) {
         if (text == null) return "";
         return text.replace("\\", "\\\\")
@@ -575,6 +590,7 @@ public class VehicleManagementServlet extends HttpServlet {
                    .replace("\t", "\\t");
     }
 
+    // Sends a JSON response with a success flag and message/error field (used for AJAX operations).
     private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
         response.setContentType("application/json; charset=UTF-8");
         String json = "{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}";

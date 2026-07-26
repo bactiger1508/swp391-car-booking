@@ -56,11 +56,11 @@
                                 <c:if test="${empty userMap[b.customerId]}">User #${b.customerId}</c:if>
                             </td>
                             <td>
-                                <c:if test="${not empty carMap[b.carId]}">
-                                    ${carMap[b.carId].brand} ${carMap[b.carId].model}
-                                    <div class="sub">${carMap[b.carId].licensePlate}</div>
+                                <c:if test="${not empty carMap[b.vehicleId]}">
+                                    ${carMap[b.vehicleId].brand} ${carMap[b.vehicleId].model}
+                                    <div class="sub">${carMap[b.vehicleId].licensePlate}</div>
                                 </c:if>
-                                <c:if test="${empty carMap[b.carId]}">Xe #${b.carId}</c:if>
+                                <c:if test="${empty carMap[b.vehicleId]}">Xe #${b.vehicleId}</c:if>
                             </td>
                             <td>
                                 <div>

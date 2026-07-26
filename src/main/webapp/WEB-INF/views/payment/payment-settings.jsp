@@ -130,7 +130,7 @@
                     <!-- LEFT COLUMN: Deposits, Grace Hours, Cancellations & Bank Accounts (col-span-8) -->
                     <div class="col-span-12 lg:col-span-8 space-y-6">
 
-                        <!-- Card 1: Deposits & Grace Period -->
+                        <!-- Card 1: Deposit Configuration -->
                         <div class="glass-card rounded-3xl p-8 shadow-sm">
                             <div class="flex items-center gap-3 mb-6">
                                 <div
@@ -139,171 +139,37 @@
                                         style="font-variation-settings: 'FILL' 1">gavel</span>
                                 </div>
                                 <div>
-                                    <h4 class="text-xl font-bold text-on-surface">Quy tắc Đặt cọc &amp; Phí trễ hạn</h4>
-                                    <p class="text-sm text-on-surface-variant">Thiết lập các mức phí bảo đảm và phạt vi
-                                        phạm thời gian.</p>
+                                    <h4 class="text-xl font-bold text-on-surface">Quy tắc Đặt cọc</h4>
+                                    <p class="text-sm text-on-surface-variant">Thiết lập mức phí bảo đảm khi khách hàng
+                                        đặt xe. Khách hàng phải thanh toán đủ tiền cọc trước khi bàn giao xe.</p>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-8">
-                                <div class="space-y-4">
-                                    <!-- Deposit Percentage -->
-                                    <c:set var="depositPercentage"
-                                        value="${settingMap['DEPOSIT_PERCENTAGE'] != null ? settingMap['DEPOSIT_PERCENTAGE'].policyValue : '30'}" />
-                                    <label class="block">
-                                        <span
-                                            class="text-sm font-semibold text-on-surface flex items-center gap-2 mb-2">
-                                            Tiền đặt cọc mặc định (%)
-                                            <span class="material-symbols-outlined text-xs text-outline cursor-help"
-                                                title="Phần trăm giá trị hợp đồng cần đặt cọc">info</span>
-                                        </span>
-                                        <div
-                                            class="relative rounded-xl overflow-hidden border border-outline-variant focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-                                            <input
-                                                class="w-full bg-surface-container-low border-none px-4 py-3 outline-none transition-all font-medium text-on-surface"
-                                                type="number" name="policy_DEPOSIT_PERCENTAGE"
-                                                value="${depositPercentage}" min="0" max="100" required />
-                                            <span
-                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-outline font-medium">%</span>
-                                        </div>
-                                    </label>
-
-                                    <!-- Grace Period (Hours) -->
-                                    <c:set var="gracePeriod"
-                                        value="${settingMap['PAYMENT_GRACE_PERIOD_HOURS'] != null ? settingMap['PAYMENT_GRACE_PERIOD_HOURS'].policyValue : '24'}" />
-                                    <label class="block">
-                                        <span class="text-sm font-semibold text-on-surface mb-2 block">Thời gian gia hạn
-                                            thanh toán (Giờ)</span>
-                                        <div
-                                            class="relative rounded-xl overflow-hidden border border-outline-variant focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-                                            <input
-                                                class="w-full bg-surface-container-low border-none px-4 py-3 outline-none transition-all font-medium text-on-surface"
-                                                type="number" name="policy_PAYMENT_GRACE_PERIOD_HOURS"
-                                                value="${gracePeriod}" min="1" max="168" required />
-                                            <span
-                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-outline font-medium">Giờ</span>
-                                        </div>
-                                    </label>
-                                </div>
-
-                                <div class="space-y-4">
-                                    <!-- Delay Penalty (Placeholder view for compliance, styled premium) -->
-                                    <label class="block">
-                                        <span class="text-sm font-semibold text-on-surface mb-2 block">Phí trễ trả xe
-                                            mỗi giờ (%)</span>
-                                        <div
-                                            class="relative rounded-xl overflow-hidden border border-outline-variant bg-surface-container-high/40">
-                                            <input
-                                                class="w-full bg-transparent border-none px-4 py-3 outline-none font-medium text-outline"
-                                                type="number" value="10" readonly disabled />
-                                            <span
-                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-outline font-medium">%
-                                                giá ngày</span>
-                                        </div>
-                                    </label>
-
-                                    <!-- Cancellation grace period minutes -->
-                                    <label class="block">
-                                        <span class="text-sm font-semibold text-on-surface mb-2 block">Thời gian ân hạn
-                                            trả muộn (Phút)</span>
-                                        <div
-                                            class="relative rounded-xl overflow-hidden border border-outline-variant bg-surface-container-high/40">
-                                            <input
-                                                class="w-full bg-transparent border-none px-4 py-3 outline-none font-medium text-outline"
-                                                type="number" value="30" readonly disabled />
-                                            <span
-                                                class="absolute right-4 top-1/2 -translate-y-1/2 text-outline font-medium">Phút</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Partial Payment option -->
-                            <c:set var="partialAllowed"
-                                value="${settingMap['PAYMENT_PARTIAL_ALLOWED'] != null && settingMap['PAYMENT_PARTIAL_ALLOWED'].policyValue == 'true'}" />
-                            <div class="mt-6 pt-6 border-t border-outline-variant/30 flex items-center justify-between">
-                                <div>
-                                    <span class="text-sm font-semibold text-on-surface block">Cho phép thanh toán từng
-                                        phần (Partial Payment)</span>
-                                    <span class="text-xs text-on-surface-variant">Hệ thống ghi nhận các giao dịch cọc
-                                        nhỏ hơn hoặc lớn hơn trước khi bàn giao xe.</span>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" name="policy_PAYMENT_PARTIAL_ALLOWED" value="true"
-                                        ${partialAllowed ? 'checked' : '' } class="sr-only peer">
+                            <div class="max-w-md">
+                                <!-- Deposit Percentage -->
+                                <c:set var="depositPercentage"
+                                    value="${settingMap['DEPOSIT_PERCENTAGE'] != null ? settingMap['DEPOSIT_PERCENTAGE'].policyValue : '30'}" />
+                                <label class="block">
+                                    <span
+                                        class="text-sm font-semibold text-on-surface flex items-center gap-2 mb-2">
+                                        Tiền đặt cọc mặc định (%)
+                                        <span class="material-symbols-outlined text-xs text-outline cursor-help"
+                                            title="Phần trăm giá trị hợp đồng cần đặt cọc">info</span>
+                                    </span>
                                     <div
-                                        class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                        class="relative rounded-xl overflow-hidden border border-outline-variant focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                                        <input
+                                            class="w-full bg-surface-container-low border-none px-4 py-3 outline-none transition-all font-medium text-on-surface"
+                                            type="number" name="policy_DEPOSIT_PERCENTAGE"
+                                            value="${depositPercentage}" min="0" max="100" required />
+                                        <span
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 text-outline font-medium">%</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Card 2: Cancellation Rules -->
-                        <div class="glass-card rounded-3xl p-8 shadow-sm">
-                            <div class="flex items-center justify-between mb-6">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                                        <span class="material-symbols-outlined"
-                                            style="font-variation-settings: 'FILL' 1">event_busy</span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xl font-bold text-on-surface">Chính sách Hủy đơn & Hoàn cọc</h4>
-                                        <p class="text-sm text-on-surface-variant">Quản lý phần trăm hoàn trả tiền đặt
-                                            cọc tự động dựa trên thời điểm hủy.</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="space-y-4">
-                                <div
-                                    class="flex items-center gap-4 bg-surface-container-low p-4 rounded-2xl border border-outline-variant/50">
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Thời
-                                            điểm hủy đơn</span>
-                                        <p class="font-semibold text-on-surface">Trước 48 giờ kể từ giờ nhận xe</p>
-                                    </div>
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Hoàn
-                                            trả tiền cọc</span>
-                                        <p class="font-semibold text-emerald-600">Hoàn 100% tiền cọc</p>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center gap-4 bg-surface-container-low p-4 rounded-2xl border border-outline-variant/50">
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Thời
-                                            điểm hủy đơn</span>
-                                        <p class="font-semibold text-on-surface">Từ 24 giờ đến 48 giờ kể từ giờ nhận xe
-                                        </p>
-                                    </div>
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Hoàn
-                                            trả tiền cọc</span>
-                                        <p class="font-semibold text-orange-500">Hoàn 50% tiền cọc</p>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center gap-4 bg-surface-container-low p-4 rounded-2xl border border-outline-variant/50 opacity-75">
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Thời
-                                            điểm hủy đơn</span>
-                                        <p class="font-semibold text-on-surface">Dưới 24 giờ kể từ giờ nhận xe</p>
-                                    </div>
-                                    <div class="flex-1 col-span-5">
-                                        <span
-                                            class="text-[10px] font-bold text-outline uppercase tracking-wider block">Hoàn
-                                            trả tiền cọc</span>
-                                        <p class="font-semibold text-red-600">Không hoàn trả tiền cọc (Phạt cọc)</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Card 3: Collapsible Bank Account Configuration -->
                         <div class="glass-card rounded-3xl p-8 shadow-sm scroll-mt-20" id="bank-config-card">
@@ -379,50 +245,6 @@
                                             class="w-full bg-surface-container-low border-none px-4 py-3 outline-none transition-all font-medium text-on-surface"
                                             type="text" name="policy_BANK_ACCOUNT_NAME" value="${accName}"
                                             placeholder="CONG TY TNHH CAR RENTAL..." required />
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Card 4: Webhook Integration Settings (SePay) -->
-                        <div class="glass-card rounded-3xl p-8 shadow-sm">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div
-                                    class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-                                    <span class="material-symbols-outlined"
-                                        style="font-variation-settings: 'FILL' 1">api</span>
-                                </div>
-                                <div>
-                                    <h4 class="text-xl font-bold text-on-surface">Cấu hình Webhook Tự động SePay</h4>
-                                    <p class="text-sm text-on-surface-variant">Kết nối hệ thống với cổng SePay.vn để tự động xác nhận số dư tài khoản qua API Webhook.</p>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-6">
-                                <!-- Webhook Provider (Hidden/Disabled since SePay is now hardcoded) -->
-                                <label class="block">
-                                    <span class="text-sm font-semibold text-on-surface mb-2 block">Cổng kết nối mặc định</span>
-                                    <div class="relative rounded-xl overflow-hidden border border-outline-variant bg-surface-container-high/40">
-                                        <input class="w-full bg-transparent border-none px-4 py-3 outline-none font-medium text-outline" type="text" value="SePay.vn" readonly disabled />
-                                        <input type="hidden" name="policy_WEBHOOK_PROVIDER" value="SEPAY" />
-                                    </div>
-                                </label>
-
-                                <!-- Webhook Secret / API Token Key -->
-                                <c:set var="webhookSecret"
-                                    value="${settingMap['WEBHOOK_SECRET'] != null ? settingMap['WEBHOOK_SECRET'].policyValue : ''}" />
-                                <label class="block">
-                                    <span class="text-sm font-semibold text-on-surface mb-2 flex items-center gap-2">
-                                        API Webhook Token / Secret Key *
-                                        <span class="material-symbols-outlined text-xs text-outline cursor-help"
-                                            title="Mã bảo mật (API Key / Token) được cấu hình trên SePay dùng để xác thực request gửi tới webhook của bạn.">info</span>
-                                    </span>
-                                    <div
-                                        class="relative rounded-xl overflow-hidden border border-outline-variant focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
-                                        <input
-                                            class="w-full bg-surface-container-low border-none px-4 py-3 outline-none transition-all font-medium text-on-surface"
-                                            type="password" name="policy_WEBHOOK_SECRET" value="${webhookSecret}"
-                                            placeholder="Nhập Token bảo mật SePay..." required />
                                     </div>
                                 </label>
                             </div>
@@ -552,8 +374,7 @@
                                     hoàn tiền" trên giao diện Đặt xe của khách hàng dựa trên các cấu hình ở trên. Mức
                                     đặt cọc mặc định là <span
                                         class="font-bold text-primary">${depositPercentage}%</span> tổng giá trị đơn
-                                    đặt, và thời gian chờ cọc là <span class="font-bold text-primary">${gracePeriod}
-                                        giờ</span> trước khi tự động hủy. Phí vi phạm trả muộn sẽ tự động cộng vào biên
+                                    đặt. Khách hàng phải thanh toán đủ tiền cọc trước khi bàn giao xe. Phí vi phạm trả muộn sẽ tự động cộng vào biên
                                     bản bàn giao nhận lại xe.
                                 </p>
                                 <div class="flex gap-6 mt-4 text-[11px] font-semibold text-outline">

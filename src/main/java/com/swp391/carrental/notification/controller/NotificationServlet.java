@@ -13,10 +13,15 @@ import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.model.User;
 
+/*
+ * Name: NotificationServlet
+ * Description: Handles listing, click-through routing, and read-state updates for user notifications.
+ */
 @WebServlet(name = "NotificationServlet", urlPatterns = {"/notifications"})
 public class NotificationServlet extends HttpServlet {
     private final NotificationService notificationService = new NotificationService();
 
+    // Routes GET requests to view/list, unread-count, get-all, or click-through handlers based on the action param.
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,6 +40,8 @@ public class NotificationServlet extends HttpServlet {
                 handleGetUnreadCount(request, response, currentUser);
             } else if ("getAll".equals(action)) {
                 handleGetAllNotifications(request, response, currentUser);
+            } else if ("click".equals(action)) {
+                handleNotificationClick(request, response, currentUser);
             } else {
                 handleViewNotifications(request, response, currentUser);
             }
@@ -44,6 +51,7 @@ public class NotificationServlet extends HttpServlet {
         }
     }
 
+    // Routes POST requests to mark-as-read or mark-all-as-read handlers based on the action param.
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -80,6 +88,59 @@ public class NotificationServlet extends HttpServlet {
                 doGet(request, response);
             }
         }
+    }
+
+    // Handles notification click: marks as read and redirects to relevant detail page based on referenceType and user role.
+    private void handleNotificationClick(HttpServletRequest request, HttpServletResponse response, User currentUser)
+            throws IOException {
+        String notificationIdStr = request.getParameter("notificationId");
+        if (notificationIdStr == null || notificationIdStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/notifications");
+            return;
+        }
+
+        int notificationId = Integer.parseInt(notificationIdStr);
+        Notification notification = notificationService.getNotificationById(notificationId);
+
+        if (notification == null || notification.getUserId() != currentUser.getUserId()) {
+            response.sendRedirect(request.getContextPath() + "/notifications");
+            return;
+        }
+
+        // Mark notification as read
+        notificationService.markNotificationAsRead(notificationId);
+
+        // Route to detail page based on referenceType
+        String contextPath = request.getContextPath();
+        String redirectUrl = contextPath + "/notifications";
+
+        if (notification.getReferenceType() != null && notification.getReferenceId() != null) {
+            switch (notification.getReferenceType()) {
+                case "VEHICLE":
+                    // Route to admin detail page if user is ADMIN/STAFF, otherwise customer detail page
+                    String userRole = currentUser.getRole();
+                    if ("ADMIN".equals(userRole) || "STAFF".equals(userRole)) {
+                        redirectUrl = contextPath + "/vehicles/admin/detail?id=" + notification.getReferenceId();
+                    } else {
+                        redirectUrl = contextPath + "/vehicles/detail?id=" + notification.getReferenceId();
+                    }
+                    break;
+                case "BOOKING":
+                    redirectUrl = contextPath + "/bookings/detail?id=" + notification.getReferenceId();
+                    break;
+                case "CONTRACT":
+                    redirectUrl = contextPath + "/contracts/detail?id=" + notification.getReferenceId();
+                    break;
+                case "PAYMENT":
+                    redirectUrl = contextPath + "/payments/record?id=" + notification.getReferenceId();
+                    break;
+                case "MAINTENANCE":
+                    redirectUrl = contextPath + "/vehicles/maintenance?vehicleId=" + notification.getReferenceId();
+                    break;
+            }
+        }
+
+        response.sendRedirect(redirectUrl);
     }
 
     // Displays notification list page with all user notifications and unread count.
@@ -165,6 +226,7 @@ public class NotificationServlet extends HttpServlet {
                    .replace("\t", "\\t");
     }
 
+    // Sends a JSON response with a success flag and message/error field (used for AJAX operations).
     private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
         response.setContentType("application/json; charset=UTF-8");
         String json = "{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}";

@@ -293,7 +293,7 @@ public class ContractDAO {
         c.setBookingId(rs.getInt("booking_id"));
         c.setContractNumber(rs.getString("contract_number"));
         c.setCustomerId(rs.getInt("customer_id"));
-        c.setCarId(rs.getInt("vehicle_id"));
+        c.setVehicleId(rs.getInt("vehicle_id"));
         Timestamp sd = rs.getTimestamp("start_date");
         if (sd != null) {
             c.setStartDate(sd.toLocalDateTime());

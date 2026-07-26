@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.swp391.carrental.user.model.User" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
@@ -120,7 +121,7 @@
                             <td class="font-mono" style="font-weight: 600;">${car.licensePlate}</td>
                             <td class="font-semibold"><fmt:formatNumber value="${car.dailyRate}" type="number" groupingUsed="true"/> VND</td>
                             <td>
-                                <fmt:formatNumber value="${depositAmounts[car.carId]}" type="number" groupingUsed="true"/> VND
+                                <fmt:formatNumber value="${depositAmounts[car.vehicleId]}" type="number" groupingUsed="true"/> VND
                                 <span style="font-size:11px;color:var(--text-secondary);">(${depositPercentage}%)</span>
                             </td>
                             <td style="text-align: center; font-weight: 600;">${car.seats}</td>
@@ -166,32 +167,42 @@
                             </td>
                             <td style="text-align: right;">
                                 <div style="display: inline-flex; gap: 4px; justify-content: flex-end;">
-                                    <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                    </a>
-                                    <button onclick="openEditModal(${car.carId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                    <%
+                                        User currentUser = (User) session.getAttribute("currentUser");
+                                        String role = (currentUser != null) ? currentUser.getRole() : "CUSTOMER";
+                                    %>
+                                    <%if ("ADMIN".equals(role) || "STAFF".equals(role)) {%>
+                                        <a href="${pageContext.request.contextPath}/vehicles/admin/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết (Admin)" style="display:inline-flex; align-items:center;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                        </a>
+                                    <%} else {%>
+                                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                        </a>
+                                    <%}%>
+                                    <button onclick="openEditModal(${car.vehicleId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                                     </button>
                                     <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
-                                        <button onclick="deleteVehicle(${car.carId})" class="text-[#D32F2F] hover:text-[#B71C1C] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xóa xe (chỉ ADMIN)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                        <button onclick="deleteVehicle(${car.vehicleId})" class="text-[#D32F2F] hover:text-[#B71C1C] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xóa xe (chỉ ADMIN)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                             <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
                                         </button>
                                     </c:if>
                                     <c:if test="${sessionScope.currentUser.role != 'ADMIN'}">
                                         <c:choose>
                                             <c:when test="${car.status == 'INACTIVE'}">
-                                                <button onclick="showVehicle(${car.carId})" class="text-[#2E7D32] hover:text-[#1B5E20] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Hiện xe (cho phép customer xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                                <button onclick="showVehicle(${car.vehicleId})" class="text-[#2E7D32] hover:text-[#1B5E20] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Hiện xe (cho phép customer xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                                     <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                                                 </button>
                                             </c:when>
                                             <c:otherwise>
-                                                <button onclick="hideVehicle(${car.carId})" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Ẩn xe (customer không thể xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
+                                                <button onclick="hideVehicle(${car.vehicleId})" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Ẩn xe (customer không thể xem)" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                                     <span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
                                                 </button>
                                             </c:otherwise>
                                         </c:choose>
                                     </c:if>
-                                    <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&carId=${car.carId}" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Lịch bảo trì" style="display:inline-flex; align-items:center;">
+                                    <a href="${pageContext.request.contextPath}/vehicles/maintenance?action=list&vehicleId=${car.vehicleId}" class="text-[#F57C00] hover:text-[#E65100] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Lịch bảo trì" style="display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">build</span>
                                     </a>
                                 </div>
@@ -439,8 +450,8 @@ function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
 }
 
-function openEditModal(carId, brandId, modelId, year, color, seats, transmission, fuelType, dailyRate, description, location, features, status, mileage, licensePlate) {
-    document.getElementById('editCarId').value = carId;
+function openEditModal(vehicleId, brandId, modelId, year, color, seats, transmission, fuelType, dailyRate, description, location, features, status, mileage, licensePlate) {
+    document.getElementById('editVehicleId').value = vehicleId;
     document.getElementById('editLicensePlate').value = licensePlate;
     document.getElementById('editBrand').value = brandId;
     loadModelsForBrand(brandId, 'editModel', modelId);
@@ -463,7 +474,7 @@ function openEditModal(carId, brandId, modelId, year, color, seats, transmission
     document.getElementById('editSecondaryImageInput').value = '';
 
     // Fetch current images
-    fetchCarImages(carId);
+    fetchCarImages(vehicleId);
 
     document.getElementById('editModal').style.display = 'block';
 }
@@ -495,7 +506,7 @@ function previewImages(event, previewContainerId) {
     }
 }
 
-function buildImageCard(img, carId) {
+function buildImageCard(img, vehicleId) {
     const card = document.createElement('div');
     card.style.cssText = 'position:relative; background:#F5F5F5; border-radius:4px; overflow:hidden; border:2px solid ' + (img.isPrimary ? '#FFC107' : '#E0E0E0') + ';';
 
@@ -519,7 +530,7 @@ function buildImageCard(img, carId) {
     deleteBtn.className = 'bk-btn bk-btn-sm';
     deleteBtn.style.cssText = 'flex:1; font-size:11px; padding:4px;';
     deleteBtn.textContent = '🗑 Xóa';
-    deleteBtn.onclick = function() { deleteCarImage(img.imageId, carId); };
+    deleteBtn.onclick = function() { deleteCarImage(img.imageId, vehicleId); };
     actions.appendChild(deleteBtn);
 
     if (img.isPrimary) {
@@ -535,7 +546,7 @@ function buildImageCard(img, carId) {
         makePrimaryBtn.className = 'bk-btn bk-btn-sm';
         makePrimaryBtn.style.cssText = 'flex:1; font-size:11px; padding:4px;';
         makePrimaryBtn.textContent = '⭐ Làm Chính';
-        makePrimaryBtn.onclick = function() { setPrimaryCarImage(img.imageId, carId); };
+        makePrimaryBtn.onclick = function() { setPrimaryCarImage(img.imageId, vehicleId); };
         actions.appendChild(makePrimaryBtn);
     }
 
@@ -543,13 +554,13 @@ function buildImageCard(img, carId) {
     return card;
 }
 
-function fetchCarImages(carId) {
+function fetchCarImages(vehicleId) {
     const primaryContainer = document.getElementById('currentPrimaryImage');
     const secondaryContainer = document.getElementById('currentSecondaryImages');
     primaryContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#999; font-size:12px;">Đang tải ảnh...</div>';
     secondaryContainer.innerHTML = '';
 
-    fetch(contextPath + '/vehicles/manage?action=getCarImages&carId=' + carId)
+    fetch(contextPath + '/vehicles/manage?action=getVehicleImages&vehicleId=' + vehicleId)
         .then(response => response.json())
         .then(images => {
             primaryContainer.innerHTML = '';
@@ -561,13 +572,13 @@ function fetchCarImages(carId) {
             if (primaryImages.length === 0) {
                 primaryContainer.innerHTML = '<div style="grid-column:1/-1; padding:12px; background:#F5F5F5; border-radius:4px; font-size:12px; color:#999;">Chưa có ảnh chính</div>';
             } else {
-                primaryImages.forEach(img => primaryContainer.appendChild(buildImageCard(img, carId)));
+                primaryImages.forEach(img => primaryContainer.appendChild(buildImageCard(img, vehicleId)));
             }
 
             if (secondaryImages.length === 0) {
                 secondaryContainer.innerHTML = '<div style="grid-column:1/-1; padding:12px; background:#F5F5F5; border-radius:4px; font-size:12px; color:#999;">Chưa có ảnh phụ</div>';
             } else {
-                secondaryImages.forEach(img => secondaryContainer.appendChild(buildImageCard(img, carId)));
+                secondaryImages.forEach(img => secondaryContainer.appendChild(buildImageCard(img, vehicleId)));
             }
         })
         .catch(error => {
@@ -576,14 +587,14 @@ function fetchCarImages(carId) {
         });
 }
 
-function deleteCarImage(imageId, carId) {
+function deleteCarImage(imageId, vehicleId) {
     if (!confirm('Bạn chắc chắn muốn xóa ảnh này?')) return;
 
     fetch(contextPath + '/vehicles/manage?action=deleteImage&imageId=' + imageId, {method: 'POST'})
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                fetchCarImages(carId);
+                fetchCarImages(vehicleId);
             } else {
                 alert('Xóa ảnh thất bại');
             }
@@ -591,12 +602,12 @@ function deleteCarImage(imageId, carId) {
         .catch(error => console.error('Error deleting image:', error));
 }
 
-function setPrimaryCarImage(imageId, carId) {
-    fetch(contextPath + '/vehicles/manage?action=setPrimaryImage&imageId=' + imageId + '&carId=' + carId, {method: 'POST'})
+function setPrimaryCarImage(imageId, vehicleId) {
+    fetch(contextPath + '/vehicles/manage?action=setPrimaryImage&imageId=' + imageId + '&vehicleId=' + vehicleId, {method: 'POST'})
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                fetchCarImages(carId);
+                fetchCarImages(vehicleId);
             } else {
                 alert('Cập nhật ảnh chính thất bại');
             }
@@ -608,7 +619,7 @@ function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-function deleteVehicle(carId) {
+function deleteVehicle(vehicleId) {
     if (!confirm('⚠️ Bạn chắc chắn muốn xóa xe này? Hành động này không thể hoàn tác!\n\nNhư cầu: Chỉ ADMIN được phép xóa. Nếu xe đang cho thuê, bạn phải ẩn nó trước.')) {
         return;
     }
@@ -616,7 +627,7 @@ function deleteVehicle(carId) {
     fetch('${pageContext.request.contextPath}/vehicles/manage', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=delete&carId=' + carId
+        body: 'action=delete&vehicleId=' + vehicleId
     })
     .then(response => response.json())
     .then(data => {
@@ -630,7 +641,7 @@ function deleteVehicle(carId) {
     .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
 }
 
-function hideVehicle(carId) {
+function hideVehicle(vehicleId) {
     if (!confirm('Bạn chắc chắn muốn ẩn xe này? Customer sẽ không thể thấy xe.')) {
         return;
     }
@@ -638,7 +649,7 @@ function hideVehicle(carId) {
     fetch('${pageContext.request.contextPath}/vehicles/manage', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=hide&carId=' + carId
+        body: 'action=hide&vehicleId=' + vehicleId
     })
     .then(response => response.json())
     .then(data => {
@@ -652,7 +663,7 @@ function hideVehicle(carId) {
     .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
 }
 
-function showVehicle(carId) {
+function showVehicle(vehicleId) {
     if (!confirm('Bạn chắc chắn muốn hiện xe này? Customer sẽ có thể thấy xe.')) {
         return;
     }
@@ -660,7 +671,7 @@ function showVehicle(carId) {
     fetch('${pageContext.request.contextPath}/vehicles/manage', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'action=show&carId=' + carId
+        body: 'action=show&vehicleId=' + vehicleId
     })
     .then(response => response.json())
     .then(data => {
@@ -925,7 +936,7 @@ function showSuccessAlert(message) {
         <h2 style="margin-top:0; color:var(--primary);">Sửa Thông Tin Xe</h2>
         <form id="editForm" method="POST" action="${pageContext.request.contextPath}/vehicles/manage" enctype="multipart/form-data">
             <input type="hidden" name="action" value="update">
-            <input type="hidden" name="carId" id="editCarId">
+            <input type="hidden" name="vehicleId" id="editVehicleId">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
                 <div class="bk-form-group">
                     <label class="bk-form-label">Biển Số *</label>

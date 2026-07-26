@@ -8,10 +8,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.contract.dao.ContractDAO;
@@ -20,18 +22,24 @@ import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.service.HandoverService;
 import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
+import com.swp391.carrental.payment.model.Payment;
+import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
-@WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = {"/handovers/create"})
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 1,
-        maxFileSize = 1024 * 1024 * 10,
-        maxRequestSize = 1024 * 1024 * 15
-)
-
+/**
+ * Name: CreateVehicleHandoverServlet
+ * 
+ * @Author: TamTTMHE190340
+ *          Date: 19/06/2026
+ *          Version: 1.0
+ *          Description: Controller for initializing and creating new vehicle
+ *          handover records.
+ */
+@WebServlet(name = "CreateVehicleHandoverServlet", urlPatterns = { "/handovers/create" })
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 15)
 public class CreateVehicleHandoverServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
@@ -46,42 +54,64 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
-            if (bookingIdStr != null && carIdStr != null) {
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int carId = Integer.parseInt(carIdStr);
+                int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
+
+                VehicleHandover existingHandover = handoverService.getHandoverByBookingId(bookingId);
+                if (existingHandover != null) {
+                    request.getSession().setAttribute("infoMessage",
+                            "Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
+                    response.sendRedirect(
+                            request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
+                    return;
+                }
 
                 // Enforce Handover Validation Checks: active contract and paid deposit
                 if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
 
-                com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
-                java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
-                boolean depositPaid = false;
-                boolean rentalPaid = false;
-                for (com.swp391.carrental.payment.model.Payment p : payments) {
+                PaymentService paymentService = new PaymentService();
+                List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+                java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
+                for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        java.math.BigDecimal completedAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                            depositPaid = true;
+                            depositPaidAmt = depositPaidAmt.add(completedAmt);
                         } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                            rentalPaid = true;
+                            rentalPaidAmt = rentalPaidAmt.add(completedAmt);
                         }
                     }
                 }
+                boolean depositPaid = booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0;
+                
+                java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+                java.math.BigDecimal excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+                java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+                if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+                }
+                boolean rentalPaid = effectiveRentalPaid.compareTo(rentalRequired) >= 0;
                 if (!depositPaid) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
                 if (!rentalPaid) {
-                    request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                    request.getSession().setAttribute("errorMessage",
+                            "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
                     response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                     return;
                 }
@@ -90,7 +120,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
                 request.setAttribute("car", car);
                 request.setAttribute("contract", contract);
                 request.setAttribute("bookingId", bookingId);
-                request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", vehicleId);
                 if (car != null) {
                     request.setAttribute("currentOdo", car.getMileage());
                 }
@@ -111,50 +141,78 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
-            int carId = Integer.parseInt(request.getParameter("carId"));
+            int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
+
+            VehicleHandover existingHandover = handoverService.getHandoverByBookingId(bookingId);
+            if (existingHandover != null) {
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể tạo thêm: Biên bản bàn giao xe cho đơn #" + bookingId + " đã tồn tại.");
+                response.sendRedirect(
+                        request.getContextPath() + "/handover/view?bookingId=" + bookingId + "&vehicleId=" + vehicleId);
+                return;
+            }
 
             // Enforce Handover Validation Checks in POST
             RentalContract contract = contractDAO.findByBookingId(bookingId);
+            Booking booking = bookingDAO.findById(bookingId);
+            if (booking == null) {
+                request.getSession().setAttribute("errorMessage", "Không tìm thấy đơn đặt xe.");
+                response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
+                return;
+            }
             if (contract == null || !"ACTIVE".equals(contract.getStatus())) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Hợp đồng cho đơn này chưa được ký kết hoặc kích hoạt (phải ở trạng thái ACTIVE).");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
 
-            com.swp391.carrental.payment.service.PaymentService paymentService = new com.swp391.carrental.payment.service.PaymentService();
-            java.util.List<com.swp391.carrental.payment.model.Payment> payments = paymentService.getPaymentsByBooking(bookingId);
-            boolean depositPaid = false;
-            boolean rentalPaid = false;
-            for (com.swp391.carrental.payment.model.Payment p : payments) {
+            PaymentService paymentService = new PaymentService();
+            List<Payment> payments = paymentService.getPaymentsByBooking(bookingId);
+            java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
+            for (Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    java.math.BigDecimal completedAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                        depositPaid = true;
+                        depositPaidAmt = depositPaidAmt.add(completedAmt);
                     } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                        rentalPaid = true;
+                        rentalPaidAmt = rentalPaidAmt.add(completedAmt);
                     }
                 }
             }
+            boolean depositPaid = booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0;
+            
+            java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+            java.math.BigDecimal excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount() != null ? booking.getDepositAmount() : java.math.BigDecimal.ZERO);
+            java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+            if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+            }
+            boolean rentalPaid = effectiveRentalPaid.compareTo(rentalRequired) >= 0;
             if (!depositPaid) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền đặt cọc (Deposit).");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
             if (!rentalPaid) {
-                request.getSession().setAttribute("errorMessage", "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
+                request.getSession().setAttribute("errorMessage",
+                        "Không thể bàn giao xe: Đơn đặt xe chưa được thanh toán tiền thuê xe (Rental). Vui lòng ghi nhận thanh toán tiền thuê xe trước khi bàn giao.");
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);
                 return;
             }
 
             // ===== VALIDATION =====
-            if (!validateOdo(request, response, bookingId, carId)) {
+            if (!validateOdo(request, response, bookingId, vehicleId)) {
                 return;
             }
 
-            if (!validateFuel(request, response, bookingId, carId)) {
+            if (!validateFuel(request, response, bookingId, vehicleId)) {
                 return;
             }
 
-            if (!validateImages(request, response, bookingId, carId)) {
+            if (!validateImages(request, response, bookingId, vehicleId)) {
                 return;
             }
 
@@ -185,10 +243,9 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             String status = "CHƯA KÝ NHẬN";
 
             // ===== RELATION DATA =====
-
             Integer contractId = contract != null ? contract.getContractId() : null;
 
-            Booking booking = bookingDAO.findById(bookingId);
+            booking = bookingDAO.findById(bookingId);
 
             int receivedBy = booking != null ? booking.getCustomerId() : null;
 
@@ -204,7 +261,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             handover.setBookingId(bookingId);
             handover.setContractId(contractId);
-            handover.setVehicleId(carId);
+            handover.setVehicleId(vehicleId);
 
             handover.setMileageAtHandover(mileage);
             handover.setFuelLevel(fuelLevel);
@@ -226,14 +283,16 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
             if (request.getSession() != null) {
-                request.getSession().setAttribute("successMessage", "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
+                request.getSession().setAttribute("successMessage",
+                        "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
             }
 
             response.sendRedirect(request.getContextPath() + "/handovers");
 
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi bàn giao: " + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
         }
     }
 
@@ -287,43 +346,46 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         return String.join(", ", list);
     }
 
-    private boolean validateOdo(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateOdo(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException, SQLException {
         String currentOdo = request.getParameter("currentOdo");
 
         if (currentOdo == null || currentOdo.isBlank()) {
-            loadCreateData(request, bookingId, carId);
+            loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng không để trống thông tin");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
 
-        Vehicle car = vehicleDAO.findById(carId);
+        Vehicle car = vehicleDAO.findById(vehicleId);
         int mileage = Integer.parseInt(currentOdo);
 
         if (mileage < car.getMileage()) {
-            loadCreateData(request, bookingId, carId);
+            loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng nhập số km hợp lệ");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
         return true;
     }
 
-    private boolean validateFuel(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateFuel(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException {
         String fuelLevel = request.getParameter("fuel");
 
         if (fuelLevel == null || fuelLevel.isBlank()) {
-            loadCreateData(request, bookingId, carId);
+            loadCreateData(request, bookingId, vehicleId);
             request.setAttribute("currentFuelLevelError", "Vui lòng chọn mức nhiên liệu");
-            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-create.jsp").forward(request,
+                    response);
             return false;
         }
         return true;
     }
 
-    private boolean validateImages(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateImages(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException {
         long MAX_SIZE = 10 * 1024 * 1024;
 
@@ -333,31 +395,31 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
             }
 
             if (part.getSize() > MAX_SIZE) {
-                loadCreateData(request, bookingId, carId);
+                loadCreateData(request, bookingId, vehicleId);
 
                 request.setAttribute(
                         "uploadPhotosError",
-                        "Ảnh " + part.getSubmittedFileName() + " vượt quá dung lượng 10MB."
-                );
+                        "Ảnh " + part.getSubmittedFileName() + " vượt quá dung lượng 10MB.");
 
-                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request,
+                        response);
                 return false;
             }
         }
         return true;
     }
 
-    private void loadCreateData(HttpServletRequest request, int bookingId, int carId) {
+    private void loadCreateData(HttpServletRequest request, int bookingId, int vehicleId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Vehicle car = vehicleDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(vehicleId);
             RentalContract contract = contractDAO.findByBookingId(bookingId);
 
             request.setAttribute("booking", booking);
             request.setAttribute("car", car);
             request.setAttribute("contract", contract);
             request.setAttribute("bookingId", bookingId);
-            request.setAttribute("carId", carId);
+            request.setAttribute("vehicleId", vehicleId);
 
             if (booking != null) {
                 User customer = userDAO.findById(booking.getCustomerId());
@@ -389,7 +451,8 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         try {
             Notification notif = new Notification(customerId,
                     "Biên bản bàn giao xe đã được tạo",
-                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
+                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId
+                            + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
                     "HANDOVER");
             notif.setReferenceType("HANDOVER");
             notif.setReferenceId(handoverId);

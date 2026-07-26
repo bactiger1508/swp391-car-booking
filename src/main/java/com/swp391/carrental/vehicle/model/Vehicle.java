@@ -54,11 +54,6 @@ public class Vehicle {
     }
     public void setPrimaryImageUrl(String primaryImageUrl) { this.primaryImageUrl = primaryImageUrl; }
 
-    @Deprecated
-    public int getCarId() { return vehicleId; }
-    @Deprecated
-    public void setCarId(int carId) { this.vehicleId = carId; }
-
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 

@@ -94,6 +94,7 @@
                         </c:if>
                         
                         <input type="hidden" id="selectedPaymentType" name="paymentType" value="${not empty defaultPaymentType ? defaultPaymentType : 'DEPOSIT'}"/>
+                        <input type="hidden" id="remainingAmountLimit" value="${remainingAmount}"/>
 
                         <div class="bk-form-group" style="margin-bottom: 24px;">
                             <label class="bk-form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">Loại thanh toán</label>
@@ -181,10 +182,15 @@
                                 <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">payments</span>
                                 <input type="text" id="amountDisplay" class="bk-form-input" required
                                        placeholder="0 đ"
-                                       oninput="syncAmount(this)"
-                                       ${sessionScope.currentUser.role == 'CUSTOMER' ? 'readonly' : ''}
-                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary); ${sessionScope.currentUser.role == 'CUSTOMER' ? 'background-color: var(--surface-container-low);' : ''}">
+                                       readonly
+                                       style="padding-left: 40px; font-size: 16px; font-weight: 600; color: var(--primary); background-color: var(--surface-container-low); cursor: not-allowed;">
                                 <input type="hidden" id="amount" name="amount" value="${defaultPaymentType == 'DEPOSIT' ? remainingDeposit : (defaultPaymentType == 'REFUND' ? excessAmount : remainingAmount)}">
+                            </div>
+                            
+                            <%-- Note showing the deduction of excess deposit --%>
+                            <div id="deposit-deduction-note" style="display: ${defaultPaymentType == 'RENTAL' && excessDeposit > 0 ? 'flex' : 'none'}; font-size: 12.5px; color: #039C74; font-weight: 600; margin-top: 8px; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">task_alt</span>
+                                <span>Đã tự động khấu trừ <strong style="text-decoration: underline;"><fmt:formatNumber value="${excessDeposit}" pattern="#,##0"/> đ</strong> tiền cọc nộp thừa từ giao dịch trước.</span>
                             </div>
                         </div>
 
@@ -241,7 +247,7 @@
                             <div id="cash-instructions-panel" style="display:none; margin-top: 16px; background: #F0FFF4; border: 1px solid #9AE6B4; border-radius: 12px; padding: 16px;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                     <span class="material-symbols-outlined" style="font-size: 20px; color: #276749;">info</span>
-                                    <strong style="color: #276749; font-size: 14px;">Hướng dẫn thanh toán tiền mặt</strong>
+                                    <strong id="cash-title" style="color: #276749; font-size: 14px;">Hướng dẫn thanh toán tiền mặt</strong>
                                 </div>
                                 <p style="font-size: 13px; color: #2F855A; margin: 0; line-height: 1.6;">
                                     <c:choose>
@@ -250,8 +256,10 @@
                                             Nhân viên sẽ xác nhận và ghi nhận thanh toán của bạn.
                                         </c:when>
                                         <c:otherwise>
-                                            Nhận trực tiếp tiền mặt từ khách hàng.<br>
-                                            Vui lòng kiểm tra kỹ số tiền nhận được trước khi nhấn xác nhận.
+                                            <span id="cash-desc">
+                                                Nhận trực tiếp tiền mặt từ khách hàng.<br>
+                                                Vui lòng kiểm tra kỹ số tiền nhận được trước khi nhấn xác nhận.
+                                            </span>
                                         </c:otherwise>
                                     </c:choose>
                                 </p>
@@ -291,8 +299,8 @@
                         <c:if test="${sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN'}">
                         <div class="bk-form-group" style="margin-bottom: 20px; text-align: left;">
                             <label class="bk-form-label" for="amountPaidDisplay" style="font-weight: 700; margin-bottom: 8px;">
-                                Số tiền thực nhận (VNĐ)
-                                <span style="font-size: 11px; color: var(--text-secondary); font-weight: 400;"> — để trống nếu bằng số tiền yêu cầu</span>
+                                <span id="amount-paid-label">Số tiền thực nhận (VNĐ)</span>
+                                <span id="amount-paid-sublabel" style="font-size: 11px; color: var(--text-secondary); font-weight: 400;"> — để trống nếu bằng số tiền yêu cầu</span>
                             </label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined" style="font-size:20px; color:var(--outline);">price_check</span>
@@ -514,16 +522,29 @@ function syncAmountPaid(input) {
 }
 
 function checkOverpayment() {
+    var type = document.getElementById('selectedPaymentType').value;
     var required = Number(document.getElementById('amount').value) || 0;
+    var limit = Number(document.getElementById('remainingAmountLimit').value) || required;
     var paidField = document.getElementById('amountPaid');
     if (!paidField) return;
     var paid = Number(paidField.value) || 0;
     var panel = document.getElementById('overpayment-warning');
     if (!panel) return;
-    if (paid > 0 && paid > required) {
-        document.getElementById('ow-required').textContent = formatVND(required);
+    
+    var isOverpaid = false;
+    var overpaidRequired = required;
+    if (type === 'DEPOSIT') {
+        isOverpaid = (paid > limit);
+        overpaidRequired = limit;
+    } else {
+        isOverpaid = (paid > required);
+        overpaidRequired = required;
+    }
+    
+    if (paid > 0 && isOverpaid) {
+        document.getElementById('ow-required').textContent = formatVND(overpaidRequired);
         document.getElementById('ow-paid').textContent = formatVND(paid);
-        document.getElementById('ow-refund').textContent = formatVND(paid - required);
+        document.getElementById('ow-refund').textContent = formatVND(paid - overpaidRequired);
         panel.style.display = 'block';
     } else {
         panel.style.display = 'none';
@@ -567,6 +588,9 @@ function selectPaymentMethod(method) {
 
 function selectPaymentType(type, val, remain, element) {
     document.getElementById('selectedPaymentType').value = type;
+    if (document.getElementById('remainingAmountLimit')) {
+        document.getElementById('remainingAmountLimit').value = remain;
+    }
     
     var cards = document.querySelectorAll('.payment-type-card');
     cards.forEach(function(card) { card.classList.remove('active'); });
@@ -575,6 +599,37 @@ function selectPaymentType(type, val, remain, element) {
     
     document.getElementById('amount').value = val;
     document.getElementById('amountDisplay').value = val ? Number(val).toLocaleString('vi-VN') + ' đ' : '';
+
+    // Dynamic instructions and label changes for REFUND vs other payment types
+    var cashTitle = document.getElementById('cash-title');
+    var cashDesc = document.getElementById('cash-desc');
+    var amountPaidLabel = document.getElementById('amount-paid-label');
+    var amountPaidSublabel = document.getElementById('amount-paid-sublabel');
+    var amountPaidInput = document.getElementById('amountPaidDisplay');
+    
+    var excessDepositVal = Number('${excessDeposit != null ? excessDeposit : 0}') || 0;
+    var deductionNote = document.getElementById('deposit-deduction-note');
+    if (deductionNote) {
+        if (type === 'RENTAL' && excessDepositVal > 0) {
+            deductionNote.style.display = 'flex';
+        } else {
+            deductionNote.style.display = 'none';
+        }
+    }
+
+    if (type === 'REFUND') {
+        if (cashTitle) cashTitle.textContent = 'Hướng dẫn hoàn tiền mặt';
+        if (cashDesc) cashDesc.innerHTML = 'Chi trực tiếp tiền mặt hoàn trả cho khách hàng.<br>Vui lòng kiểm tra kỹ số tiền hoàn trả trước khi nhấn xác nhận.';
+        if (amountPaidLabel) amountPaidLabel.textContent = 'Số tiền thực chi (VNĐ)';
+        if (amountPaidSublabel) amountPaidSublabel.textContent = ' — để trống nếu bằng số tiền hoàn tiền';
+        if (amountPaidInput) amountPaidInput.placeholder = 'Nhập số tiền thực tế hoàn trả cho khách...';
+    } else {
+        if (cashTitle) cashTitle.textContent = 'Hướng dẫn thanh toán tiền mặt';
+        if (cashDesc) cashDesc.innerHTML = 'Nhận trực tiếp tiền mặt từ khách hàng.<br>Vui lòng kiểm tra kỹ số tiền nhận được trước khi nhấn xác nhận.';
+        if (amountPaidLabel) amountPaidLabel.textContent = 'Số tiền thực nhận (VNĐ)';
+        if (amountPaidSublabel) amountPaidSublabel.textContent = ' — để trống nếu bằng số tiền yêu cầu';
+        if (amountPaidInput) amountPaidInput.placeholder = 'Nhập số tiền thực nhận từ khách...';
+    }
 
     // For REFUND: hide Bank Transfer option, force CASH
     var bankCard = document.getElementById('method-card-bank');

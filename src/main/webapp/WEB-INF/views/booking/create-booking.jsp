@@ -68,23 +68,23 @@
                             <label class="bk-form-label">Xe cụ thể <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">directions_car</span>
-                                <select name="carId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
+                                <select name="vehicleId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
                                     <option value="">-- Chọn xe --</option>
                                     <c:forEach var="car" items="${cars}">
-                                        <option value="${car.carId}"
+                                        <option value="${car.vehicleId}"
                                                 data-brand="${car.brand}"
                                                 data-model="${car.model}"
                                                 data-plate="${car.licensePlate}"
                                                 data-price="${car.dailyRate}"
                                                 data-location="${car.location}"
                                                 data-image="${car.primaryImageUrl}"
-                                                ${selectedCarId == car.vehicleId ? 'selected' : ''}>
+                                                ${selectedVehicleId == car.vehicleId ? 'selected' : ''}>
                                             ${car.brand} ${car.model} — ${car.licensePlate}
                                         </option>
                                     </c:forEach>
                                 </select>
                             </div>
-                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-carId"></span>
+                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-vehicleId"></span>
                         </div>
                     </div>
                     <%-- Available count hint --%>
@@ -214,7 +214,10 @@
                             <label class="bk-form-label">Điểm trả xe <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">pin_drop</span>
-                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" placeholder="Nhập địa điểm trả xe" value="${not empty returnLocation ? returnLocation : param.returnLocation}">
+                                <select name="returnLocation" id="returnLocation" class="bk-form-select">
+                                    <option value="Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" ${returnLocation == 'Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội' || param.returnLocation == 'Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội' ? 'selected' : ''}>Chi nhánh Hà Nội: 123 Đường Láng, Hà Nội</option>
+                                    <option value="Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" ${returnLocation == 'Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM' || param.returnLocation == 'Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM' ? 'selected' : ''}>Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM</option>
+                                </select>
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-returnLocation"></span>
                         </div>
@@ -260,7 +263,7 @@
     <div>
         <%-- Selected Vehicle --%>
         <div class="bk-cost-card bk-vehicle-card" style="margin-bottom:24px;">
-            <div class="header">
+            <div class="bk-card-header">
                 <h3><span class="material-symbols-outlined">directions_car</span> Xe đã chọn</h3>
             </div>
             <div id="vehicleInfo" style="color:var(--on-surface-variant);font-size:14px;">
@@ -340,10 +343,106 @@ var tetStartDateStr = '${tetStartDate}' || '2026-02-12';
 var tetEndDateStr = '${tetEndDate}' || '2026-02-22';
 var tetSurchargePct = parseFloat('${tetSurchargePercent}') || 20;
 
+function validateScheduleRealtime() {
+    var sd = document.getElementById('startDate');
+    var st = document.getElementById('startTime');
+    var ed = document.getElementById('endDate');
+    var et = document.getElementById('endTime');
+
+    var sdVal = sd ? sd.value : '';
+    var stVal = st ? st.value : '';
+    var edVal = ed ? ed.value : '';
+    var etVal = et ? et.value : '';
+
+    var errSd = document.getElementById('err-startDate');
+    var errSt = document.getElementById('err-startTime');
+    var errEd = document.getElementById('err-endDate');
+    var errEt = document.getElementById('err-endTime');
+
+    if (errSd) { errSd.textContent = ''; errSd.style.display = 'none'; }
+    if (errSt) { errSt.textContent = ''; errSt.style.display = 'none'; }
+    if (errEd) { errEd.textContent = ''; errEd.style.display = 'none'; }
+    if (errEt) { errEt.textContent = ''; errEt.style.display = 'none'; }
+
+    if (!sdVal || !stVal) return;
+
+    var now = new Date();
+    var todayStr = (typeof getLocalDateString === 'function') ? getLocalDateString(now) : now.toISOString().split('T')[0];
+
+    var submitBtn = document.getElementById('submitBookingBtn');
+    var hasTimeErr = false;
+
+    var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+    var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+    
+    var minBufferHours = 1;
+    if (deliveryMethod === 'DELIVERY') {
+        var travelHours = deliveryDistance / 25.0;
+        minBufferHours = 1.0 + travelHours;
+        minBufferHours = Math.round(minBufferHours * 10) / 10;
+        if (minBufferHours < 1.5) minBufferHours = 1.5;
+    }
+
+    if (sdVal < todayStr) {
+        hasTimeErr = true;
+        if (errSd) {
+            errSd.textContent = 'Ngày bắt đầu không được ở trong quá khứ.';
+            errSd.style.display = 'block';
+        }
+    } else if (sdVal === todayStr && stVal) {
+        var parts = stVal.split(':');
+        var startDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+        var earliestValidDt = new Date(now.getTime() + Math.ceil(minBufferHours * 60 * 60 * 1000));
+
+        if (startDt < earliestValidDt) {
+            hasTimeErr = true;
+            if (errSt) {
+                var formatHrs = String(earliestValidDt.getHours()).padStart(2, '0');
+                var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
+                if (deliveryMethod === 'DELIVERY') {
+                    var travelMins = Math.round((deliveryDistance / 25.0) * 60);
+                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                } else {
+                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất hôm nay từ ' + formatHrs + ':' + formatMins + ' trở đi.';
+                }
+                errSt.style.display = 'block';
+            }
+        }
+    }
+
+    if (sdVal && edVal && edVal < sdVal) {
+        hasTimeErr = true;
+        if (errEd) {
+            errEd.textContent = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+            errEd.style.display = 'block';
+        }
+    } else if (sdVal && edVal && sdVal === edVal && stVal && etVal) {
+        if (etVal <= stVal) {
+            hasTimeErr = true;
+            if (errEt) {
+                errEt.textContent = 'Giờ kết thúc phải lớn hơn giờ bắt đầu khi chọn cùng ngày.';
+                errEt.style.display = 'block';
+            }
+        }
+    }
+
+    if (submitBtn) {
+        if (hasTimeErr) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+}
+
 var carsList = [];
 <c:forEach var="car" items="${cars}">
     carsList.push({
-        id: ${car.vehicleId},
+        vehicleId: ${car.vehicleId},
         brand: '${car.brand}',
         model: '${car.model}',
         plate: '${car.licensePlate}',
@@ -358,7 +457,7 @@ var carsList = [];
 
 function initFilters() {
     var brandFilter = document.getElementById('brandFilter');
-    var selectedCarId = "${selectedCarId}";
+    var selectedVehicleId = "${selectedVehicleId}";
     
     // Get unique brands
     var brands = [];
@@ -377,16 +476,16 @@ function initFilters() {
     });
 
     // If pre-selected car is passed
-    if (selectedCarId) {
-        var preSelectedCar = carsList.find(function(c) { return c.id == selectedCarId; });
+    if (selectedVehicleId) {
+        var preSelectedCar = carsList.find(function(c) { return c.vehicleId == selectedVehicleId; });
         if (preSelectedCar) {
             brandFilter.value = preSelectedCar.brand;
-            onBrandChange(preSelectedCar.model, preSelectedCar.id);
+            onBrandChange(preSelectedCar.model, preSelectedCar.vehicleId);
         }
     }
 }
 
-function onBrandChange(preSelectedModel, preSelectedCarId) {
+function onBrandChange(preSelectedModel, preSelectedVehicleId) {
     var brand = document.getElementById('brandFilter').value;
     var modelFilter = document.getElementById('modelFilter');
     var carSelect = document.getElementById('carSelect');
@@ -421,11 +520,11 @@ function onBrandChange(preSelectedModel, preSelectedCarId) {
     
     if (preSelectedModel) {
         modelFilter.value = preSelectedModel;
-        onModelChange(preSelectedCarId);
+        onModelChange(preSelectedVehicleId);
     }
 }
 
-function onModelChange(preSelectedCarId) {
+function onModelChange(preSelectedVehicleId) {
     var brand = document.getElementById('brandFilter').value;
     var model = document.getElementById('modelFilter').value;
     var carSelect = document.getElementById('carSelect');
@@ -447,7 +546,7 @@ function onModelChange(preSelectedCarId) {
     
     matchingCars.forEach(function(car) {
         var opt = document.createElement('option');
-        opt.value = car.id;
+        opt.value = car.vehicleId;
         opt.textContent = car.brand + ' ' + car.model + ' — ' + car.plate;
         opt.setAttribute('data-brand', car.brand);
         opt.setAttribute('data-model', car.model);
@@ -463,8 +562,8 @@ function onModelChange(preSelectedCarId) {
     hintText.textContent = 'Có ' + matchingCars.length + ' xe sẵn sàng cho dòng ' + brand + ' ' + model;
     hintDiv.style.display = 'block';
     
-    if (preSelectedCarId) {
-        carSelect.value = preSelectedCarId;
+    if (preSelectedVehicleId) {
+        carSelect.value = preSelectedVehicleId;
         updateCarInfo();
     }
 }
@@ -512,52 +611,173 @@ function updateCarInfo() {
     calculateBookingCost();
 }
 
+function getLocalDateString(d) {
+    if (!d) d = new Date();
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+}
+
+// Track previous mode to detect actual changes
+var previousRentalMode = document.getElementById('rentalModeCombo').value;
+
 function onRentalModeChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var desc = document.getElementById('modeDescription');
+    var sdInput = document.getElementById('startDate');
     var edInput = document.getElementById('endDate');
-    var sd = document.getElementById('startDate').value;
+
+    // Detect if the mode actually changed (not just init)
+    var modeActuallyChanged = (previousRentalMode !== modeCombo);
+    previousRentalMode = modeCombo;
+
+    // Reset dates when switching mode (but not on initial page load)
+    if (modeActuallyChanged && sdInput.value) {
+        sdInput.value = '';
+        edInput.value = '';
+        // Clear availability error
+        var errAlert = document.getElementById('err-availability');
+        if (errAlert) errAlert.style.display = 'none';
+        var submitBtn = document.getElementById('submitBookingBtn');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
 
     var descText = "";
+    var isCombo = false;
+    var comboDays = 0;
+
     if (modeCombo === "DAILY_STANDARD") {
         descText = "<strong>Thuê theo ngày:</strong> Phù hợp cho nhu cầu di chuyển linh hoạt. Giới hạn " + kmLimitPerDay + "km/ngày. Ưu đãi chiết khấu: " + discountShortTier + "% cho 5-9 ngày, " + discountMediumTier + "% cho 10-29 ngày, " + discountLongTier + "% từ 30 ngày trở lên. Tặng thêm chiết khấu " + lowMileageDiscountPercent + "% khi di chuyển ít (khấu hao thấp, dưới " + Math.round(kmLimitPerDay / 2) + "km/ngày).";
         edInput.readOnly = false;
+        edInput.style.background = '';
+        edInput.style.cursor = '';
     } else if (modeCombo === "TRIP_STANDARD") {
         descText = "<strong>Thuê theo chuyến:</strong> Trọn gói di chuyển ngắn hạn trong ngày hoặc chuyến nhanh. Giới hạn " + tripKmLimit + "km trọn gói. Đơn giá km phụ trội " + formatVND(extraKmFee) + "/km. Giảm " + lowMileageDiscountPercent + "% nếu di chuyển ít hơn " + Math.round(tripKmLimit / 2) + "km.";
         edInput.readOnly = false;
+        edInput.style.background = '';
+        edInput.style.cursor = '';
     } else if (modeCombo === "COMBO_7_DAYS") {
         descText = "<strong>Combo 7 ngày:</strong> Gói thuê tuần cực kỳ ưu đãi, tiết kiệm " + combo7DiscountPercent + "% so với giá thuê ngày thường. Giới hạn " + formatNumber(combo7KmLimit) + "km cho cả tuần thuê. Thích hợp đi công tác hoặc du lịch gia đình.";
-        edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
-        }
+        isCombo = true;
+        comboDays = 7;
     } else if (modeCombo === "COMBO_10_DAYS") {
         descText = "<strong>Combo 10 ngày:</strong> Gói thuê dài hạn cực tốt, tiết kiệm " + combo10DiscountPercent + "% so với giá ngày thường. Giới hạn " + formatNumber(combo10KmLimit) + "km toàn bộ chuyến đi.";
-        edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
-        }
+        isCombo = true;
+        comboDays = 10;
     } else if (modeCombo === "COMBO_30_DAYS") {
         descText = "<strong>Combo 30 ngày (Tháng):</strong> Gói thuê tháng siêu tiết kiệm, giảm giá lên tới " + combo30DiscountPercent + "% so với thuê ngày lẻ. Giới hạn " + formatNumber(combo30KmLimit) + "km cho cả tháng thuê.";
+        isCombo = true;
+        comboDays = 30;
+    }
+
+    // Handle combo mode: lock end date, auto-compute if start date exists
+    if (isCombo) {
         edInput.readOnly = true;
-        if (sd) {
-            var start = new Date(sd);
-            var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-            edInput.value = getLocalDateString(end);
+        edInput.style.background = 'var(--bg-body)';
+        edInput.style.cursor = 'not-allowed';
+        if (sdInput.value) {
+            autoSetEndDate(sdInput.value, comboDays);
         }
     }
+
     desc.innerHTML = descText;
     calculateBookingCost();
 }
 
+/**
+ * Auto-set endDate = startDate + comboDays
+ */
+function autoSetEndDate(startDateStr, comboDays) {
+    var edInput = document.getElementById('endDate');
+    var start = new Date(startDateStr);
+    var end = new Date(start.getTime() + comboDays * 24 * 60 * 60 * 1000);
+    edInput.value = getLocalDateString(end);
+}
+
+/**
+ * Gets earliest valid time string (HH:mm) rounded up to next 30-min slot with buffer hours
+ */
+function getEarliestValidTimeString(bufferHours) {
+    if (!bufferHours) bufferHours = 1;
+    var validDt = new Date(Date.now() + bufferHours * 60 * 60 * 1000);
+    var minutes = validDt.getMinutes();
+    if (minutes > 0 && minutes <= 30) {
+        validDt.setMinutes(30);
+    } else if (minutes > 30) {
+        validDt.setHours(validDt.getHours() + 1);
+        validDt.setMinutes(0);
+    }
+    var hh = String(validDt.getHours()).padStart(2, '0');
+    var mm = String(validDt.getMinutes()).padStart(2, '0');
+    return hh + ':' + mm;
+}
+
+/**
+ * Called when startDate changes - auto-compute endDate for combo packages
+ */
+function onStartDateChange() {
+    var modeCombo = document.getElementById('rentalModeCombo').value;
+    var sdInput = document.getElementById('startDate');
+    var edInput = document.getElementById('endDate');
+    var stInput = document.getElementById('startTime');
+
+    if (!sdInput.value) return;
+
+    // If today is selected and start time is empty or in the past/invalid, auto set earliest valid time
+    var now = new Date();
+    var todayStr = getLocalDateString(now);
+    if (sdInput.value === todayStr) {
+        var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+        var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+        var bufferHrs = 1;
+        if (deliveryMethod === 'DELIVERY') {
+            bufferHrs = 1.0 + (deliveryDistance / 25.0);
+            if (bufferHrs < 1.5) bufferHrs = 1.5;
+        }
+        var earliestTimeStr = getEarliestValidTimeString(bufferHrs);
+        
+        if (stInput) {
+            if (!stInput.value) {
+                stInput.value = earliestTimeStr;
+            } else {
+                var timeParts = stInput.value.split(':');
+                var currentSelectedDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1]));
+                var minValidDt = new Date(now.getTime() + bufferHrs * 60 * 60 * 1000);
+                if (currentSelectedDt < minValidDt) {
+                    stInput.value = earliestTimeStr;
+                }
+            }
+        }
+    }
+
+    // Set min for end date
+    edInput.setAttribute('min', sdInput.value);
+
+    if (modeCombo === "COMBO_7_DAYS") {
+        autoSetEndDate(sdInput.value, 7);
+    } else if (modeCombo === "COMBO_10_DAYS") {
+        autoSetEndDate(sdInput.value, 10);
+    } else if (modeCombo === "COMBO_30_DAYS") {
+        autoSetEndDate(sdInput.value, 30);
+    }
+
+    calculateBookingCost();
+    checkAvailabilityRealtime();
+}
+
 var map = null;
 var deliveryMarker = null;
-var SHOWROOM_LAT = 21.028511;
-var SHOWROOM_LNG = 105.804817;
+
+// Branch coordinates
+var BRANCH_HN = { lat: 21.028511, lng: 105.804817, name: "Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" };
+var BRANCH_HCM = { lat: 10.776889, lng: 106.700806, name: "Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" };
+var SHOWROOM_LAT = BRANCH_HN.lat;
+var SHOWROOM_LNG = BRANCH_HN.lng;
 
 function onDeliveryMethodChange() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
@@ -596,6 +816,9 @@ function onDeliveryMethodChange() {
         }
     }
     calculateBookingCost();
+    if (typeof validateScheduleRealtime === 'function') {
+        validateScheduleRealtime();
+    }
 }
 
 function initDeliveryMap() {
@@ -656,6 +879,9 @@ function fetchRoadDistance(lat, lng) {
                 if (fallbackNotice) fallbackNotice.style.display = 'block';
             }
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         })
         .catch(function(err) {
             console.error('Distance API error:', err);
@@ -664,10 +890,20 @@ function fetchRoadDistance(lat, lng) {
             var fallbackNotice = document.getElementById('distanceFallbackNotice');
             if (fallbackNotice) fallbackNotice.style.display = 'block';
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         });
 }
 
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+    // Determine the distance to Hanoi and HCM branches, and return the minimum
+    var distToHN = getHaversine(BRANCH_HN.lat, BRANCH_HN.lng, lat2, lon2);
+    var distToHCM = getHaversine(BRANCH_HCM.lat, BRANCH_HCM.lng, lat2, lon2);
+    return Math.min(distToHN, distToHCM);
+}
+
+function getHaversine(lat1, lon1, lat2, lon2) {
     var R = 6371; // km
     var dLat = (lat2 - lat1) * Math.PI / 180;
     var dLon = (lon2 - lon1) * Math.PI / 180;
@@ -716,7 +952,7 @@ function searchAddressOnMap() {
 }
 
 function calculateBookingCost() {
-    var carId = document.getElementById('carSelect').value;
+    var vehicleId = document.getElementById('carSelect').value;
     var sd = document.getElementById('startDate').value;
     var ed = document.getElementById('endDate').value;
     var modeCombo = document.getElementById('rentalModeCombo').value;
@@ -724,7 +960,7 @@ function calculateBookingCost() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
     var deliveryDistance = parseFloat(document.getElementById('deliveryDistance').value) || 0;
 
-    if (!carId || !sd || !ed) {
+    if (!vehicleId || !sd || !ed) {
         return;
     }
 
@@ -735,9 +971,9 @@ function calculateBookingCost() {
         days = 1;
     }
 
-    var dailyRate = carPrices[carId] || 0;
-    var model = carModels[carId] || "";
-    var brand = carBrands[carId] || "";
+    var dailyRate = carPrices[vehicleId] || 0;
+    var model = carModels[vehicleId] || "";
+    var brand = carBrands[vehicleId] || "";
 
     var rentalMode = "DAILY";
     var pricingPackage = "";
@@ -911,7 +1147,7 @@ function doCheckAvailabilityRealtime() {
     var startTimeEl = document.getElementById('startTime');
     var endTimeEl = document.getElementById('endTime');
 
-    var carId = carSelect ? carSelect.value : '';
+    var vehicleId = carSelect ? carSelect.value : '';
     var startDate = startDateEl ? startDateEl.value : '';
     var endDate = endDateEl ? endDateEl.value : '';
     var startTime = startTimeEl ? startTimeEl.value : '08:00';
@@ -921,7 +1157,7 @@ function doCheckAvailabilityRealtime() {
     var errText = document.getElementById('err-availability-text');
     var submitBtn = document.getElementById('submitBookingBtn');
 
-    if (!carId || !startDate || !endDate) {
+    if (!vehicleId || !startDate || !endDate) {
         if (errAlert) errAlert.style.display = 'none';
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -932,7 +1168,7 @@ function doCheckAvailabilityRealtime() {
     }
 
     var url = '${pageContext.request.contextPath}/vehicles/availability?action=checkCarAvailability'
-            + '&carId=' + encodeURIComponent(carId)
+            + '&vehicleId=' + encodeURIComponent(vehicleId)
             + '&startDate=' + encodeURIComponent(startDate)
             + '&startTime=' + encodeURIComponent(startTime)
             + '&endDate=' + encodeURIComponent(endDate)
@@ -987,22 +1223,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ['change', 'input', 'blur', 'keyup'].forEach(function(evt) {
                 el.addEventListener(evt, function() {
                     if (el.id === 'startDate') {
-                        // If combo package, auto update end date
-                        var modeCombo = document.getElementById('rentalModeCombo').value;
-                        if (modeCombo === "COMBO_7_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        } else if (modeCombo === "COMBO_10_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        } else if (modeCombo === "COMBO_30_DAYS" && sd.value) {
-                            var start = new Date(sd.value);
-                            var end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-                            document.getElementById('endDate').value = getLocalDateString(end);
-                        }
+                        onStartDateChange();
                     }
+                    validateScheduleRealtime();
                     calculateBookingCost();
                     checkAvailabilityRealtime();
                 });
@@ -1023,6 +1246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ed) ed.setAttribute('min', today);
 
     // Initial realtime availability check on page load (handles restored preFilledBookingData)
+    validateScheduleRealtime();
     checkAvailabilityRealtime();
     
     // Custom form validation
@@ -1048,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             var carVal = document.getElementById('carSelect').value;
             if (!carVal) {
-                showError('carId', 'Vui lòng chọn xe.');
+                showError('vehicleId', 'Vui lòng chọn xe.');
             }
             
             var sdVal = document.getElementById('startDate').value;
@@ -1099,9 +1323,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (sdVal && edVal) {
-                var todayDateStr = getLocalDateString();
+                var now = new Date();
+                var todayDateStr = getLocalDateString(now);
+                
                 if (sdVal < todayDateStr) {
-                    showError('startDate', 'Ngày bắt đầu không được ở quá khứ.');
+                    showError('startDate', 'Ngày bắt đầu không được ở trong quá khứ.');
+                } else if (sdVal === todayDateStr && stVal) {
+                    var timeParts = stVal.split(':');
+                    var startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1]));
+                    if (startDateTime < now) {
+                        showError('startTime', 'Giờ bắt đầu không được ở trong quá khứ so với hiện tại.');
+                    }
                 }
                 
                 var start = new Date(sdVal);

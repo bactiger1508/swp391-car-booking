@@ -209,6 +209,7 @@
                                         <c:choose>
                                             <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
                                             <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
+                                            <c:when test="${p.paymentMethod == 'DEDUCTION'}">🔄 Khấu trừ</c:when>
                                             <c:otherwise>${p.paymentMethod}</c:otherwise>
                                         </c:choose>
                                     </td>
@@ -236,10 +237,37 @@
                                     <td style="padding:12px 16px; text-align:right; font-size:13px;">
                                         <c:choose>
                                             <c:when test="${p.amountPaid != null && p.amountPaid > p.amount}">
-                                                <span style="color:#C53030; font-weight:700;">
-                                                    +<fmt:formatNumber value="${p.amountPaid - p.amount}" pattern="#,##0"/> đ
-                                                </span>
-                                                <div style="font-size:10px; color:#C53030; font-weight:600;">CẦN HOÀN</div>
+                                                <c:choose>
+                                                     <c:when test="${p.paymentType == 'DEPOSIT'}">
+                                                         <c:set var="b" value="${bookingsMap[p.bookingId]}"/>
+                                                         <c:set var="diff" value="${p.amountPaid - p.amount}"/>
+                                                         <c:set var="rentalRequired" value="${b != null ? (b.totalAmount - b.depositAmount) : 0}"/>
+                                                         <c:choose>
+                                                             <c:when test="${rentalRequired > 0 && diff > rentalRequired}">
+                                                                 <span style="color:#039C74; font-weight:700;">
+                                                                     +<fmt:formatNumber value="${rentalRequired}" pattern="#,##0"/> đ
+                                                                 </span>
+                                                                 <div style="font-size:10px; color:#039C74; font-weight:600; margin-bottom: 4px;">KHẤU TRỪ THUÊ</div>
+                                                                 <span style="color:#C53030; font-weight:700;">
+                                                                     +<fmt:formatNumber value="${diff - rentalRequired}" pattern="#,##0"/> đ
+                                                                 </span>
+                                                                 <div style="font-size:10px; color:#C53030; font-weight:600;">CẦN HOÀN</div>
+                                                             </c:when>
+                                                             <c:otherwise>
+                                                                 <span style="color:#039C74; font-weight:700;">
+                                                                     +<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ
+                                                                 </span>
+                                                                 <div style="font-size:10px; color:#039C74; font-weight:600;">KHẤU TRỪ THUÊ</div>
+                                                             </c:otherwise>
+                                                         </c:choose>
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <span style="color:#C53030; font-weight:700;">
+                                                             +<fmt:formatNumber value="${p.amountPaid - p.amount}" pattern="#,##0"/> đ
+                                                         </span>
+                                                         <div style="font-size:10px; color:#C53030; font-weight:600;">CẦN HOÀN</div>
+                                                     </c:otherwise>
+                                                </c:choose>
                                             </c:when>
                                             <c:when test="${p.amountPaid != null && p.amountPaid < p.amount}">
                                                 <span style="color:#D97706; font-weight:700;">

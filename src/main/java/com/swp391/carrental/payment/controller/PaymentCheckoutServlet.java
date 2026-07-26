@@ -131,6 +131,14 @@ public class PaymentCheckoutServlet extends HttpServlet {
             String transferDesc = shortType + "-PAY" + payment.getPaymentId();
             request.setAttribute("transferDesc", transferDesc);
 
+            long remainingSeconds = 900; // 15 minutes
+            if (payment.getCreatedAt() != null) {
+                long elapsedSeconds = java.time.Duration.between(payment.getCreatedAt(), java.time.LocalDateTime.now()).getSeconds();
+                remainingSeconds = 900 - elapsedSeconds;
+                if (remainingSeconds < 0) remainingSeconds = 0;
+            }
+            request.setAttribute("remainingSeconds", remainingSeconds);
+
             request.getRequestDispatcher("/WEB-INF/views/payment/checkout.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

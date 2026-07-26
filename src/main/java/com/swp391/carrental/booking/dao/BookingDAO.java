@@ -79,14 +79,14 @@ public class BookingDAO {
     }
 
     /** Get active bookings (PENDING, CONFIRMED, IN_PROGRESS) for a specific car */
-    public List<Booking> findActiveBookingsByCarId(int carId) throws SQLException {
+    public List<Booking> findActiveBookingsByVehicleId(int vehicleId) throws SQLException {
         List<Booking> bookings = new ArrayList<>();
         String sql = "SELECT * FROM bookings WHERE vehicle_id = ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
                    + "ORDER BY start_date ASC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) bookings.add(mapRow(rs));
             }
@@ -109,7 +109,7 @@ public class BookingDAO {
     }
 
     /** Check if a car has any overlapping active bookings in a given time range */
-    public boolean hasOverlappingBooking(int carId, Timestamp startDate, Timestamp endDate, Integer excludeBookingId) throws SQLException {
+    public boolean hasOverlappingBooking(int vehicleId, Timestamp startDate, Timestamp endDate, Integer excludeBookingId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM bookings WHERE vehicle_id = ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
                    + "AND start_date < ? AND end_date > ?";
@@ -118,7 +118,7 @@ public class BookingDAO {
         }
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, carId);
+            ps.setInt(1, vehicleId);
             ps.setTimestamp(2, endDate);
             ps.setTimestamp(3, startDate);
             if (excludeBookingId != null) {
@@ -297,7 +297,7 @@ public class BookingDAO {
         Booking b = new Booking();
         b.setBookingId(rs.getInt("booking_id"));
         b.setCustomerId(rs.getInt("customer_id"));
-        b.setCarId(rs.getInt("vehicle_id"));
+        b.setVehicleId(rs.getInt("vehicle_id"));
         Timestamp sd = rs.getTimestamp("start_date");
         if (sd != null) b.setStartDate(sd.toLocalDateTime());
         Timestamp ed = rs.getTimestamp("end_date");

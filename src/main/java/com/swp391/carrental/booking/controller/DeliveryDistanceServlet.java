@@ -29,10 +29,13 @@ import java.nio.charset.StandardCharsets;
 @WebServlet(name = "DeliveryDistanceServlet", urlPatterns = {"/bookings/delivery-distance"})
 public class DeliveryDistanceServlet extends HttpServlet {
 
-    // Default Showroom location (Hanoi city center)
-    // TODO: Fetch dynamic showroom coordinates if available in database/settings
-    private static final double SHOWROOM_LAT = 21.028511;
-    private static final double SHOWROOM_LNG = 105.804817;
+    // Hanoi Branch
+    private static final double HN_LAT = 21.028511;
+    private static final double HN_LNG = 105.804817;
+
+    // HCM Branch
+    private static final double HCM_LAT = 10.776889;
+    private static final double HCM_LNG = 106.700806;
 
     /** Tính khoảng cách đường đi thực tế từ showroom đến vị trí giao xe bằng OpenRouteService API */
     @Override
@@ -52,6 +55,17 @@ public class DeliveryDistanceServlet extends HttpServlet {
 
             double destLat = Double.parseDouble(destLatStr);
             double destLng = Double.parseDouble(destLngStr);
+
+            // Determine nearest branch
+            double distToHN = calculateHaversine(HN_LAT, HN_LNG, destLat, destLng);
+            double distToHCM = calculateHaversine(HCM_LAT, HCM_LNG, destLat, destLng);
+
+            double startLat = HN_LAT;
+            double startLng = HN_LNG;
+            if (distToHCM < distToHN) {
+                startLat = HCM_LAT;
+                startLng = HCM_LNG;
+            }
 
             String apiKey = System.getenv("ORS_API_KEY");
             if (apiKey == null || apiKey.trim().isEmpty()) {
@@ -79,7 +93,7 @@ public class DeliveryDistanceServlet extends HttpServlet {
                 java.util.Locale.US,
                 "https://api.openrouteservice.org/v2/directions/driving-car?api_key=%s&start=%.6f,%.6f&end=%.6f,%.6f",
                 cleanApiKey,
-                SHOWROOM_LNG, SHOWROOM_LAT,
+                startLng, startLat,
                 destLng, destLat
             );
 
@@ -140,5 +154,16 @@ public class DeliveryDistanceServlet extends HttpServlet {
             e.printStackTrace();
             response.getWriter().write("{\"success\":false,\"fallback\":true}");
         }
+    }
+
+    private static double calculateHaversine(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371; // km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 }

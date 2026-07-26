@@ -158,7 +158,7 @@ public class BookingCalendarServlet extends HttpServlet {
             for (int i = 0; i < cars.size(); i++) {
                 Vehicle c = cars.get(i);
                 if (i > 0) sb.append(",");
-                sb.append("{\"carId\":").append(c.getVehicleId());
+                sb.append("{\"vehicleId\":").append(c.getVehicleId());
                 sb.append(",\"brand\":\"").append(escapeJson(c.getBrand())).append("\"");
                 sb.append(",\"model\":\"").append(escapeJson(c.getModel())).append("\"");
                 sb.append(",\"licensePlate\":\"").append(escapeJson(c.getLicensePlate())).append("\"");
@@ -175,7 +175,7 @@ public class BookingCalendarServlet extends HttpServlet {
                 Booking b = bookings.get(i);
                 if (i > 0) sb.append(",");
                 sb.append("{\"bookingId\":").append(b.getBookingId());
-                sb.append(",\"carId\":").append(b.getVehicleId());
+                sb.append(",\"vehicleId\":").append(b.getVehicleId());
                 sb.append(",\"customerId\":").append(b.getCustomerId());
                 sb.append(",\"status\":\"").append(escapeJson(b.getStatus())).append("\"");
                 if (b.getStartDate() != null) {

@@ -1,16 +1,17 @@
 package com.swp391.carrental.handover.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
@@ -24,12 +25,18 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
+/**
+ * Name: VehicleHandoverDetailServlet
+ * @Author: TamTTMHE190340
+ * Date: 21/06/2026
+ * Version: 1.0
+ * Description: Controller for viewing, editing, and managing vehicle handover details.
+ */
 @WebServlet(name = "VehicleHandoverDetailServlet", urlPatterns = {"/handovers/detail"})
 @MultipartConfig(
         maxFileSize = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 15
 )
-
 public class VehicleHandoverDetailServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
@@ -44,13 +51,13 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String bookingIdStr = request.getParameter("bookingId");
-            String carIdStr = request.getParameter("carId");
-            if (bookingIdStr != null && carIdStr != null) {
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (bookingIdStr != null && vehicleIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int carId = Integer.parseInt(carIdStr);
+                int vehicleId = Integer.parseInt(vehicleIdStr);
 
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(carId);
+                Vehicle car = vehicleDAO.findById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -59,12 +66,24 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
                 request.setAttribute("contract", contract);
                 request.setAttribute("handover", handover);
                 request.setAttribute("bookingId", bookingId);
-                request.setAttribute("carId", carId);
+                request.setAttribute("vehicleId", vehicleId);
 
                 if (booking != null) {
                     User customer = userDAO.findById(booking.getCustomerId());
                     request.setAttribute("customer", customer);
                 }
+
+                User staff = null;
+                if (handover != null && handover.getHandedBy() > 0) {
+                    staff = userDAO.findById(handover.getHandedBy());
+                }
+                if (staff == null) {
+                    User currentUser = (User) request.getSession().getAttribute("currentUser");
+                    if (currentUser != null) {
+                        staff = currentUser;
+                    }
+                }
+                request.setAttribute("staff", staff);
             }
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi tải thông tin: " + e.getMessage());
@@ -98,18 +117,18 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
         if ("save".equals(action)) {
             try {
                 int bookingId = Integer.parseInt(request.getParameter("bookingId"));
-                int carId = Integer.parseInt(request.getParameter("carId"));
+                int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
 
                 // ===== VALIDATION =====
-                if (!validateOdo(request, response, bookingId, carId)) {
+                if (!validateOdo(request, response, bookingId, vehicleId)) {
                     return;
                 }
 
-                if (!validateFuel(request, response, bookingId, carId)) {
+                if (!validateFuel(request, response, bookingId, vehicleId)) {
                     return;
                 }
 
-                if (!validateImages(request, response, bookingId, carId)) {
+                if (!validateImages(request, response, bookingId, vehicleId)) {
                     return;
                 }
 
@@ -158,6 +177,10 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
                 }
 
                 // ===== UPDATE OBJECT =====
+                User currentUser = (User) request.getSession().getAttribute("currentUser");
+                if (currentUser != null) {
+                    handover.setHandedBy(currentUser.getUserId());
+                }
                 handover.setMileageAtHandover(mileage);
                 handover.setFuelLevel(fuelLevel);
 
@@ -230,22 +253,22 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
         return String.join(", ", list);
     }
 
-    private boolean validateOdo(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateOdo(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException, SQLException {
         String currentOdo = request.getParameter("currentOdo");
 
         if (currentOdo == null || currentOdo.isBlank()) {
-            loadDetailData(request, bookingId, carId);
+            loadDetailData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng không để trống thông tin");
             request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
             return false;
         }
 
-        Vehicle car = vehicleDAO.findById(carId);
+        Vehicle car = vehicleDAO.findById(vehicleId);
         int mileage = Integer.parseInt(currentOdo);
 
         if (mileage < car.getMileage()) {
-            loadDetailData(request, bookingId, carId);
+            loadDetailData(request, bookingId, vehicleId);
             request.setAttribute("currentOdoError", "Vui lòng nhập số km hợp lệ");
             request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
             return false;
@@ -253,12 +276,12 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
         return true;
     }
 
-    private boolean validateFuel(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateFuel(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException {
         String fuelLevel = request.getParameter("fuel");
 
         if (fuelLevel == null || fuelLevel.isBlank()) {
-            loadDetailData(request, bookingId, carId);
+            loadDetailData(request, bookingId, vehicleId);
             request.setAttribute("currentFuelLevelError", "Vui lòng chọn mức nhiên liệu");
             request.getRequestDispatcher("/WEB-INF/views/handover/vehicle-handover-detail.jsp").forward(request, response);
             return false;
@@ -266,7 +289,7 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
         return true;
     }
 
-    private boolean validateImages(HttpServletRequest request, HttpServletResponse response, int bookingId, int carId)
+    private boolean validateImages(HttpServletRequest request, HttpServletResponse response, int bookingId, int vehicleId)
             throws ServletException, IOException {
         long MAX_SIZE = 10 * 1024 * 1024;
 
@@ -276,7 +299,7 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
             }
 
             if (part.getSize() > MAX_SIZE) {
-                loadDetailData(request, bookingId, carId);
+                loadDetailData(request, bookingId, vehicleId);
 
                 request.setAttribute(
                         "uploadPhotosError",
@@ -290,10 +313,10 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
         return true;
     }
 
-    private void loadDetailData(HttpServletRequest request, int bookingId, int carId) {
+    private void loadDetailData(HttpServletRequest request, int bookingId, int vehicleId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Vehicle car = vehicleDAO.findById(carId);
+            Vehicle car = vehicleDAO.findById(vehicleId);
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -302,7 +325,7 @@ public class VehicleHandoverDetailServlet extends HttpServlet {
             request.setAttribute("contract", contract);
             request.setAttribute("handover", handover);
             request.setAttribute("bookingId", bookingId);
-            request.setAttribute("carId", carId);
+            request.setAttribute("vehicleId", vehicleId);
 
             if (booking != null) {
                 User customer = userDAO.findById(booking.getCustomerId());

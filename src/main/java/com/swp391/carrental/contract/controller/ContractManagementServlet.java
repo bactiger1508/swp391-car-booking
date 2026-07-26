@@ -73,7 +73,6 @@ public class ContractManagementServlet extends HttpServlet {
             com.swp391.carrental.booking.model.Booking booking = null;
 
             try {
-                // View an existing contract by contract ID
                 if (idStr != null && !idStr.isEmpty()) {
                     int contractId = Integer.parseInt(idStr);
                     contract = contractService.getContractById(contractId);
@@ -86,6 +85,9 @@ public class ContractManagementServlet extends HttpServlet {
                             return;
                         }
                         booking = bookingService.getBookingById(contract.getBookingId());
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy hợp đồng.");
+                        return;
                     }
                 } // Create/View contract from booking ID 
                 else if (bookingIdStr != null && !bookingIdStr.isEmpty()) {
@@ -109,10 +111,14 @@ public class ContractManagementServlet extends HttpServlet {
                             return;
                         }
                         booking = bookingService.getBookingById(bookingId);
+                        if (booking == null) {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy đơn hàng đặt xe.");
+                            return;
+                        }
                         // UC 2.2.1 Step 3 / Alt 1: Only confirmed bookings are eligible for contract creation
-                        if (booking != null && !com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
+                        if (!com.swp391.carrental.booking.constant.BookingStatus.CONFIRMED.equals(booking.getStatus())) {
                             request.setAttribute("error", "Chỉ có thể soạn hợp đồng cho các đơn đặt xe đã Xác nhận (Confirmed).");
-                        } else if (booking != null) {
+                        } else {
                             // UC 2.2.1 Step 4 / Alt 2: Verify customer profile verificationStatus == VERIFIED
                             try {
                                 com.swp391.carrental.user.dao.CustomerProfileDAO profileDAO = new com.swp391.carrental.user.dao.CustomerProfileDAO();
@@ -125,6 +131,9 @@ public class ContractManagementServlet extends HttpServlet {
                             }
                         }
                     }
+                } else {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Yêu cầu không hợp lệ.");
+                    return;
                 }
 
                 // Load booking-related information
@@ -165,10 +174,14 @@ public class ContractManagementServlet extends HttpServlet {
                         java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
                         for (com.swp391.carrental.payment.model.Payment p : payments) {
                             if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                                if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                                    continue;
+                                }
+                                java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                                 if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                                    totalPaid = totalPaid.subtract(p.getAmount());
+                                    totalPaid = totalPaid.subtract(effectiveAmt);
                                 } else {
-                                    totalPaid = totalPaid.add(p.getAmount());
+                                    totalPaid = totalPaid.add(effectiveAmt);
                                 }
                             }
                         }
@@ -208,15 +221,21 @@ public class ContractManagementServlet extends HttpServlet {
                 com.swp391.carrental.policy.model.PolicySetting cNamePolicy = policyService.getPolicyByKey("COMPANY_NAME");
                 com.swp391.carrental.policy.model.PolicySetting cAddressPolicy = policyService.getPolicyByKey("COMPANY_ADDRESS");
                 com.swp391.carrental.policy.model.PolicySetting cTaxIdPolicy = policyService.getPolicyByKey("COMPANY_TAX_ID");
+                com.swp391.carrental.policy.model.PolicySetting cHotlinePolicy = policyService.getPolicyByKey("COMPANY_HOTLINE");
+                com.swp391.carrental.policy.model.PolicySetting depositPolicy = policyService.getPolicyByKey("DEPOSIT_PERCENTAGE");
                 
                 request.setAttribute("companyName", (cNamePolicy != null && cNamePolicy.getPolicyValue() != null && !cNamePolicy.getPolicyValue().trim().isEmpty()) ? cNamePolicy.getPolicyValue() : "CÔNG TY TNHH CARPRO VIỆT NAM");
                 request.setAttribute("companyAddress", (cAddressPolicy != null && cAddressPolicy.getPolicyValue() != null && !cAddressPolicy.getPolicyValue().trim().isEmpty()) ? cAddressPolicy.getPolicyValue() : "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
                 request.setAttribute("companyTaxId", (cTaxIdPolicy != null && cTaxIdPolicy.getPolicyValue() != null && !cTaxIdPolicy.getPolicyValue().trim().isEmpty()) ? cTaxIdPolicy.getPolicyValue() : "0123456789");
+                request.setAttribute("companyHotline", (cHotlinePolicy != null && cHotlinePolicy.getPolicyValue() != null && !cHotlinePolicy.getPolicyValue().trim().isEmpty()) ? cHotlinePolicy.getPolicyValue() : "1900 1234");
+                request.setAttribute("depositPercentage", (depositPolicy != null && depositPolicy.getPolicyValue() != null && !depositPolicy.getPolicyValue().trim().isEmpty()) ? depositPolicy.getPolicyValue() : "30");
             } catch (Exception e) {
                 request.setAttribute("defaultTerms", "- Phí trả xe trễ giờ thỏa thuận: 100.000 đ/giờ.\n- Phí phụ trội quãng đường: 5.000 đ/km (vượt quá 300km/ngày).\n- Phí rửa xe, dọn vệ sinh nếu trả xe bẩn: 200.000 đ.\n- Khách hàng cam kết chịu các chi phí cầu đường, phạt nguội phát sinh trong thời gian thuê.");
                 request.setAttribute("companyName", "CÔNG TY TNHH CARPRO VIỆT NAM");
                 request.setAttribute("companyAddress", "Tòa nhà CarPro, số 1 Đường Nguyễn Trãi, Thanh Xuân, Hà Nội");
                 request.setAttribute("companyTaxId", "0123456789");
+                request.setAttribute("companyHotline", "1900 1234");
+                request.setAttribute("depositPercentage", "30");
             }
 
             request.getRequestDispatcher("/WEB-INF/views/contract/contract-detail.jsp").forward(request, response);

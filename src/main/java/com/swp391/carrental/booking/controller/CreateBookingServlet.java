@@ -51,7 +51,7 @@ public class CreateBookingServlet extends HttpServlet {
 
     /**
      * Show the create booking form.
-     * Requires carId query parameter to pre-load car info.
+     * Requires vehicleId query parameter to pre-load car info.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -82,17 +82,20 @@ public class CreateBookingServlet extends HttpServlet {
         }
 
         // Retrieve parameters from request or restored session attributes
-        String carIdParam = request.getParameter("carId");
-        if (carIdParam == null || carIdParam.isEmpty()) {
-            if (preFilled != null && preFilled.get("carId") != null && preFilled.get("carId").length > 0) {
-                carIdParam = preFilled.get("carId")[0];
+        String vehicleIdParam = request.getParameter("vehicleId");
+        if (vehicleIdParam == null || vehicleIdParam.isEmpty()) {
+            vehicleIdParam = request.getParameter("vehicleId");
+        }
+        if (vehicleIdParam == null || vehicleIdParam.isEmpty()) {
+            if (preFilled != null && preFilled.get("vehicleId") != null && preFilled.get("vehicleId").length > 0) {
+                vehicleIdParam = preFilled.get("vehicleId")[0];
             }
         }
-        if (carIdParam != null && !carIdParam.isEmpty()) {
+        if (vehicleIdParam != null && !vehicleIdParam.isEmpty()) {
             try {
-                int carId = Integer.parseInt(carIdParam);
-                request.setAttribute("selectedVehicleId", carId);
-                Vehicle car = vehicleService.getVehicleById(carId);
+                int vehicleId = Integer.parseInt(vehicleIdParam);
+                request.setAttribute("selectedVehicleId", vehicleId);
+                Vehicle car = vehicleService.getVehicleById(vehicleId);
                 if (car != null) {
                     request.setAttribute("car", car);
                 } else {
@@ -197,7 +200,10 @@ public class CreateBookingServlet extends HttpServlet {
 
         try {
             // Parse form parameters
-            String carIdStr = request.getParameter("carId");
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+                vehicleIdStr = request.getParameter("vehicleId");
+            }
             String startDateVal = request.getParameter("startDate");
             String startTimeVal = request.getParameter("startTime");
             String endDateVal = request.getParameter("endDate");
@@ -240,7 +246,7 @@ public class CreateBookingServlet extends HttpServlet {
             }
 
             // Basic validation
-            if (carIdStr == null || carIdStr.isEmpty()) {
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
                 throw new AppException("Vui lòng chọn xe.");
             }
             if (startDateVal == null || startDateVal.isEmpty()) {
@@ -263,7 +269,7 @@ public class CreateBookingServlet extends HttpServlet {
                 endTimeVal = "08:00";
             }
 
-            int carId = Integer.parseInt(carIdStr);
+            int vehicleId = Integer.parseInt(vehicleIdStr);
             java.time.LocalDateTime startDate = java.time.LocalDateTime.parse(startDateVal + "T" + startTimeVal);
             java.time.LocalDateTime endDate = java.time.LocalDateTime.parse(endDateVal + "T" + endTimeVal);
 
@@ -295,7 +301,7 @@ public class CreateBookingServlet extends HttpServlet {
             }
 
             // Load car to calculate costs
-            Vehicle car = vehicleService.getVehicleById(carId);
+            Vehicle car = vehicleService.getVehicleById(vehicleId);
             if (car == null) {
                 throw new AppException("Xe không tồn tại.");
             }
@@ -358,7 +364,7 @@ public class CreateBookingServlet extends HttpServlet {
             // Build booking object
             Booking booking = new Booking();
             booking.setCustomerId(user.getUserId());
-            booking.setCarId(carId);
+            booking.setVehicleId(vehicleId);
             booking.setStartDate(startDate);
             booking.setEndDate(endDate);
             booking.setPickupLocation(pickupLocation.trim());

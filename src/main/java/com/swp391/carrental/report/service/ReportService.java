@@ -1,11 +1,17 @@
 package com.swp391.carrental.report.service;
 
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.booking.model.Booking;
 import com.swp391.carrental.booking.service.BookingService;
@@ -17,24 +23,15 @@ import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
 import com.swp391.carrental.vehicle.dao.MaintenanceDAO;
 import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 
-/*
+/**
  * Name: ReportService
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 17/07/2026
  * Version: 1.0
- * Description: Contains business logic for ReportService.
- */
-/**
- * Service for generating reports.
+ * Description: Service layer handling revenue aggregation, vehicle utilization analytics, and financial report generation.
  */
 public class ReportService {
 

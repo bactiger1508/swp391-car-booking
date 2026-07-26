@@ -98,7 +98,7 @@
     <form action="${pageContext.request.contextPath}/handovers/create" method="POST" enctype="multipart/form-data">
         <!-- Hidden Inputs for Booking and Car IDs -->
         <input type="hidden" name="bookingId" value="${bookingId}" />
-        <input type="hidden" name="carId" value="${carId}" />
+        <input type="hidden" name="vehicleId" value="${vehicleId != null ? vehicleId : vehicleId}" />
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; align-items: stretch;">
             <%-- Cột bên phải: Thông tin đặt xe --%>
@@ -132,8 +132,16 @@
                     <span>Chi tiết xe</span>
                 </div>
                 <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
-                        <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0; overflow:hidden;">
+                        <c:choose>
+                            <c:when test="${not empty car.primaryImageUrl}">
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                <span class="material-symbols-outlined" style="font-size: 28px; display:none;">garage</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div>
                         <div style="font-weight: 700; color: var(--primary); font-size: 16px;">
@@ -292,19 +300,21 @@
                     <p style="font-weight: 700; color: var(--primary); margin-top: 8px; font-size: 14px;">Nhấp để tải lên hoặc kéo và thả</p>
                     <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Định dạng SVG, PNG, JPG hoặc GIF (Tối đa 10MB)</p>
                 </div>
-                <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;"></div>
-                <c:if test="${not empty handover.photosUrl}">
-                    <c:set var="photos" value="${handover.photosUrl.split(',')}" />
-                    <c:forEach var="photo" items="${photos}">
-                        <img src="${pageContext.request.contextPath}${photo}"
-                             style="width:120px;
-                             height:120px;
-                             object-fit:cover;
-                             border-radius:8px;
-                             border:1px solid #ddd;" />
-                        <button type="button" class="del-old preview-remove-btn">&times;</button>
-                    </c:forEach>
-                </c:if>
+                
+                <div id="imagePreviewContainer" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px;">
+                    <c:if test="${not empty handover.photosUrl}">
+                        <c:set var="photos" value="${handover.photosUrl.split(',')}" />
+                        <c:forEach var="photo" items="${photos}">
+                            <c:if test="${not empty photo}">
+                                <div class="img-wrapper" style="position:relative; display:inline-block;">
+                                    <img src="${pageContext.request.contextPath}${photo.startsWith('/') ? '' : '/'}${photo}"
+                                         style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;" />
+                                    <button type="button" class="del-old preview-remove-btn">&times;</button>
+                                </div>
+                            </c:if>
+                        </c:forEach>
+                    </c:if>
+                </div>
             </div>
 
             <!-- Ghi chú thêm -->
@@ -345,93 +355,69 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-
         const fileInput = document.getElementById("evidencePhotos");
         const previewContainer = document.getElementById("imagePreviewContainer");
         const errorDiv = document.getElementById("uploadPhotosError");
 
         let selectedFiles = [];
+        let isSyncing = false;
+
+        if (!fileInput || !previewContainer) return;
 
         fileInput.addEventListener("change", function () {
+            if (isSyncing) return;
 
             const files = Array.from(fileInput.files);
-
             files.forEach(function (file) {
-
-                // Validate dung lượng tối đa 10MB
                 if (file.size > 10 * 1024 * 1024) {
-                    showError(file.name + " vượt quá 10MB");
+                    if (errorDiv) {
+                        errorDiv.innerText = file.name + " vượt quá 10MB";
+                        setTimeout(() => errorDiv.innerText = "", 3000);
+                    }
                     return;
                 }
-
                 selectedFiles.push(file);
-
-                previewImage(file);
+                renderPreview(file);
             });
-
-            updateFileInput();
+            syncFiles();
         });
 
-        function previewImage(file) {
+        function renderPreview(file) {
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "position:relative; display:inline-block;";
 
-            const reader = new FileReader();
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(file);
+            img.style.cssText = "width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;";
 
-            reader.onload = function (e) {
-
-                const wrapper = document.createElement("div");
-                wrapper.style.position = "relative";
-                wrapper.style.display = "inline-block";
-
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style.width = "120px";
-                img.style.height = "120px";
-                img.style.objectFit = "cover";
-
-                const deleteBtn = document.createElement("button");
-                deleteBtn.type = "button";
-                deleteBtn.innerHTML = "&times;";
-                deleteBtn.classList.add("preview-remove-btn");
-
-                deleteBtn.onclick = function () {
-
-                    selectedFiles = selectedFiles.filter(function (f) {
-                        return f !== file;
-                    });
-
-                    wrapper.remove();
-
-                    updateFileInput();
-                };
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(deleteBtn);
-
-                previewContainer.appendChild(wrapper);
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.innerHTML = "&times;";
+            deleteBtn.className = "preview-remove-btn";
+            deleteBtn.onclick = function () {
+                selectedFiles = selectedFiles.filter(f => f !== file);
+                wrapper.remove();
+                syncFiles();
             };
 
-            reader.readAsDataURL(file);
+            wrapper.appendChild(img);
+            wrapper.appendChild(deleteBtn);
+            previewContainer.appendChild(wrapper);
         }
 
-        function updateFileInput() {
-
+        function syncFiles() {
+            isSyncing = true;
             const dt = new DataTransfer();
-
-            selectedFiles.forEach(function (file) {
-                dt.items.add(file);
-            });
-
+            selectedFiles.forEach(file => dt.items.add(file));
             fileInput.files = dt.files;
+            isSyncing = false;
         }
 
-        function showError(message) {
-
-            errorDiv.innerText = message;
-
-            setTimeout(function () {
-                errorDiv.innerText = "";
-            }, 3000);
-        }
+        document.querySelectorAll(".del-old").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                btn.parentElement.remove();
+            });
+        });
     });
 </script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

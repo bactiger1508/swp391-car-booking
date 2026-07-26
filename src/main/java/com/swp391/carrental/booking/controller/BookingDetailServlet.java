@@ -94,25 +94,78 @@ public class BookingDetailServlet extends HttpServlet {
             boolean depositPaid = false;
             boolean rentalPaid = false;
             java.math.BigDecimal totalPaid = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal depositPaidAmt = java.math.BigDecimal.ZERO;
+            java.math.BigDecimal rentalPaidAmt = java.math.BigDecimal.ZERO;
+
             for (com.swp391.carrental.payment.model.Payment p : payments) {
-                if ("COMPLETED".equalsIgnoreCase(p.getStatus()) || "REFUNDED".equalsIgnoreCase(p.getStatus())) {
-                    if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                        // Refunds reduce the net paid amount
-                        totalPaid = totalPaid.subtract(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
-                    } else {
-                        totalPaid = totalPaid.add(p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount());
+                if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                        continue;
                     }
+                    java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
+                    if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                        totalPaid = totalPaid.subtract(effectiveAmt);
+                    } else {
+                        totalPaid = totalPaid.add(effectiveAmt);
+                    }
+
                     if ("DEPOSIT".equalsIgnoreCase(p.getPaymentType())) {
-                        depositPaid = true;
+                        depositPaidAmt = depositPaidAmt.add(effectiveAmt);
                     } else if ("RENTAL".equalsIgnoreCase(p.getPaymentType())) {
-                        rentalPaid = true;
+                        rentalPaidAmt = rentalPaidAmt.add(effectiveAmt);
                     }
                 }
             }
+
+            if (booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0) {
+                depositPaid = true;
+            }
+            java.math.BigDecimal excessDeposit = java.math.BigDecimal.ZERO;
+            if (booking.getTotalAmount() != null && booking.getDepositAmount() != null) {
+                java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount());
+                if (depositPaidAmt.compareTo(booking.getDepositAmount()) > 0) {
+                    excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount());
+                }
+                java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+                if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+                }
+                if (effectiveRentalPaid.compareTo(rentalRequired) >= 0) {
+                    rentalPaid = true;
+                }
+            }
+            request.setAttribute("excessDeposit", excessDeposit);
+            // Calculate refund and forfeiture for cancelled bookings
+            java.math.BigDecimal refundAmt = java.math.BigDecimal.ZERO;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                    java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
+                    refundAmt = refundAmt.add(effectiveAmt);
+                }
+            }
+
+            boolean isForfeited = false;
+            java.math.BigDecimal forfeitedAmount = java.math.BigDecimal.ZERO;
+            if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+                if (depositPaidAmt.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    if (refundAmt.compareTo(java.math.BigDecimal.ZERO) == 0) {
+                        isForfeited = true;
+                        forfeitedAmount = depositPaidAmt;
+                    } else if (refundAmt.compareTo(depositPaidAmt) < 0) {
+                        isForfeited = true;
+                        forfeitedAmount = depositPaidAmt.subtract(refundAmt);
+                    }
+                }
+            }
+
             request.setAttribute("payments", payments);
             request.setAttribute("depositPaid", depositPaid);
             request.setAttribute("rentalPaid", rentalPaid);
             request.setAttribute("totalPaid", totalPaid);
+            request.setAttribute("refundAmt", refundAmt);
+            request.setAttribute("isForfeited", isForfeited);
+            request.setAttribute("forfeitedAmount", forfeitedAmount);
+            request.setAttribute("depositPaidAmt", depositPaidAmt);
             // Fetch return details and calculate total required amount including additional fees
             com.swp391.carrental.handover.model.VehicleReturn vehicleReturn = null;
             try {
@@ -120,11 +173,27 @@ public class BookingDetailServlet extends HttpServlet {
             } catch (Exception e) {
                 // ignore error
             }
+            java.math.BigDecimal totalAdditionalFeeRequiredFromPayments = java.math.BigDecimal.ZERO;
+            for (com.swp391.carrental.payment.model.Payment p : payments) {
+                if ("ADDITIONAL_FEE".equalsIgnoreCase(p.getPaymentType())) {
+                    totalAdditionalFeeRequiredFromPayments = totalAdditionalFeeRequiredFromPayments.add(p.getAmount());
+                }
+            }
+
             java.math.BigDecimal totalRequired = booking.getTotalAmount();
             if ("CANCELLED".equalsIgnoreCase(booking.getStatus()) || "REJECTED".equalsIgnoreCase(booking.getStatus())) {
                 totalRequired = java.math.BigDecimal.ZERO;
-            } else if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
-                totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
+            } else {
+                java.math.BigDecimal returnAdditionalFee = java.math.BigDecimal.ZERO;
+                if (vehicleReturn != null && vehicleReturn.getTotalAdditionalFee() != null) {
+                    returnAdditionalFee = vehicleReturn.getTotalAdditionalFee();
+                }
+                
+                if (totalAdditionalFeeRequiredFromPayments.compareTo(returnAdditionalFee) > 0) {
+                    totalRequired = totalRequired.add(totalAdditionalFeeRequiredFromPayments);
+                } else {
+                    totalRequired = totalRequired.add(returnAdditionalFee);
+                }
             }
             request.setAttribute("returns", vehicleReturn);
             request.setAttribute("totalRequired", totalRequired);

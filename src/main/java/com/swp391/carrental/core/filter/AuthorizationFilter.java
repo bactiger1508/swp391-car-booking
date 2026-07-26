@@ -58,6 +58,8 @@ public class AuthorizationFilter implements Filter {
         PATH_PERMISSIONS.put("/returns", "PROCESS_RETURN");
         PATH_PERMISSIONS.put("/return/view", "VIEW_BOOKING");
         PATH_PERMISSIONS.put("/additional-fees", "RECORD_ADDITIONAL_FEE");
+        PATH_PERMISSIONS.put("/reports/vehicle-utilization", "VIEW_VEHICLE_UTILIZATION_REPORT");
+        PATH_PERMISSIONS.put("/reports/revenue", "VIEW_REVENUE_REPORT");
         PATH_PERMISSIONS.put("/reports", "VIEW_REVENUE_REPORT");
         PATH_PERMISSIONS.put("/change-password", "CHANGE_PASSWORD");
         PATH_PERMISSIONS.put("/vehicles/brands", "MANAGE_VEHICLE_BRANDS");

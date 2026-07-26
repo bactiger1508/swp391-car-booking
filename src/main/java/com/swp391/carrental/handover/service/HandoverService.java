@@ -2,6 +2,7 @@ package com.swp391.carrental.handover.service;
 
 import java.sql.SQLException;
 import java.util.List;
+
 import com.swp391.carrental.booking.constant.BookingStatus;
 import com.swp391.carrental.booking.dao.BookingDAO;
 import com.swp391.carrental.core.exception.AppException;
@@ -11,16 +12,12 @@ import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.vehicle.constant.CarStatus;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 
-/*
+/**
  * Name: HandoverService
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Contains business logic for HandoverService.
- */
-/**
- * Service for vehicle handover operations. BR-06: Car becomes Rented after
- * handover.
+ * Description: Service layer handling vehicle handover recording, draft management, and confirmation-driven status transitions.
  */
 public class HandoverService {
 
@@ -53,21 +50,14 @@ public class HandoverService {
     }
 
     /**
-     * Record vehicle handover. BR-06: Car becomes Rented after handover.
+     * Record vehicle handover draft. Do NOT update car/booking status yet.
      */
     public int handoverVehicle(VehicleHandover handover) {
         try {
+            if (handover.getStatus() == null || handover.getStatus().isBlank()) {
+                handover.setStatus(HandoverStatus.IN_PROGRESS);
+            }
             int handoverId = handoverDAO.insert(handover);
-
-            // BR-06: Update car status to RENTED
-            vehicleDAO.updateStatus(handover.getVehicleId(), CarStatus.RENTED);
-
-            // Update booking status to IN_PROGRESS
-            bookingDAO.updateStatus(handover.getBookingId(), BookingStatus.IN_PROGRESS);
-
-            //Update handover status
-            handoverDAO.updateStatus(handoverId, HandoverStatus.IN_PROGRESS);
-
             return handoverId;
         } catch (SQLException e) {
             throw new AppException("Failed to record vehicle handover.", e);
@@ -76,8 +66,10 @@ public class HandoverService {
 
     public void updateHandoverVehicle(VehicleHandover handover) {
         try {
+            if (handover.getStatus() == null || handover.getStatus().isBlank()) {
+                handover.setStatus(HandoverStatus.IN_PROGRESS);
+            }
             handoverDAO.update(handover);
-            handoverDAO.updateStatus(handover.getHandoverId(), HandoverStatus.IN_PROGRESS);
         } catch (SQLException e) {
             throw new AppException("Failed to update vehicle handover.", e);
         }
@@ -91,11 +83,20 @@ public class HandoverService {
         }
     }
 
+    /**
+     * Confirm vehicle handover. Status changes to COMPLETED, car to RENTED,
+     * booking to IN_PROGRESS.
+     */
     public void updateStatusConfirm(int handoverId) {
         try {
-            handoverDAO.updateStatus(handoverId, HandoverStatus.COMPLETED);
+            VehicleHandover handover = handoverDAO.findById(handoverId);
+            if (handover != null) {
+                handoverDAO.updateStatus(handoverId, HandoverStatus.COMPLETED);
+                vehicleDAO.updateStatus(handover.getVehicleId(), CarStatus.RENTED);
+                bookingDAO.updateStatus(handover.getBookingId(), BookingStatus.IN_PROGRESS);
+            }
         } catch (SQLException e) {
-            throw new AppException("Failed to delete vehicle handover.", e);
+            throw new AppException("Failed to confirm vehicle handover.", e);
         }
     }
 

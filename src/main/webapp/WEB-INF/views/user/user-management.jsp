@@ -26,8 +26,10 @@
             <div class="card-header"
                  style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <h3>Danh sách thành viên</h3>
+                <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
                 <button class="btn btn-primary" onclick="showAddForm()" style="padding: 10px 20px;">+ Thêm
                     tài khoản</button>
+                </c:if>
             </div>
 
             <%-- Search & Filter Bar --%>
@@ -69,7 +71,9 @@
                                 <th>Email</th>
                                 <th>Vai trò</th>
                                 <th>Trạng thái</th>
+                                <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
                                 <th style="text-align: right;">Hành động</th>
+                                </c:if>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,6 +94,7 @@
                                             ${u.active ? 'Hoạt động' : 'Bị khóa'}
                                         </span>
                                     </td>
+                                    <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
                                     <td style="text-align: right;">
                                         <div
                                             style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
@@ -98,6 +103,7 @@
                                                style="padding: 6px 12px; font-size: 13px;">Sửa</a>
                                         </div>
                                     </td>
+                                    </c:if>
                                 </tr>
                             </c:forEach>
                         </tbody>
@@ -157,16 +163,16 @@
                     <label for="fullName">Họ và Tên</label>
                     <input type="text" id="fullName" name="fullName" class="form-control"
                            placeholder="Nguyễn Văn A"
-                           value="${not empty formUser ? formUser.fullName : ''}" required ${formMode eq 'edit'
+                           value="${not empty formUser ? formUser.fullName : ''}" ${formMode eq 'edit'
                                     ? 'readonly style="background: var(--bg-body); cursor: not-allowed;"'
                                     : '' }>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label for="email">Địa chỉ Email</label>
-                    <input type="email" id="email" name="email" class="form-control"
+                    <input type="text" id="email" name="email" class="form-control"
                            placeholder="name@example.com"
-                           value="${not empty formUser ? formUser.email : ''}" required ${formMode eq 'edit'
+                           value="${not empty formUser ? formUser.email : ''}" ${formMode eq 'edit'
                                     ? 'readonly style="background: var(--bg-body); cursor: not-allowed;"'
                                     : '' }>
                 </div>
@@ -175,7 +181,7 @@
                     <div class="form-group" id="passwordField" style="margin-bottom: 16px;">
                         <label for="password">Mật khẩu</label>
                         <input type="password" id="password" name="password" class="form-control"
-                               placeholder="Nhập mật khẩu ít nhất 6 ký tự" required minlength="6">
+                               placeholder="Nhập mật khẩu ít nhất 6 ký tự"   minlength="6">
                     </div>
                 </c:if>
 

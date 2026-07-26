@@ -36,13 +36,16 @@ public class MaintenanceServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        String carIdStr = request.getParameter("carId");
+        String vehicleIdStr = request.getParameter("vehicleId");
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+            vehicleIdStr = request.getParameter("vehicleId");
+        }
 
         try {
-            if ("getSchedule".equals(action) && carIdStr != null) {
-                handleGetMaintenanceSchedule(request, response, Integer.parseInt(carIdStr));
-            } else if ("list".equals(action) && carIdStr != null) {
-                handleViewMaintenanceList(request, response, Integer.parseInt(carIdStr));
+            if ("getSchedule".equals(action) && vehicleIdStr != null) {
+                handleGetMaintenanceSchedule(request, response, Integer.parseInt(vehicleIdStr));
+            } else if ("list".equals(action) && vehicleIdStr != null) {
+                handleViewMaintenanceList(request, response, Integer.parseInt(vehicleIdStr));
             } else {
                 handleViewAllVehiclesWithMaintenance(request, response);
             }
@@ -103,36 +106,36 @@ public class MaintenanceServlet extends HttpServlet {
     private void handleViewAllVehiclesWithMaintenance(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<Vehicle> cars = vehicleService.getAllVehicles();
-        request.setAttribute("cars", cars);
+        request.setAttribute("vehicles", cars);
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
-    private void handleViewMaintenanceList(HttpServletRequest request, HttpServletResponse response, int carId)
+    private void handleViewMaintenanceList(HttpServletRequest request, HttpServletResponse response, int vehicleId)
             throws ServletException, IOException {
-        Vehicle car = vehicleService.getVehicleById(carId);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             throw new AppException("Xe không tồn tại");
         }
 
-        List<MaintenanceSchedule> maintenanceList = vehicleService.getMaintenanceByVehicleId(carId);
+        List<MaintenanceSchedule> maintenanceList = vehicleService.getMaintenanceByVehicleId(vehicleId);
         List<Vehicle> cars = vehicleService.getAllVehicles();
 
-        request.setAttribute("cars", cars);
+        request.setAttribute("vehicles", cars);
         request.setAttribute("selectedVehicle", car);
         request.setAttribute("maintenanceList", maintenanceList);
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
-    private void handleGetMaintenanceSchedule(HttpServletRequest request, HttpServletResponse response, int carId)
+    private void handleGetMaintenanceSchedule(HttpServletRequest request, HttpServletResponse response, int vehicleId)
             throws IOException {
-        Vehicle car = vehicleService.getVehicleById(carId);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Xe không tồn tại\"}");
             return;
         }
 
-        List<MaintenanceSchedule> schedules = vehicleService.getMaintenanceByVehicleId(carId);
+        List<MaintenanceSchedule> schedules = vehicleService.getMaintenanceByVehicleId(vehicleId);
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < schedules.size(); i++) {
@@ -156,14 +159,17 @@ public class MaintenanceServlet extends HttpServlet {
 
     private void handleRecordMaintenance(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        String carIdStr = request.getParameter("carId");
+        String vehicleIdStr = request.getParameter("vehicleId");
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+            vehicleIdStr = request.getParameter("vehicleId");
+        }
         String maintenanceType = request.getParameter("maintenanceType");
         String description = request.getParameter("description");
         String scheduledDateStr = request.getParameter("scheduledDate");
         String costStr = request.getParameter("cost");
         String notes = request.getParameter("notes");
 
-        if (carIdStr == null || carIdStr.isEmpty()) {
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
             throw new AppException("Vui lòng chọn xe");
         }
         if (maintenanceType == null || maintenanceType.isEmpty()) {
@@ -176,14 +182,14 @@ public class MaintenanceServlet extends HttpServlet {
             throw new AppException("Vui lòng chọn ngày bảo trì");
         }
 
-        int carId = Integer.parseInt(carIdStr);
-        Vehicle car = vehicleService.getVehicleById(carId);
+        int vehicleId = Integer.parseInt(vehicleIdStr);
+        Vehicle car = vehicleService.getVehicleById(vehicleId);
         if (car == null) {
             throw new AppException("Xe không tồn tại");
         }
 
         MaintenanceSchedule schedule = new MaintenanceSchedule();
-        schedule.setVehicleId(carId);
+        schedule.setVehicleId(vehicleId);
         schedule.setMaintenanceType(maintenanceType);
         schedule.setDescription(description);
         schedule.setScheduledDate(LocalDate.parse(scheduledDateStr));

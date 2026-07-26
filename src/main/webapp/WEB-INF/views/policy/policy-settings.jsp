@@ -60,7 +60,6 @@
             <input type="text" id="searchInput" placeholder="Gõ từ khóa để tìm nhanh chính sách..." oninput="filterPolicies()" style="border: none; background: none; width: 100%; outline: none; font-size: 14px; font-weight: 500; color: var(--on-surface);">
         </div>
     </div>
-    </div>
     
     <%-- Add Policy Button --%>
     <button type="button" onclick="openCreateModal()" style="display: flex; align-items: center; gap: 6px; background: #34A853; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 6px rgba(52,168,83,0.25);">
@@ -76,10 +75,10 @@
             
             <%-- Badge & Category --%>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <span class="category-badge" style="font-size: 11px; font-weight: 700; background: #F1F3F9; color: var(--primary); padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">
+                <span class="category-badge" style="font-size: 11px; font-weight: 700; background: #F1F3F9; color: var(--primary); padding: 4px 10px; border-radius: 20px; text-transform: uppercase; white-space: nowrap;">
                     ${p.category}
                 </span>
-                <code style="font-size:11px; color:var(--text-secondary); font-weight:700;">${p.policyKey}</code>
+                <span style="font-size:11px; font-family: monospace; color:var(--text-secondary); font-weight:700; word-break: break-all; text-align: right; margin-left: 10px;">${p.policyKey}</span>
             </div>
 
             <%-- Main Info --%>

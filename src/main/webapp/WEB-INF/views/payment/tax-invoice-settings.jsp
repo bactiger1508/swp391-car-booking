@@ -16,6 +16,17 @@
     </div>
 </div>
 
+<c:if test="${not empty sessionScope.successMessage}">
+    <div class="bk-alert bk-alert-success" style="max-width:800px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: space-between; background: #E6F4EA; border: 1.5px solid #34A853; color: #137333; padding: 14px 20px; border-radius: 12px; font-weight: 500;">
+        <div style="display:flex; align-items:center; gap: 8px;">
+            <span class="material-symbols-outlined" style="color: #34A853;">check_circle</span>
+            <span>${sessionScope.successMessage}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer; font-weight:bold; font-size:18px;">&times;</button>
+    </div>
+    <c:remove var="successMessage" scope="session"/>
+</c:if>
+
 <div class="bk-card" style="max-width:800px;margin:0 auto;">
     <div class="bk-card-title">
         <span class="material-symbols-outlined">receipt</span> Thông tin Doanh nghiệp xuất hóa đơn GTGT
@@ -27,7 +38,7 @@
                 <label class="bk-form-label">Tên đầy đủ của đơn vị (Bên bán)</label>
                 <div class="bk-form-input-wrap">
                     <span class="material-symbols-outlined">corporate_fare</span>
-                    <input type="text" class="bk-form-input" name="companyName" value="CÔNG TY CỔ PHẦN CARPRO VIỆT NAM" required>
+                    <input type="text" class="bk-form-input" name="companyName" value="${companyName}" required>
                 </div>
             </div>
 
@@ -35,7 +46,7 @@
                 <label class="bk-form-label">Mã số thuế doanh nghiệp (MST)</label>
                 <div class="bk-form-input-wrap">
                     <span class="material-symbols-outlined">pin</span>
-                    <input type="text" class="bk-form-input" name="taxId" value="0109876543" required>
+                    <input type="text" class="bk-form-input" name="taxId" value="${companyTaxId}" required>
                 </div>
             </div>
 
@@ -44,9 +55,9 @@
                 <div class="bk-form-input-wrap">
                     <span class="material-symbols-outlined">percent</span>
                     <select class="bk-form-select" name="defaultVatRate">
-                        <option value="8">8% (Thuế suất giảm nghị quyết)</option>
-                        <option value="10" selected>10% (Thuế suất tiêu chuẩn)</option>
-                        <option value="0">0% (Miễn thuế)</option>
+                        <option value="8" ${taxRate == '8' ? 'selected' : ''}>8% (Thuế suất giảm nghị quyết)</option>
+                        <option value="10" ${taxRate == '10' ? 'selected' : ''}>10% (Thuế suất tiêu chuẩn)</option>
+                        <option value="0" ${taxRate == '0' ? 'selected' : ''}>0% (Miễn thuế)</option>
                     </select>
                 </div>
             </div>
@@ -55,30 +66,15 @@
                 <label class="bk-form-label">Địa chỉ trụ sở chính đăng ký</label>
                 <div class="bk-form-input-wrap">
                     <span class="material-symbols-outlined">location_on</span>
-                    <input type="text" class="bk-form-input" name="address" value="Tòa nhà CarPro, Khu Công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội" required>
+                    <input type="text" class="bk-form-input" name="address" value="${companyAddress}" required>
                 </div>
             </div>
 
-            <div class="bk-form-group">
-                <label class="bk-form-label">Email nhận thông báo hóa đơn</label>
-                <div class="bk-form-input-wrap">
-                    <span class="material-symbols-outlined">mail</span>
-                    <input type="email" class="bk-form-input" name="invoiceEmail" value="finance@carpro.com.vn" required>
-                </div>
-            </div>
-
-            <div class="bk-form-group">
-                <label class="bk-form-label">Token tích hợp hệ thống e-Invoice</label>
-                <div class="bk-form-input-wrap">
-                    <span class="material-symbols-outlined">vpn_key</span>
-                    <input type="password" class="bk-form-input" name="invoiceToken" value="••••••••••••••••••••••••" placeholder="Nhập API Token từ VNPT/Viettel...">
-                </div>
-            </div>
         </div>
 
         <div style="margin-top:32px;display:flex;justify-content:flex-end;gap:12px;">
             <a href="${pageContext.request.contextPath}/home" class="bk-btn bk-btn-outline">Hủy bỏ</a>
-            <button type="submit" class="bk-btn bk-btn-primary" onclick="alert('Đã lưu cấu hình hóa đơn GTGT!');">
+            <button type="submit" class="bk-btn bk-btn-primary">
                 <span class="material-symbols-outlined">save</span> Lưu thiết lập
             </button>
         </div>

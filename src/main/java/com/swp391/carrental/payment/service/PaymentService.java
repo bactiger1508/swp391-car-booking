@@ -199,10 +199,14 @@ public class PaymentService {
             BigDecimal totalPaid = BigDecimal.ZERO;
             for (Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                        continue;
+                    }
+                    BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                        totalPaid = totalPaid.subtract(p.getAmount());
+                        totalPaid = totalPaid.subtract(effectiveAmt);
                     } else {
-                        totalPaid = totalPaid.add(p.getAmount());
+                        totalPaid = totalPaid.add(effectiveAmt);
                     }
                 }
             }
@@ -258,12 +262,16 @@ public class PaymentService {
                 "Phương thức thanh toán không được để trống.", 400);
         }
 
-        // Only CASH and BANK_TRANSFER are supported in this system
+        // Support CASH, BANK_TRANSFER, and DEDUCTION (internal deduction)
         String normalized = method.toUpperCase().trim();
-        if (!"CASH".equals(normalized) && !"BANK_TRANSFER".equals(normalized)) {
+        if (!"CASH".equals(normalized) && !"BANK_TRANSFER".equals(normalized) && !"DEDUCTION".equals(normalized)) {
             throw new AppException(
                 "Phương thức thanh toán '" + method + "' không được hỗ trợ. "
-                + "Chỉ chấp nhận Tiền mặt hoặc Chuyển khoản.", 400);
+                + "Chỉ chấp nhận Tiền mặt, Chuyển khoản hoặc Khấu trừ.", 400);
+        }
+
+        if ("DEDUCTION".equals(normalized)) {
+            return;
         }
 
         // Also check admin policy toggle for this method
@@ -294,28 +302,13 @@ public class PaymentService {
     }
 
     /**
-     * Validates the payment amount:
-     * - Must be positive.
-     * - For DEPOSIT payments: if PAYMENT_PARTIAL_ALLOWED = false,
-     *   the amount must be >= DEPOSIT_PERCENTAGE % of the total booking amount
-     *   (when totalAmount is provided via payment.notes — skipped if not set).
+     * Validates the payment amount: must be positive.
+     * Note: The amount field is readonly on the UI and always pre-filled
+     * with the correct remaining amount by the server.
      */
     private void validateAmount(Payment payment) {
         if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new AppException("Số tiền thanh toán phải lớn hơn 0.", 400);
-        }
-
-        // Partial payment check — only meaningful for DEPOSIT type
-        if ("DEPOSIT".equalsIgnoreCase(payment.getPaymentType())) {
-            boolean partialAllowed = Boolean.parseBoolean(
-                policyService().getPolicyValue("PAYMENT_PARTIAL_ALLOWED", "false"));
-
-            if (!partialAllowed) {
-                // If we have a way to know the required deposit amount, validate it.
-                // The booking's deposit_amount should already be pre-calculated by BookingService
-                // using DEPOSIT_PERCENTAGE, so we trust it here — just log intent.
-                // Full enforcement is done at BookingService level.
-            }
         }
     }
 

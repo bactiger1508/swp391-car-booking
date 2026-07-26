@@ -63,6 +63,17 @@ public class VatInvoiceDAO {
     }
 
     /**
+     * Sign the VAT invoice (Customer signature)
+     */
+    public boolean signInvoice(int invoiceId) throws SQLException {
+        String sql = "UPDATE vat_invoices SET customer_signed = 1, customer_signed_at = GETDATE(), updated_at = GETDATE() WHERE invoice_id = ?";
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
      * Map a JDBC ResultSet row to a VatInvoice model object.
      */
     private VatInvoice mapRow(ResultSet rs) throws SQLException {
@@ -79,6 +90,13 @@ public class VatInvoiceDAO {
         invoice.setTaxRate(rs.getBigDecimal("tax_rate"));
         invoice.setTaxAmount(rs.getBigDecimal("tax_amount"));
         invoice.setTotalAmount(rs.getBigDecimal("total_amount"));
+        invoice.setCustomerSigned(rs.getBoolean("customer_signed"));
+        
+        Timestamp customerSignedAt = rs.getTimestamp("customer_signed_at");
+        if (customerSignedAt != null) {
+            invoice.setCustomerSignedAt(customerSignedAt.toLocalDateTime());
+        }
+
         Timestamp created = rs.getTimestamp("created_at");
         if (created != null) {
             invoice.setCreatedAt(created.toLocalDateTime());

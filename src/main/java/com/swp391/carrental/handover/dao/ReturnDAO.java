@@ -6,15 +6,12 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.handover.model.VehicleReturn;
 
-/*
+/**
  * Name: ReturnDAO
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 19/06/2026
  * Version: 1.0
- * Description: Handles database operations for ReturnDAO.
- */
-/**
- * Data Access Object for VehicleReturn entities.
+ * Description: Data Access Object handling database operations for vehicle returns and additional fee records.
  */
 public class ReturnDAO {
 
@@ -170,7 +167,7 @@ public class ReturnDAO {
         if (!rs.wasNull()) {
             v.setContractId(cid);
         }
-        v.setCarId(rs.getInt("vehicle_id"));
+        v.setVehicleId(rs.getInt("vehicle_id"));
         int hid = rs.getInt("handover_id");
         if (!rs.wasNull()) {
             v.setHandoverId(hid);

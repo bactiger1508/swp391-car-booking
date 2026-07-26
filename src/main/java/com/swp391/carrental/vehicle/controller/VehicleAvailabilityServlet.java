@@ -91,20 +91,23 @@ public class VehicleAvailabilityServlet extends HttpServlet {
         response.setContentType("application/json; charset=UTF-8");
 
         try {
-            String carIdStr = request.getParameter("carId");
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+                vehicleIdStr = request.getParameter("vehicleId");
+            }
             String startDateStr = request.getParameter("startDate");
             String startTimeStr = request.getParameter("startTime");
             String endDateStr = request.getParameter("endDate");
             String endTimeStr = request.getParameter("endTime");
 
-            if (carIdStr == null || carIdStr.trim().isEmpty() ||
+            if (vehicleIdStr == null || vehicleIdStr.trim().isEmpty() ||
                 startDateStr == null || startDateStr.trim().isEmpty() ||
                 endDateStr == null || endDateStr.trim().isEmpty()) {
                 response.getWriter().write("{\"success\":false,\"message\":\"Thiếu thông tin xe hoặc khoảng thời gian.\"}");
                 return;
             }
 
-            int carId = Integer.parseInt(carIdStr);
+            int vehicleId = Integer.parseInt(vehicleIdStr);
             if (startTimeStr == null || startTimeStr.trim().isEmpty()) startTimeStr = "08:00";
             if (endTimeStr == null || endTimeStr.trim().isEmpty()) endTimeStr = "08:00";
 
@@ -126,7 +129,7 @@ public class VehicleAvailabilityServlet extends HttpServlet {
                 return;
             }
 
-            boolean isAvailable = availabilityService.isCarAvailableForRange(carId, start, end);
+            boolean isAvailable = availabilityService.isVehicleAvailableForRange(vehicleId, start, end);
             if (isAvailable) {
                 response.getWriter().write("{\"success\":true,\"available\":true}");
             } else {

@@ -140,10 +140,80 @@
             padding: 0;
         }
     }
+    
+    /* Modal Styles */
+    .bk-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(4, 22, 56, 0.45);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+    }
+    .bk-modal.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .bk-modal-content {
+        background: #ffffff;
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 12px;
+        width: 90%;
+        max-width: 480px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        padding: 24px;
+        transform: scale(0.95);
+        transition: transform 0.2s ease-in-out;
+    }
+    .bk-modal.open .bk-modal-content {
+        transform: scale(1);
+    }
+    .bk-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+        padding-bottom: 12px;
+    }
+    .modal-close-icon {
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--text-secondary, #718096);
+        transition: color 0.15s ease;
+        line-height: 1;
+    }
+    .modal-close-icon:hover {
+        color: var(--danger, #e53e3e);
+    }
+    .bk-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+        padding-top: 16px;
+        margin-top: 8px;
+    }
 </style>
 
 <div class="page-content">
     <div class="no-print" style="display: flex; gap: 16px; justify-content: flex-end; margin-bottom: 20px;">
+        <c:if test="${sessionScope.currentUser.role == 'CUSTOMER' && contract.customerId == sessionScope.currentUser.userId && !invoice.customerSigned}">
+            <form id="signInvoiceForm" action="${pageContext.request.contextPath}/contracts/vat-invoice/sign" method="POST" style="margin: 0;">
+                <input type="hidden" name="contractId" value="${contract.contractId}"/>
+                <input type="hidden" name="invoiceId" value="${invoice.invoiceId}"/>
+                <button type="button" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;" onclick="openSignModal()">
+                    <span class="material-symbols-outlined">draw</span> Xác nhận ký hóa đơn
+                </button>
+            </form>
+        </c:if>
         <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px;">
             <span class="material-symbols-outlined">arrow_back</span> Quay lại hợp đồng
         </a>
@@ -254,7 +324,7 @@
                                     <c:otherwise>${p.paymentType}</c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>${p.paymentMethod == 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}</td>
+                            <td>${p.paymentMethod == 'CASH' ? 'Tiền mặt' : (p.paymentMethod == 'DEDUCTION' ? 'Khấu trừ' : 'Chuyển khoản')}</td>
                             <td>${p.paidAt != null ? p.paidAt.format(dateTimeFormatter) : ''}</td>
                             <td style="text-align: right; font-weight: 600;">
                                 <c:if test="${p.paymentType == 'REFUND'}">-</c:if>
@@ -285,7 +355,19 @@
         <div style="margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px;">
             <div style="width: 250px;">
                 <p style="font-weight: 700; text-transform: uppercase;">Người Mua Hàng</p>
-                <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 60px;">(Ký, ghi rõ họ tên)</p>
+                <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 15px;">(Ký, ghi rõ họ tên)</p>
+                <c:choose>
+                    <c:when test="${invoice.customerSigned}">
+                        <div style="border: 2px dashed #27ae60; color: #27ae60; padding: 6px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 10px; display: inline-block; margin-bottom: 15px;">
+                            KHÁCH HÀNG XÁC NHẬN
+                            <br/>
+                            ĐÃ KÝ ĐIỆN TỬ
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <p style="font-style: italic; color: #999; margin-bottom: 35px;">(Chờ xác nhận)</p>
+                    </c:otherwise>
+                </c:choose>
                 <p style="font-weight: 600; text-decoration: underline;">${customer.fullName}</p>
             </div>
             <div style="width: 250px;">
@@ -300,5 +382,38 @@
         </div>
     </div>
 </div>
+
+<!-- Custom Sign Modal -->
+<div id="customSignModal" class="bk-modal no-print">
+    <div class="bk-modal-content">
+        <div class="bk-modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="material-symbols-outlined" style="color: var(--success, #2e7d32); font-size: 26px;">draw</span>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Xác nhận ký hóa đơn VAT</h3>
+            </div>
+            <span class="modal-close-icon" onclick="closeSignModal()">&times;</span>
+        </div>
+        <div class="bk-modal-body" style="padding: 20px 0;">
+            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+                Bạn có chắc chắn muốn xác nhận ký hóa đơn VAT này?
+            </p>
+        </div>
+        <div class="bk-modal-footer">
+            <button type="button" class="btn btn-outline" onclick="closeSignModal()">Hủy bỏ</button>
+            <button type="button" class="btn btn-success" style="display: inline-flex; align-items: center; gap: 8px;" onclick="document.getElementById('signInvoiceForm').submit()">
+                <span class="material-symbols-outlined" style="font-size: 20px;">draw</span> Đồng ý ký
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openSignModal() {
+        document.getElementById('customSignModal').classList.add('open');
+    }
+    function closeSignModal() {
+        document.getElementById('customSignModal').classList.remove('open');
+    }
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

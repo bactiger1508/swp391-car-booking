@@ -1,13 +1,11 @@
 package com.swp391.carrental.report.controller;
 
-import com.swp391.carrental.booking.model.Booking;
-import com.swp391.carrental.payment.model.Payment;
-import com.swp391.carrental.report.service.ReportService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,12 +18,16 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
+import com.swp391.carrental.booking.model.Booking;
+import com.swp391.carrental.payment.model.Payment;
+import com.swp391.carrental.report.service.ReportService;
+
+/**
  * Name: RevenueReportServlet
  * @Author: TamTTMHE190340
- * Date: 23/05/2026
+ * Date: 17/07/2026
  * Version: 1.0
- * Description: Handles HTTP requests and responses for RevenueReportServlet.
+ * Description: Controller handling revenue reporting, periodic financial breakdowns (Monthly/Quarterly/Yearly), and payment summaries.
  */
 @WebServlet(name = "RevenueReportServlet", urlPatterns = {"/reports/revenue"})
 public class RevenueReportServlet extends HttpServlet {
@@ -53,9 +55,7 @@ public class RevenueReportServlet extends HttpServlet {
             }
         }
 
-        int year = (yearParam == null || yearParam.isBlank())
-                ? today.getYear()
-                : Integer.parseInt(yearParam);
+        int year = (yearParam == null || yearParam.isBlank())? today.getYear(): Integer.parseInt(yearParam);
 
         int quarter;
         if (quarterParam != null && !quarterParam.isBlank()) {
@@ -198,16 +198,13 @@ public class RevenueReportServlet extends HttpServlet {
         // ================= KPI =================
         BigDecimal totalRevenue = reportService.getTotalRevenue(currentDate, toDate);
         BigDecimal rentalRevenue = reportService.getRevenueByType("RENTAL", currentDate, toDate);
-        BigDecimal rentalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
-            ? BigDecimal.ZERO 
+        BigDecimal rentalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO 
             : rentalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal additionalRevenue = reportService.getRevenueByType("ADDITIONAL_FEE", currentDate, toDate);
-        BigDecimal additionalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
-            ? BigDecimal.ZERO 
+        BigDecimal additionalRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO 
             : additionalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal depositRevenue = reportService.getDepositRevenue(currentDate, toDate);
-        BigDecimal depositRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 
-            ? BigDecimal.ZERO 
+        BigDecimal depositRatio = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO 
             : depositRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
 
         int completedBooking = reportService.getCompletedBooking(currentDate, toDate);

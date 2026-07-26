@@ -778,7 +778,7 @@ Customer cancels booking after it has been confirmed
      may apply depending on rental policy.
 
 Customer requests to change vehicle
-  -> Staff checks replacement vehicle availability. System updates carId and
+  -> Staff checks replacement vehicle availability. System updates vehicleId and
      recalculates rental fee/deposit if needed.
 
 Customer requests to change rental dates

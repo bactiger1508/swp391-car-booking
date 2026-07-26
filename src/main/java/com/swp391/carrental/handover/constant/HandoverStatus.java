@@ -1,14 +1,12 @@
 package com.swp391.carrental.handover.constant;
 
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 /**
- *
- * @author lenovo
+ * Name: HandoverStatus
+ * @Author: TamTTMHE190340
+ * Date: 19/06/2026
+ * Version: 1.0
+ * Description: Constants representing status states for vehicle handover inspections.
  */
 public class HandoverStatus {
 

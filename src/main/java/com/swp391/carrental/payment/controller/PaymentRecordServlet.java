@@ -18,6 +18,7 @@ import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.policy.service.PolicyService;
 import com.swp391.carrental.user.model.User;
+import java.util.List;
 
 /*
  * Name: PaymentRecordServlet
@@ -139,6 +140,9 @@ public class PaymentRecordServlet extends HttpServlet {
                     BigDecimal rentalPaidAmt = BigDecimal.ZERO;
 
                     for (Payment p : payments) {
+                        if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                            continue;
+                        }
                         BigDecimal actualAmt = p.getAmountPaid() != null ? p.getAmountPaid() : BigDecimal.ZERO;
                         if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                             BigDecimal completedAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
@@ -168,7 +172,12 @@ public class PaymentRecordServlet extends HttpServlet {
 
                     boolean depositPaid = depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0;
                     BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount());
-                    boolean rentalPaid = rentalPaidAmt.compareTo(rentalRequired) >= 0;
+                    BigDecimal excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount());
+                    BigDecimal effectiveRentalPaid = rentalPaidAmt;
+                    if (excessDeposit.compareTo(BigDecimal.ZERO) > 0) {
+                        effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+                    }
+                    boolean rentalPaid = effectiveRentalPaid.compareTo(rentalRequired) >= 0;
 
                     BigDecimal remainingDeposit = booking.getDepositAmount().subtract(depositPaidAmt);
                     if (remainingDeposit.compareTo(BigDecimal.ZERO) < 0) {
@@ -179,6 +188,7 @@ public class PaymentRecordServlet extends HttpServlet {
                     request.setAttribute("depositPaid", depositPaid);
                     request.setAttribute("rentalPaid", rentalPaid);
                     request.setAttribute("remainingDeposit", remainingDeposit);
+                    request.setAttribute("excessDeposit", excessDeposit);
 
                     // Fetch vehicle return and include its totalAdditionalFee in totalAmount
                     com.swp391.carrental.handover.model.VehicleReturn vehicleReturn = null;
@@ -319,6 +329,74 @@ public class PaymentRecordServlet extends HttpServlet {
             // Security check: CUSTOMER cannot create REFUND payments
             if ("CUSTOMER".equals(currentUser.getRole()) && "REFUND".equalsIgnoreCase(payment.getPaymentType())) {
                 throw new AppException("Khách hàng không được quyền tạo giao dịch hoặc yêu cầu hoàn tiền.", 403);
+            }
+
+            // Intercept REFUND payments when there is an unpaid surcharge (additional fee)
+            if ("REFUND".equalsIgnoreCase(payment.getPaymentType())) {
+                int bookingId = payment.getBookingId();
+                com.swp391.carrental.booking.model.Booking booking = bookingService.getBookingById(bookingId);
+                com.swp391.carrental.handover.model.VehicleReturn returns = null;
+                try {
+                    returns = new com.swp391.carrental.handover.dao.ReturnDAO().findByBookingId(bookingId);
+                } catch (Exception ignored) {}
+
+                if (booking != null && returns != null && returns.getTotalAdditionalFee() != null && returns.getTotalAdditionalFee().compareTo(BigDecimal.ZERO) > 0) {
+                    List<Payment> existingPayments = paymentService.getPaymentsByBooking(bookingId);
+                    BigDecimal depositPaidAmt = BigDecimal.ZERO;
+                    BigDecimal rentalPaidAmt = BigDecimal.ZERO;
+                    BigDecimal additionalFeePaidAmt = BigDecimal.ZERO;
+                    BigDecimal refundAmt = BigDecimal.ZERO;
+                    for (Payment ep : existingPayments) {
+                        if ("COMPLETED".equalsIgnoreCase(ep.getStatus())) {
+                            if ("DEDUCTION".equalsIgnoreCase(ep.getPaymentMethod())) {
+                                if ("ADDITIONAL_FEE".equalsIgnoreCase(ep.getPaymentType())) {
+                                    additionalFeePaidAmt = additionalFeePaidAmt.add(ep.getAmountPaid() != null ? ep.getAmountPaid() : ep.getAmount());
+                                }
+                                continue;
+                            }
+                            BigDecimal effectiveAmt = ep.getAmountPaid() != null ? ep.getAmountPaid() : ep.getAmount();
+                            if ("REFUND".equalsIgnoreCase(ep.getPaymentType())) {
+                                refundAmt = refundAmt.add(effectiveAmt);
+                            } else {
+                                if ("DEPOSIT".equalsIgnoreCase(ep.getPaymentType())) {
+                                    depositPaidAmt = depositPaidAmt.add(effectiveAmt);
+                                } else if ("RENTAL".equalsIgnoreCase(ep.getPaymentType())) {
+                                    rentalPaidAmt = rentalPaidAmt.add(effectiveAmt);
+                                } else if ("ADDITIONAL_FEE".equalsIgnoreCase(ep.getPaymentType())) {
+                                    additionalFeePaidAmt = additionalFeePaidAmt.add(effectiveAmt);
+                                }
+                            }
+                        }
+                    }
+
+                    // If no completed ADDITIONAL_FEE payment exists yet
+                    if (additionalFeePaidAmt.compareTo(BigDecimal.ZERO) == 0) {
+                        BigDecimal excessDepositBeforeSurcharge = depositPaidAmt.add(rentalPaidAmt).subtract(refundAmt).subtract(booking.getTotalAmount());
+                        if (excessDepositBeforeSurcharge.compareTo(BigDecimal.ZERO) > 0) {
+                            BigDecimal surcharge = returns.getTotalAdditionalFee();
+                            BigDecimal netRefund = excessDepositBeforeSurcharge.subtract(surcharge);
+
+                            // Adjust the submitted refund payment to the net refund (excess minus surcharge)
+                            payment.setAmount(netRefund);
+                            payment.setAmountPaid(netRefund);
+
+                            // Create and save the ADDITIONAL_FEE payment to record the deduction
+                            Payment additionalFeePayment = new Payment();
+                            additionalFeePayment.setBookingId(bookingId);
+                            additionalFeePayment.setContractId(payment.getContractId());
+                            additionalFeePayment.setAmount(surcharge);
+                            additionalFeePayment.setAmountPaid(surcharge);
+                            additionalFeePayment.setPaymentType("ADDITIONAL_FEE");
+                            additionalFeePayment.setPaymentMethod("DEDUCTION"); // Mark as DEDUCTION
+                            additionalFeePayment.setStatus("COMPLETED");
+                            additionalFeePayment.setPaidAt(LocalDateTime.now());
+                            additionalFeePayment.setRecordedBy(currentUser.getUserId());
+                            additionalFeePayment.setNotes("Khấu trừ tự động từ tiền cọc nộp thừa");
+
+                            paymentService.recordPayment(additionalFeePayment);
+                        }
+                    }
+                }
             }
 
             // recordPayment() calls validatePaymentMethod() + validateRefundMethod() + validateAmount()

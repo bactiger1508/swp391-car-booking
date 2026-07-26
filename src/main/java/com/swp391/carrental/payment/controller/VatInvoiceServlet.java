@@ -30,7 +30,7 @@ import com.swp391.carrental.vehicle.service.VehicleService;
  * - v1.0 (16/07/2026): Initial version.
  * - v1.1 (23/07/2026): Added Javadoc and method comments.
  */
-@WebServlet(name = "VatInvoiceServlet", urlPatterns = {"/contracts/vat-invoice/create", "/contracts/vat-invoice/detail"})
+@WebServlet(name = "VatInvoiceServlet", urlPatterns = {"/contracts/vat-invoice/create", "/contracts/vat-invoice/detail", "/contracts/vat-invoice/sign"})
 public class VatInvoiceServlet extends HttpServlet {
 
     private final ContractService contractService = new ContractService();
@@ -56,6 +56,11 @@ public class VatInvoiceServlet extends HttpServlet {
         }
 
         String path = request.getServletPath();
+
+        if ("/contracts/vat-invoice/create".equals(path) || "/contracts/vat-invoice/sign".equals(path)) {
+            doPost(request, response);
+            return;
+        }
 
         if ("/contracts/vat-invoice/detail".equals(path)) {
             String contractIdStr = request.getParameter("contractId");
@@ -124,13 +129,20 @@ public class VatInvoiceServlet extends HttpServlet {
             return;
         }
 
-        // Only Staff/Admin (with CREATE_VAT_INVOICE permission) can generate VAT Invoice
-        if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_VAT_INVOICE")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hóa đơn VAT.");
-            return;
-        }
-
         String path = request.getServletPath();
+
+        // Check permissions based on path
+        if ("/contracts/vat-invoice/create".equals(path)) {
+            if (!com.swp391.carrental.core.util.SecurityUtils.hasPermission(request, "CREATE_VAT_INVOICE")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền lập hóa đơn VAT.");
+                return;
+            }
+        } else if ("/contracts/vat-invoice/sign".equals(path)) {
+            if (!"CUSTOMER".equals(currentUser.getRole())) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ khách hàng mới có thể ký xác nhận hóa đơn VAT.");
+                return;
+            }
+        }
 
         if ("/contracts/vat-invoice/create".equals(path)) {
             String contractIdStr = request.getParameter("contractId");
@@ -177,10 +189,14 @@ public class VatInvoiceServlet extends HttpServlet {
                 BigDecimal totalPaid = BigDecimal.ZERO;
                 for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                            continue;
+                        }
+                        BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
+                            totalPaid = totalPaid.subtract(effectiveAmt);
                         } else {
-                            totalPaid = totalPaid.add(p.getAmount());
+                            totalPaid = totalPaid.add(effectiveAmt);
                         }
                     }
                 }
@@ -229,6 +245,47 @@ public class VatInvoiceServlet extends HttpServlet {
                     session.setAttribute("errorMessage", "Lỗi tạo hóa đơn VAT: " + e.getMessage());
                 }
                 response.sendRedirect(request.getContextPath() + "/contracts/detail?id=" + contractIdStr);
+            }
+        } else if ("/contracts/vat-invoice/sign".equals(path)) {
+            String invoiceIdStr = request.getParameter("invoiceId");
+            String contractIdStr = request.getParameter("contractId");
+
+            if (invoiceIdStr == null || invoiceIdStr.isEmpty() || contractIdStr == null || contractIdStr.isEmpty()) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Dữ liệu hóa đơn không hợp lệ.");
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts");
+                return;
+            }
+
+            int contractId = Integer.parseInt(contractIdStr);
+            int invoiceId = Integer.parseInt(invoiceIdStr);
+
+            try {
+                RentalContract contract = contractService.getContractById(contractId);
+                if (contract == null || contract.getCustomerId() != currentUser.getUserId()) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền ký hóa đơn này.");
+                    return;
+                }
+
+                VatInvoice invoice = vatInvoiceDAO.findByContractId(contractId);
+                if (invoice != null && invoice.getInvoiceId() == invoiceId && !invoice.isCustomerSigned()) {
+                    vatInvoiceDAO.signInvoice(invoiceId);
+                    if (session != null) {
+                        session.setAttribute("successMessage", "Đã ký xác nhận hóa đơn VAT thành công!");
+                    }
+                } else {
+                    if (session != null) {
+                        session.setAttribute("errorMessage", "Hóa đơn đã được ký hoặc không tồn tại.");
+                    }
+                }
+                
+                response.sendRedirect(request.getContextPath() + "/contracts/vat-invoice/detail?contractId=" + contractId);
+            } catch (Exception e) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Lỗi ký hóa đơn VAT: " + e.getMessage());
+                }
+                response.sendRedirect(request.getContextPath() + "/contracts/vat-invoice/detail?contractId=" + contractId);
             }
         }
     }

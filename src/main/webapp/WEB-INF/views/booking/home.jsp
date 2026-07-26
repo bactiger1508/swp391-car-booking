@@ -565,10 +565,10 @@
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
-                                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.carId}" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface-variant text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1">
+                                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="px-4 py-2 border border-outline-variant rounded-lg text-on-surface-variant text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1">
                                             <span class="material-symbols-outlined text-[16px]">visibility</span> Chi tiết
                                         </a>
-                                        <a href="${pageContext.request.contextPath}/bookings/create?carId=${car.carId}" class="px-4 py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm flex items-center gap-1">
+                                        <a href="${pageContext.request.contextPath}/bookings/create?vehicleId=${car.vehicleId}" class="px-4 py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm flex items-center gap-1">
                                             <span class="material-symbols-outlined text-[16px]">key</span> Đặt xe
                                         </a>
                                     </div>

@@ -5,6 +5,10 @@
     <jsp:param name="pageTitle" value="Chỉnh sửa Đặt Xe"/>
 </jsp:include>
 
+<!-- Leaflet CSS & JS for OpenStreetMap -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
 <c:if test="${not empty error}">
     <div class="bk-alert bk-alert-error">
         <span class="material-symbols-outlined">error</span> ${error}
@@ -67,10 +71,10 @@
                             <label class="bk-form-label">Xe cụ thể <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">directions_car</span>
-                                <select name="carId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
+                                <select name="vehicleId" id="carSelect" class="bk-form-select" onchange="updateCarInfo()" disabled>
                                     <option value="">-- Chọn xe --</option>
                                     <c:forEach var="car" items="${cars}">
-                                        <option value="${car.carId}"
+                                        <option value="${car.vehicleId}"
                                                 data-brand="${car.brand}"
                                                 data-model="${car.model}"
                                                 data-plate="${car.licensePlate}"
@@ -83,7 +87,7 @@
                                     </c:forEach>
                                 </select>
                             </div>
-                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-carId"></span>
+                            <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-vehicleId"></span>
                         </div>
                     </div>
                 </div>
@@ -201,20 +205,32 @@
                             <label class="bk-form-label">Điểm trả xe <span style="color:var(--error);">*</span></label>
                             <div class="bk-form-input-wrap">
                                 <span class="material-symbols-outlined">pin_drop</span>
-                                <input type="text" name="returnLocation" id="returnLocation" class="bk-form-input" value="${booking.returnLocation}" placeholder="Nhập địa điểm trả xe">
+                                <select name="returnLocation" id="returnLocation" class="bk-form-select">
+                                    <option value="Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" ${booking.returnLocation == 'Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội' ? 'selected' : ''}>Chi nhánh Hà Nội: 123 Đường Láng, Hà Nội</option>
+                                    <option value="Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" ${booking.returnLocation == 'Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM' ? 'selected' : ''}>Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM</option>
+                                </select>
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-returnLocation"></span>
                         </div>
                     </div>
                     
-                    <%-- Address Input for Delivery --%>
+                    <%-- Address Input for Delivery & Map --%>
                     <div class="bk-form-group" id="deliveryAddressGroup" style="display:${booking.deliveryMethod == 'DELIVERY' ? 'block' : 'none'}; margin-top: 16px;">
                         <label class="bk-form-label">Địa chỉ giao xe tận nơi <span style="color:var(--error);">*</span></label>
-                        <div class="bk-form-input-wrap">
+                        <div class="bk-form-input-wrap" style="margin-bottom: 8px;">
                             <span class="material-symbols-outlined">home</span>
-                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" value="${booking.deliveryAddress}" placeholder="Nhập địa chỉ nhà của bạn">
+                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn hoặc tìm trên bản đồ..." value="${booking.deliveryAddress}" onkeypress="if(event.key==='Enter'){event.preventDefault();searchAddressOnMap();}">
+                            <button type="button" class="bk-btn bk-btn-outline" style="padding: 6px 14px; font-size:13px; white-space:nowrap; margin-left: 8px;" onclick="searchAddressOnMap()">
+                                <span class="material-symbols-outlined" style="font-size:16px;">search</span> Tìm
+                            </button>
                         </div>
                         <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-deliveryAddress"></span>
+
+                        <%-- Leaflet Map Container --%>
+                        <div id="deliveryMap" style="width: 100%; height: 260px; border-radius: 8px; border: 1px solid var(--outline-variant); margin-top: 8px; z-index: 1;"></div>
+                        <div style="font-size: 11px; color: var(--on-surface-variant); margin-top: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">info</span> Bấm trực tiếp trên bản đồ hoặc di chuyển ghim để chọn vị trí giao xe chính xác.
+                        </div>
                     </div>
                 </div>
 
@@ -238,7 +254,7 @@
     <div>
         <%-- Selected Vehicle --%>
         <div class="bk-cost-card bk-vehicle-card" style="margin-bottom:24px;">
-            <div class="header">
+            <div class="bk-card-header">
                 <h3><span class="material-symbols-outlined">directions_car</span> Xe đã chọn</h3>
             </div>
             <div id="vehicleInfo" style="color:var(--on-surface-variant);font-size:14px;">
@@ -317,10 +333,116 @@ var tetStartDateStr = '${tetStartDate}';
 var tetEndDateStr = '${tetEndDate}';
 var tetSurchargePercent = parseFloat('${tetSurchargePercent}') || 20;
 
+function validateScheduleRealtime() {
+    var sd = document.getElementById('startDate');
+    var st = document.getElementById('startTime');
+    var ed = document.getElementById('endDate');
+    var et = document.getElementById('endTime');
+
+    var sdVal = sd ? sd.value : '';
+    var stVal = st ? st.value : '';
+    var edVal = ed ? ed.value : '';
+    var etVal = et ? et.value : '';
+
+    var errSd = document.getElementById('err-startDate');
+    var errSt = document.getElementById('err-startTime');
+    var errEd = document.getElementById('err-endDate');
+    var errEt = document.getElementById('err-endTime');
+
+    if (errSd) { errSd.textContent = ''; errSd.style.display = 'none'; }
+    if (errSt) { errSt.textContent = ''; errSt.style.display = 'none'; }
+    if (errEd) { errEd.textContent = ''; errEd.style.display = 'none'; }
+    if (errEt) { errEt.textContent = ''; errEt.style.display = 'none'; }
+
+    if (!sdVal || !stVal) return;
+
+    var now = new Date();
+    var todayStr = (typeof getLocalDateString === 'function') ? getLocalDateString(now) : now.toISOString().split('T')[0];
+
+    var submitBtn = document.getElementById('submitBookingBtn');
+    var hasTimeErr = false;
+
+    var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+    var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+    
+    var minBufferHours = 1;
+    if (deliveryMethod === 'DELIVERY') {
+        var travelHours = deliveryDistance / 25.0;
+        minBufferHours = 1.0 + travelHours;
+        minBufferHours = Math.round(minBufferHours * 10) / 10;
+        if (minBufferHours < 1.5) minBufferHours = 1.5;
+    }
+
+    if (sdVal < todayStr) {
+        hasTimeErr = true;
+        if (errSd) {
+            errSd.textContent = 'Ngày bắt đầu không được ở trong quá khứ.';
+            errSd.style.display = 'block';
+        }
+    } else if (sdVal === todayStr && stVal) {
+        var parts = stVal.split(':');
+        var startDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+        var earliestValidDt = new Date(now.getTime() + Math.ceil(minBufferHours * 60 * 60 * 1000));
+
+        if (startDt < earliestValidDt) {
+            hasTimeErr = true;
+            if (errSt) {
+                var formatHrs = String(earliestValidDt.getHours()).padStart(2, '0');
+                var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
+                if (deliveryMethod === 'DELIVERY') {
+                    var travelMins = Math.round((deliveryDistance / 25.0) * 60);
+                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                } else {
+                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất hôm nay từ ' + formatHrs + ':' + formatMins + ' trở đi.';
+                }
+                errSt.style.display = 'block';
+            }
+        }
+    }
+
+    if (sdVal && edVal && edVal < sdVal) {
+        hasTimeErr = true;
+        if (errEd) {
+            errEd.textContent = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+            errEd.style.display = 'block';
+        }
+    } else if (sdVal && edVal && sdVal === edVal && stVal && etVal) {
+        if (etVal <= stVal) {
+            hasTimeErr = true;
+            if (errEt) {
+                errEt.textContent = 'Giờ kết thúc phải lớn hơn giờ bắt đầu khi chọn cùng ngày.';
+                errEt.style.display = 'block';
+            }
+        }
+    }
+
+    if (submitBtn) {
+        if (hasTimeErr) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+}
+
+// Leaflet Map Globals
+var map = null;
+var deliveryMarker = null;
+
+// Branch coordinates
+var BRANCH_HN = { lat: 21.028511, lng: 105.804817, name: "Chi nhánh Hà Nội: 123 Đường Láng, Đống Đa, Hà Nội" };
+var BRANCH_HCM = { lat: 10.776889, lng: 106.700806, name: "Chi nhánh TP. HCM: 456 Nguyễn Thị Minh Khai, Quận 3, TP. HCM" };
+var SHOWROOM_LAT = BRANCH_HN.lat;
+var SHOWROOM_LNG = BRANCH_HN.lng;
+
 var carsList = [];
 <c:forEach var="car" items="${cars}">
     carsList.push({
-        id: ${car.vehicleId},
+        vehicleId: ${car.vehicleId},
         brand: '${car.brand}',
         model: '${car.model}',
         plate: '${car.licensePlate}',
@@ -335,7 +457,7 @@ var carsList = [];
 
 function initFilters() {
     var brandFilter = document.getElementById('brandFilter');
-    var selectedCarId = "${booking.vehicleId}";
+    var selectedVehicleId = "${booking.vehicleId}";
     
     var brands = new Set();
     carsList.forEach(function(c) {
@@ -349,9 +471,9 @@ function initFilters() {
         brandFilter.appendChild(opt);
     });
     
-    if (selectedCarId) {
-        var carId = parseInt(selectedCarId);
-        var foundCar = carsList.find(function(c) { return c.id === carId; });
+    if (selectedVehicleId) {
+        var vehicleId = parseInt(selectedVehicleId);
+        var foundCar = carsList.find(function(c) { return c.vehicleId === vehicleId; });
         if (foundCar) {
             brandFilter.value = foundCar.brand;
             onBrandChange();
@@ -361,7 +483,7 @@ function initFilters() {
             onModelChange();
             
             var carSelect = document.getElementById('carSelect');
-            carSelect.value = selectedCarId;
+            carSelect.value = selectedVehicleId;
             updateCarInfo();
         }
     }
@@ -416,7 +538,7 @@ function onModelChange() {
     carsList.forEach(function(c) {
         if (c.brand === brand && c.model === model) {
             var opt = document.createElement('option');
-            opt.value = c.id;
+            opt.value = c.vehicleId;
             opt.textContent = c.brand + ' ' + c.model + ' — ' + c.plate;
             carSelect.appendChild(opt);
         }
@@ -425,17 +547,17 @@ function onModelChange() {
 }
 
 function updateCarInfo() {
-    var carId = document.getElementById('carSelect').value;
+    var vehicleId = document.getElementById('carSelect').value;
     var infoDiv = document.getElementById('vehicleInfo');
     
-    if (!carId) {
+    if (!vehicleId) {
         infoDiv.innerHTML = '<p>Vui lòng chọn xe từ danh sách bên trái.</p>';
         document.getElementById('pickupLocation').value = '';
         calculateBookingCost();
         return;
     }
     
-    var car = carsList.find(function(c) { return c.id === parseInt(carId); });
+    var car = carsList.find(function(c) { return c.id === parseInt(vehicleId); });
     if (car) {
         infoDiv.innerHTML = '<div style="display:flex;gap:12px;align-items:center;">' +
             '<div style="width:64px;height:64px;border-radius:6px;background:var(--surface-container-high);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">' +
@@ -543,35 +665,176 @@ function onDeliveryMethodChange() {
             pickupGroup.style.display = 'none';
         }
         pickupInput.value = "Giao xe tận nơi";
+        initDeliveryMap();
     } else {
         distGroup.style.display = 'none';
         addrGroup.style.display = 'none';
+        document.getElementById('deliveryDistance').value = '0';
+        var fallbackNotice = document.getElementById('distanceFallbackNotice');
+        if (fallbackNotice) fallbackNotice.style.display = 'none';
+
         if (pickupGroup) {
             pickupGroup.style.display = 'block';
         }
         pickupInput.readOnly = true;
         
-        var carId = document.getElementById('carSelect').value;
-        if (carId) {
-            var car = carsList.find(function(c) { return c.id === parseInt(carId); });
-            if (car) {
-                pickupInput.value = "Showroom: " + car.location;
-            }
+        var sel = document.getElementById('carSelect');
+        var opt = sel.options[sel.selectedIndex];
+        if (opt && opt.value) {
+            var location = opt.getAttribute('data-location') || 'Văn phòng chính';
+            pickupInput.value = "Showroom: " + location;
         } else {
-            pickupInput.value = "";
+            pickupInput.value = "Showroom chính: 123 Đường Láng, Hà Nội";
         }
     }
     calculateBookingCost();
 }
 
+function initDeliveryMap() {
+    var mapContainer = document.getElementById('deliveryMap');
+    if (!mapContainer) return;
+
+    if (!map) {
+        map = L.map('deliveryMap').setView([SHOWROOM_LAT, SHOWROOM_LNG], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        map.on('click', function(e) {
+            setDeliveryLocation(e.latlng.lat, e.latlng.lng, true);
+        });
+        
+        // If there's an existing address on load, set marker if possible
+        var existingAddr = document.getElementById('deliveryAddress').value.trim();
+        if (existingAddr) {
+            searchAddressOnMap();
+        } else {
+            setDeliveryLocation(SHOWROOM_LAT, SHOWROOM_LNG, false);
+        }
+    } else {
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
+    }
+}
+
+function setDeliveryLocation(lat, lng, doReverseGeocode) {
+    if (!deliveryMarker) {
+        deliveryMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        deliveryMarker.on('dragend', function(e) {
+            var pos = e.target.getLatLng();
+            setDeliveryLocation(pos.lat, pos.lng, true);
+        });
+    } else {
+        deliveryMarker.setLatLng([lat, lng]);
+    }
+    map.panTo([lat, lng]);
+
+    fetchRoadDistance(lat, lng);
+
+    if (doReverseGeocode) {
+        reverseGeocode(lat, lng);
+    }
+}
+
+function fetchRoadDistance(lat, lng) {
+    var url = '${pageContext.request.contextPath}/bookings/delivery-distance?destLat=' + lat + '&destLng=' + lng;
+    fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var distInput = document.getElementById('deliveryDistance');
+            var fallbackNotice = document.getElementById('distanceFallbackNotice');
+
+            if (data.success && data.distanceKm !== undefined) {
+                distInput.value = data.distanceKm;
+                if (fallbackNotice) fallbackNotice.style.display = 'none';
+            } else {
+                var distKm = calculateHaversineDistance(SHOWROOM_LAT, SHOWROOM_LNG, lat, lng);
+                distInput.value = distKm;
+                if (fallbackNotice) fallbackNotice.style.display = 'block';
+            }
+            calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
+        })
+        .catch(function(err) {
+            console.error('Distance API error:', err);
+            var distKm = calculateHaversineDistance(SHOWROOM_LAT, SHOWROOM_LNG, lat, lng);
+            document.getElementById('deliveryDistance').value = distKm;
+            var fallbackNotice = document.getElementById('distanceFallbackNotice');
+            if (fallbackNotice) fallbackNotice.style.display = 'block';
+            calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
+        });
+}
+
+function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+    // Determine the distance to Hanoi and HCM branches, and return the minimum
+    var distToHN = getHaversine(BRANCH_HN.lat, BRANCH_HN.lng, lat2, lon2);
+    var distToHCM = getHaversine(BRANCH_HCM.lat, BRANCH_HCM.lng, lat2, lon2);
+    return Math.min(distToHN, distToHCM);
+}
+
+function getHaversine(lat1, lon1, lat2, lon2) {
+    var R = 6371; // km
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    var result = Math.round(d * 10) / 10;
+    return result < 0.1 ? 0.1 : result;
+}
+
+function reverseGeocode(lat, lng) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi';
+    fetch(url, { headers: { 'User-Agent': 'CarRentalApp/1.0' } })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.display_name) {
+                document.getElementById('deliveryAddress').value = data.display_name;
+            }
+        })
+        .catch(function(err) {
+            console.error('Reverse geocode error:', err);
+        });
+}
+
+function searchAddressOnMap() {
+    var query = document.getElementById('deliveryAddress').value.trim();
+    if (!query) return;
+
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&accept-language=vi&limit=1';
+    fetch(url, { headers: { 'User-Agent': 'CarRentalApp/1.0' } })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                setDeliveryLocation(lat, lon, false);
+            } else {
+                alert('Không tìm thấy vị trí phù hợp với địa chỉ đã nhập.');
+            }
+        })
+        .catch(function(err) {
+            console.error('Address search error:', err);
+        });
+}
+
 function calculateBookingCost() {
-    var carId = document.getElementById('carSelect').value;
-    if (!carId) {
+    var vehicleId = document.getElementById('carSelect').value;
+    if (!vehicleId) {
         resetSummary();
         return;
     }
 
-    var dailyRate = carPrices[parseInt(carId)] || 0;
+    var dailyRate = carPrices[parseInt(vehicleId)] || 0;
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var estKm = parseInt(document.getElementById('estimatedKm').value) || 0;
     
@@ -743,6 +1006,7 @@ document.getElementById('startDate').addEventListener('change', function() {
 window.addEventListener('DOMContentLoaded', function() {
     initFilters();
     onRentalModeChange();
+    onDeliveryMethodChange();
     
     var form = document.getElementById('bookingForm');
     if (form) {
@@ -766,7 +1030,7 @@ window.addEventListener('DOMContentLoaded', function() {
             
             var carVal = document.getElementById('carSelect').value;
             if (!carVal) {
-                showError('carId', 'Vui lòng chọn xe.');
+                showError('vehicleId', 'Vui lòng chọn xe.');
             }
             
             var sdVal = document.getElementById('startDate').value;

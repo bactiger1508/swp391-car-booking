@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Xem Biên bản Bàn giao xe"/>
 </jsp:include>
@@ -96,9 +97,8 @@
     </c:if>
 
     <form action="${pageContext.request.contextPath}/returns/detail" method="POST" enctype="multipart/form-data">
-        <!-- Hidden Inputs for Booking and Car IDs -->
         <input type="hidden" name="bookingId" value="${bookingId}" />
-        <input type="hidden" name="carId" value="${carId}" />
+        <input type="hidden" name="vehicleId" value="${vehicleId}" />
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; align-items: stretch;">
             <%-- Cột bên phải: Thông tin đặt xe --%>
@@ -119,7 +119,7 @@
                     </div>
                     <div style="display:flex; justify-content:space-between; padding-bottom: 2px; margin-top: 4px;">
                         <span style="color:var(--text-secondary);">Nhân viên lập:</span>
-                        <span style="font-weight:600;">${not empty sessionScope.currentUser ? sessionScope.currentUser.fullName : ''}</span>
+                        <span style="font-weight:600; color: var(--text-primary);">${not empty staff ? staff.fullName : (not empty sessionScope.currentUser ? sessionScope.currentUser.fullName : 'N/A')}</span>
                     </div>
                 </div>
             </div>
@@ -132,25 +132,33 @@
                     <span>Chi tiết xe</span>
                 </div>
                 <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0;">
-                        <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                    <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0; overflow:hidden;">
+                        <c:choose>
+                            <c:when test="${not empty car.primaryImageUrl}">
+                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                <span class="material-symbols-outlined" style="font-size: 28px; display:none;">garage</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div>
                         <div style="font-weight: 700; color: var(--primary); font-size: 16px;">
-                            ${not empty car ? car.brand : ''} ${not empty car ? car.model : ''}
+                            ${not empty vehicle ? vehicle.brand : car.brand} ${not empty vehicle ? vehicle.model : car.model}
                         </div>
                         <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
-                            Biển số: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.licensePlate : ''}</span>
+                            Biển số: <span style="font-weight:600; color: var(--text-primary);">${not empty vehicle ? vehicle.licensePlate : car.licensePlate}</span>
                         </div>
                         <div style="font-size: 13px; color: var(--text-secondary); margin-top: 1px;">
-                            Màu sắc: <span style="font-weight:600; color: var(--text-primary);">${not empty car ? car.color : ''}</span>
+                            Màu sắc: <span style="font-weight:600; color: var(--text-primary);">${not empty vehicle ? vehicle.color : car.color}</span>
                         </div>
                     </div>
                 </div>
                 <div style="margin-top: 16px; background: var(--surface-container-low); padding: 12px; border-radius: 8px;">
-                    <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase;">SỐ KM GHI NHẬN CUỐI CÙNG</span>
+                    <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase;">SỐ KM GHI NHẬN LÚC BÀN GIAO</span>
                     <div style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">
-                        ${not empty car ? car.mileage : ''} km
+                        <fmt:formatNumber value="${handover.mileageAtHandover}" pattern="#,##0"/> km
                     </div>
                 </div>
             </div>
@@ -169,26 +177,25 @@
                     <label class="bk-form-label" for="currentOdo" style="font-weight:600;">Số km đã đi trong chuyến (km)*</label>
                     <div class="bk-form-input-wrap" style="margin-top: 6px;">
                         <span class="material-symbols-outlined">speed</span>
-                        <input type="number" id="currentOdo" name="currentOdo" value="${not empty distanceDriven ? distanceDriven : 0}" class="bk-form-input" placeholder="Nhập số km đã đi"/>
+                        <input type="number" id="currentOdo" name="currentOdo" value="${not empty distanceDriven ? distanceDriven : (not empty returns && returns.mileageAtReturn > 0 ? returns.mileageAtReturn - handover.mileageAtHandover : '')}" class="bk-form-input" placeholder="Nhập số km đã đi trong chuyến"/>
                     </div>
-                    <span
-                        class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[12px]">Quãng đường đã đi:
-                        <span id="distance-value" style="font-weight:600; color: var(--primary);">0</span> km
-                        <br><span id="distance-value-error" style="font-weight:600; color: var(--primary);">
-                        </span>
-                        <c:if test="${not empty currentOdoError}">
-                            <div style="color:red; margin-top:5px;">
-                                ${currentOdoError}
-                            </div>
-                        </c:if>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[13px]" style="display: block; margin-top: 8px; line-height: 1.6;">
+                        Tổng số ODO của xe khi nhận lại: <strong id="distance-value" style="font-weight: 700;"><fmt:formatNumber value="${(not empty handover ? handover.mileageAtHandover : 0) + (not empty distanceDriven ? distanceDriven : 0)}" pattern="#,##0"/></strong> <strong style="font-weight: 700;">km</strong>
+                        <span id="distance-value-error" style="color:red; font-size:12px;"></span>
+                    </span>
+                    <c:if test="${not empty currentOdoError}">
+                        <div style="color:red; margin-top:5px;">
+                            ${currentOdoError}
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Mức nhiên liệu radio segment selector -->
                 <div class="bk-form-group">
-                    <label class="bk-form-label" style="font-weight:600;">Mức nhiên liệu *</label>
+                    <label class="bk-form-label" style="font-weight:600;">Mức nhiên liệu tại thời điểm nhận lại *</label>
                     <div style="display: flex; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 8px; overflow: hidden; height: 42px; margin-top: 6px;">
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                            <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${returns.fuelLevel == 'EMPTY' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${returns.fuelLevel == 'EMPTY' || returns.fuelLevel == 'E' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">E</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
@@ -204,116 +211,114 @@
                             <span class="fuel-label">3/4</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${returns.fuelLevel == 'FULL' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${returns.fuelLevel == 'FULL' || returns.fuelLevel == 'F' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">F</span>
                         </label>
                     </div>
-                    <span class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[12px]">Mức lúc nhận: ${handover.fuelLevel}</span>
+
+                    <span class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[12px]" style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                        Mức lúc nhận:
+                        <span class="bk-btn bk-btn-primary" style="padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: default; pointer-events: none; text-transform: uppercase;">
+                            ${not empty handover ? handover.fuelLevel : ''}
+                        </span>
+                    </span>
                 </div>
             </div>
         </div>
 
         <!-- Checklist Kiểm tra tình trạng xe -->
         <div class="bk-card" style="margin-bottom: 24px; padding: 24px;">
-            <div class="bk-card-title" style="border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 16px;">
-                <span class="material-symbols-outlined">fact_check</span>
-                <span>Danh sách kiểm tra tình trạng</span>
+            <div class="bk-card-title" style="border-bottom: 1px solid var(--outline-variant); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined">fact_check</span>
+                    <span>Danh sách kiểm tra tình trạng</span>
+                </div>
+                <label class="checklist-label" style="font-weight: 700; font-size: 14px; color: var(--primary); margin: 0; cursor: pointer;">
+                    <input type="checkbox" id="chkNeedsMaintenance" name="needsMaintenance" value="true" class="checklist-checkbox" ${needsMaintenance || (not empty returns && not empty returns.notes && returns.notes.contains('[CẦN BẢO DƯỠNG]')) ? 'checked="checked"' : ''} />
+                    <span>Cần bảo dưỡng sau khi trả xe</span>
+                </label>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+            <div id="maintenanceChecklistContainer" style="display: ${needsMaintenance || (not empty returns && not empty returns.notes && returns.notes.contains('[CẦN BẢO DƯỠNG]')) ? 'grid' : 'none'}; grid-template-columns: repeat(3, 1fr); gap: 32px;">
                 <!-- Ngoại thất -->
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">NGOẠI THẤT</div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                        <span>Ngoại thất</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorScratch" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Không vết xước/lõm mới') ? 'checked' : ''} />
-                            <span>Thân xe không có vết trầy xước mới</span>
+                            <input type="checkbox" name="chkExteriorScratch" value="true" class="checklist-checkbox" ${not empty returns && returns.exteriorCondition.contains('trầy xước') ? 'checked="checked"' : ''} />
+                            <span>Thân xe có vết trầy xước mới</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorBumper" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Cản trước và cản sau nguyên vẹn') ? 'checked' : ''} />
-                            <span>Cản trước và cản sau nguyên vẹn</span>
+                            <input type="checkbox" name="chkWindshield" value="true" class="checklist-checkbox" ${not empty returns && returns.exteriorCondition.contains('nứt hoặc vỡ') ? 'checked="checked"' : ''} />
+                            <span>Kính chắn gió bị nứt hoặc vỡ</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorGlass" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Kính chắn gió và cửa kính không nứt vỡ') ? 'checked' : ''} />
-                            <span>Kính chắn gió và cửa kính không nứt vỡ</span>
+                            <input type="checkbox" name="chkTires" value="true" class="checklist-checkbox" ${not empty returns && (returns.exteriorCondition.contains('mòn') || returns.exteriorCondition.contains('lốp xe')) ? 'checked="checked"' : ''} />
+                            <span>Lốp xe mòn hoặc hư hỏng</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorLights" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Đèn pha, đèn hậu hoạt động bình thường') ? 'checked' : ''} />
-                            <span>Đèn pha, đèn hậu hoạt động bình thường</span>
+                            <input type="checkbox" name="chkExteriorMirror" value="true" class="checklist-checkbox" ${not empty returns && returns.exteriorCondition.contains('Gương') ? 'checked="checked"' : ''} />
+                            <span>Gương chiếu hậu hư hỏng</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorMirror" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Gương chiếu hậu đầy đủ, không hư hỏng') ? 'checked' : ''} />
-                            <span>Gương chiếu hậu đầy đủ, không hư hỏng</span>
-                        </label>
-                        <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorTireWheel" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Lốp xe và mâm xe trong tình trạng tốt') ? 'checked' : ''} />
-                            <span>Lốp xe và mâm xe trong tình trạng tốt</span>
-                        </label>
-                        <label class="checklist-label">
-                            <input type="checkbox" name="chkExteriorLicensePlate" value="true" class="checklist-checkbox" ${returns.exteriorCondition.contains('Biển số xe đầy đủ và rõ ràng') ? 'checked' : ''} />
-                            <span>Biển số xe đầy đủ và rõ ràng</span>
+                            <input type="checkbox" name="chkExteriorLights" value="true" class="checklist-checkbox" ${not empty returns && returns.exteriorCondition.contains('Đèn') ? 'checked="checked"' : ''} />
+                            <span>Đèn ngoại thất hư hỏng</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Nội thất -->
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">NỘI THẤT</div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                        <span>Nội thất</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorSeats" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Ghế ngồi sạch sẽ, không rách hỏng') ? 'checked' : ''} />
-                            <span>Ghế ngồi sạch sẽ, không rách hỏng</span>
+                            <input type="checkbox" name="chkCleanliness" value="true" class="checklist-checkbox" ${not empty returns && (returns.interiorCondition.contains('bụi') || returns.interiorCondition.contains('bẩn')) ? 'checked="checked"' : ''} />
+                            <span>Nội thất bẩn hoặc nhiều bụi</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorDashboard" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Taplo và bảng điều khiển hoạt động bình thường') ? 'checked' : ''} />
-                            <span>Taplo và bảng điều khiển hoạt động bình thường</span>
+                            <input type="checkbox" name="chkOdor" value="true" class="checklist-checkbox" ${not empty returns && returns.interiorCondition.contains('mùi hôi') ? 'checked="checked"' : ''} />
+                            <span>Có mùi hôi trong xe</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorAirConditioner" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Điều hòa hoạt động tốt') ? 'checked' : ''} />
-                            <span>Điều hòa hoạt động tốt</span>
+                            <input type="checkbox" name="chkMatsAccessories" value="true" class="checklist-checkbox" ${not empty returns && returns.interiorCondition.contains('Thiếu thảm') ? 'checked="checked"' : ''} />
+                            <span>Thiếu thảm hoặc phụ kiện</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorAudioSystem" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Hệ thống âm thanh hoạt động bình thường') ? 'checked' : ''} />
-                            <span>Hệ thống âm thanh hoạt động bình thường</span>
+                            <input type="checkbox" name="chkInteriorSeats" value="true" class="checklist-checkbox" ${not empty returns && returns.interiorCondition.contains('Ghế ngồi') ? 'checked="checked"' : ''} />
+                            <span>Ghế ngồi bị rách hoặc hư hỏng</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorCleanliness" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Không có mùi lạ hoặc rác thải trong xe') ? 'checked' : ''} />
-                            <span>Không có mùi lạ hoặc rác thải trong xe</span>
-                        </label>
-                        <label class="checklist-label">
-                            <input type="checkbox" name="chkInteriorAccessories" value="true" class="checklist-checkbox" ${returns.interiorCondition.contains('Đầy đủ phụ kiện đi kèm') ? 'checked' : ''} />
-                            <span>Đầy đủ phụ kiện đi kèm</span>
+                            <input type="checkbox" name="chkInteriorDashboard" value="true" class="checklist-checkbox" ${not empty returns && returns.interiorCondition.contains('Taplo') ? 'checked="checked"' : ''} />
+                            <span>Taplo / bảng điều khiển hư hỏng</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Máy móc / Động cơ -->
+                <!-- Động cơ / Máy móc -->
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 4px;">ĐỘNG CƠ / MÁY MÓC</div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); border-bottom: 1.5px solid var(--outline-variant); padding-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                        <span>Động cơ / Máy móc</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineStart" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Động cơ khởi động bình thường') ? 'checked' : ''} />
-                            <span>Động cơ khởi động bình thường</span>
+                            <input type="checkbox" name="chkEngine" value="true" class="checklist-checkbox" ${not empty returns && returns.mechanicalCondition.contains('bất thường') ? 'checked="checked"' : ''} />
+                            <span>Động cơ khởi động bất thường</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineWarningLight" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Không có đèn cảnh báo trên bảng đồng hồ') ? 'checked' : ''} />
-                            <span>Không có đèn cảnh báo trên bảng đồng hồ</span>
+                            <input type="checkbox" name="chkDashboardLights" value="true" class="checklist-checkbox" ${not empty returns && returns.mechanicalCondition.contains('đèn cảnh báo') ? 'checked="checked"' : ''} />
+                            <span>Có đèn cảnh báo trên bảng điều khiển</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineFuelLevel" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Mức nhiên liệu đúng theo ghi nhận') ? 'checked' : ''} />
-                            <span>Mức nhiên liệu đúng theo ghi nhận</span>
+                            <input type="checkbox" name="chkEngineNoise" value="true" class="checklist-checkbox" ${not empty returns && returns.mechanicalCondition.contains('tiếng ồn') ? 'checked="checked"' : ''} />
+                            <span>Có tiếng ồn hoặc rung bất thường</span>
                         </label>
                         <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineNoise" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Không phát hiện tiếng ồn bất thường') ? 'checked' : ''} />
-                            <span>Không phát hiện tiếng ồn bất thường</span>
-                        </label>
-                        <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineBrakeSystem" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Hệ thống phanh hoạt động bình thường') ? 'checked' : ''} />
-                            <span>Hệ thống phanh hoạt động bình thường</span>
-                        </label>
-                        <label class="checklist-label">
-                            <input type="checkbox" name="chkEngineFluidLeak" value="true"  class="checklist-checkbox" ${returns.mechanicalCondition.contains('Không phát hiện rò rỉ dầu hoặc chất lỏng') ? 'checked' : ''} />
-                            <span>Không phát hiện rò rỉ dầu hoặc chất lỏng</span>
+                            <input type="checkbox" name="chkEngineFluidLeak" value="true" class="checklist-checkbox" ${not empty returns && returns.mechanicalCondition.contains('Rò rỉ') ? 'checked="checked"' : ''} />
+                            <span>Rò rỉ dầu hoặc nước làm mát</span>
                         </label>
                     </div>
                 </div>
@@ -397,51 +402,70 @@
         const mileageAtHandover = parseFloat("${handover.mileageAtHandover}") || 0;
 
         function updateDistance() {
-            const distance = parseFloat(odoInput.value);
+            const val = parseFloat(odoInput.value);
 
-            if (!isNaN(distance) && distance >= 0) {
-                const finalOdo = mileageAtHandover + distance;
+            if (!isNaN(val) && val >= 0) {
+                let finalOdo = mileageAtHandover + val;
 
-                distanceDisplay1.innerText = distance.toLocaleString();
-                distanceDisplay1.style.color = "var(--primary)";
-
-                distanceDisplay2.innerText = " (Số Odo lúc trả xe dự kiến: " + finalOdo.toLocaleString() + " km)";
-                distanceDisplay2.style.color = "var(--on-surface-variant)";
+                if (distanceDisplay1)
+                    distanceDisplay1.innerText = finalOdo.toLocaleString();
+                if (distanceDisplay2)
+                    distanceDisplay2.innerText = "";
             } else if (odoInput.value === "") {
-                distanceDisplay1.innerText = "0";
-                distanceDisplay2.innerText = "";
-                distanceDisplay1.style.color = "var(--primary)";
+                if (distanceDisplay1)
+                    distanceDisplay1.innerText = mileageAtHandover.toLocaleString();
+                if (distanceDisplay2)
+                    distanceDisplay2.innerText = "";
             } else {
-                distanceDisplay1.innerText = "0";
-                distanceDisplay2.innerText = "Lỗi: Số km không hợp lệ";
-                distanceDisplay1.style.color = "red";
-                distanceDisplay2.style.color = "red";
+                if (distanceDisplay2)
+                    distanceDisplay2.innerText = " (Lỗi: Số km không hợp lệ)";
             }
         }
         function triggerChange() {
+            const val = parseFloat(odoInput ? odoInput.value : '');
             const btn = document.getElementById('btnConfirmReturn');
-            if (btn) {
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-            }
             const warning = document.getElementById('calc-warning');
-            if (warning) {
-                warning.style.display = 'inline-flex';
+
+            if (!isNaN(val) && val >= 0) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
+                if (warning) {
+                    warning.style.display = 'none';
+                }
+            } else {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
             }
         }
 
-        odoInput.addEventListener("input", function() {
-            updateDistance();
-            triggerChange();
-        });
+        if (odoInput) {
+            odoInput.addEventListener("input", function () {
+                updateDistance();
+                triggerChange();
+            });
+        }
         updateDistance();
+        triggerChange();
 
-        document.querySelectorAll('.checklist-checkbox').forEach(function(cb) {
+        const chkMaintenance = document.getElementById('chkNeedsMaintenance');
+        const checklistContainer = document.getElementById('maintenanceChecklistContainer');
+        if (chkMaintenance && checklistContainer) {
+            chkMaintenance.addEventListener('change', function () {
+                checklistContainer.style.display = this.checked ? 'grid' : 'none';
+            });
+        }
+
+        document.querySelectorAll('.checklist-checkbox').forEach(function (cb) {
             cb.addEventListener('change', triggerChange);
         });
 
-        document.querySelectorAll('.fuel-radio').forEach(function(rad) {
+        document.querySelectorAll('.fuel-radio').forEach(function (rad) {
             rad.addEventListener('change', triggerChange);
         });
 
@@ -555,6 +579,14 @@
                 triggerChange();
             });
         });
+
+        const chkNeedsMaintenance = document.getElementById("chkNeedsMaintenance");
+        const maintenanceChecklistContainer = document.getElementById("maintenanceChecklistContainer");
+        if (chkNeedsMaintenance && maintenanceChecklistContainer) {
+            chkNeedsMaintenance.addEventListener("change", function () {
+                maintenanceChecklistContainer.style.display = this.checked ? "grid" : "none";
+            });
+        }
 
         function showError(message) {
             errorDiv.innerText = message;

@@ -255,7 +255,7 @@ var calState = {
     // Build cars array from server data
     <c:forEach var="car" items="${cars}">
     calState.cars.push({
-        carId: ${car.carId},
+        vehicleId: ${car.vehicleId},
         brand: "${car.brand}",
         model: "${car.model}",
         licensePlate: "${car.licensePlate}",
@@ -267,7 +267,7 @@ var calState = {
     <c:forEach var="b" items="${bookings}">
     calState.bookings.push({
         bookingId: ${b.bookingId},
-        carId: ${b.carId},
+        vehicleId: ${b.vehicleId},
         customerId: ${b.customerId},
         status: "${b.status}",
         startDate: "${b.startDate}",
@@ -307,7 +307,7 @@ function renderGantt() {
             if (label.indexOf(searchInput) === -1) return false;
         }
         // Only show cars that have at least one booking this month (after status filter)
-        var hasBooking = filteredBookings.some(function(b) { return b.carId === car.carId; });
+        var hasBooking = filteredBookings.some(function(b) { return b.vehicleId === car.vehicleId; });
         // If no filters, show all cars with bookings; if search matches, show even if no bookings
         return hasBooking || searchInput;
     });
@@ -374,7 +374,7 @@ function renderGantt() {
         }
 
         // Booking bars for this car
-        var carBookings = filteredBookings.filter(function(b) { return b.carId === car.carId; });
+        var carBookings = filteredBookings.filter(function(b) { return b.vehicleId === car.vehicleId; });
         carBookings.forEach(function(b) {
             var start = parseDate(b.startDate);
             var end = parseDate(b.endDate);
