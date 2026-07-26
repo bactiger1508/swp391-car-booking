@@ -49,6 +49,15 @@
                                    value="${returns.extraKmFee}"
                                    min="0" style="padding-left:40px;" />
                         </div>
+                        <c:if test="${not empty actualKm || not empty kmLimit}">
+                            <div style="margin-top:8px; padding:10px 12px; background:var(--surface-container); border-radius:8px; border-left:3px solid var(--primary); font-size:12px; line-height:1.7; color:var(--on-surface-variant);">
+                                <strong style="color:var(--primary); font-size:13px;">📊 Phân tích km chuyến đi</strong><br/>
+                                Km thực tế đi: <strong id="calc-actual-km">${not empty actualKm ? actualKm : 0} km</strong> &nbsp;|&nbsp; Định mức: <strong>${not empty kmLimit ? kmLimit : 0} km</strong><br/>
+                                Km vượt tổng: <strong id="calc-extra-total">${not empty actualExtraKm ? actualExtraKm : (returns.extraKmFee)} km</strong><br/>
+                                Km vượt đã thu lúc đặt (est. ${not empty estimatedKm ? estimatedKm : 0} km): <strong style="color:var(--success);">-${not empty alreadyPaidExtraKm ? alreadyPaidExtraKm : 0} km</strong><br/>
+                                <strong style="color:var(--error);">→ Km vượt cần thu thêm: <span id="calc-extra-additional">${returns.extraKmFee} km</span></strong>
+                            </div>
+                        </c:if>
                         <span style="font-size:12px;color:var(--outline);margin-top:2px;">(Quy định phạt: <fmt:formatNumber value="${extraKmFeeRate}" pattern="#,##0"/>đ / km)</span>
                     </div>
 

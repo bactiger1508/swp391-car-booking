@@ -111,6 +111,19 @@ public class AdditionalFeesServlet extends HttpServlet {
                     request.setAttribute("totalAdditionalFee", returns.getTotalAdditionalFee());
                     request.setAttribute("returns", returns);
 
+                    long days = 1;
+                    if (booking != null && booking.getStartDate() != null && booking.getEndDate() != null) {
+                        days = java.time.temporal.ChronoUnit.DAYS.between(booking.getStartDate().toLocalDate(), booking.getEndDate().toLocalDate());
+                        if (days < 1) days = 1;
+                    }
+
+                    com.swp391.carrental.booking.service.FeeCalculatorService feeCalc = new com.swp391.carrental.booking.service.FeeCalculatorService();
+                    int kmLimit = (booking != null && booking.getKmLimit() != null && booking.getKmLimit() > 0)
+                            ? booking.getKmLimit()
+                            : (booking != null ? feeCalc.calculateKmLimit(booking.getRentalMode(), booking.getPricingPackage(), days) : 250);
+                    int estimatedKm = (booking != null && booking.getEstimatedKm() != null) ? booking.getEstimatedKm() : 0;
+                    int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+
                     if (handover != null) {
                         int mileageAtHandover = handover.getMileageAtHandover();
                         int mileageAtReturn = returns.getMileageAtReturn();
@@ -122,7 +135,12 @@ public class AdditionalFeesServlet extends HttpServlet {
                                 actualKm = mileageAtReturn;
                             }
                         }
+                        int actualExtraKm = Math.max(0, actualKm - kmLimit);
                         request.setAttribute("actualKm", actualKm);
+                        request.setAttribute("kmLimit", kmLimit);
+                        request.setAttribute("estimatedKm", estimatedKm);
+                        request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
+                        request.setAttribute("actualExtraKm", actualExtraKm);
                     }
                 }
             }

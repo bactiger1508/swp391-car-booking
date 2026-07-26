@@ -148,12 +148,12 @@
                         </c:if>
                         <c:if test="${hasHandover}">
                             <a href="${pageContext.request.contextPath}/handovers" class="bk-sidebar-link ${_cp == '/handovers' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">key</span> Giao xe (Handover)
+                                <span class="material-symbols-outlined">key</span> Giao xe
                             </a>
                         </c:if>
                         <c:if test="${hasReturn}">
                             <a href="${pageContext.request.contextPath}/returns" class="bk-sidebar-link ${_cp == '/returns' ? 'active' : ''}">
-                                <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe (Return)
+                                <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe
                             </a>
                         </c:if>
                     </c:if>
