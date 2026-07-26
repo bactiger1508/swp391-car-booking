@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.swp391.carrental.user.model.User" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
@@ -166,9 +167,19 @@
                             </td>
                             <td style="text-align: right;">
                                 <div style="display: inline-flex; gap: 4px; justify-content: flex-end;">
-                                    <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
-                                        <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                    </a>
+                                    <%
+                                        User currentUser = (User) session.getAttribute("currentUser");
+                                        String role = (currentUser != null) ? currentUser.getRole() : "CUSTOMER";
+                                    %>
+                                    <%if ("ADMIN".equals(role) || "STAFF".equals(role)) {%>
+                                        <a href="${pageContext.request.contextPath}/vehicles/admin/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết (Admin)" style="display:inline-flex; align-items:center;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                        </a>
+                                    <%} else {%>
+                                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
+                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                        </a>
+                                    <%}%>
                                     <button onclick="openEditModal(${car.vehicleId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                                     </button>
