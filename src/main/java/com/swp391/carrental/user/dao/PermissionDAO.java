@@ -48,7 +48,9 @@ public class PermissionDAO {
      */
     public List<Permission> getAllPermissions() throws SQLException {
         List<Permission> permissions = new ArrayList<>();
-        String sql = "SELECT permission_id, permission_key, permission_name, functional_area FROM permission WHERE functional_area <> 'Notification Management' AND permission_key NOT IN ('LOCK_USER_ACCOUNT', 'UPDATE_PROFILE') ORDER BY functional_area, permission_key";
+        String sql = "SELECT permission_id, permission_key, permission_name, functional_area FROM permission WHERE functional_area <> 'Notification Management'"
+                + " AND permission_key NOT IN ('LOCK_USER_ACCOUNT', 'UPDATE_PROFILE', 'UPDATE_USER_ACCOUNT', 'VIEW_USER_LIST', 'MONITOR_VEHICLE_STATUS', 'APPROVE_PAYMENT', 'PROCESS_ELECTRONIC_SIGNATURE', 'UPDATE_CONTRACT') "
+                + "ORDER BY functional_area, permission_key";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

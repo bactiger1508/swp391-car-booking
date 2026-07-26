@@ -44,24 +44,31 @@ public class UserManagementServlet extends HttpServlet {
                 if (currentUser == null || !Role.ADMIN.equals(currentUser.getRole())) {
                     request.setAttribute("error", "Bạn không có quyền chỉnh sửa thông tin người dùng.");
                 } else {
-                int userId = parseUserId(request.getParameter("userId"));
+                    int userId = parseUserId(request.getParameter("userId"));
 
-                if (userId > 0) {
-                    User user = userService.getUserById(userId);
+                    if (userId > 0) {
+                        User user = userService.getUserById(userId);
 
-                    if (user != null) {
-                        request.setAttribute("formUser", user);
-                        request.setAttribute("formMode", "edit");
-                    } else {
-                        request.setAttribute("error", "Không tìm thấy tài khoản cần chỉnh sửa.");
+                        if (user != null) {
+                            request.setAttribute("formUser", user);
+                            request.setAttribute("formMode", "edit");
+                        } else {
+                            request.setAttribute("error", "Không tìm thấy tài khoản cần chỉnh sửa.");
+                        }
                     }
-                }
                 }
             }
 
             List<User> userList = userService.getFilteredUsers(search, role, status, page, PAGE_SIZE);
             int totalRecords = userService.countFilteredUsers(search, role, status);
             int totalPages = (int) Math.ceil((double) totalRecords / PAGE_SIZE);
+            if (totalPages == 0) {
+                totalPages = 1;
+            }
+
+            if (page > totalPages) {
+                page = totalPages;
+            }
 
             request.setAttribute("userList", userList);
             request.setAttribute("currentPage", page);
