@@ -254,7 +254,7 @@
     <div>
         <%-- Selected Vehicle --%>
         <div class="bk-cost-card bk-vehicle-card" style="margin-bottom:24px;">
-            <div class="header">
+            <div class="bk-card-header">
                 <h3><span class="material-symbols-outlined">directions_car</span> Xe đã chọn</h3>
             </div>
             <div id="vehicleInfo" style="color:var(--on-surface-variant);font-size:14px;">
@@ -332,6 +332,102 @@ var combo30DiscountPercent = parseFloat('${combo30DiscountPercent}') || 30;
 var tetStartDateStr = '${tetStartDate}';
 var tetEndDateStr = '${tetEndDate}';
 var tetSurchargePercent = parseFloat('${tetSurchargePercent}') || 20;
+
+function validateScheduleRealtime() {
+    var sd = document.getElementById('startDate');
+    var st = document.getElementById('startTime');
+    var ed = document.getElementById('endDate');
+    var et = document.getElementById('endTime');
+
+    var sdVal = sd ? sd.value : '';
+    var stVal = st ? st.value : '';
+    var edVal = ed ? ed.value : '';
+    var etVal = et ? et.value : '';
+
+    var errSd = document.getElementById('err-startDate');
+    var errSt = document.getElementById('err-startTime');
+    var errEd = document.getElementById('err-endDate');
+    var errEt = document.getElementById('err-endTime');
+
+    if (errSd) { errSd.textContent = ''; errSd.style.display = 'none'; }
+    if (errSt) { errSt.textContent = ''; errSt.style.display = 'none'; }
+    if (errEd) { errEd.textContent = ''; errEd.style.display = 'none'; }
+    if (errEt) { errEt.textContent = ''; errEt.style.display = 'none'; }
+
+    if (!sdVal || !stVal) return;
+
+    var now = new Date();
+    var todayStr = (typeof getLocalDateString === 'function') ? getLocalDateString(now) : now.toISOString().split('T')[0];
+
+    var submitBtn = document.getElementById('submitBookingBtn');
+    var hasTimeErr = false;
+
+    var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+    var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+    
+    var minBufferHours = 1;
+    if (deliveryMethod === 'DELIVERY') {
+        var travelHours = deliveryDistance / 25.0;
+        minBufferHours = 1.0 + travelHours;
+        minBufferHours = Math.round(minBufferHours * 10) / 10;
+        if (minBufferHours < 1.5) minBufferHours = 1.5;
+    }
+
+    if (sdVal < todayStr) {
+        hasTimeErr = true;
+        if (errSd) {
+            errSd.textContent = 'Ngày bắt đầu không được ở trong quá khứ.';
+            errSd.style.display = 'block';
+        }
+    } else if (sdVal === todayStr && stVal) {
+        var parts = stVal.split(':');
+        var startDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+        var earliestValidDt = new Date(now.getTime() + Math.ceil(minBufferHours * 60 * 60 * 1000));
+
+        if (startDt < earliestValidDt) {
+            hasTimeErr = true;
+            if (errSt) {
+                var formatHrs = String(earliestValidDt.getHours()).padStart(2, '0');
+                var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
+                if (deliveryMethod === 'DELIVERY') {
+                    var travelMins = Math.round((deliveryDistance / 25.0) * 60);
+                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                } else {
+                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất hôm nay từ ' + formatHrs + ':' + formatMins + ' trở đi.';
+                }
+                errSt.style.display = 'block';
+            }
+        }
+    }
+
+    if (sdVal && edVal && edVal < sdVal) {
+        hasTimeErr = true;
+        if (errEd) {
+            errEd.textContent = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+            errEd.style.display = 'block';
+        }
+    } else if (sdVal && edVal && sdVal === edVal && stVal && etVal) {
+        if (etVal <= stVal) {
+            hasTimeErr = true;
+            if (errEt) {
+                errEt.textContent = 'Giờ kết thúc phải lớn hơn giờ bắt đầu khi chọn cùng ngày.';
+                errEt.style.display = 'block';
+            }
+        }
+    }
+
+    if (submitBtn) {
+        if (hasTimeErr) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+}
 
 // Leaflet Map Globals
 var map = null;
@@ -659,6 +755,9 @@ function fetchRoadDistance(lat, lng) {
                 if (fallbackNotice) fallbackNotice.style.display = 'block';
             }
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         })
         .catch(function(err) {
             console.error('Distance API error:', err);
@@ -667,6 +766,9 @@ function fetchRoadDistance(lat, lng) {
             var fallbackNotice = document.getElementById('distanceFallbackNotice');
             if (fallbackNotice) fallbackNotice.style.display = 'block';
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         });
 }
 

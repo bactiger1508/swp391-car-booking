@@ -39,8 +39,8 @@ public class ReviewDAO {
 
     public List<Review> findByVehicleId(int vehicleId, int offset, int limit) throws SQLException {
         List<Review> reviews = new ArrayList<>();
-        String sql = "SELECT review_id, booking_id, vehicle_id, customer_id, rating, comment, created_at "
-                   + "FROM reviews WHERE vehicle_id = ? ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT review_id, booking_id, vehicle_id, customer_id, rating, comment, is_visible, created_at, updated_at "
+                   + "FROM reviews WHERE vehicle_id = ? AND is_visible = 1 ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vehicleId);
@@ -56,7 +56,7 @@ public class ReviewDAO {
     }
 
     public int countByVehicleId(int vehicleId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ?";
+        String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vehicleId);
@@ -80,7 +80,7 @@ public class ReviewDAO {
     }
 
     public int insert(Review review) throws SQLException {
-        String sql = "INSERT INTO reviews (booking_id, customer_id, vehicle_id, rating, comment) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reviews (booking_id, customer_id, vehicle_id, rating, comment, is_visible) VALUES (?, ?, ?, ?, ?, 1)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, review.getBookingId());

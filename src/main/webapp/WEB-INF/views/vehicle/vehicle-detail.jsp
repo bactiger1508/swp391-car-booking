@@ -6,6 +6,18 @@
 </jsp:include>
 
 <c:if test="${not empty car}">
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="bk-alert bk-alert-success" style="margin-bottom: 16px; background: #e8f5e9; color: #2e7d32; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined">check_circle</span> ${sessionScope.successMessage}
+        </div>
+        <c:remove var="successMessage" scope="session"/>
+    </c:if>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="bk-alert bk-alert-error" style="margin-bottom: 16px; background: #ffebee; color: #c62828; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined">error</span> ${sessionScope.errorMessage}
+        </div>
+        <c:remove var="errorMessage" scope="session"/>
+    </c:if>
     <!-- Breadcrumb & Actions Header -->
     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
         <div class="bk-breadcrumb">
