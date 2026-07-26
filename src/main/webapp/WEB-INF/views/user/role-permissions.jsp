@@ -67,26 +67,15 @@
                                 KHU VỰC CHỨC NĂNG / QUYỀN HẠN
                             </th>
                             <c:forEach var="r" items="${roles}">
-                                <c:if test="${r.role != 'ADMIN'}">
+                                <c:if test="${r.role == 'STAFF'}">
                                     <th
                                         style="padding: 16px; text-align: center; font-weight: 700; color: var(--primary); font-size: 14px; border-bottom: 2px solid var(--border-color); min-width: 150px;">
-
-                                        <c:choose>
-                                            <c:when test="${r.role == 'STAFF'}">
-                                                <span style="display:inline-flex;align-items:center;gap:4px;color:var(--info);">
-                                                    <span class="material-symbols-outlined" style="font-size:16px;">badge</span>
-                                                    NHÂN VIÊN
-                                                </span>
-                                            </c:when>
-
-                                            <c:when test="${r.role == 'CUSTOMER'}">
-                                                <span style="display:inline-flex;align-items:center;gap:4px;color:var(--success);">
-                                                    <span class="material-symbols-outlined" style="font-size:16px;">person</span>
-                                                    KHÁCH HÀNG
-                                                </span>
-                                            </c:when>
-                                        </c:choose>
-
+                                        <span
+                                            style="display: inline-flex; align-items: center; gap: 4px; color: var(--info);">
+                                            <span class="material-symbols-outlined"
+                                                  style="font-size: 16px;">badge</span>
+                                            NHÂN VIÊN
+                                        </span>
                                     </th>
                                 </c:if>
                             </c:forEach>
@@ -102,7 +91,7 @@
                                 <c:set var="currentArea" value="${p.functionalArea}" />
                                 <tr
                                     style="background: var(--primary-light); font-weight: 600; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-                                    <td colspan="3"
+                                    <td colspan="2"
                                         style="padding: 12px 16px; text-align: left; color: var(--primary); font-size: 14px; font-weight: 700;">
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <span class="material-symbols-outlined"
@@ -125,8 +114,8 @@
                                         Key: ${p.permissionKey}</div>
                                 </td>
                                 <c:forEach var="r" items="${roles}">
-                                    <c:if test="${r.role != 'ADMIN'}">
-                                        <td align="center" style="padding:14px;vertical-align:middle;">
+                                    <c:if test="${r.role == 'STAFF'}">
+                                        <td align="center" style="padding: 14px;">
                                             <input
                                                 type="checkbox"
                                                 name="role_perm_${r.role}_${p.permissionKey}"
