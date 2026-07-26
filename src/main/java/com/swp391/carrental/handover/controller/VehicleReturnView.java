@@ -26,6 +26,7 @@ import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.service.VehicleService;
 
 /**
  * Name: VehicleReturnView
@@ -43,6 +44,7 @@ public class VehicleReturnView extends HttpServlet {
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final VehicleDAO vehicleDAO = new VehicleDAO();
+    private final VehicleService vehicleService = new VehicleService();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
 
@@ -54,11 +56,13 @@ public class VehicleReturnView extends HttpServlet {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
 
-            if (bookingIdStr != null && vehicleIdStr != null) {
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.trim().isEmpty())
+                        ? Integer.parseInt(vehicleIdStr)
+                        : (booking != null ? booking.getVehicleId() : 0);
+
                 boolean isStaffOrAdmin = currentUser != null && ("STAFF".equals(currentUser.getRole()) || "ADMIN".equals(currentUser.getRole()));
                 if (booking != null) {
                     if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
@@ -66,7 +70,7 @@ public class VehicleReturnView extends HttpServlet {
                         return;
                     }
                 }
-                Vehicle car = vehicleDAO.findById(vehicleId);
+                Vehicle car = vehicleService.getVehicleById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
                 if (handover == null) {
