@@ -449,7 +449,7 @@
                     </a>
 
                     <c:if test="${not empty handover && handover.handoverId > 0}">
-                        <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
+                        <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
                             <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao xe
                         </a>
                     </c:if>
@@ -472,10 +472,6 @@
 
                 <a href="${pageContext.request.contextPath}/bookings/my" class="bk-btn bk-btn-outline" style="justify-content:center;">
                     <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
-                </a>
-
-                <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-outline" style="justify-content:center;">
-                    <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao
                 </a>
 
                 <c:if test="${not empty returns}">
