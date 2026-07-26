@@ -8,6 +8,8 @@ import java.io.IOException;
 import com.swp391.carrental.audit.service.AuditLogService;
 import com.swp391.carrental.audit.util.AuditLabels;
 import com.swp391.carrental.user.model.User;
+import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
  * Name: AuditLogFilter
@@ -26,6 +28,7 @@ public class AuditLogFilter implements Filter {
     };
 
     private final AuditLogService auditLogService = new AuditLogService();
+    private final VehicleService vehicleService = new VehicleService();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -108,7 +111,33 @@ public class AuditLogFilter implements Filter {
             }
         }
 
+        // Enrich with the actual vehicle name/plate so the log reads "xe Toyota Vios - Biển số 51A-12345"
+        // instead of a bare "#3" that forces the reader to look the vehicle up separately.
+        // Excludes HIDEREVIEW/SHOWREVIEW: those actions only submit a reviewId, not a vehicleId, so
+        // entityId here is actually the review's ID even though the URL path maps to entityType VEHICLE.
+        if ("VEHICLE".equals(entityType) && entityId != null
+                && !"HIDEREVIEW".equals(actionKey) && !"SHOWREVIEW".equals(actionKey)) {
+            appendVehicleInfo(description, entityId);
+        }
+
         return description.toString();
+    }
+
+    /**
+     * Looks up a vehicle by ID and appends its brand/model and license plate to the description.
+     * Silently no-ops if the vehicle can't be found (e.g. already deleted) so audit logging never
+     * blocks the real request.
+     */
+    private void appendVehicleInfo(StringBuilder description, int vehicleId) {
+        try {
+            Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
+            if (vehicle != null) {
+                description.append(" (").append(vehicle.getBrand()).append(" ").append(vehicle.getModel())
+                        .append(" - Biển số ").append(vehicle.getLicensePlate()).append(")");
+            }
+        } catch (Exception e) {
+            // Best-effort enrichment only; never let a lookup failure break audit logging.
+        }
     }
 
     /**
