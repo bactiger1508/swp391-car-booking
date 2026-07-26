@@ -135,6 +135,7 @@
                                     <c:when test="${b.status == 'COMPLETED'}"><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Hoàn tất</span></c:when>
                                     <c:when test="${b.status == 'REJECTED'}"><span class="bk-badge bk-badge-rejected"><span class="bk-badge-dot"></span> Đã từ chối</span></c:when>
                                     <c:when test="${b.status == 'CANCELLED'}"><span class="bk-badge bk-badge-cancelled"><span class="bk-badge-dot"></span> Đã hủy</span></c:when>
+                                    <c:when test="${b.status == 'PENDING_SETTLEMENT'}"><span class="bk-badge bk-badge-pending"><span class="bk-badge-dot"></span> Chờ thanh toán</span></c:when>
                                     <c:otherwise><span class="bk-badge">${b.status}</span></c:otherwise>
                                 </c:choose>
                             </td>

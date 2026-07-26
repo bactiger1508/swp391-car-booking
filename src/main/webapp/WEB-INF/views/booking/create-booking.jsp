@@ -224,12 +224,14 @@
                     </div>
                     
                     <%-- Address Input for Delivery & Map --%>
-                    <div class="bk-form-group" id="deliveryAddressGroup" style="display:none; margin-top: 16px;">
+                    <div class="bk-form-group" id="deliveryAddressGroup" style="display:${deliveryMethod == 'DELIVERY' || param.deliveryMethod == 'DELIVERY' ? 'block' : 'none'}; margin-top: 16px;">
                         <label class="bk-form-label">Địa chỉ giao xe tận nơi <span style="color:var(--error);">*</span></label>
-                        <div class="bk-form-input-wrap" style="margin-bottom: 8px;">
-                            <span class="material-symbols-outlined">home</span>
-                            <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn hoặc tìm trên bản đồ..." value="${not empty deliveryAddress ? deliveryAddress : param.deliveryAddress}" onkeypress="if(event.key==='Enter'){event.preventDefault();searchAddressOnMap();}">
-                            <button type="button" class="bk-btn bk-btn-outline" style="padding: 6px 14px; font-size:13px; white-space:nowrap; margin-left: 8px;" onclick="searchAddressOnMap()">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="bk-form-input-wrap" style="flex:1;">
+                                <span class="material-symbols-outlined">home</span>
+                                <input type="text" name="deliveryAddress" id="deliveryAddress" class="bk-form-input" placeholder="Nhập địa chỉ nhà của bạn hoặc tìm trên bản đồ..." value="${not empty deliveryAddress ? deliveryAddress : param.deliveryAddress}" onkeypress="if(event.key==='Enter'){event.preventDefault();searchAddressOnMap();}">
+                            </div>
+                            <button type="button" class="bk-btn bk-btn-outline" style="padding: 10px 18px; font-size:13px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px;" onclick="searchAddressOnMap()">
                                 <span class="material-symbols-outlined" style="font-size:16px;">search</span> Tìm
                             </button>
                         </div>
@@ -389,21 +391,26 @@ function validateScheduleRealtime() {
             errSd.textContent = 'Ngày bắt đầu không được ở trong quá khứ.';
             errSd.style.display = 'block';
         }
-    } else if (sdVal === todayStr && stVal) {
+    } else if (sdVal && stVal) {
         var parts = stVal.split(':');
-        var startDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+        var sdParts = sdVal.split('-');
+        var startDt = new Date(parseInt(sdParts[0]), parseInt(sdParts[1]) - 1, parseInt(sdParts[2]), parseInt(parts[0]), parseInt(parts[1]));
         var earliestValidDt = new Date(now.getTime() + Math.ceil(minBufferHours * 60 * 60 * 1000));
 
         if (startDt < earliestValidDt) {
             hasTimeErr = true;
             if (errSt) {
+                var earliestDateStr = getLocalDateString(earliestValidDt);
                 var formatHrs = String(earliestValidDt.getHours()).padStart(2, '0');
                 var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
+                
+                var dateNotice = (earliestDateStr !== todayStr) ? ' ngày ' + earliestDateStr.split('-').reverse().join('/') : '';
+                
                 if (deliveryMethod === 'DELIVERY') {
                     var travelMins = Math.round((deliveryDistance / 25.0) * 60);
-                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + dateNotice + ' trở đi (sau ' + minBufferHours + ' tiếng).';
                 } else {
-                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất hôm nay từ ' + formatHrs + ':' + formatMins + ' trở đi.';
+                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất từ ' + formatHrs + ':' + formatMins + dateNotice + ' trở đi.';
                 }
                 errSt.style.display = 'block';
             }
