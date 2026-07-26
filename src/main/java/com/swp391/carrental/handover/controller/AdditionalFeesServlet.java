@@ -117,7 +117,7 @@ public class AdditionalFeesServlet extends HttpServlet {
                         if (days < 1) days = 1;
                     }
 
-                    com.swp391.carrental.booking.service.FeeCalculatorService feeCalc = new com.swp391.carrental.booking.service.FeeCalculatorService();
+                    com.swp391.carrental.policy.service.FeeCalculator feeCalc = new com.swp391.carrental.policy.service.FeeCalculator();
                     int kmLimit = (booking != null && booking.getKmLimit() != null && booking.getKmLimit() > 0)
                             ? booking.getKmLimit()
                             : (booking != null ? feeCalc.calculateKmLimit(booking.getRentalMode(), booking.getPricingPackage(), days) : 250);
