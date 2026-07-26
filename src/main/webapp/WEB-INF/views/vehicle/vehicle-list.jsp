@@ -46,31 +46,19 @@
             </div>
         </div>
 
-        <%-- Hãng xe --%>
-        <div class="bk-form-group">
-            <label class="bk-form-label">Hãng xe</label>
+        <%-- Hãng xe / Dòng xe: 1 ô tìm kiếm gộp — bấm vào hiện dropdown nhóm theo hãng, gõ để lọc, bấm 1 dòng xe để lọc theo dòng xe đó --%>
+        <div class="bk-form-group" style="grid-column: span 2; position: relative;">
+            <label class="bk-form-label">Hãng xe / Dòng xe</label>
             <div class="bk-form-input-wrap">
                 <span class="material-symbols-outlined">directions_car</span>
-                <select id="filterBrand" class="bk-form-select" onchange="updateModelOptions(); applyFilters()">
-                    <option value="">Tất cả hãng xe</option>
-                    <option value="Mercedes">Mercedes</option>
-                    <option value="Toyota">Toyota</option>
-                    <option value="Ford">Ford</option>
-                    <option value="Tesla">Tesla</option>
-                    <option value="VinFast">VinFast</option>
-                </select>
+                <input type="text" id="vehicleSearchInput" class="bk-form-input" style="padding-left:40px;"
+                       placeholder="Tìm hãng xe hoặc dòng xe..." autocomplete="off"
+                       onfocus="openVehicleDropdown()" oninput="renderVehicleDropdown()">
+                <span id="vehicleSearchClear" class="material-symbols-outlined"
+                      style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:18px; color:var(--on-surface-variant);"
+                      onclick="clearVehicleSelection(event)">close</span>
             </div>
-        </div>
-
-        <%-- Dòng xe --%>
-        <div class="bk-form-group">
-            <label class="bk-form-label">Dòng xe</label>
-            <div class="bk-form-input-wrap">
-                <span class="material-symbols-outlined">model_training</span>
-                <select id="filterModel" class="bk-form-select" onchange="applyFilters()">
-                    <option value="">Tất cả dòng xe</option>
-                </select>
-            </div>
+            <div id="vehicleDropdownPanel" style="display:none; position:absolute; top:100%; left:0; right:0; margin-top:4px; background:var(--surface); border:1px solid var(--outline-variant); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.12); max-height:320px; overflow-y:auto; z-index:60;"></div>
         </div>
 
         <%-- Số ghế --%>
@@ -95,10 +83,11 @@
                 <span class="material-symbols-outlined">payments</span>
                 <select id="filterPrice" class="bk-form-select" onchange="applyFilters()">
                     <option value="">Tất cả</option>
-                    <option value="500000">Dưới 500k</option>
-                    <option value="1000000">500k - 1tr</option>
-                    <option value="1500000">1tr - 1.5tr</option>
-                    <option value="9999999">Trên 1.5tr</option>
+                    <option value="0-500000">Dưới 500k</option>
+                    <option value="500000-1000000">500k - 1tr</option>
+                    <option value="1000000-1500000">1tr - 1.5tr</option>
+                    <option value="1500000-2000000">1.5tr - 2tr</option>
+                    <option value="2000000-999999999">Trên 2tr</option>
                 </select>
             </div>
         </div>
@@ -144,8 +133,8 @@
         <c:forEach var="car" items="${cars}">
             <div class="bk-card car-item" style="padding:0;overflow:hidden;transition:all 0.3s ease;"
                  data-name="${car.brand} ${car.model}"
-                 data-brand="${car.brand}"
-                 data-model="${car.model}"
+                 data-brand-id="${car.brandId}"
+                 data-model-id="${car.modelId}"
                  data-transmission="${car.transmission}"
                  data-fuel="${car.fuelType}"
                  data-seats="${car.seats}"
@@ -289,9 +278,27 @@
 </c:if>
 
 <script>
+// Danh sách hãng xe + bản đồ hãng -> dòng xe, lấy trực tiếp từ bảng vehicle_brands/vehicle_models trong DB
+// (không phụ thuộc xe nào đang hiển thị), phục vụ ô tìm kiếm gộp hãng xe/dòng xe bên dưới.
+var brandList = [
+<c:forEach items="${brands}" var="b" varStatus="bs">
+    {id: ${b.brandId}, name: "${b.brandName}"}<c:if test="${!bs.last}">,</c:if>
+</c:forEach>
+];
+var brandModelMap = {};
+<c:forEach items="${brands}" var="b">
+brandModelMap[${b.brandId}] = [
+    <c:forEach items="${modelsByBrand[b.brandId]}" var="m" varStatus="ms">
+    {id: ${m.modelId}, name: "${m.modelName}"}<c:if test="${!ms.last}">,</c:if>
+    </c:forEach>
+];
+</c:forEach>
+
 let currentPage = 1;
 let pageSize = 8;
 let filteredCars = [];
+let selectedBrandId = "";
+let selectedModelId = "";
 
 function changePageSize() {
     pageSize = parseInt(document.getElementById('pageSizeSelect').value);
@@ -299,36 +306,97 @@ function changePageSize() {
     applyPagination();
 }
 
-function updateModelOptions() {
-    var brand = document.getElementById('filterBrand').value;
-    var modelSelect = document.getElementById('filterModel');
-    if (!modelSelect) return;
-    
-    var prevValue = modelSelect.value;
-    modelSelect.innerHTML = '<option value="">Tất cả dòng xe</option>';
-    
-    var models = new Set();
-    var carItems = document.querySelectorAll('.car-item');
-    carItems.forEach(function(item) {
-        var itemBrand = item.getAttribute('data-brand');
-        var itemModel = item.getAttribute('data-model');
-        if (brand === "" || itemBrand === brand) {
-            models.add(itemModel);
-        }
-    });
-    
-    models.forEach(function(m) {
-        var opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        if (m === prevValue) opt.selected = true;
-        modelSelect.appendChild(opt);
-    });
+// === Ô tìm kiếm gộp Hãng xe / Dòng xe ===
+function openVehicleDropdown() {
+    renderVehicleDropdown();
+    document.getElementById('vehicleDropdownPanel').style.display = 'block';
 }
 
+function closeVehicleDropdown() {
+    document.getElementById('vehicleDropdownPanel').style.display = 'none';
+}
+
+function renderVehicleDropdown() {
+    var keyword = document.getElementById('vehicleSearchInput').value.trim().toLowerCase();
+    var panel = document.getElementById('vehicleDropdownPanel');
+    panel.innerHTML = '';
+    panel.style.display = 'block';
+
+    var hasAnyMatch = false;
+
+    brandList.forEach(function(brand) {
+        var models = brandModelMap[brand.id] || [];
+        var brandMatches = brand.name.toLowerCase().includes(keyword);
+        var matchingModels = models.filter(function(m) {
+            return keyword === '' || brandMatches || m.name.toLowerCase().includes(keyword);
+        });
+
+        if (keyword !== '' && !brandMatches && matchingModels.length === 0) {
+            return; // không khớp gì trong hãng này, ẩn cả nhóm
+        }
+        hasAnyMatch = true;
+
+        var groupHeader = document.createElement('div');
+        groupHeader.textContent = brand.name;
+        groupHeader.style.cssText = 'padding:8px 14px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--on-surface-variant);background:var(--surface-container-low);position:sticky;top:0;';
+        panel.appendChild(groupHeader);
+
+        var allItem = document.createElement('div');
+        allItem.textContent = 'Tất cả ' + brand.name;
+        allItem.style.cssText = 'padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--primary);';
+        allItem.onmouseenter = function() { allItem.style.background = 'var(--surface-container-low)'; };
+        allItem.onmouseleave = function() { allItem.style.background = 'transparent'; };
+        allItem.onclick = function() { selectVehicle(brand.id, brand.name, '', 'Tất cả ' + brand.name); };
+        panel.appendChild(allItem);
+
+        matchingModels.forEach(function(m) {
+            var item = document.createElement('div');
+            item.textContent = m.name;
+            item.style.cssText = 'padding:8px 14px 8px 24px;cursor:pointer;font-size:13px;color:var(--on-surface);';
+            item.onmouseenter = function() { item.style.background = 'var(--surface-container-low)'; };
+            item.onmouseleave = function() { item.style.background = 'transparent'; };
+            item.onclick = function() { selectVehicle(brand.id, brand.name, m.id, brand.name + ' - ' + m.name); };
+            panel.appendChild(item);
+        });
+    });
+
+    if (!hasAnyMatch) {
+        var empty = document.createElement('div');
+        empty.textContent = 'Không tìm thấy hãng xe hoặc dòng xe phù hợp.';
+        empty.style.cssText = 'padding:16px;font-size:13px;color:var(--on-surface-variant);text-align:center;';
+        panel.appendChild(empty);
+    }
+}
+
+function selectVehicle(brandId, brandName, modelId, displayText) {
+    selectedBrandId = String(brandId);
+    selectedModelId = modelId === '' ? '' : String(modelId);
+    document.getElementById('vehicleSearchInput').value = displayText;
+    document.getElementById('vehicleSearchClear').style.display = 'inline-block';
+    closeVehicleDropdown();
+    applyFilters();
+}
+
+function clearVehicleSelection(event) {
+    if (event) event.stopPropagation();
+    selectedBrandId = "";
+    selectedModelId = "";
+    document.getElementById('vehicleSearchInput').value = '';
+    document.getElementById('vehicleSearchClear').style.display = 'none';
+    closeVehicleDropdown();
+    applyFilters();
+}
+
+document.addEventListener('click', function(event) {
+    var wrapper = document.getElementById('vehicleSearchInput').closest('.bk-form-group');
+    if (wrapper && !wrapper.contains(event.target)) {
+        closeVehicleDropdown();
+    }
+});
+
 function applyFilters() {
-    var brand = document.getElementById('filterBrand').value;
-    var model = document.getElementById('filterModel').value;
+    var brand = selectedBrandId;
+    var model = selectedModelId;
     var transmission = document.getElementById('filterTransmission').value;
     var fuel = document.getElementById('filterFuel').value;
     var seats = document.getElementById('filterSeats').value;
@@ -338,31 +406,25 @@ function applyFilters() {
     filteredCars = [];
 
     carItems.forEach(function(item) {
-        var itemBrand = item.getAttribute('data-brand');
-        var itemModel = item.getAttribute('data-model');
+        var itemBrandId = item.getAttribute('data-brand-id');
+        var itemModelId = item.getAttribute('data-model-id');
         var itemTransmission = item.getAttribute('data-transmission');
         var itemFuel = item.getAttribute('data-fuel');
         var itemSeats = item.getAttribute('data-seats');
         var itemPrice = parseFloat(item.getAttribute('data-price')) || 0;
 
-        var matchBrand = brand === "" || itemBrand === brand;
-        var matchModel = model === "" || itemModel === model;
+        var matchBrand = brand === "" || itemBrandId === brand;
+        var matchModel = model === "" || itemModelId === model;
         var matchTransmission = transmission === "" || itemTransmission === transmission;
         var matchFuel = fuel === "" || itemFuel === fuel;
         var matchSeats = seats === "" || itemSeats === seats;
-        
+
         var matchPrice = true;
         if (priceLimit !== "") {
-            var limit = parseFloat(priceLimit);
-            if (limit === 500000) {
-                matchPrice = itemPrice < 500000;
-            } else if (limit === 1000000) {
-                matchPrice = itemPrice >= 500000 && itemPrice <= 1000000;
-            } else if (limit === 1500000) {
-                matchPrice = itemPrice >= 1000000 && itemPrice <= 1500000;
-            } else if (limit === 9999999) {
-                matchPrice = itemPrice > 1500000;
-            }
+            var parts = priceLimit.split('-');
+            var minPrice = parseFloat(parts[0]);
+            var maxPrice = parseFloat(parts[1]);
+            matchPrice = itemPrice >= minPrice && itemPrice < maxPrice;
         }
 
         if (matchBrand && matchModel && matchTransmission && matchFuel && matchSeats && matchPrice) {
@@ -482,15 +544,11 @@ function applyDateFilter() {
         urlParams.set('startDate', start);
         urlParams.set('endDate', end);
         
-        var brand = document.getElementById('filterBrand').value;
-        var model = document.getElementById('filterModel').value;
         var transmission = document.getElementById('filterTransmission').value;
         var fuel = document.getElementById('filterFuel').value;
         var seats = document.getElementById('filterSeats').value;
         var price = document.getElementById('filterPrice').value;
-        
-        if (brand) urlParams.set('brand', brand); else urlParams.delete('brand');
-        if (model) urlParams.set('model', model); else urlParams.delete('model');
+
         if (transmission) urlParams.set('transmission', transmission); else urlParams.delete('transmission');
         if (fuel) urlParams.set('fuel', fuel); else urlParams.delete('fuel');
         if (seats) urlParams.set('seats', seats); else urlParams.delete('seats');
@@ -511,37 +569,43 @@ function updateFilterChips() {
         chips.push({label: 'Lịch: ' + start + ' -> ' + end, id: 'clearDate', value: ''});
     }
 
-    var brand = document.getElementById('filterBrand').value;
-    if (brand) chips.push({label: brand, id: 'filterBrand', value: ''});
+    if (selectedBrandId) {
+        chips.push({label: document.getElementById('vehicleSearchInput').value, id: 'vehicleSearch', value: ''});
+    }
 
-    var model = document.getElementById('filterModel').value;
-    if (model) chips.push({label: model, id: 'filterModel', value: ''});
-    
     var transmission = document.getElementById('filterTransmission').value;
     if (transmission) {
         var label = transmission === 'AUTOMATIC' ? 'Số tự động' : 'Số sàn';
         chips.push({label: label, id: 'filterTransmission', value: ''});
     }
-    
+
     var fuel = document.getElementById('filterFuel').value;
     if (fuel) {
         var labels = {'GASOLINE': 'Xăng', 'DIESEL': 'Dầu Diesel', 'ELECTRIC': 'Điện', 'HYBRID': 'Hybrid'};
         chips.push({label: labels[fuel] || fuel, id: 'filterFuel', value: ''});
     }
-    
+
     var seats = document.getElementById('filterSeats').value;
     if (seats) chips.push({label: seats + ' chỗ', id: 'filterSeats', value: ''});
-    
+
+    var priceSelectEl = document.getElementById('filterPrice');
+    if (priceSelectEl.value) chips.push({label: priceSelectEl.options[priceSelectEl.selectedIndex].text, id: 'filterPrice', value: ''});
+
     chipsContainer.innerHTML = '';
     chips.forEach(function(chip) {
         var chipEl = document.createElement('div');
         chipEl.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--surface-container-low);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;';
         
-        var clickHandler = (chip.id === 'clearDate')
-            ? "var up = new URLSearchParams(window.location.search); up.delete('startDate'); up.delete('endDate'); window.location.search = up.toString();"
-            : "document.getElementById('" + chip.id + "').value='" + chip.value + "'; if('" + chip.id + "' === 'filterBrand') { updateModelOptions(); }; applyFilters();";
-        
-        chipEl.innerHTML = chip.label + '<button style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);" onclick="' + clickHandler + '">close</button>';
+        var clickHandler;
+        if (chip.id === 'clearDate') {
+            clickHandler = "var up = new URLSearchParams(window.location.search); up.delete('startDate'); up.delete('endDate'); window.location.search = up.toString();";
+        } else if (chip.id === 'vehicleSearch') {
+            clickHandler = "clearVehicleSelection();";
+        } else {
+            clickHandler = "document.getElementById('" + chip.id + "').value='" + chip.value + "'; applyFilters();";
+        }
+
+        chipEl.innerHTML = chip.label + '<button class="material-symbols-outlined" style="border:none;background:none;cursor:pointer;font-size:16px;padding:0;margin:0;color:var(--on-surface-variant);line-height:1;" onclick="' + clickHandler + '">close</button>';
         chipsContainer.appendChild(chipEl);
     });
 }
@@ -552,29 +616,12 @@ function exportCarList() {
 
 // Parse query parameters on load to auto-filter from the quick search
 window.addEventListener('DOMContentLoaded', function() {
-    updateModelOptions();
-    
     var urlParams = new URLSearchParams(window.location.search);
-    var brand = urlParams.get('brand');
     var seats = urlParams.get('seats');
-    var model = urlParams.get('model');
     var transmission = urlParams.get('transmission');
     var fuel = urlParams.get('fuel');
     var price = urlParams.get('price');
-    
-    if (brand) {
-        var brandSelect = document.getElementById('filterBrand');
-        if (brandSelect) {
-            brandSelect.value = brand;
-            updateModelOptions();
-        }
-    }
-    if (model) {
-        var modelSelect = document.getElementById('filterModel');
-        if (modelSelect) {
-            modelSelect.value = model;
-        }
-    }
+
     if (seats) {
         var seatsSelect = document.getElementById('filterSeats');
         if (seatsSelect) {

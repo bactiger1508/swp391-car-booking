@@ -6,8 +6,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.model.VehicleBrand;
+import com.swp391.carrental.vehicle.model.VehicleModel;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
@@ -45,14 +49,25 @@ public class VehicleListServlet extends HttpServlet {
                 request.setAttribute("startDate", startParam);
                 request.setAttribute("endDate", endParam);
             } catch (Exception e) {
-                cars = vehicleService.getAllVehicles();
+                cars = vehicleService.getVehiclesByStatus("AVAILABLE");
             }
         } else {
-            cars = vehicleService.getAllVehicles();
+            cars = vehicleService.getVehiclesByStatus("AVAILABLE");
         }
 
         request.setAttribute("cars", cars);
         request.setAttribute("primaryImages", vehicleService.getPrimaryImageUrls(cars));
+
+        // Two-level brand -> model filter, sourced directly from the vehicle_brands/vehicle_models tables
+        // (not scanned from the currently rendered cars), so every model of a brand is selectable.
+        List<VehicleBrand> brands = vehicleService.getAllBrands();
+        Map<Integer, List<VehicleModel>> modelsByBrand = new HashMap<>();
+        for (VehicleBrand brand : brands) {
+            modelsByBrand.put(brand.getBrandId(), vehicleService.getModelsByBrandId(brand.getBrandId()));
+        }
+        request.setAttribute("brands", brands);
+        request.setAttribute("modelsByBrand", modelsByBrand);
+
         request.getRequestDispatcher("/WEB-INF/views/vehicle/vehicle-list.jsp").forward(request, response);
     }
 }
