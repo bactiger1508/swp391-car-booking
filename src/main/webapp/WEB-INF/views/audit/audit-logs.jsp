@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Lịch Sử Hoạt Động"/>
 </jsp:include>
@@ -83,8 +84,13 @@
     </c:if>
 
     <c:if test="${not empty logs}">
-        <div style="overflow-x:auto;">
-            <table class="bk-table">
+        <div style="margin-bottom: 16px; position: relative; max-width: 360px;">
+            <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--on-surface-variant, #666);">search</span>
+            <input type="text" id="auditLogSearchInput" placeholder="Tìm kiếm theo người dùng, hành động, chi tiết..." oninput="filterAuditLogTable()"
+                   style="width: 100%; padding: 8px 12px 8px 36px; border-radius: 8px; border: 1px solid var(--outline-variant, #ccc); font-size: 13px; box-sizing: border-box;">
+        </div>
+        <div style="overflow-x:auto;" id="auditLogTableContainer">
+            <table class="bk-table" id="auditLogTable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -98,7 +104,15 @@
                 </thead>
                 <tbody>
                     <c:forEach items="${logs}" var="log">
-                        <tr>
+                        <c:choose>
+                            <c:when test="${not empty userMap[log.userId]}">
+                                <c:set var="logUserName" value="${userMap[log.userId].fullName}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <c:set var="logUserName" value="Người dùng ${log.userId}"/>
+                            </c:otherwise>
+                        </c:choose>
+                        <tr data-search="${fn:toLowerCase(logUserName)} ${fn:toLowerCase(not empty actionLabels[log.action] ? actionLabels[log.action] : log.action)} ${fn:toLowerCase(not empty log.details ? log.details : '')}">
                             <td class="code">#${log.auditId}</td>
                             <td>
                                 <c:choose>
@@ -134,15 +148,116 @@
                                 </c:choose>
                             </td>
                             <td>${not empty entityLabels[log.entityType] ? entityLabels[log.entityType] : log.entityType}</td>
-                            <td>${log.entityId}</td>
-                            <td class="sub">${log.details}</td>
+                            <td class="code">
+                                <c:choose>
+                                    <c:when test="${not empty log.entityId}">#${log.entityId}</c:when>
+                                    <c:otherwise>—</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="sub">${not empty log.details ? log.details : 'Không có mô tả chi tiết'}</td>
                             <td>${log.createdAt}</td>
                         </tr>
                     </c:forEach>
                 </tbody>
             </table>
         </div>
+        <div id="auditLogEmptyState" style="display:none; text-align:center; padding:24px; color:var(--on-surface-variant, #666);">
+            Không tìm thấy hoạt động phù hợp.
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid var(--outline-variant, #ddd); flex-wrap:wrap; gap:12px;">
+            <div style="font-size:13px; color:var(--on-surface-variant, #666);">
+                Hiển thị <span id="auditLogPagStart" style="font-weight:600;">0</span> đến <span id="auditLogPagEnd" style="font-weight:600;">0</span> trong số <span id="auditLogPagTotal" style="font-weight:600;">0</span> bản ghi
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:13px; color:var(--on-surface-variant, #666);">Số hàng:</label>
+                <select id="auditLogPageSizeSelect" onchange="changeAuditLogPageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant, #ccc); font-size:13px; outline:none; cursor:pointer;">
+                    <option value="10">10</option>
+                    <option value="20" selected="selected">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <div id="auditLogPaginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;"></div>
+            </div>
+        </div>
     </c:if>
 </div>
+
+<script>
+    let auditLogCurrentPage = 1;
+    let auditLogPageSize = 20;
+    let auditLogFilteredRows = [];
+
+    function filterAuditLogTable() {
+        const keyword = document.getElementById('auditLogSearchInput').value.trim().toLowerCase();
+        const allRows = Array.from(document.querySelectorAll('#auditLogTable tbody tr'));
+        auditLogFilteredRows = allRows.filter(row => {
+            const searchText = row.getAttribute('data-search') || '';
+            return searchText.indexOf(keyword) !== -1;
+        });
+        auditLogCurrentPage = 1;
+        applyAuditLogPagination();
+    }
+
+    function changeAuditLogPageSize() {
+        auditLogPageSize = parseInt(document.getElementById('auditLogPageSizeSelect').value);
+        auditLogCurrentPage = 1;
+        applyAuditLogPagination();
+    }
+
+    function applyAuditLogPagination() {
+        const allRows = Array.from(document.querySelectorAll('#auditLogTable tbody tr'));
+        allRows.forEach(row => row.style.display = 'none');
+
+        const totalItems = auditLogFilteredRows.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / auditLogPageSize));
+        if (auditLogCurrentPage > totalPages) auditLogCurrentPage = totalPages;
+
+        const start = (auditLogCurrentPage - 1) * auditLogPageSize;
+        const end = Math.min(start + auditLogPageSize, totalItems);
+        const pageRows = auditLogFilteredRows.slice(start, end);
+        pageRows.forEach(row => row.style.display = '');
+
+        document.getElementById('auditLogPagStart').textContent = totalItems === 0 ? 0 : start + 1;
+        document.getElementById('auditLogPagEnd').textContent = end;
+        document.getElementById('auditLogPagTotal').textContent = totalItems;
+
+        document.getElementById('auditLogTableContainer').style.display = totalItems === 0 ? 'none' : '';
+        document.getElementById('auditLogEmptyState').style.display = totalItems === 0 ? '' : 'none';
+
+        renderAuditLogPaginationButtons(totalPages);
+    }
+
+    function renderAuditLogPaginationButtons(totalPages) {
+        const container = document.getElementById('auditLogPaginationButtons');
+        container.innerHTML = '';
+
+        const makeBtn = (label, page, disabled, active) => {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.disabled = disabled;
+            btn.style.cssText = 'padding:4px 10px; border-radius:6px; border:1px solid #ccc; background:' + (active ? '#2F5ACD' : '#fff') + '; color:' + (active ? '#fff' : '#333') + '; font-size:12px; cursor:' + (disabled ? 'not-allowed' : 'pointer') + '; opacity:' + (disabled ? '0.5' : '1') + ';';
+            btn.onclick = () => { auditLogCurrentPage = page; applyAuditLogPagination(); };
+            return btn;
+        };
+
+        container.appendChild(makeBtn('«', auditLogCurrentPage - 1, auditLogCurrentPage <= 1, false));
+        const maxButtons = 7;
+        let startPage = Math.max(1, auditLogCurrentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        startPage = Math.max(1, endPage - maxButtons + 1);
+        for (let p = startPage; p <= endPage; p++) {
+            container.appendChild(makeBtn(String(p), p, false, p === auditLogCurrentPage));
+        }
+        container.appendChild(makeBtn('»', auditLogCurrentPage + 1, auditLogCurrentPage >= totalPages, false));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.getElementById('auditLogTable');
+        if (table) {
+            auditLogFilteredRows = Array.from(table.querySelectorAll('tbody tr'));
+            applyAuditLogPagination();
+        }
+    });
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

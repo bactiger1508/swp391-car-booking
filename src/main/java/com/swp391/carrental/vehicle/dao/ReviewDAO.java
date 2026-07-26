@@ -21,22 +21,12 @@ import com.swp391.carrental.vehicle.model.Review;
  */
 public class ReviewDAO {
 
-    public Review findById(int reviewId) throws SQLException {
-        String sql = "SELECT * FROM reviews WHERE review_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, reviewId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
-            }
-        }
-        return null;
-    }
-
+    // Finds up to 100 visible reviews for a vehicle (delegates to the paginated overload).
     public List<Review> findByVehicleId(int vehicleId) throws SQLException {
         return findByVehicleId(vehicleId, 0, 100);
     }
 
+    // Finds visible reviews for a vehicle with pagination, ordered by newest first.
     public List<Review> findByVehicleId(int vehicleId, int offset, int limit) throws SQLException {
         List<Review> reviews = new ArrayList<>();
         String sql = "SELECT review_id, booking_id, vehicle_id, customer_id, rating, comment, is_visible, created_at, updated_at "
@@ -55,6 +45,7 @@ public class ReviewDAO {
         return reviews;
     }
 
+    // Counts visible reviews for a vehicle (used for pagination and rating summary).
     public int countByVehicleId(int vehicleId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
         try (Connection conn = DBContext.getConnection();
@@ -67,6 +58,7 @@ public class ReviewDAO {
         return 0;
     }
 
+    // Computes average rating across visible reviews for a vehicle (0.0 if none).
     public double getAverageRating(int vehicleId) throws SQLException {
         String sql = "SELECT AVG(CAST(rating AS FLOAT)) FROM reviews WHERE vehicle_id = ? AND is_visible = 1";
         try (Connection conn = DBContext.getConnection();
@@ -79,6 +71,7 @@ public class ReviewDAO {
         return 0.0;
     }
 
+    // Inserts a new review as visible and returns the generated review_id.
     public int insert(Review review) throws SQLException {
         String sql = "INSERT INTO reviews (booking_id, customer_id, vehicle_id, rating, comment, is_visible) VALUES (?, ?, ?, ?, ?, 1)";
         try (Connection conn = DBContext.getConnection();
@@ -96,15 +89,18 @@ public class ReviewDAO {
         return -1;
     }
 
-    public boolean delete(int reviewId) throws SQLException {
-        String sql = "DELETE FROM reviews WHERE review_id = ?";
+    // Updates review visibility flag (true=show, false=hide) for admin moderation.
+    public boolean updateReviewVisibility(int reviewId, boolean isVisible) throws SQLException {
+        String sql = "UPDATE reviews SET is_visible = ? WHERE review_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, reviewId);
+            ps.setBoolean(1, isVisible);
+            ps.setInt(2, reviewId);
             return ps.executeUpdate() > 0;
         }
     }
 
+    // Maps a reviews table row to a Review object.
     private Review mapRow(ResultSet rs) throws SQLException {
         Review r = new Review();
         r.setReviewId(rs.getInt("review_id"));
