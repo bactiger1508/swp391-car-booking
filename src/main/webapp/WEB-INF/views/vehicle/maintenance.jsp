@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Quản Lý Bảo Trì Xe"/>
 </jsp:include>
@@ -113,8 +114,13 @@
         </c:if>
 
         <c:if test="${not empty maintenanceList}">
-            <div style="overflow-x:auto;">
-                <table class="bk-table">
+            <div style="padding:16px 16px 0; position:relative; max-width:320px;">
+                <span class="material-symbols-outlined" style="position:absolute; left:26px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--text-secondary);">search</span>
+                <input type="text" id="maintHistorySearchInput" placeholder="Tìm theo loại, mô tả, trạng thái..." oninput="filterMaintHistoryTable()"
+                       style="width:100%; padding:8px 12px 8px 36px; border-radius:8px; border:1px solid var(--outline-variant); font-size:13px; box-sizing:border-box;">
+            </div>
+            <div style="overflow-x:auto;" id="maintHistoryTableContainer">
+                <table class="bk-table" id="maintHistoryTable">
                     <thead>
                         <tr>
                             <th>Loại Bảo Trì</th>
@@ -128,7 +134,7 @@
                     </thead>
                     <tbody>
                         <c:forEach items="${maintenanceList}" var="m">
-                            <tr>
+                            <tr class="maint-history-row" data-search="${fn:toLowerCase(m.maintenanceType)} ${fn:toLowerCase(m.description)} ${fn:toLowerCase(m.status)}">
                                 <td>
                                     <c:choose>
                                         <c:when test="${m.maintenanceType == 'OIL_CHANGE'}">Thay Dầu</c:when>
@@ -172,11 +178,98 @@
                     </tbody>
                 </table>
             </div>
+            <div id="maintHistoryEmptyState" style="display:none; text-align:center; padding:24px; color:var(--text-secondary);">
+                Không tìm thấy bản ghi bảo trì phù hợp.
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+                <div style="font-size:13px; color:var(--text-secondary);">
+                    Hiển thị <span id="maintHistPagStart" style="font-weight:600;">0</span> đến <span id="maintHistPagEnd" style="font-weight:600;">0</span> trong số <span id="maintHistPagTotal" style="font-weight:600;">0</span> bản ghi
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:13px; color:var(--text-secondary);">Số dòng:</label>
+                    <select id="maintHistPageSizeSelect" onchange="changeMaintHistPageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--text-primary); font-size:13px; outline:none; cursor:pointer;">
+                        <option value="5" selected="selected">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="9999">Tất cả</option>
+                    </select>
+                    <div id="maintHistPaginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;"></div>
+                </div>
+            </div>
         </c:if>
     </div>
 </c:if>
 
 <script>
+let maintHistCurrentPage = 1;
+let maintHistPageSize = 5;
+let maintHistFilteredRows = [];
+
+function filterMaintHistoryTable() {
+    const keyword = document.getElementById('maintHistorySearchInput').value.trim().toLowerCase();
+    const allRows = Array.from(document.querySelectorAll('#maintHistoryTable tbody tr'));
+    maintHistFilteredRows = allRows.filter(row => (row.getAttribute('data-search') || '').indexOf(keyword) !== -1);
+    maintHistCurrentPage = 1;
+    applyMaintHistPagination();
+}
+
+function changeMaintHistPageSize() {
+    maintHistPageSize = parseInt(document.getElementById('maintHistPageSizeSelect').value);
+    maintHistCurrentPage = 1;
+    applyMaintHistPagination();
+}
+
+function applyMaintHistPagination() {
+    const allRows = Array.from(document.querySelectorAll('#maintHistoryTable tbody tr'));
+    allRows.forEach(row => row.style.display = 'none');
+
+    const totalItems = maintHistFilteredRows.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / maintHistPageSize));
+    if (maintHistCurrentPage > totalPages) maintHistCurrentPage = totalPages;
+
+    const start = (maintHistCurrentPage - 1) * maintHistPageSize;
+    const end = Math.min(start + maintHistPageSize, totalItems);
+    maintHistFilteredRows.slice(start, end).forEach(row => row.style.display = '');
+
+    document.getElementById('maintHistPagStart').textContent = totalItems === 0 ? 0 : start + 1;
+    document.getElementById('maintHistPagEnd').textContent = end;
+    document.getElementById('maintHistPagTotal').textContent = totalItems;
+
+    document.getElementById('maintHistoryTableContainer').style.display = totalItems === 0 ? 'none' : '';
+    document.getElementById('maintHistoryEmptyState').style.display = totalItems === 0 ? '' : 'none';
+
+    renderMaintHistPaginationButtons(totalPages);
+}
+
+function renderMaintHistPaginationButtons(totalPages) {
+    const container = document.getElementById('maintHistPaginationButtons');
+    container.innerHTML = '';
+
+    const makeBtn = (label, page, disabled, active) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = label;
+        btn.disabled = disabled;
+        btn.style.cssText = 'padding:4px 10px; border-radius:6px; border:1px solid var(--outline-variant); background:' + (active ? 'var(--primary)' : 'var(--surface)') + '; color:' + (active ? '#fff' : 'var(--text-primary)') + '; font-size:12px; cursor:' + (disabled ? 'not-allowed' : 'pointer') + '; opacity:' + (disabled ? '0.5' : '1') + ';';
+        btn.onclick = () => { maintHistCurrentPage = page; applyMaintHistPagination(); };
+        return btn;
+    };
+
+    container.appendChild(makeBtn('«', maintHistCurrentPage - 1, maintHistCurrentPage <= 1, false));
+    for (let p = 1; p <= totalPages; p++) {
+        container.appendChild(makeBtn(String(p), p, false, p === maintHistCurrentPage));
+    }
+    container.appendChild(makeBtn('»', maintHistCurrentPage + 1, maintHistCurrentPage >= totalPages, false));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.getElementById('maintHistoryTable');
+    if (table) {
+        maintHistFilteredRows = Array.from(table.querySelectorAll('tbody tr'));
+        applyMaintHistPagination();
+    }
+});
+
 function submitMaintenanceForm(event) {
     event.preventDefault();
     const formData = new FormData(document.getElementById('maintenanceForm'));

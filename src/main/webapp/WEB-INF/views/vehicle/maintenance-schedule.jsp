@@ -64,9 +64,9 @@
             </div>
         </c:if>
         <c:if test="${not empty schedules}">
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;" id="scheduleGrid">
                 <c:forEach items="${schedules}" var="s">
-                    <div style="border: 1px solid var(--outline-variant); border-radius: var(--radius-md); padding: 16px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; transition: var(--transition);">
+                    <div class="schedule-card" style="border: 1px solid var(--outline-variant); border-radius: var(--radius-md); padding: 16px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; transition: var(--transition);">
                         <div style="display: flex; justify-content: space-between; align-items: start; gap: 8px;">
                             <div style="font-weight: 700; color: var(--primary); font-size: 15px;">
                                 <c:forEach items="${allVehicles}" var="car">
@@ -106,8 +106,84 @@
                     </div>
                 </c:forEach>
             </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
+                <div style="font-size:13px; color:var(--text-secondary);">
+                    Hiển thị <span id="schedPagStart" style="font-weight:600;">0</span> đến <span id="schedPagEnd" style="font-weight:600;">0</span> trong số <span id="schedPagTotal" style="font-weight:600;">0</span> lịch bảo trì
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <label style="font-size:13px; color:var(--text-secondary);">Số thẻ/trang:</label>
+                    <select id="schedPageSizeSelect" onchange="changeSchedPageSize()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--surface); color:var(--text-primary); font-size:13px; outline:none; cursor:pointer;">
+                        <option value="6" selected="selected">6</option>
+                        <option value="12">12</option>
+                        <option value="24">24</option>
+                        <option value="9999">Tất cả</option>
+                    </select>
+                    <div id="schedPaginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;"></div>
+                </div>
+            </div>
         </c:if>
     </div>
 </div>
+
+<script>
+    let schedCurrentPage = 1;
+    let schedPageSize = 6;
+    let schedAllCards = [];
+
+    function changeSchedPageSize() {
+        schedPageSize = parseInt(document.getElementById('schedPageSizeSelect').value);
+        schedCurrentPage = 1;
+        applySchedPagination();
+    }
+
+    function applySchedPagination() {
+        schedAllCards.forEach(card => card.style.display = 'none');
+
+        const totalItems = schedAllCards.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / schedPageSize));
+        if (schedCurrentPage > totalPages) schedCurrentPage = totalPages;
+
+        const start = (schedCurrentPage - 1) * schedPageSize;
+        const end = Math.min(start + schedPageSize, totalItems);
+        for (let i = start; i < end; i++) {
+            schedAllCards[i].style.display = '';
+        }
+
+        document.getElementById('schedPagStart').textContent = totalItems === 0 ? 0 : start + 1;
+        document.getElementById('schedPagEnd').textContent = end;
+        document.getElementById('schedPagTotal').textContent = totalItems;
+
+        renderSchedPaginationButtons(totalPages);
+    }
+
+    function renderSchedPaginationButtons(totalPages) {
+        const container = document.getElementById('schedPaginationButtons');
+        container.innerHTML = '';
+
+        const makeBtn = (label, page, disabled, active) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = label;
+            btn.disabled = disabled;
+            btn.style.cssText = 'padding:4px 10px; border-radius:6px; border:1px solid var(--outline-variant); background:' + (active ? 'var(--primary)' : 'var(--surface)') + '; color:' + (active ? '#fff' : 'var(--text-primary)') + '; font-size:12px; cursor:' + (disabled ? 'not-allowed' : 'pointer') + '; opacity:' + (disabled ? '0.5' : '1') + ';';
+            btn.onclick = () => { schedCurrentPage = page; applySchedPagination(); };
+            return btn;
+        };
+
+        container.appendChild(makeBtn('«', schedCurrentPage - 1, schedCurrentPage <= 1, false));
+        for (let p = 1; p <= totalPages; p++) {
+            container.appendChild(makeBtn(String(p), p, false, p === schedCurrentPage));
+        }
+        container.appendChild(makeBtn('»', schedCurrentPage + 1, schedCurrentPage >= totalPages, false));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const grid = document.getElementById('scheduleGrid');
+        if (grid) {
+            schedAllCards = Array.from(grid.querySelectorAll('.schedule-card'));
+            applySchedPagination();
+        }
+    });
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
