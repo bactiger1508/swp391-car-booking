@@ -21,28 +21,31 @@ import com.swp391.carrental.core.util.DBContext;
  */
 public class AuditLogDAO {
 
-    // Finds all audit logs for a specific entity (e.g. VEHICLE #5), joined with the acting user's name, newest first.
+    public List<AuditLog> findAll() throws SQLException {
+        List<AuditLog> logs = new ArrayList<>();
+        String sql = "SELECT TOP 200 * FROM audit_logs ORDER BY created_at DESC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) logs.add(mapRow(rs));
+        }
+        return logs;
+    }
+
     public List<AuditLog> findByEntity(String entityType, int entityId) throws SQLException {
         List<AuditLog> logs = new ArrayList<>();
-        String sql = "SELECT a.*, u.full_name AS user_full_name FROM audit_logs a "
-                   + "LEFT JOIN users u ON a.user_id = u.user_id "
-                   + "WHERE a.entity_type = ? AND a.entity_id = ? ORDER BY a.created_at DESC";
+        String sql = "SELECT * FROM audit_logs WHERE entity_type = ? AND entity_id = ? ORDER BY created_at DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, entityType);
             ps.setInt(2, entityId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    AuditLog log = mapRow(rs);
-                    log.setUserName(rs.getString("user_full_name"));
-                    logs.add(log);
-                }
+                while (rs.next()) logs.add(mapRow(rs));
             }
         }
         return logs;
     }
 
-    // Inserts an audit log entry (user, action, entity, old/new values, IP, description) and returns the generated log_id.
     public int insert(AuditLog log) throws SQLException {
         String sql = "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, old_value, new_value, ip_address, description) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -64,7 +67,6 @@ public class AuditLogDAO {
         return -1;
     }
 
-    // Maps an audit_logs table row to an AuditLog object (handles nullable user_id/entity_id fields).
     private AuditLog mapRow(ResultSet rs) throws SQLException {
         AuditLog l = new AuditLog();
         l.setLogId(rs.getInt("log_id"));
