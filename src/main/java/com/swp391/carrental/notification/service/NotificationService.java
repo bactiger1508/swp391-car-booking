@@ -9,7 +9,6 @@ import com.swp391.carrental.notification.model.Notification;
 public class NotificationService {
     private final NotificationDAO notificationDAO = new NotificationDAO();
 
-    // Retrieves all notifications belonging to a user, newest first.
     public List<Notification> getNotificationsByUserId(int userId) {
         try {
             return notificationDAO.findByUserId(userId);
@@ -18,7 +17,14 @@ public class NotificationService {
         }
     }
 
-    // Counts unread notifications for a user (used for the header badge).
+    public List<Notification> getUnreadNotifications(int userId) {
+        try {
+            return notificationDAO.findUnreadByUserId(userId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to get unread notifications.", e);
+        }
+    }
+
     public int getUnreadCount(int userId) {
         try {
             return notificationDAO.getUnreadCount(userId);
@@ -27,7 +33,6 @@ public class NotificationService {
         }
     }
 
-    // Retrieves a single notification by its ID.
     public Notification getNotificationById(int notificationId) {
         try {
             return notificationDAO.findById(notificationId);
@@ -36,7 +41,6 @@ public class NotificationService {
         }
     }
 
-    // Creates a new notification and returns its generated ID.
     public int createNotification(Notification notification) {
         try {
             return notificationDAO.insert(notification);
@@ -45,7 +49,6 @@ public class NotificationService {
         }
     }
 
-    // Marks a single notification as read.
     public boolean markNotificationAsRead(int notificationId) {
         try {
             return notificationDAO.markAsRead(notificationId);
@@ -54,12 +57,19 @@ public class NotificationService {
         }
     }
 
-    // Marks all notifications belonging to a user as read.
     public boolean markAllNotificationsAsRead(int userId) {
         try {
             return notificationDAO.markAllAsRead(userId);
         } catch (SQLException e) {
             throw new AppException("Failed to mark all notifications as read.", e);
+        }
+    }
+
+    public boolean deleteNotification(int notificationId) {
+        try {
+            return notificationDAO.delete(notificationId);
+        } catch (SQLException e) {
+            throw new AppException("Failed to delete notification.", e);
         }
     }
 }
