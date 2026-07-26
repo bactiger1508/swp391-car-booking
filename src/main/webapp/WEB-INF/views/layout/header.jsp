@@ -216,7 +216,7 @@
                                 <span class="material-symbols-outlined">payment</span> Cấu hình thanh toán
                             </a>
                         </c:if>
-                        <c:if test="${hasUserList}">
+                        <c:if test="${isAdmin}">
                             <a href="${pageContext.request.contextPath}/users" class="bk-sidebar-link ${_cp == '/users' ? 'active' : ''}">
                                 <span class="material-symbols-outlined">manage_accounts</span> Quản lý thành viên
                             </a>
