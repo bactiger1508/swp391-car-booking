@@ -254,7 +254,7 @@
     <div>
         <%-- Selected Vehicle --%>
         <div class="bk-cost-card bk-vehicle-card" style="margin-bottom:24px;">
-            <div class="header">
+            <div class="bk-card-header">
                 <h3><span class="material-symbols-outlined">directions_car</span> Xe đã chọn</h3>
             </div>
             <div id="vehicleInfo" style="color:var(--on-surface-variant);font-size:14px;">
