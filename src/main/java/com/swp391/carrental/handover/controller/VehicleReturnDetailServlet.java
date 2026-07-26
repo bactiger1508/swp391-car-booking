@@ -29,6 +29,7 @@ import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.service.VehicleService;
 
 /**
  * Name: VehicleReturnDetailServlet
@@ -50,6 +51,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final VehicleDAO vehicleDAO = new VehicleDAO();
+    private final VehicleService vehicleService = new VehicleService();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
     private final NotificationService notificationService = new NotificationService();
@@ -61,12 +63,14 @@ public class VehicleReturnDetailServlet extends HttpServlet {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
 
-            if (bookingIdStr != null && vehicleIdStr != null) {
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle vehicle = vehicleDAO.findById(vehicleId);
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.trim().isEmpty())
+                        ? Integer.parseInt(vehicleIdStr)
+                        : (booking != null ? booking.getVehicleId() : 0);
+
+                Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
                 Vehicle car = vehicle;
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
@@ -207,7 +211,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
                 // ===== FORM DATA =====
                 int distanceDriven = Integer.parseInt(request.getParameter("currentOdo"));
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
-                Vehicle vehicle = vehicleDAO.findById(vehicleId);
+                Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
                 VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);
                 int mileageAtHandover = handover.getMileageAtHandover();
                 int mileage = mileageAtHandover + distanceDriven;
@@ -536,7 +540,7 @@ public class VehicleReturnDetailServlet extends HttpServlet {
     private void loadDetailData(HttpServletRequest request, int bookingId, int vehicleId) {
         try {
             Booking booking = bookingDAO.findById(bookingId);
-            Vehicle vehicle = vehicleDAO.findById(vehicleId);
+            Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
             Vehicle car = vehicle;
             RentalContract contract = contractDAO.findByBookingId(bookingId);
             VehicleHandover handover = getHandoverWithFallback(bookingId, vehicleId, contract, vehicle);

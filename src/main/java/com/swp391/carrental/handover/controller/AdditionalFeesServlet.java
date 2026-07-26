@@ -22,6 +22,7 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
+import com.swp391.carrental.vehicle.service.VehicleService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class AdditionalFeesServlet extends HttpServlet {
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final VehicleDAO vehicleDAO = new VehicleDAO();
+    private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final FeeCalculator feeCalculator = new FeeCalculator();
@@ -50,13 +52,14 @@ public class AdditionalFeesServlet extends HttpServlet {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
 
-            if (bookingIdStr != null && vehicleIdStr != null) {
-
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(vehicleId);
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.trim().isEmpty())
+                        ? Integer.parseInt(vehicleIdStr)
+                        : (booking != null ? booking.getVehicleId() : 0);
+
+                Vehicle car = vehicleService.getVehicleById(vehicleId);
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("vehicle", car);
