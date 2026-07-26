@@ -263,7 +263,7 @@
     <div>
         <%-- Selected Vehicle --%>
         <div class="bk-cost-card bk-vehicle-card" style="margin-bottom:24px;">
-            <div class="header">
+            <div class="bk-card-header">
                 <h3><span class="material-symbols-outlined">directions_car</span> Xe đã chọn</h3>
             </div>
             <div id="vehicleInfo" style="color:var(--on-surface-variant);font-size:14px;">
@@ -342,6 +342,102 @@ var combo30DiscountPercent = parseFloat('${combo30DiscountPercent}') || 30;
 var tetStartDateStr = '${tetStartDate}' || '2026-02-12';
 var tetEndDateStr = '${tetEndDate}' || '2026-02-22';
 var tetSurchargePct = parseFloat('${tetSurchargePercent}') || 20;
+
+function validateScheduleRealtime() {
+    var sd = document.getElementById('startDate');
+    var st = document.getElementById('startTime');
+    var ed = document.getElementById('endDate');
+    var et = document.getElementById('endTime');
+
+    var sdVal = sd ? sd.value : '';
+    var stVal = st ? st.value : '';
+    var edVal = ed ? ed.value : '';
+    var etVal = et ? et.value : '';
+
+    var errSd = document.getElementById('err-startDate');
+    var errSt = document.getElementById('err-startTime');
+    var errEd = document.getElementById('err-endDate');
+    var errEt = document.getElementById('err-endTime');
+
+    if (errSd) { errSd.textContent = ''; errSd.style.display = 'none'; }
+    if (errSt) { errSt.textContent = ''; errSt.style.display = 'none'; }
+    if (errEd) { errEd.textContent = ''; errEd.style.display = 'none'; }
+    if (errEt) { errEt.textContent = ''; errEt.style.display = 'none'; }
+
+    if (!sdVal || !stVal) return;
+
+    var now = new Date();
+    var todayStr = (typeof getLocalDateString === 'function') ? getLocalDateString(now) : now.toISOString().split('T')[0];
+
+    var submitBtn = document.getElementById('submitBookingBtn');
+    var hasTimeErr = false;
+
+    var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+    var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+    
+    var minBufferHours = 1;
+    if (deliveryMethod === 'DELIVERY') {
+        var travelHours = deliveryDistance / 25.0;
+        minBufferHours = 1.0 + travelHours;
+        minBufferHours = Math.round(minBufferHours * 10) / 10;
+        if (minBufferHours < 1.5) minBufferHours = 1.5;
+    }
+
+    if (sdVal < todayStr) {
+        hasTimeErr = true;
+        if (errSd) {
+            errSd.textContent = 'Ngày bắt đầu không được ở trong quá khứ.';
+            errSd.style.display = 'block';
+        }
+    } else if (sdVal === todayStr && stVal) {
+        var parts = stVal.split(':');
+        var startDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]));
+        var earliestValidDt = new Date(now.getTime() + Math.ceil(minBufferHours * 60 * 60 * 1000));
+
+        if (startDt < earliestValidDt) {
+            hasTimeErr = true;
+            if (errSt) {
+                var formatHrs = String(earliestValidDt.getHours()).padStart(2, '0');
+                var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
+                if (deliveryMethod === 'DELIVERY') {
+                    var travelMins = Math.round((deliveryDistance / 25.0) * 60);
+                    errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                } else {
+                    errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất hôm nay từ ' + formatHrs + ':' + formatMins + ' trở đi.';
+                }
+                errSt.style.display = 'block';
+            }
+        }
+    }
+
+    if (sdVal && edVal && edVal < sdVal) {
+        hasTimeErr = true;
+        if (errEd) {
+            errEd.textContent = 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.';
+            errEd.style.display = 'block';
+        }
+    } else if (sdVal && edVal && sdVal === edVal && stVal && etVal) {
+        if (etVal <= stVal) {
+            hasTimeErr = true;
+            if (errEt) {
+                errEt.textContent = 'Giờ kết thúc phải lớn hơn giờ bắt đầu khi chọn cùng ngày.';
+                errEt.style.display = 'block';
+            }
+        }
+    }
+
+    if (submitBtn) {
+        if (hasTimeErr) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+}
 
 var carsList = [];
 <c:forEach var="car" items="${cars}">
@@ -604,14 +700,60 @@ function autoSetEndDate(startDateStr, comboDays) {
 }
 
 /**
+ * Gets earliest valid time string (HH:mm) rounded up to next 30-min slot with buffer hours
+ */
+function getEarliestValidTimeString(bufferHours) {
+    if (!bufferHours) bufferHours = 1;
+    var validDt = new Date(Date.now() + bufferHours * 60 * 60 * 1000);
+    var minutes = validDt.getMinutes();
+    if (minutes > 0 && minutes <= 30) {
+        validDt.setMinutes(30);
+    } else if (minutes > 30) {
+        validDt.setHours(validDt.getHours() + 1);
+        validDt.setMinutes(0);
+    }
+    var hh = String(validDt.getHours()).padStart(2, '0');
+    var mm = String(validDt.getMinutes()).padStart(2, '0');
+    return hh + ':' + mm;
+}
+
+/**
  * Called when startDate changes - auto-compute endDate for combo packages
  */
 function onStartDateChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var sdInput = document.getElementById('startDate');
     var edInput = document.getElementById('endDate');
+    var stInput = document.getElementById('startTime');
 
     if (!sdInput.value) return;
+
+    // If today is selected and start time is empty or in the past/invalid, auto set earliest valid time
+    var now = new Date();
+    var todayStr = getLocalDateString(now);
+    if (sdInput.value === todayStr) {
+        var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+        var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+        var bufferHrs = 1;
+        if (deliveryMethod === 'DELIVERY') {
+            bufferHrs = 1.0 + (deliveryDistance / 25.0);
+            if (bufferHrs < 1.5) bufferHrs = 1.5;
+        }
+        var earliestTimeStr = getEarliestValidTimeString(bufferHrs);
+        
+        if (stInput) {
+            if (!stInput.value) {
+                stInput.value = earliestTimeStr;
+            } else {
+                var timeParts = stInput.value.split(':');
+                var currentSelectedDt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1]));
+                var minValidDt = new Date(now.getTime() + bufferHrs * 60 * 60 * 1000);
+                if (currentSelectedDt < minValidDt) {
+                    stInput.value = earliestTimeStr;
+                }
+            }
+        }
+    }
 
     // Set min for end date
     edInput.setAttribute('min', sdInput.value);
@@ -674,6 +816,9 @@ function onDeliveryMethodChange() {
         }
     }
     calculateBookingCost();
+    if (typeof validateScheduleRealtime === 'function') {
+        validateScheduleRealtime();
+    }
 }
 
 function initDeliveryMap() {
@@ -734,6 +879,9 @@ function fetchRoadDistance(lat, lng) {
                 if (fallbackNotice) fallbackNotice.style.display = 'block';
             }
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         })
         .catch(function(err) {
             console.error('Distance API error:', err);
@@ -742,6 +890,9 @@ function fetchRoadDistance(lat, lng) {
             var fallbackNotice = document.getElementById('distanceFallbackNotice');
             if (fallbackNotice) fallbackNotice.style.display = 'block';
             calculateBookingCost();
+            if (typeof validateScheduleRealtime === 'function') {
+                validateScheduleRealtime();
+            }
         });
 }
 
@@ -1074,6 +1225,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (el.id === 'startDate') {
                         onStartDateChange();
                     }
+                    validateScheduleRealtime();
                     calculateBookingCost();
                     checkAvailabilityRealtime();
                 });
@@ -1094,6 +1246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ed) ed.setAttribute('min', today);
 
     // Initial realtime availability check on page load (handles restored preFilledBookingData)
+    validateScheduleRealtime();
     checkAvailabilityRealtime();
     
     // Custom form validation
@@ -1170,9 +1323,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (sdVal && edVal) {
-                var todayDateStr = getLocalDateString();
+                var now = new Date();
+                var todayDateStr = getLocalDateString(now);
+                
                 if (sdVal < todayDateStr) {
-                    showError('startDate', 'Ngày bắt đầu không được ở quá khứ.');
+                    showError('startDate', 'Ngày bắt đầu không được ở trong quá khứ.');
+                } else if (sdVal === todayDateStr && stVal) {
+                    var timeParts = stVal.split(':');
+                    var startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(timeParts[0]), parseInt(timeParts[1]));
+                    if (startDateTime < now) {
+                        showError('startTime', 'Giờ bắt đầu không được ở trong quá khứ so với hiện tại.');
+                    }
                 }
                 
                 var start = new Date(sdVal);

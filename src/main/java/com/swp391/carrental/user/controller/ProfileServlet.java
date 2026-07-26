@@ -54,8 +54,6 @@ public class ProfileServlet extends HttpServlet {
                 profile = new CustomerProfile();
                 profile.setUserId(currentUser.getUserId());
                 profile.setVerificationStatus("PENDING");
-                int profileId = profileDAO.insert(profile);
-                profile.setProfileId(profileId);
             }
             request.setAttribute("profile", profile);
 
@@ -117,14 +115,13 @@ public class ProfileServlet extends HttpServlet {
             userDAO.update(currentUser);
             request.getSession().setAttribute("currentUser", currentUser);
 
-            // Update customer profile
+            // Get existing profile or prepare new one
             CustomerProfile profile = profileDAO.findByUserId(currentUser.getUserId());
+            boolean isNew = false;
             if (profile == null) {
                 profile = new CustomerProfile();
                 profile.setUserId(currentUser.getUserId());
-                profile.setVerificationStatus("PENDING");
-                int profileId = profileDAO.insert(profile);
-                profile.setProfileId(profileId);
+                isNew = true;
             }
 
             if (dobStr != null && !dobStr.trim().isEmpty()) {
@@ -163,7 +160,12 @@ public class ProfileServlet extends HttpServlet {
             profile.setVerificationStatus("PENDING");
 
             // Save changes to database
-            profileDAO.update(profile);
+            if (isNew) {
+                int newProfileId = profileDAO.insert(profile);
+                profile.setProfileId(newProfileId);
+            } else {
+                profileDAO.update(profile);
+            }
 
             response.sendRedirect(request.getContextPath() + "/profile?success=true");
         } catch (Exception e) {
