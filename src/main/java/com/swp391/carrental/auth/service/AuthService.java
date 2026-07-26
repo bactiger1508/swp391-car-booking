@@ -70,7 +70,7 @@ public class AuthService {
         }
 
         // Validate password length
-        if (password.length() < 8) {
+        if (password.length() < 6) {
             throw new AppException("Mật khẩu phải có độ dài tối thiểu 8 ký tự.");
         }
 
