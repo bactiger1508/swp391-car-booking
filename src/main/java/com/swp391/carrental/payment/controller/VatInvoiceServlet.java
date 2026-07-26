@@ -57,6 +57,11 @@ public class VatInvoiceServlet extends HttpServlet {
 
         String path = request.getServletPath();
 
+        if ("/contracts/vat-invoice/create".equals(path) || "/contracts/vat-invoice/sign".equals(path)) {
+            doPost(request, response);
+            return;
+        }
+
         if ("/contracts/vat-invoice/detail".equals(path)) {
             String contractIdStr = request.getParameter("contractId");
             if (contractIdStr == null || contractIdStr.isEmpty()) {
@@ -184,10 +189,14 @@ public class VatInvoiceServlet extends HttpServlet {
                 BigDecimal totalPaid = BigDecimal.ZERO;
                 for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                            continue;
+                        }
+                        BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
+                            totalPaid = totalPaid.subtract(effectiveAmt);
                         } else {
-                            totalPaid = totalPaid.add(p.getAmount());
+                            totalPaid = totalPaid.add(effectiveAmt);
                         }
                     }
                 }
