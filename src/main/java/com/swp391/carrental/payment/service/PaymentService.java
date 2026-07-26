@@ -199,10 +199,14 @@ public class PaymentService {
             BigDecimal totalPaid = BigDecimal.ZERO;
             for (Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                        continue;
+                    }
+                    BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                        totalPaid = totalPaid.subtract(p.getAmount());
+                        totalPaid = totalPaid.subtract(effectiveAmt);
                     } else {
-                        totalPaid = totalPaid.add(p.getAmount());
+                        totalPaid = totalPaid.add(effectiveAmt);
                     }
                 }
             }
@@ -258,12 +262,16 @@ public class PaymentService {
                 "Phương thức thanh toán không được để trống.", 400);
         }
 
-        // Only CASH and BANK_TRANSFER are supported in this system
+        // Support CASH, BANK_TRANSFER, and DEDUCTION (internal deduction)
         String normalized = method.toUpperCase().trim();
-        if (!"CASH".equals(normalized) && !"BANK_TRANSFER".equals(normalized)) {
+        if (!"CASH".equals(normalized) && !"BANK_TRANSFER".equals(normalized) && !"DEDUCTION".equals(normalized)) {
             throw new AppException(
                 "Phương thức thanh toán '" + method + "' không được hỗ trợ. "
-                + "Chỉ chấp nhận Tiền mặt hoặc Chuyển khoản.", 400);
+                + "Chỉ chấp nhận Tiền mặt, Chuyển khoản hoặc Khấu trừ.", 400);
+        }
+
+        if ("DEDUCTION".equals(normalized)) {
+            return;
         }
 
         // Also check admin policy toggle for this method

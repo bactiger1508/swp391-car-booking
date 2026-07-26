@@ -11,6 +11,9 @@ import com.swp391.carrental.payment.model.Payment;
 import com.swp391.carrental.payment.service.PaymentService;
 import com.swp391.carrental.user.model.User;
 
+import com.swp391.carrental.booking.dao.BookingDAO;
+import com.swp391.carrental.booking.model.Booking;
+
 /*
  * Name: CustomerPaymentServlet
  * @Author: TungNLHE186756
@@ -25,6 +28,7 @@ import com.swp391.carrental.user.model.User;
 public class CustomerPaymentServlet extends HttpServlet {
 
     private final PaymentService paymentService = new PaymentService();
+    private final BookingDAO bookingDAO = new BookingDAO();
 
     /**
      * Handles HTTP GET requests to list payment records for the logged-in customer.
@@ -49,6 +53,17 @@ public class CustomerPaymentServlet extends HttpServlet {
                 myPayments = paymentService.getAllPayments();
             }
             request.setAttribute("myPayments", myPayments);
+
+            java.util.Map<Integer, Booking> bookingsMap = new java.util.HashMap<>();
+            for (Payment p : myPayments) {
+                if (!bookingsMap.containsKey(p.getBookingId())) {
+                    Booking b = bookingDAO.findById(p.getBookingId());
+                    if (b != null) {
+                        bookingsMap.put(p.getBookingId(), b);
+                    }
+                }
+            }
+            request.setAttribute("bookingsMap", bookingsMap);
         } catch (Exception e) {
             request.setAttribute("errorMsg", "Không thể tải lịch sử thanh toán: " + e.getMessage());
         }

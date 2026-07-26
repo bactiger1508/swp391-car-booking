@@ -79,10 +79,14 @@ public class ReturnService {
                 BigDecimal totalPaid = BigDecimal.ZERO;
                 for (Payment p : payments) {
                     if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                        if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                            continue;
+                        }
+                        BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                         if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                            totalPaid = totalPaid.subtract(p.getAmount());
+                            totalPaid = totalPaid.subtract(effectiveAmt);
                         } else {
-                            totalPaid = totalPaid.add(p.getAmount());
+                            totalPaid = totalPaid.add(effectiveAmt);
                         }
                     }
                 }

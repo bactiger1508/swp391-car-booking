@@ -227,7 +227,26 @@
                                             <c:set var="actualPaid" value="${p.amountPaid != null ? p.amountPaid : p.amount}"/>
                                             <c:set var="diff" value="${actualPaid - p.amount}"/>
                                             <c:choose>
-                                                <c:when test="${diff > 0}"><span style="color: #039C74;">+<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ</span></c:when>
+                                                <c:when test="${diff > 0}">
+                                                    <c:choose>
+                                                        <c:when test="${p.paymentType == 'DEPOSIT'}">
+                                                            <c:set var="rentalRequired" value="${booking.totalAmount - booking.depositAmount}"/>
+                                                            <c:choose>
+                                                                <c:when test="${rentalRequired > 0 && diff > rentalRequired}">
+                                                                    <span style="color: #039C74;">+<fmt:formatNumber value="${rentalRequired}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;color:#039C74;">KHẤU TRỪ THUÊ</span></span>
+                                                                    <br>
+                                                                    <span style="color: #C9392D;">+<fmt:formatNumber value="${diff - rentalRequired}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;color:#C9392D;">CẦN HOÀN</span></span>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span style="color: #039C74;">+<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;color:#039C74;">KHẤU TRỪ THUÊ</span></span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span style="color: #C9392D;">+<fmt:formatNumber value="${diff}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;color:#C9392D;">CẦN HOÀN</span></span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </c:when>
                                                 <c:when test="${diff < 0}"><span style="color: #C9392D;"><fmt:formatNumber value="${diff}" pattern="#,##0"/> đ<br><span style="font-size:10px;font-weight:600;">CÒN NỢ</span></span></c:when>
                                                 <c:otherwise>—</c:otherwise>
                                             </c:choose>
@@ -238,6 +257,7 @@
                                     <c:choose>
                                         <c:when test="${p.paymentMethod == 'CASH'}">💵 Tiền mặt</c:when>
                                         <c:when test="${p.paymentMethod == 'BANK_TRANSFER'}">🏦 Chuyển khoản QR</c:when>
+                                        <c:when test="${p.paymentMethod == 'DEDUCTION'}">🔄 Khấu trừ</c:when>
                                         <c:otherwise>${p.paymentMethod}</c:otherwise>
                                     </c:choose>
                                 </td>
@@ -362,6 +382,14 @@
                         <fmt:formatNumber value="${totalPaid}" type="number" groupingUsed="true"/>đ
                     </span>
                 </div>
+                <c:if test="${not empty excessDeposit && excessDeposit > 0}">
+                    <c:set var="finalRequired" value="${not empty totalRequired ? totalRequired : booking.totalAmount}"/>
+                    <c:set var="rentalRequired" value="${finalRequired - booking.depositAmount}"/>
+                    <c:set var="displayDeduction" value="${excessDeposit > rentalRequired ? rentalRequired : excessDeposit}"/>
+                    <div style="font-size: 11px; color: #039C74; text-align: right; margin-top: -6px; margin-bottom: 8px; font-weight: 500;">
+                        (Đã gồm <fmt:formatNumber value="${displayDeduction}" pattern="#,##0"/>đ cọc thừa khấu trừ vào thuê)
+                    </div>
+                </c:if>
                 
                 <c:set var="finalRequired" value="${not empty totalRequired ? totalRequired : booking.totalAmount}"/>
                 <c:choose>
@@ -377,12 +405,34 @@
                         </div>
                     </c:when>
                     <c:when test="${totalPaid >= finalRequired}">
-                        <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
-                            <span class="label" style="color: #039C74; font-weight: 600;">Tiền thừa (Hoàn trả)</span>
-                            <span class="value" style="color: #039C74; font-weight: 800; font-size: 16px;">
-                                <fmt:formatNumber value="${totalPaid - finalRequired}" type="number" groupingUsed="true"/>đ
-                            </span>
-                        </div>
+                        <c:choose>
+                            <c:when test="${totalPaid > finalRequired}">
+                                <c:choose>
+                                    <c:when test="${booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS'}">
+                                        <div class="bk-summary-highlight" style="background: rgba(43,108,176,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(43,108,176,0.2);">
+                                            <span class="label" style="color: #2B6CB0; font-weight: 600;">Tiền dư tích lũy</span>
+                                            <span class="value" style="color: #2B6CB0; font-weight: 800; font-size: 16px;">
+                                                <fmt:formatNumber value="${totalPaid - finalRequired}" type="number" groupingUsed="true"/>đ
+                                            </span>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
+                                            <span class="label" style="color: #039C74; font-weight: 600;">Tiền thừa (Hoàn trả)</span>
+                                            <span class="value" style="color: #039C74; font-weight: 800; font-size: 16px;">
+                                                <fmt:formatNumber value="${totalPaid - finalRequired}" type="number" groupingUsed="true"/>đ
+                                            </span>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="bk-summary-highlight" style="background: rgba(5,205,153,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(5,205,153,0.2);">
+                                    <span class="label" style="color: #039C74; font-weight: 600;">Trạng thái thanh toán</span>
+                                    <span class="value" style="color: #039C74; font-weight: 800; font-size: 14px;">Đã thanh toán đủ</span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </c:when>
                     <c:otherwise>
                         <div class="bk-summary-highlight" style="background: rgba(238,93,80,0.1); padding: 12px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(238,93,80,0.2);">
@@ -394,6 +444,51 @@
                     </c:otherwise>
                 </c:choose>
             </div>
+
+            <%-- Refund/Overpayment alerts --%>
+            <c:choose>
+                <c:when test="${booking.status == 'CANCELLED'}">
+                    <c:choose>
+                        <c:when test="${isForfeited}">
+                            <div class="bk-alert bk-alert-error" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined" style="color: var(--error);">error</span>
+                                <c:choose>
+                                    <c:when test="${refundAmt > 0}">
+                                        <span>Đơn hàng đã hủy sát giờ (dưới 48h). Hoàn trả khách 50% cọc: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>. Tịch thu cọc còn lại: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>.</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span>Đơn hàng đã hủy sát giờ (dưới 24h). Tịch thu toàn bộ cọc của khách: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>. Không phát sinh hoàn trả.</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </c:when>
+                        <c:when test="${refundAmt > 0}">
+                            <div class="bk-alert bk-alert-info" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 8px;">
+                                <span class="material-symbols-outlined" style="color: var(--primary);">info</span>
+                                <span>Đơn hàng đã hủy trước 48h. Cần hoàn trả 100% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                </c:when>
+                <c:otherwise>
+                    <c:if test="${totalPaid > finalRequired}">
+                        <c:choose>
+                            <c:when test="${booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS'}">
+                                <div class="bk-alert bk-alert-info" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: #EBF8FF; border: 1.5px solid #90CDF4; color: #2B6CB0; border-radius: 8px;">
+                                    <span class="material-symbols-outlined" style="color: #2B6CB0;">info</span>
+                                    <span>Khách đang dư: <strong style="color: #1A365D;"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong> (khoản này sẽ được khấu trừ vào phụ phí phát sinh hoặc hoàn trả khi làm thủ tục trả xe).</span>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="bk-alert bk-alert-error" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
+                                    <span>Khách nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Cần hoàn trả tiền thừa.</span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:if>
+                </c:otherwise>
+            </c:choose>
 
             <%-- Staff Actions --%>
             <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px;">
@@ -442,40 +537,6 @@
                     </c:otherwise>
                 </c:choose>
 
-                <%-- Payment Actions (Staff/Admin) --%>
-                <c:choose>
-                    <c:when test="${booking.status == 'CANCELLED'}">
-                        <c:choose>
-                            <c:when test="${isForfeited}">
-                                <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
-                                    <span class="material-symbols-outlined" style="color: var(--error);">error</span>
-                                    <c:choose>
-                                        <c:when test="${refundAmt > 0}">
-                                            <span>Đơn hàng đã hủy sát giờ (dưới 48h). Hoàn trả khách 50% cọc: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>. Tịch thu cọc còn lại: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>.</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span>Đơn hàng đã hủy sát giờ (dưới 24h). Tịch thu toàn bộ cọc của khách: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>. Không phát sinh hoàn trả.</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                            </c:when>
-                            <c:when test="${refundAmt > 0}">
-                                <div class="bk-alert bk-alert-info" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 8px;">
-                                    <span class="material-symbols-outlined" style="color: var(--primary);">info</span>
-                                    <span>Đơn hàng đã hủy trước 48h. Cần hoàn trả 100% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
-                                </div>
-                            </c:when>
-                        </c:choose>
-                    </c:when>
-                    <c:otherwise>
-                        <c:if test="${totalPaid > finalRequired}">
-                            <div class="bk-alert bk-alert-error" style="margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
-                                <span class="material-symbols-outlined" style="color: var(--error);">warning</span>
-                                <span>Khách nộp thừa: <strong style="color: var(--error);"><fmt:formatNumber value="${totalPaid - finalRequired}" pattern="#,##0"/> đ</strong>. Cần hoàn trả tiền thừa.</span>
-                            </div>
-                        </c:if>
-                    </c:otherwise>
-                </c:choose>
                 <c:if test="${!depositPaid && (booking.status == 'PENDING' || booking.status == 'CONFIRMED')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#05CD99; border-color:#05CD99; padding:12px;">
                         <span class="material-symbols-outlined">payments</span> Ghi nhận đặt cọc
@@ -486,14 +547,12 @@
                         <span class="material-symbols-outlined">payments</span> Ghi nhận thanh toán thuê
                     </a>
                 </c:if>
-                <c:if test="${depositPaid && rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'COMPLETED' || booking.status == 'PENDING_SETTLEMENT')}">
+                <c:if test="${(depositPaid && rentalPaid && (booking.status == 'CONFIRMED' || booking.status == 'IN_PROGRESS' || booking.status == 'COMPLETED' || booking.status == 'PENDING_SETTLEMENT')) || (booking.status == 'CANCELLED' && depositPaid) || (totalPaid > finalRequired)}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD; padding:12px;">
                         <span class="material-symbols-outlined">payments</span> Giao dịch mới / Hoàn tiền
                     </a>
                 </c:if>
-            </div>
 
-            <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px;">
                 <c:if test="${booking.status == 'IN_PROGRESS'}">
                     <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="width:100%;justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
                         <span class="material-symbols-outlined">keyboard_return</span> Nhận lại xe

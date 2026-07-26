@@ -44,11 +44,29 @@ public class VehicleReturnListServlet extends HttpServlet {
                 Booking booking = bookingDAO.findById(r.getBookingId());
 
                 if (booking != null) {
-                    BigDecimal deposit = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
                     BigDecimal surcharge = r.getTotalAdditionalFee() != null ? r.getTotalAdditionalFee() : BigDecimal.ZERO;
-                    BigDecimal netRefund = deposit.subtract(surcharge);
-                    if (netRefund.compareTo(BigDecimal.ZERO) < 0) {
-                        netRefund = BigDecimal.ZERO;
+                    
+                    com.swp391.carrental.payment.dao.PaymentDAO paymentDAO = new com.swp391.carrental.payment.dao.PaymentDAO();
+                    List<com.swp391.carrental.payment.model.Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
+                    BigDecimal totalPaid = BigDecimal.ZERO;
+                    for (com.swp391.carrental.payment.model.Payment p : payments) {
+                        if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                            if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                                continue;
+                            }
+                            BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
+                            if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
+                                totalPaid = totalPaid.subtract(effectiveAmt);
+                            } else {
+                                totalPaid = totalPaid.add(effectiveAmt);
+                            }
+                        }
+                    }
+                    
+                    BigDecimal totalRequired = booking.getTotalAmount().add(surcharge);
+                    BigDecimal netRefund = BigDecimal.ZERO;
+                    if (totalPaid.compareTo(totalRequired) > 0) {
+                        netRefund = totalPaid.subtract(totalRequired);
                     }
 
                     VehicleHandover handover = handoverDAO.findByBookingId(r.getBookingId());

@@ -99,6 +99,9 @@ public class BookingDetailServlet extends HttpServlet {
 
             for (com.swp391.carrental.payment.model.Payment p : payments) {
                 if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
+                    if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
+                        continue;
+                    }
                     java.math.BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                     if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
                         totalPaid = totalPaid.subtract(effectiveAmt);
@@ -117,12 +120,21 @@ public class BookingDetailServlet extends HttpServlet {
             if (booking.getDepositAmount() != null && depositPaidAmt.compareTo(booking.getDepositAmount()) >= 0) {
                 depositPaid = true;
             }
+            java.math.BigDecimal excessDeposit = java.math.BigDecimal.ZERO;
             if (booking.getTotalAmount() != null && booking.getDepositAmount() != null) {
                 java.math.BigDecimal rentalRequired = booking.getTotalAmount().subtract(booking.getDepositAmount());
-                if (rentalPaidAmt.compareTo(rentalRequired) >= 0) {
+                if (depositPaidAmt.compareTo(booking.getDepositAmount()) > 0) {
+                    excessDeposit = depositPaidAmt.subtract(booking.getDepositAmount());
+                }
+                java.math.BigDecimal effectiveRentalPaid = rentalPaidAmt;
+                if (excessDeposit.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    effectiveRentalPaid = effectiveRentalPaid.add(excessDeposit);
+                }
+                if (effectiveRentalPaid.compareTo(rentalRequired) >= 0) {
                     rentalPaid = true;
                 }
             }
+            request.setAttribute("excessDeposit", excessDeposit);
             // Calculate refund and forfeiture for cancelled bookings
             java.math.BigDecimal refundAmt = java.math.BigDecimal.ZERO;
             for (com.swp391.carrental.payment.model.Payment p : payments) {
