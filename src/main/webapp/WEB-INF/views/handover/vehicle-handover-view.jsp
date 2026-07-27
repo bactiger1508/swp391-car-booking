@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Ký nhận biên bản bàn giao"/>
 </jsp:include>
@@ -112,13 +113,29 @@
                     </div>
                     <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
                         <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0; overflow:hidden;">
+                            <c:set var="carImgUrl" value="${car.primaryImageUrl}" />
+                            <c:if test="${not empty carImgUrl}">
+                                <c:set var="carImgUrl" value="${fn:trim(carImgUrl)}" />
+                                <c:choose>
+                                    <c:when test="${carImgUrl.startsWith('http://') || carImgUrl.startsWith('https://')}">
+                                        <%-- keep as is --%>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:if test="${not carImgUrl.startsWith('/')}">
+                                            <c:set var="carImgUrl" value="/${carImgUrl}" />
+                                        </c:if>
+                                        <c:if test="${not empty pageContext.request.contextPath && not carImgUrl.startsWith(pageContext.request.contextPath)}">
+                                            <c:set var="carImgUrl" value="${pageContext.request.contextPath}${carImgUrl}" />
+                                        </c:if>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
                             <c:choose>
-                                <c:when test="${not empty car.primaryImageUrl}">
-                                    <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-                                    <span class="material-symbols-outlined" style="font-size: 28px; display:none;">garage</span>
+                                <c:when test="${not empty carImgUrl}">
+                                    <img src="${carImgUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'; this.onerror=null;">
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                                    <img src="${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg" alt="Vehicle Placeholder" style="width:100%;height:100%;object-fit:cover;">
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -269,12 +286,29 @@
                     <c:if test="${not empty handover.photosUrl}">
                         <c:set var="photos" value="${handover.photosUrl.split(',')}" />
                         <c:forEach var="photo" items="${photos}">
-                            <img src="${pageContext.request.contextPath}${photo}"
-                                 style="width:120px;
-                                 height:120px;
-                                 object-fit:cover;
-                                 border-radius:8px;
-                                 border:1px solid #ddd;" />
+                            <c:set var="photoUrl" value="${fn:trim(photo)}" />
+                            <c:if test="${not empty photoUrl}">
+                                <c:choose>
+                                    <c:when test="${photoUrl.startsWith('http://') || photoUrl.startsWith('https://')}">
+                                        <%-- keep as is --%>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:if test="${not photoUrl.startsWith('/')}">
+                                            <c:set var="photoUrl" value="/${photoUrl}" />
+                                        </c:if>
+                                        <c:if test="${not empty pageContext.request.contextPath && not photoUrl.startsWith(pageContext.request.contextPath)}">
+                                            <c:set var="photoUrl" value="${pageContext.request.contextPath}${photoUrl}" />
+                                        </c:if>
+                                    </c:otherwise>
+                                </c:choose>
+                                <img src="${photoUrl}"
+                                     style="width:120px;
+                                     height:120px;
+                                     object-fit:cover;
+                                     border-radius:8px;
+                                     border:1px solid #ddd;"
+                                     onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'; this.onerror=null;" />
+                            </c:if>
                         </c:forEach>
                     </c:if>
                 </div>

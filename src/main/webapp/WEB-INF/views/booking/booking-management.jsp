@@ -112,16 +112,16 @@
                                     <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${userMap[b.customerId].email}</div>
                                 </c:if>
                                 <c:if test="${empty userMap[b.customerId]}">User #${b.customerId}</c:if>
-                            </td>
-                            <td>
+                                </td>
+                                <td>
                                 <c:if test="${not empty carMap[b.vehicleId]}">
                                     <div style="font-weight:600;">${carMap[b.vehicleId].brand} ${carMap[b.vehicleId].model}</div>
                                     <div class="sub" style="font-size:11px; color:var(--on-surface-variant);">${carMap[b.vehicleId].licensePlate}</div>
                                 </c:if>
                                 <c:if test="${empty carMap[b.vehicleId]}">Xe #${b.vehicleId}</c:if>
-                            </td>
-                            <td>
-                                <div>
+                                </td>
+                                <td>
+                                    <div>
                                     <fmt:formatNumber value="${b.startDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.startDate.monthValue}" pattern="00"/>
                                     -
                                     <fmt:formatNumber value="${b.endDate.dayOfMonth}" pattern="00"/>/<fmt:formatNumber value="${b.endDate.monthValue}" pattern="00"/>/${b.endDate.year}
@@ -147,6 +147,9 @@
                                     <c:if test="${b.status == 'IN_PROGRESS'}">
                                         <a href="${pageContext.request.contextPath}/returns/detail?bookingId=${b.bookingId}&vehicleId=${b.vehicleId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#0288D1; border-color:#0288D1; color:#fff;">Nhận lại xe</a>
                                     </c:if>
+                                    <c:if test="${b.status == 'PENDING_SETTLEMENT'}">
+                                        <a href="${pageContext.request.contextPath}/payments/record?bookingId=${b.bookingId}" class="bk-btn bk-btn-sm bk-btn-primary" style="background:#FFC107; border-color:#FFC107; color:#212529;">Quyết toán</a>
+                                    </c:if>
                                     <a href="${pageContext.request.contextPath}/bookings/detail?id=${b.bookingId}" class="bk-btn bk-btn-outline bk-btn-sm">Xem</a>
                                 </div>
                             </td>
@@ -154,7 +157,7 @@
                     </c:forEach>
                 </tbody>
             </table>
-            
+
             <!-- Phân trang -->
             <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
                 <div style="font-size:13px; color:var(--on-surface-variant);">
@@ -184,180 +187,198 @@
 </div>
 
 <script>
-let currentStatusFilter = 'ALL';
-let currentPage = 1;
-let pageSize = 10;
-let filteredRows = [];
+    let currentStatusFilter = 'ALL';
+    let currentPage = 1;
+    let pageSize = 10;
+    let filteredRows = [];
 
-function changePageSize() {
-    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
-    currentPage = 1;
-    applyPagination();
-}
-
-function filterByStatus(status) {
-    currentStatusFilter = status;
-    
-    // Update active class on segmented buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.style.background = 'transparent';
-        btn.style.color = 'var(--on-surface-variant)';
-        btn.style.boxShadow = 'none';
-    });
-    
-    const activeBtn = document.getElementById('btn-filter-' + status);
-    if (activeBtn) {
-        activeBtn.style.background = 'var(--primary)';
-        activeBtn.style.color = 'var(--on-primary)';
-        activeBtn.style.boxShadow = '0 2px 8px rgba(10, 25, 47, 0.15)';
+    function changePageSize() {
+        pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+        currentPage = 1;
+        applyPagination();
     }
-    
-    // Highlight the selected Stat Card with a premium glowing border
-    document.querySelectorAll('.bk-stat-card').forEach(card => {
-        card.style.borderColor = 'var(--outline-variant)';
-        card.style.boxShadow = 'none';
-        card.style.background = 'var(--surface)';
-    });
-    
-    const activeCard = document.getElementById('card-stat-' + status);
-    if (activeCard) {
-        activeCard.style.borderColor = 'var(--primary)';
-        activeCard.style.boxShadow = '0 6px 20px rgba(10, 25, 47, 0.08)';
-        activeCard.style.background = 'var(--surface-variant)';
-    }
-    
-    filterTable();
-}
 
-function filterTable() {
-    const input = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#bookingTable tbody tr');
-    filteredRows = [];
-    
-    rows.forEach(row => {
-        const rowStatus = row.getAttribute('data-status');
-        const text = row.textContent.toLowerCase();
-        
-        const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
-        const matchesSearch = text.includes(input);
-        
-        if (matchesStatus && matchesSearch) {
-            filteredRows.push(row);
-        } else {
-            row.style.display = 'none';
+    function filterByStatus(status) {
+        currentStatusFilter = status;
+
+        // Update active class on segmented buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--on-surface-variant)';
+            btn.style.boxShadow = 'none';
+        });
+
+        const activeBtn = document.getElementById('btn-filter-' + status);
+        if (activeBtn) {
+            activeBtn.style.background = 'var(--primary)';
+            activeBtn.style.color = 'var(--on-primary)';
+            activeBtn.style.boxShadow = '0 2px 8px rgba(10, 25, 47, 0.15)';
         }
-    });
-    
-    currentPage = 1;
-    applyPagination();
-}
 
-function applyPagination() {
-    const totalRows = filteredRows.length;
-    const totalPages = Math.ceil(totalRows / pageSize) || 1;
-    
-    if (currentPage > totalPages) currentPage = totalPages;
-    if (currentPage < 1) currentPage = 1;
-    
-    // Hide all rows first, then show only the active page's rows
-    const allRows = document.querySelectorAll('#bookingTable tbody tr');
-    allRows.forEach(row => row.style.display = 'none');
-    
-    const startIdx = (currentPage - 1) * pageSize;
-    const endIdx = Math.min(startIdx + pageSize, totalRows);
-    
-    for (let i = startIdx; i < endIdx; i++) {
-        filteredRows[i].style.display = '';
-    }
-    
-    // Update labels
-    const startDisplay = document.getElementById('pag-start');
-    const endDisplay = document.getElementById('pag-end');
-    const totalDisplay = document.getElementById('pag-total');
-    if (startDisplay) startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
-    if (endDisplay) endDisplay.innerText = endIdx;
-    if (totalDisplay) totalDisplay.innerText = totalRows;
-    
-    // Render pagination buttons
-    const btnContainer = document.getElementById('paginationButtons');
-    if (btnContainer) {
-        btnContainer.innerHTML = '';
-        
-        // Prev button
-        const prevBtn = document.createElement('button');
-        prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
-        prevBtn.style.padding = '4px 8px';
-        prevBtn.style.border = '1px solid var(--outline-variant)';
-        prevBtn.style.borderRadius = '6px';
-        prevBtn.style.cursor = 'pointer';
-        prevBtn.disabled = (currentPage === 1);
-        prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
-        prevBtn.onclick = () => { currentPage--; applyPagination(); };
-        btnContainer.appendChild(prevBtn);
-        
-        // Page numbers
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, startPage + 4);
-        if (endPage - startPage < 4) {
-            startPage = Math.max(1, endPage - 4);
+        // Highlight the selected Stat Card with a premium glowing border
+        document.querySelectorAll('.bk-stat-card').forEach(card => {
+            card.style.borderColor = 'var(--outline-variant)';
+            card.style.boxShadow = 'none';
+            card.style.background = 'var(--surface)';
+        });
+
+        const activeCard = document.getElementById('card-stat-' + status);
+        if (activeCard) {
+            activeCard.style.borderColor = 'var(--primary)';
+            activeCard.style.boxShadow = '0 6px 20px rgba(10, 25, 47, 0.08)';
+            activeCard.style.background = 'var(--surface-variant)';
         }
-        
-        for (let p = startPage; p <= endPage; p++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
-            pageBtn.style.padding = '4px 10px';
-            pageBtn.style.minWidth = '28px';
-            pageBtn.style.borderRadius = '6px';
-            pageBtn.style.cursor = 'pointer';
-            pageBtn.style.fontWeight = '600';
-            pageBtn.style.fontSize = '12px';
-            if (p === currentPage) {
-                pageBtn.style.background = 'var(--primary)';
-                pageBtn.style.color = 'var(--on-primary)';
-                pageBtn.style.border = 'none';
+
+        filterTable();
+    }
+
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#bookingTable tbody tr');
+        filteredRows = [];
+
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            const text = row.textContent.toLowerCase();
+
+            const matchesStatus = (currentStatusFilter === 'ALL' || rowStatus === currentStatusFilter);
+            const matchesSearch = text.includes(input);
+
+            if (matchesStatus && matchesSearch) {
+                filteredRows.push(row);
             } else {
-                pageBtn.style.border = '1px solid var(--outline-variant)';
+                row.style.display = 'none';
             }
-            pageBtn.innerText = p;
-            pageBtn.onclick = () => { currentPage = p; applyPagination(); };
-            btnContainer.appendChild(pageBtn);
+        });
+
+        currentPage = 1;
+        applyPagination();
+    }
+
+    function applyPagination() {
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage > totalPages)
+            currentPage = totalPages;
+        if (currentPage < 1)
+            currentPage = 1;
+
+        // Hide all rows first, then show only the active page's rows
+        const allRows = document.querySelectorAll('#bookingTable tbody tr');
+        allRows.forEach(row => row.style.display = 'none');
+
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            filteredRows[i].style.display = '';
         }
-        
-        // Next button
-        const nextBtn = document.createElement('button');
-        nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
-        nextBtn.style.padding = '4px 8px';
-        nextBtn.style.border = '1px solid var(--outline-variant)';
-        nextBtn.style.borderRadius = '6px';
-        nextBtn.style.cursor = 'pointer';
-        nextBtn.disabled = (currentPage === totalPages);
-        nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
-        nextBtn.onclick = () => { currentPage++; applyPagination(); };
-        btnContainer.appendChild(nextBtn);
+
+        // Update labels
+        const startDisplay = document.getElementById('pag-start');
+        const endDisplay = document.getElementById('pag-end');
+        const totalDisplay = document.getElementById('pag-total');
+        if (startDisplay)
+            startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
+        if (endDisplay)
+            endDisplay.innerText = endIdx;
+        if (totalDisplay)
+            totalDisplay.innerText = totalRows;
+
+        // Render pagination buttons
+        const btnContainer = document.getElementById('paginationButtons');
+        if (btnContainer) {
+            btnContainer.innerHTML = '';
+
+            // Prev button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+            prevBtn.style.padding = '4px 8px';
+            prevBtn.style.border = '1px solid var(--outline-variant)';
+            prevBtn.style.borderRadius = '6px';
+            prevBtn.style.cursor = 'pointer';
+            prevBtn.disabled = (currentPage === 1);
+            prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
+            prevBtn.onclick = () => {
+                currentPage--;
+                applyPagination();
+            };
+            btnContainer.appendChild(prevBtn);
+
+            // Page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = p === currentPage ? 'bk-btn bk-btn-sm bk-btn-primary' : 'bk-btn bk-btn-sm bk-btn-outline';
+                pageBtn.style.padding = '4px 10px';
+                pageBtn.style.minWidth = '28px';
+                pageBtn.style.borderRadius = '6px';
+                pageBtn.style.cursor = 'pointer';
+                pageBtn.style.fontWeight = '600';
+                pageBtn.style.fontSize = '12px';
+                if (p === currentPage) {
+                    pageBtn.style.background = 'var(--primary)';
+                    pageBtn.style.color = 'var(--on-primary)';
+                    pageBtn.style.border = 'none';
+                } else {
+                    pageBtn.style.border = '1px solid var(--outline-variant)';
+                }
+                pageBtn.innerText = p;
+                pageBtn.onclick = () => {
+                    currentPage = p;
+                    applyPagination();
+                };
+                btnContainer.appendChild(pageBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'bk-btn bk-btn-sm bk-btn-outline';
+            nextBtn.style.padding = '4px 8px';
+            nextBtn.style.border = '1px solid var(--outline-variant)';
+            nextBtn.style.borderRadius = '6px';
+            nextBtn.style.cursor = 'pointer';
+            nextBtn.disabled = (currentPage === totalPages);
+            nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
+            nextBtn.onclick = () => {
+                currentPage++;
+                applyPagination();
+            };
+            btnContainer.appendChild(nextBtn);
+        }
+
+        const tableContainer = document.getElementById('bookingTableContainer');
+        const emptyState = document.getElementById('emptyStateMessage');
+
+        if (totalRows === 0) {
+            if (tableContainer)
+                tableContainer.style.display = 'none';
+            if (emptyState)
+                emptyState.style.display = 'block';
+        } else {
+            if (tableContainer)
+                tableContainer.style.display = 'block';
+            if (emptyState)
+                emptyState.style.display = 'none';
+        }
     }
-    
-    const tableContainer = document.getElementById('bookingTableContainer');
-    const emptyState = document.getElementById('emptyStateMessage');
-    
-    if (totalRows === 0) {
-        if (tableContainer) tableContainer.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'block';
-    } else {
-        if (tableContainer) tableContainer.style.display = 'block';
-        if (emptyState) emptyState.style.display = 'none';
-    }
-}
 
 // Automatically apply filters on load if deep-linked via status parameter
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const statusParam = urlParams.get('status');
-    if (statusParam && ['PENDING','CONFIRMED','IN_PROGRESS','COMPLETED','REJECTED','CANCELLED'].includes(statusParam)) {
-        filterByStatus(statusParam);
-    } else {
-        filterByStatus('ALL');
-    }
-});
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const statusParam = urlParams.get('status');
+        if (statusParam && ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED', 'CANCELLED'].includes(statusParam)) {
+            filterByStatus(statusParam);
+        } else {
+            filterByStatus('ALL');
+        }
+    });
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
