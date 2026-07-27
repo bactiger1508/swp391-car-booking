@@ -1,3 +1,10 @@
+/*
+ * Name: AuditLabels
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Vietnamese display label lookup tables for audit log action codes, entity types, and status values.
+ */
 package com.swp391.carrental.audit.util;
 
 import java.util.HashMap;
@@ -116,24 +123,28 @@ public final class AuditLabels {
         STATUS_LABELS.put("ACTIVE", "Hoạt động");
     }
 
+    /** Translates an action code to its Vietnamese label, or returns the code unchanged if unknown. */
     public static String translateAction(String action) {
         if (action == null) return "";
         String label = ACTION_LABELS.get(action.toUpperCase());
         return label != null ? label : action;
     }
 
+    /** Translates an entity type code to its Vietnamese label, or returns the code unchanged if unknown. */
     public static String translateEntity(String entityType) {
         if (entityType == null) return "";
         String label = ENTITY_LABELS.get(entityType.toUpperCase());
         return label != null ? label : entityType;
     }
 
+    /** Translates a status value to its Vietnamese label, or returns the value unchanged if unknown. */
     public static String translateStatus(String status) {
         if (status == null) return "";
         String label = STATUS_LABELS.get(status.toUpperCase());
         return label != null ? label : status;
     }
 
+    /** Returns true if the action is a bare verb that needs its entity type appended to read naturally. */
     public static boolean isGenericAction(String action) {
         return action != null && GENERIC_ACTIONS.contains(action.toUpperCase());
     }

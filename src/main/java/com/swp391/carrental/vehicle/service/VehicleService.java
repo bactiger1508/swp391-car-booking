@@ -42,6 +42,7 @@ public class VehicleService {
     private final FeeCalculator feeCalculator = new FeeCalculator();
     private final PolicyService policyService = new PolicyService();
 
+    /** Returns every active vehicle brand. */
     public List<VehicleBrand> getAllBrands() {
         try {
             return vehicleBrandDAO.findAll();
@@ -50,6 +51,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every active model of a brand. */
     public List<VehicleModel> getModelsByBrandId(int brandId) {
         try {
             return vehicleModelDAO.findByBrandId(brandId);
@@ -58,6 +60,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every vehicle brand, active or not (for admin management screens). */
     public List<VehicleBrand> getAllBrandsIncludingInactive() {
         try {
             return vehicleBrandDAO.findAllIncludingInactive();
@@ -66,6 +69,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every model of a brand, active or not (for admin management screens). */
     public List<VehicleModel> getModelsByBrandIdIncludingInactive(int brandId) {
         try {
             return vehicleModelDAO.findByBrandIdIncludingInactive(brandId);
@@ -74,6 +78,7 @@ public class VehicleService {
         }
     }
 
+    /** Adds a new vehicle brand after validating the name is non-empty and not a duplicate. */
     public int addBrand(String brandName) {
         try {
             if (brandName == null || brandName.trim().isEmpty()) {
@@ -89,6 +94,7 @@ public class VehicleService {
         }
     }
 
+    /** Activates or deactivates (hides) a vehicle brand. */
     public void setBrandActive(int brandId, boolean active) {
         try {
             vehicleBrandDAO.updateActive(brandId, active);
@@ -97,6 +103,7 @@ public class VehicleService {
         }
     }
 
+    /** Adds a new model under a brand after validating the brand exists and the model name is not a duplicate. */
     public int addModel(int brandId, String modelName) {
         try {
             if (modelName == null || modelName.trim().isEmpty()) {
@@ -115,6 +122,7 @@ public class VehicleService {
         }
     }
 
+    /** Activates or deactivates (hides) a vehicle model. */
     public void setModelActive(int modelId, boolean active) {
         try {
             vehicleModelDAO.updateActive(modelId, active);
@@ -123,8 +131,7 @@ public class VehicleService {
         }
     }
 
-
-
+    /** Returns a vehicle by id, with its primary image URL resolved, or {@code null} if not found. */
     public Vehicle getVehicleById(int vehicleId) {
         try {
             Vehicle car = vehicleDAO.findById(vehicleId);
@@ -137,6 +144,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns a vehicle by license plate, with its primary image URL resolved, or {@code null} if not found. */
     public Vehicle getVehicleByLicensePlate(String licensePlate) {
         try {
             Vehicle car = vehicleDAO.findByLicensePlate(licensePlate);
@@ -149,6 +157,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every vehicle, with primary image URLs resolved. */
     public List<Vehicle> getAllVehicles() {
         try {
             List<Vehicle> list = vehicleDAO.findAll();
@@ -159,6 +168,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every vehicle with the given status, with primary image URLs resolved. */
     public List<Vehicle> getVehiclesByStatus(String status) {
         try {
             List<Vehicle> list = vehicleDAO.findByStatus(status);
@@ -169,6 +179,7 @@ public class VehicleService {
         }
     }
 
+    /** Resolves and sets the primary image URL on every vehicle in the list, in place. */
     private void populatePrimaryImages(List<Vehicle> list) {
         if (list != null) {
             for (Vehicle v : list) {
@@ -179,6 +190,7 @@ public class VehicleService {
         }
     }
 
+    /** Returns every image of a vehicle, primary image first. */
     public List<VehicleImage> getVehicleImages(int vehicleId) {
         try {
             return carImageDAO.findByVehicleId(vehicleId);
@@ -187,6 +199,7 @@ public class VehicleService {
         }
     }
 
+    /** Inserts a new vehicle and returns its generated id. */
     public int addVehicle(Vehicle car) {
         try {
             return vehicleDAO.insert(car);
@@ -195,6 +208,7 @@ public class VehicleService {
         }
     }
 
+    /** Updates every editable field of an existing vehicle. */
     public boolean updateVehicle(Vehicle car) {
         try {
             return vehicleDAO.update(car);
@@ -203,6 +217,7 @@ public class VehicleService {
         }
     }
 
+    /** Updates only a vehicle's status (AVAILABLE, RENTED, MAINTENANCE, INACTIVE). */
     public boolean updateVehicleStatus(int vehicleId, String status) {
         try {
             // BR-09: Validate status transitions if needed
@@ -212,6 +227,7 @@ public class VehicleService {
         }
     }
 
+    /** Permanently deletes a vehicle and its images/maintenance history; fails with a friendly message if still referenced by bookings/contracts. */
     public boolean deleteVehicle(int vehicleId) {
         try {
             carImageDAO.deleteByVehicleId(vehicleId);
@@ -227,14 +243,17 @@ public class VehicleService {
         }
     }
 
+    /** Calculates the one-day deposit amount for a given daily rental rate, per current fee policy. */
     public BigDecimal calculateOneDayDeposit(BigDecimal dailyRate) {
         return feeCalculator.calculateDeposit(dailyRate);
     }
 
+    /** Returns the configured deposit percentage policy value (defaults to "30" if unset). */
     public String getDepositPercentage() {
         return policyService.getPolicyValue("DEPOSIT_PERCENTAGE", "30");
     }
 
+    /** Returns a map of vehicleId to resolved primary image URL, for a list of vehicles. */
     public Map<Integer, String> getPrimaryImageUrls(List<Vehicle> cars) {
         Map<Integer, String> urls = new HashMap<>();
         if (cars == null) return urls;
@@ -246,6 +265,7 @@ public class VehicleService {
         return urls;
     }
 
+    /** Resolves the display URL of a vehicle's primary image, falling back to any image, then a placeholder. */
     public String resolvePrimaryImageUrl(int vehicleId) {
         List<VehicleImage> images = getVehicleImages(vehicleId);
         if (images != null) {
@@ -263,6 +283,7 @@ public class VehicleService {
         return "/assets/images/vehicles/placeholder.jpg";
     }
 
+    /** Normalizes an image URL to an absolute path or external URL, falling back to a placeholder. */
     private String formatImageUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             return "/assets/images/vehicles/placeholder.jpg";
@@ -277,6 +298,7 @@ public class VehicleService {
         return trimmed;
     }
 
+    /** Returns, per vehicle, the earliest still-SCHEDULED maintenance job (for dashboard display). */
     public Map<Integer, MaintenanceSchedule> getNextScheduledMaintenanceByVehicle() {
         try {
             Map<Integer, MaintenanceSchedule> nextByVehicle = new HashMap<>();
@@ -296,6 +318,8 @@ public class VehicleService {
     }
 
     // Image management
+
+    /** Adds a new image for a vehicle and returns its generated id. */
     public int addVehicleImage(VehicleImage image) {
         try {
             return carImageDAO.insert(image);
@@ -304,6 +328,7 @@ public class VehicleService {
         }
     }
 
+    /** Deletes a single vehicle image by id. */
     public boolean deleteCarImage(int imageId) {
         try {
             return carImageDAO.delete(imageId);
@@ -312,6 +337,7 @@ public class VehicleService {
         }
     }
 
+    /** Sets an image as the vehicle's primary display image, clearing any previous primary. */
     public boolean setPrimaryImage(int vehicleId, int imageId) {
         try {
             carImageDAO.clearPrimaryByVehicleId(vehicleId);
@@ -321,6 +347,7 @@ public class VehicleService {
         }
     }
 
+    /** Clears the primary flag on every image of a vehicle. */
     public void clearPrimaryImages(int vehicleId) {
         try {
             carImageDAO.clearPrimaryByVehicleId(vehicleId);
@@ -330,6 +357,8 @@ public class VehicleService {
     }
 
     // Maintenance management
+
+    /** Returns every maintenance schedule of a vehicle. */
     public List<MaintenanceSchedule> getMaintenanceByVehicleId(int vehicleId) {
         try {
             return maintenanceDAO.getMaintenanceByVehicle(vehicleId);
@@ -338,6 +367,7 @@ public class VehicleService {
         }
     }
 
+    /** Creates a new maintenance schedule and puts the vehicle into MAINTENANCE status. */
     public int addMaintenanceSchedule(MaintenanceSchedule schedule) {
         try {
             int maintenanceId = maintenanceDAO.createMaintenance(schedule);
@@ -348,14 +378,6 @@ public class VehicleService {
             return maintenanceId;
         } catch (SQLException e) {
             throw new AppException("Failed to add maintenance schedule.", e);
-        }
-    }
-
-    public boolean updateMaintenanceSchedule(MaintenanceSchedule schedule) {
-        try {
-            return maintenanceDAO.updateMaintenance(schedule);
-        } catch (SQLException e) {
-            throw new AppException("Failed to update maintenance schedule.", e);
         }
     }
 
@@ -399,11 +421,4 @@ public class VehicleService {
         }
     }
 
-    public boolean deleteMaintenanceSchedule(int maintenanceId) {
-        try {
-            return maintenanceDAO.deleteMaintenance(maintenanceId);
-        } catch (SQLException e) {
-            throw new AppException("Failed to delete maintenance schedule.", e);
-        }
-    }
 }

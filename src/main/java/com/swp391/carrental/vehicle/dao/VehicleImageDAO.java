@@ -14,8 +14,12 @@ import com.swp391.carrental.vehicle.model.VehicleImage;
  * Description: Data Access Object for VehicleImage entities.
  */
 
+/**
+ * Executes raw SQL against the {@code vehicle_images} table using plain JDBC.
+ */
 public class VehicleImageDAO {
 
+    /** Returns every image of a vehicle, primary image first, then by sort order. */
     public List<VehicleImage> findByVehicleId(int vehicleId) throws SQLException {
         List<VehicleImage> images = new ArrayList<>();
         String sql = "SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC, sort_order ASC";
@@ -31,6 +35,7 @@ public class VehicleImageDAO {
 
 
 
+    /** Inserts a new vehicle image and returns its generated id, or -1 if generation failed. */
     public int insert(VehicleImage image) throws SQLException {
         String sql = "INSERT INTO vehicle_images (vehicle_id, image_url, caption, is_primary, sort_order) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
@@ -48,6 +53,7 @@ public class VehicleImageDAO {
         return -1;
     }
 
+    /** Deletes a single vehicle image by id. */
     public boolean delete(int imageId) throws SQLException {
         String sql = "DELETE FROM vehicle_images WHERE image_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -57,6 +63,7 @@ public class VehicleImageDAO {
         }
     }
 
+    /** Deletes every image belonging to a vehicle (used before deleting the vehicle itself). */
     public boolean deleteByVehicleId(int vehicleId) throws SQLException {
         String sql = "DELETE FROM vehicle_images WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -68,6 +75,7 @@ public class VehicleImageDAO {
 
 
 
+    /** Sets or clears the primary flag on a single image. */
     public boolean setPrimary(int imageId, boolean isPrimary) throws SQLException {
         String sql = "UPDATE vehicle_images SET is_primary = ? WHERE image_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -78,6 +86,7 @@ public class VehicleImageDAO {
         }
     }
 
+    /** Clears the primary flag on every image of a vehicle (used before assigning a new primary image). */
     public boolean clearPrimaryByVehicleId(int vehicleId) throws SQLException {
         String sql = "UPDATE vehicle_images SET is_primary = 0 WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
@@ -87,19 +96,7 @@ public class VehicleImageDAO {
         }
     }
 
-
-
-    public boolean update(VehicleImage image) throws SQLException {
-        String sql = "UPDATE vehicle_images SET caption = ?, sort_order = ? WHERE image_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, image.getCaption());
-            ps.setInt(2, image.getSortOrder());
-            ps.setInt(3, image.getImageId());
-            return ps.executeUpdate() > 0;
-        }
-    }
-
+    /** Maps a single {@code vehicle_images} result set row into a {@link VehicleImage}. */
     private VehicleImage mapRow(ResultSet rs) throws SQLException {
         VehicleImage img = new VehicleImage();
         img.setImageId(rs.getInt("image_id"));

@@ -300,6 +300,7 @@ let filteredCars = [];
 let selectedBrandId = "";
 let selectedModelId = "";
 
+// Reads the selected page size and re-renders the car grid from page 1.
 function changePageSize() {
     pageSize = parseInt(document.getElementById('pageSizeSelect').value);
     currentPage = 1;
@@ -307,15 +308,18 @@ function changePageSize() {
 }
 
 // === Ô tìm kiếm gộp Hãng xe / Dòng xe ===
+// Opens the combined brand/model search dropdown, rendering its current options.
 function openVehicleDropdown() {
     renderVehicleDropdown();
     document.getElementById('vehicleDropdownPanel').style.display = 'block';
 }
 
+// Hides the combined brand/model search dropdown.
 function closeVehicleDropdown() {
     document.getElementById('vehicleDropdownPanel').style.display = 'none';
 }
 
+// Renders the brand/model dropdown items matching the current search keyword, grouped by brand.
 function renderVehicleDropdown() {
     var keyword = document.getElementById('vehicleSearchInput').value.trim().toLowerCase();
     var panel = document.getElementById('vehicleDropdownPanel');
@@ -368,6 +372,7 @@ function renderVehicleDropdown() {
     }
 }
 
+// Applies a brand (and optionally model) selection from the dropdown and re-filters the car grid.
 function selectVehicle(brandId, brandName, modelId, displayText) {
     selectedBrandId = String(brandId);
     selectedModelId = modelId === '' ? '' : String(modelId);
@@ -377,6 +382,7 @@ function selectVehicle(brandId, brandName, modelId, displayText) {
     applyFilters();
 }
 
+// Clears the current brand/model selection and re-filters the car grid.
 function clearVehicleSelection(event) {
     if (event) event.stopPropagation();
     selectedBrandId = "";
@@ -394,6 +400,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// Filters the car grid client-side by brand/model/transmission/fuel/seats/price and refreshes pagination + chips.
 function applyFilters() {
     var brand = selectedBrandId;
     var model = selectedModelId;
@@ -452,6 +459,7 @@ function applyFilters() {
     updateFilterChips();
 }
 
+// Shows only the filtered car cards for the current page and (re)renders the pagination buttons.
 function applyPagination() {
     const totalCars = filteredCars.length;
     const totalPages = Math.ceil(totalCars / pageSize) || 1;
@@ -531,6 +539,7 @@ function applyPagination() {
     }
 }
 
+// Validates the selected pickup/return dates, then reloads the page with all filters as query params.
 function applyDateFilter() {
     var start = document.getElementById('filterStartDate').value;
     var end = document.getElementById('filterEndDate').value;
@@ -558,6 +567,7 @@ function applyDateFilter() {
     }
 }
 
+// Rebuilds the removable filter chip row from the currently active filters.
 function updateFilterChips() {
     var chipsContainer = document.getElementById('filterChips');
     if (!chipsContainer) return;
@@ -610,6 +620,7 @@ function updateFilterChips() {
     });
 }
 
+// Placeholder for the "export car list" feature (not yet implemented).
 function exportCarList() {
     alert('Tính năng xuất danh sách sắp có!');
 }

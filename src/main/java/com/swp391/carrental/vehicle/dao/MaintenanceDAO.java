@@ -133,29 +133,6 @@ public class MaintenanceDAO {
     }
 
     /**
-     * Update maintenance schedule.
-     */
-    public boolean updateMaintenance(MaintenanceSchedule maintenance) throws SQLException {
-        String sql = "UPDATE maintenance_schedules SET maintenance_type = ?, scheduled_date = ?, " +
-                    "description = ?, cost = ?, notes = ?, updated_by = ?, updated_at = GETDATE() " +
-                    "WHERE maintenance_id = ?";
-        
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, maintenance.getMaintenanceType());
-            ps.setDate(2, java.sql.Date.valueOf(maintenance.getScheduledDate()));
-            ps.setString(3, maintenance.getDescription());
-            ps.setDouble(4, maintenance.getCost());
-            ps.setString(5, maintenance.getNotes());
-            ps.setString(6, maintenance.getUpdatedBy());
-            ps.setInt(7, maintenance.getMaintenanceId());
-            
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    /**
      * Complete maintenance.
      */
     public boolean completeMaintenance(int maintenanceId, String completedBy) throws SQLException {
@@ -209,21 +186,7 @@ public class MaintenanceDAO {
         }
     }
 
-    /**
-     * Delete maintenance schedule.
-     */
-    public boolean deleteMaintenance(int maintenanceId) throws SQLException {
-        String sql = "DELETE FROM maintenance_schedules WHERE maintenance_id = ?";
-
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, maintenanceId);
-
-            return ps.executeUpdate() > 0;
-        }
-    }
-
+    /** Deletes every maintenance schedule of a vehicle (used before deleting the vehicle itself). */
     public void deleteByVehicleId(int vehicleId) throws SQLException {
         String sql = "DELETE FROM maintenance_schedules WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();

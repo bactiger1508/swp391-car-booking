@@ -57,11 +57,11 @@
     <div class="bk-card">
         <div class="bk-card-title" style="margin-bottom:20px;display:flex;justify-content:between;align-items:center;">
             <span>Danh sách xe trống khả dụng</span>
-            <span class="bk-badge bk-badge-confirmed" style="font-size:12px;">${availableCars.size()} xe trống</span>
+            <span class="bk-badge bk-badge-confirmed" style="font-size:12px;">${availableVehicles.size()} xe trống</span>
         </div>
 
         <c:choose>
-            <c:when test="${empty availableVehicles && empty availableCars}">
+            <c:when test="${empty availableVehicles}">
                 <div style="text-align:center;padding:48px 24px;color:var(--on-surface-variant);">
                     <span class="material-symbols-outlined" style="font-size:48px;margin-bottom:12px;display:block;color:var(--outline);">directions_car_off</span>
                     Rất tiếc! Hiện không có xe nào trống trong khoảng thời gian được chọn. Vui lòng chọn lịch trình khác.
@@ -69,7 +69,7 @@
             </c:when>
             <c:otherwise>
                 <div id="availabilityGrid" class="bk-form-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
-                    <c:forEach var="car" items="${not empty availableVehicles ? availableVehicles : availableCars}">
+                    <c:forEach var="car" items="${availableVehicles}">
                         <div class="bk-card avail-car-item" style="padding:16px;border:1px solid var(--outline-variant);display:flex;flex-direction:column;justify-content:between;height:100%;">
                             <div style="width:100%;height:160px;border-radius:8px;background:var(--surface-container-high);overflow:hidden;margin-bottom:16px;display:flex;align-items:center;justify-content:center;">
                                 <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;border:none;" onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'">
@@ -119,6 +119,7 @@
 let currentAvailPage = 1;
 const availPageSize = 8;
 
+// Shows only the available-vehicle cards for the current page and (re)renders the pagination buttons.
 function applyAvailPagination() {
     const items = document.querySelectorAll('.avail-car-item');
     if (!items || items.length === 0) return;
@@ -162,6 +163,7 @@ function applyAvailPagination() {
     }
 }
 
+// Switches to the given page of available vehicles and scrolls the grid into view.
 function goToAvailPage(page) {
     currentAvailPage = page;
     applyAvailPagination();

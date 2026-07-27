@@ -22,6 +22,10 @@ import java.util.List;
 public class VehicleDetailServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
 
+    /**
+     * Displays the vehicle detail page: car info, images, active bookings, scheduled
+     * maintenance, deposit amount, and paginated reviews/ratings with review eligibility.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -123,6 +127,7 @@ public class VehicleDetailServlet extends HttpServlet {
         }
     }
 
+    /** Handles the "addReview" action: a logged-in customer submitting a rating/comment for a completed booking. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

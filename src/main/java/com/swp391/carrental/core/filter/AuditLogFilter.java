@@ -11,6 +11,9 @@ import com.swp391.carrental.user.model.User;
 
 /*
  * Name: AuditLogFilter
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
  * Description: Records an audit log entry for every state-changing (POST) request
  * made by an authenticated user, regardless of role (including ADMIN). Descriptions
  * are written in Vietnamese so they can be displayed as-is on the Audit Log screen.
@@ -27,6 +30,7 @@ public class AuditLogFilter implements Filter {
 
     private final AuditLogService auditLogService = new AuditLogService();
 
+    /** Lets the request complete, then records a generic audit entry for state-changing (POST) requests. */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {

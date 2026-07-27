@@ -205,6 +205,7 @@ let maintHistCurrentPage = 1;
 let maintHistPageSize = 5;
 let maintHistFilteredRows = [];
 
+// Filters the maintenance history rows by the search keyword and re-applies pagination.
 function filterMaintHistoryTable() {
     const keyword = document.getElementById('maintHistorySearchInput').value.trim().toLowerCase();
     const allRows = Array.from(document.querySelectorAll('#maintHistoryTable tbody tr'));
@@ -213,12 +214,14 @@ function filterMaintHistoryTable() {
     applyMaintHistPagination();
 }
 
+// Reads the selected page size and re-renders the maintenance history table from page 1.
 function changeMaintHistPageSize() {
     maintHistPageSize = parseInt(document.getElementById('maintHistPageSizeSelect').value);
     maintHistCurrentPage = 1;
     applyMaintHistPagination();
 }
 
+// Shows only the filtered rows for the current page and updates the pagination summary/buttons.
 function applyMaintHistPagination() {
     const allRows = Array.from(document.querySelectorAll('#maintHistoryTable tbody tr'));
     allRows.forEach(row => row.style.display = 'none');
@@ -241,6 +244,7 @@ function applyMaintHistPagination() {
     renderMaintHistPaginationButtons(totalPages);
 }
 
+// Builds the prev/page-number/next pagination buttons for the maintenance history table.
 function renderMaintHistPaginationButtons(totalPages) {
     const container = document.getElementById('maintHistPaginationButtons');
     container.innerHTML = '';
@@ -270,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Submits the maintenance record form via AJAX and reloads the page on success.
 function submitMaintenanceForm(event) {
     event.preventDefault();
     const formData = new FormData(document.getElementById('maintenanceForm'));
@@ -290,6 +295,7 @@ function submitMaintenanceForm(event) {
     .catch(error => alert('Lỗi: ' + error));
 }
 
+// Confirms with the user, then submits a maintenance status change via AJAX and reloads on success.
 function updateMaintenanceStatus(maintenanceId, newStatus) {
     const confirmMessages = {
         'IN_PROGRESS': 'Xác nhận xe đã được gửi đi sửa chữa / bắt đầu bảo trì?',
