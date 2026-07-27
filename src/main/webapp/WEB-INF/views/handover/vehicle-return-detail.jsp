@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Xem Biên bản Bàn giao xe"/>
 </jsp:include>
@@ -133,13 +134,32 @@
                 </div>
                 <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
                     <div style="width: 56px; height: 56px; border-radius: 8px; background: var(--primary-light); display:flex; align-items:center; justify-content:center; color: var(--primary); flex-shrink: 0; overflow:hidden;">
+                        <c:set var="carImgUrl" value="${car.primaryImageUrl}" />
+                        <c:if test="${empty carImgUrl && not empty vehicle}">
+                            <c:set var="carImgUrl" value="${vehicle.primaryImageUrl}" />
+                        </c:if>
+                        <c:if test="${not empty carImgUrl}">
+                            <c:set var="carImgUrl" value="${fn:trim(carImgUrl)}" />
+                            <c:choose>
+                                <c:when test="${carImgUrl.startsWith('http://') || carImgUrl.startsWith('https://')}">
+                                    <%-- keep as is --%>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:if test="${not carImgUrl.startsWith('/')}">
+                                        <c:set var="carImgUrl" value="/${carImgUrl}" />
+                                    </c:if>
+                                    <c:if test="${not empty pageContext.request.contextPath && not carImgUrl.startsWith(pageContext.request.contextPath)}">
+                                        <c:set var="carImgUrl" value="${pageContext.request.contextPath}${carImgUrl}" />
+                                    </c:if>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                         <c:choose>
-                            <c:when test="${not empty car.primaryImageUrl}">
-                                <img src="${pageContext.request.contextPath}${car.primaryImageUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-                                <span class="material-symbols-outlined" style="font-size: 28px; display:none;">garage</span>
+                            <c:when test="${not empty carImgUrl}">
+                                <img src="${carImgUrl}" alt="${car.brand} ${car.model}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'; this.onerror=null;">
                             </c:when>
                             <c:otherwise>
-                                <span class="material-symbols-outlined" style="font-size: 28px;">garage</span>
+                                <img src="${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg" alt="Vehicle Placeholder" style="width:100%;height:100%;object-fit:cover;">
                             </c:otherwise>
                         </c:choose>
                     </div>
@@ -349,14 +369,32 @@
                     <c:set var="photos" value="${returns.photosUrl.split(',')}" />
                     <div id="existingImages">
                         <c:forEach var="photo" items="${photos}">
-                            <span class="img-wrapper" data-src="${photo}" style="position:relative; display:inline-block;">
-                                <img src="${pageContext.request.contextPath}${photo}"
-                                     style="width:120px;
-                                     height:120px;
-                                     object-fit:cover;
-                                     border:1px solid #ddd;" />
-                                <button type="button" class="del-old preview-remove-btn">&times;</button>
-                            </span>
+                            <c:set var="cleanPhoto" value="${fn:trim(photo)}" />
+                            <c:if test="${not empty cleanPhoto}">
+                                <c:set var="photoUrl" value="${cleanPhoto}" />
+                                <c:choose>
+                                    <c:when test="${photoUrl.startsWith('http://') || photoUrl.startsWith('https://')}">
+                                        <%-- keep as is --%>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:if test="${not photoUrl.startsWith('/')}">
+                                            <c:set var="photoUrl" value="/${photoUrl}" />
+                                        </c:if>
+                                        <c:if test="${not empty pageContext.request.contextPath && not photoUrl.startsWith(pageContext.request.contextPath)}">
+                                            <c:set var="photoUrl" value="${pageContext.request.contextPath}${photoUrl}" />
+                                        </c:if>
+                                    </c:otherwise>
+                                </c:choose>
+                                <span class="img-wrapper" data-src="${cleanPhoto}" style="position:relative; display:inline-block;">
+                                    <img src="${photoUrl}"
+                                         style="width:120px;
+                                         height:120px;
+                                         object-fit:cover;
+                                         border:1px solid #ddd;"
+                                         onerror="this.src='${pageContext.request.contextPath}/assets/images/vehicles/placeholder.jpg'; this.onerror=null;" />
+                                    <button type="button" class="del-old preview-remove-btn">&times;</button>
+                                </span>
+                            </c:if>
                         </c:forEach>
                     </div>
                 </c:if>
@@ -421,26 +459,20 @@
                     distanceDisplay2.innerText = " (Lỗi: Số km không hợp lệ)";
             }
         }
+        let hasUserModified = false;
+
         function triggerChange() {
-            const val = parseFloat(odoInput ? odoInput.value : '');
+            hasUserModified = true;
             const btn = document.getElementById('btnConfirmReturn');
             const warning = document.getElementById('calc-warning');
 
-            if (!isNaN(val) && val >= 0) {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                }
-                if (warning) {
-                    warning.style.display = 'none';
-                }
-            } else {
-                if (btn) {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                }
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+            if (warning) {
+                warning.style.display = 'inline-flex';
             }
         }
 
@@ -451,7 +483,19 @@
             });
         }
         updateDistance();
-        triggerChange();
+
+        const formReturn = document.querySelector("form");
+        if (formReturn) {
+            formReturn.addEventListener("submit", function (e) {
+                const submitter = e.submitter || document.activeElement;
+                if (submitter && submitter.value === "confirm" && hasUserModified) {
+                    e.preventDefault();
+                    const warning = document.getElementById('calc-warning');
+                    if (warning) warning.style.display = 'inline-flex';
+                    alert("Thông tin thay đổi. Vui lòng bấm 'Tính phí' trước khi xác nhận!");
+                }
+            });
+        }
 
         const chkMaintenance = document.getElementById('chkNeedsMaintenance');
         const checklistContainer = document.getElementById('maintenanceChecklistContainer');
