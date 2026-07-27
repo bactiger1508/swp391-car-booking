@@ -86,7 +86,11 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/" + redirectUrl);
                 }
             } else {
-                response.sendRedirect(request.getContextPath() + "/home");
+                if ("ADMIN".equals(user.getRole())) {
+                    response.sendRedirect(request.getContextPath() + "/reports/revenue");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/home");
+                }
             }
         } catch (AppException e) {
             request.setAttribute("error", e.getMessage());
