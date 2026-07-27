@@ -297,7 +297,7 @@ public class ReportService {
 
                 Map<String, Object> item = new HashMap<>();
 
-                item.put("label", "Tháng " + monthStart.getMonthValue());
+                item.put("label", "T" + monthStart.getMonthValue());
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -330,7 +330,7 @@ public class ReportService {
                 }
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("label", "Tháng " + month);
+                item.put("label", "T" + month);
                 item.put("revenue", revenue);
 
                 chart.add(item);
