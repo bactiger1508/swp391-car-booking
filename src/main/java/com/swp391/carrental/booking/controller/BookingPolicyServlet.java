@@ -28,7 +28,7 @@ public class BookingPolicyServlet extends HttpServlet {
 
     private final PolicyService policyService = new PolicyService();
 
-    /** Tải và hiển thị các quy định, chính sách cọc, giảm giá và phạt của dịch vụ thuê xe */
+    /** Loads and displays deposit, discount, and penalty policies for booking */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
