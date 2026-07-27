@@ -43,10 +43,7 @@ public class ReportService {
     private final PaymentService paymentService = new PaymentService();
     private final BookingService bookingService = new BookingService();
 
-    /**
-     * Generate revenue report data for a date range. Returns a map with summary
-     * fields.
-     */
+    /** Generates a detailed revenue report for a specified date range. */
     public Map<String, Object> generateRevenueReport(LocalDate startDate, LocalDate endDate) {
         Map<String, Object> report = new HashMap<>();
         try {
@@ -88,18 +85,7 @@ public class ReportService {
         return report;
     }
 
-    /**
-     * Generate vehicle utilization report. TODO: Implement with actual metrics
-     * (days rented / total days).
-     */
-    public Map<String, Object> generateVehicleUtilizationReport() {
-        Map<String, Object> report = new HashMap<>();
-        // TODO: Calculate utilization per car
-        // utilization = days_rented / total_days_in_period * 100
-        report.put("message", "Vehicle utilization report - to be implemented");
-        return report;
-    }
-
+    /** Calculates total completed revenue within a given date range. */
     public BigDecimal getTotalRevenue(LocalDate fromDate, LocalDate toDate) {
         BigDecimal total = BigDecimal.ZERO;
 
@@ -123,6 +109,7 @@ public class ReportService {
         return total;
     }
 
+    /** Calculates total revenue filtering by payment type within a date range. */
     public BigDecimal getRevenueByType(String paymentType, LocalDate fromDate, LocalDate toDate) {
 
         BigDecimal total = BigDecimal.ZERO;
@@ -150,6 +137,7 @@ public class ReportService {
         return total;
     }
 
+    /** Calculates deposit revenue collected from active/in-progress bookings. */
     public BigDecimal getDepositRevenue(LocalDate fromDate, LocalDate toDate) {
         BigDecimal deposit = BigDecimal.ZERO;
 
@@ -170,6 +158,7 @@ public class ReportService {
         return deposit;
     }
 
+    /** Gets the count of completed bookings within a specified date range. */
     public int getCompletedBooking(LocalDate fromDate, LocalDate toDate) {
         int totalBooking = 0;
 
@@ -191,6 +180,7 @@ public class ReportService {
         return totalBooking;
     }
 
+    /** Calculates growth percentage between current and previous amounts. */
     public double calculateGrowth(BigDecimal current, BigDecimal previous) {
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
             return 0;
@@ -198,9 +188,12 @@ public class ReportService {
         return current.subtract(previous).multiply(BigDecimal.valueOf(100)).divide(previous, 2, RoundingMode.HALF_UP).doubleValue();
     }
 
+    /** Alias for getRevenueByVehicleSegment. */
     public Map<String, BigDecimal> getRevenueByCarSegment(LocalDate from, LocalDate to) throws SQLException {
         return getRevenueByVehicleSegment(from, to);
     }
+
+    /** Aggregates total revenue breakdown by vehicle brand/segment. */
     public Map<String, BigDecimal> getRevenueByVehicleSegment(LocalDate from, LocalDate to) throws SQLException {
 
         Map<String, BigDecimal> segmentRevenue = new LinkedHashMap<>();
@@ -234,7 +227,7 @@ public class ReportService {
         return segmentRevenue;
     }
 
-
+    /** Generates periodic chart data points for revenue visualization. */
     public List<Map<String, Object>> getRevenueChart(LocalDate from, LocalDate to, String type) {
 
         List<Map<String, Object>> chart = new ArrayList<>();
@@ -304,7 +297,7 @@ public class ReportService {
 
                 Map<String, Object> item = new HashMap<>();
 
-                item.put("label", "Tháng " + monthStart.getMonthValue());
+                item.put("label", "T" + monthStart.getMonthValue());
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -337,7 +330,7 @@ public class ReportService {
                 }
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("label", "Tháng " + month);
+                item.put("label", "T" + month);
                 item.put("revenue", revenue);
 
                 chart.add(item);
@@ -363,6 +356,7 @@ public class ReportService {
         return chart;
     }
 
+    /** Retrieves recent financial transactions with booking and customer details. */
     public List<Map<String, Object>> getRecentTransactions(LocalDate from, LocalDate to) throws SQLException {
 
         List<Map<String, Object>> transactions = new ArrayList<>();
@@ -377,7 +371,6 @@ public class ReportService {
 
             LocalDate paidDate = p.getPaidAt().toLocalDate();
 
-            // lọc theo tháng đang chọn
             if (paidDate.isBefore(from) || paidDate.isAfter(to)) {
                 continue;
             }
@@ -402,6 +395,7 @@ public class ReportService {
         return transactions;
     }
 
+    /** Computes total vehicle rental days grouped by brand segment. */
     public Map<String, Integer> getUsageBySegment(LocalDateTime from,
             LocalDateTime to) throws SQLException {
 
@@ -456,6 +450,7 @@ public class ReportService {
         return result;
     }
 
+    /** Calculates utilization metrics (used days, percentage) for each vehicle. */
     public List<Map<String, Object>> getVehicleUsage(
             LocalDateTime from,
             LocalDateTime to) throws SQLException {
@@ -520,6 +515,7 @@ public class ReportService {
         return result;
     }
 
+    /** Calculates average vehicle usage percentage across all vehicles. */
     public double getAverageUsage(LocalDateTime from,
             LocalDateTime to) throws SQLException {
 
@@ -539,6 +535,7 @@ public class ReportService {
         return total / list.size();
     }
 
+    /** Calculates total rented days across all active or completed bookings. */
     public int getTotalUsedDays(LocalDateTime from, LocalDateTime to) throws SQLException {
         int total = 0;
         List<Booking> bookings = bookingDAO.findAll();
@@ -566,9 +563,12 @@ public class ReportService {
         return total;
     }
 
+    /** Alias for getMostUsedVehicle. */
     public Map<String, Object> getMostUsedCar(LocalDateTime from, LocalDateTime to) throws SQLException {
         return getMostUsedVehicle(from, to);
     }
+
+    /** Retrieves the vehicle with the highest utilization rate. */
     public Map<String, Object> getMostUsedVehicle(
             LocalDateTime from,
             LocalDateTime to) throws SQLException {
@@ -583,6 +583,7 @@ public class ReportService {
         return list.get(0);
     }
 
+    /** Generates fleet utilization percentage charts for a period. */
     public List<Map<String, Object>> getUsageChart(
             LocalDateTime from,
             LocalDateTime to,
@@ -649,8 +650,7 @@ public class ReportService {
                 chart.add(item);
             }
 
-        } // QUARTER
-        else if (type.equals("QUARTER")) {
+        } else if (type.equals("QUARTER")) {
 
             for (int i = 0; i < 3; i++) {
 
@@ -685,8 +685,7 @@ public class ReportService {
 
             }
 
-        } // YEAR
-        else {
+        } else {
 
             for (int m = 1; m <= 12; m++) {
 
@@ -728,6 +727,7 @@ public class ReportService {
         return chart;
     }
     
+    /** Helper method to calculate total used days across all bookings. */
     private int calculateUsedDays(
         LocalDateTime from,
         LocalDateTime to)
@@ -773,6 +773,7 @@ public class ReportService {
     return total;
 }
 
+    /** Calculates total maintenance cost incurred for completed schedules. */
     public BigDecimal getTotalMaintenanceCost(LocalDate from, LocalDate to) throws SQLException {
         BigDecimal total = BigDecimal.ZERO;
         List<MaintenanceSchedule> schedules = maintenanceDAO.getAllMaintenanceSchedules();

@@ -23,8 +23,7 @@ import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
  * Name: BookingApprovalServlet
- * @Author: BacBui
- * @Author: TungNLHE186756
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Handles booking approval/rejection by Staff/Admin. GET shows pending list, POST processes actions.
@@ -42,7 +41,7 @@ public class BookingApprovalServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final NotificationService notificationService = new NotificationService();
 
-    /** Hiển thị danh sách các đơn đặt xe đang ở trạng thái PENDING chờ nhân viên phê duyệt */
+    /** Displays pending booking requests for staff approval */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -90,7 +89,7 @@ public class BookingApprovalServlet extends HttpServlet {
                 .forward(request, response);
     }
 
-    /** Xử lý hành động phê duyệt (approve) hoặc từ chối (reject) đơn đặt xe */
+    /** Processes approve or reject actions on pending booking requests */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

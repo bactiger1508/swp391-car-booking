@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Trang chủ - Hệ thống quản lý thuê xe"/>
+    <jsp:param name="hideSidebar" value="true"/>
 </jsp:include>
 
 <!-- Load Tailwind CSS specifically for the home page -->
@@ -298,7 +299,9 @@
 
     <!-- Quick Statistics Grid (Only visible to STAFF or ADMIN roles) -->
     <c:if test="${sessionScope.currentUser != null && (sessionScope.currentUser.role == 'STAFF' || sessionScope.currentUser.role == 'ADMIN')}">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <c:set var="isAdmin" value="${sessionScope.currentUser.role == 'ADMIN'}" />
+        <c:set var="hasRevenueReport" value="${isAdmin || (not empty sessionScope.userPermissions && sessionScope.userPermissions.contains('VIEW_REVENUE_REPORT'))}" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 ${hasRevenueReport ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6 mb-8">
             <!-- Stat Card 1 -->
             <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/40 flex flex-col justify-between group hover:shadow-md transition-shadow relative overflow-hidden">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl"></div>
@@ -360,6 +363,7 @@
             </div>
 
             <!-- Stat Card 4 -->
+            <c:if test="${hasRevenueReport}">
             <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/40 flex flex-col justify-between group hover:shadow-md transition-shadow relative overflow-hidden">
                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/5 rounded-full blur-xl"></div>
                 <div>
@@ -380,6 +384,7 @@
                     </a>
                 </div>
             </div>
+            </c:if>
         </div>
     </c:if>
 
