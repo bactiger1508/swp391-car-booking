@@ -42,7 +42,8 @@
                                 <c:when test="${notif.notificationType == 'BOOKING'}"><span class="bk-badge bk-badge-confirmed"><span class="bk-badge-dot"></span> Đặt xe</span></c:when>
                                 <c:when test="${notif.notificationType == 'PAYMENT'}"><span class="bk-badge bk-badge-progress"><span class="bk-badge-dot"></span> Thanh toán</span></c:when>
                                 <c:when test="${notif.notificationType == 'CONTRACT'}"><span class="bk-badge bk-badge-pending"><span class="bk-badge-dot"></span> Hợp đồng</span></c:when>
-                                <c:when test="${notif.notificationType == 'HANDOVER'}"><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Giao/Nhận xe</span></c:when>
+                                <c:when test="${notif.notificationType == 'HANDOVER'}"><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Giao xe</span></c:when>
+                                <c:when test="${notif.notificationType == 'RETURN'}"><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Trả xe</span></c:when>
                                 <c:otherwise><span class="bk-badge bk-badge-completed"><span class="bk-badge-dot"></span> Hệ thống</span></c:otherwise>
                             </c:choose>
                             <span style="font-weight:${notif.read ? '500' : '700'}; color:var(--on-background);">${notif.title}</span>
@@ -60,6 +61,7 @@
 </div>
 
 <script>
+// Marks a single notification as read via AJAX, then reloads the page.
 function markAsRead(notificationId) {
     fetch('${pageContext.request.contextPath}/notifications', {
         method: 'POST',
@@ -76,6 +78,7 @@ function markAsRead(notificationId) {
     });
 }
 
+// Marks every notification of the current user as read via AJAX, then reloads the page.
 function markAllAsRead() {
     fetch('${pageContext.request.contextPath}/notifications', {
         method: 'POST',

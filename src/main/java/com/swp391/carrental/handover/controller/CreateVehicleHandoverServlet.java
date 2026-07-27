@@ -281,7 +281,7 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
 
             int handoverId = handoverService.handoverVehicle(handover);
 
-            notifyVehicleHandedOver(bookingId, handoverId, booking.getCustomerId());
+            notifyVehicleHandedOver(booking, handoverId);
             if (request.getSession() != null) {
                 request.getSession().setAttribute("successMessage",
                         "Lập biên bản bàn giao xe thành công! Đang chờ khách hàng kiểm tra và ký nhận.");
@@ -447,12 +447,16 @@ public class CreateVehicleHandoverServlet extends HttpServlet {
         }
     }
 
-    private void notifyVehicleHandedOver(int bookingId, int handoverId, int customerId) {
+    /** Notifies the customer that a handover record has been prepared and needs their sign-off. */
+    private void notifyVehicleHandedOver(Booking booking, int handoverId) {
         try {
-            Notification notif = new Notification(customerId,
+            Vehicle vehicle = vehicleDAO.findById(booking.getVehicleId());
+            String vehicleInfo = vehicle != null ? "biển số " + vehicle.getLicensePlate() : "xe #" + booking.getVehicleId();
+
+            Notification notif = new Notification(booking.getCustomerId(),
                     "Biên bản bàn giao xe đã được tạo",
-                    "Biên bản bàn giao xe cho đơn đặt xe #" + bookingId
-                            + " đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
+                    "Biên bản bàn giao xe cho đơn đặt xe #" + booking.getBookingId() + " (" + vehicleInfo
+                            + ") đã được nhân viên lập thành công. Vui lòng kiểm tra thông tin và thực hiện ký nhận bàn giao xe.",
                     "HANDOVER");
             notif.setReferenceType("HANDOVER");
             notif.setReferenceId(handoverId);
