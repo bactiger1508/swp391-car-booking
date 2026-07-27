@@ -37,7 +37,7 @@ public class DeliveryDistanceServlet extends HttpServlet {
     private static final double HCM_LAT = 10.776889;
     private static final double HCM_LNG = 106.700806;
 
-    /** Tính khoảng cách đường đi thực tế từ showroom đến vị trí giao xe bằng OpenRouteService API */
+    /** Calculates real driving distance from showroom to delivery address via OpenRouteService API */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

@@ -77,6 +77,7 @@ public class BookingService {
             throw new AppException("Failed to get customer bookings.", e);
         }
     }
+    /** Alias for getBookingsByCustomer */
     public List<Booking> getCustomerBookings(int customerId) {
         return getBookingsByCustomer(customerId);
     }
