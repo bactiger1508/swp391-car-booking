@@ -125,7 +125,7 @@
 
                 <div class="bk-summary-total" style="border-top: 1px solid var(--outline-variant); padding-top: 12px; margin-top: 12px;">
                     <span class="label" style="font-weight: 500;">Tổng tiền thuê ban đầu</span>
-                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.totalAmount}" pattern="#,##0"/>đ</span>
+                    <span class="value" style="font-weight: 600;"><fmt:formatNumber value="${booking.totalAmount - booking.depositAmount}" pattern="#,##0"/>đ</span>
                 </div>
                 <div class="bk-detail-row" style="font-size: 13px; opacity: 0.8; margin-top: -8px; margin-bottom: 8px;">
                     <span class="label">Trong đó tiền cọc:</span>
@@ -142,9 +142,14 @@
                     <span class="value" id="resTotal" style="font-weight: 600; color: var(--error);">0đ</span>
                 </div>
 
-                <div class="bk-summary-total" style="border-top: 1.5px dashed var(--outline-variant); padding-top: 16px; margin-top: 16px;">
+                <div id="rowRefund" class="bk-summary-total" style="border-top: 1.5px dashed var(--outline-variant); padding-top: 16px; margin-top: 16px;">
                     <span class="label" style="font-size: 16px; font-weight: 700;">Số tiền hoàn lại</span>
                     <span class="value" id="resRefund" style="color:var(--success);font-size:20px;font-weight:800;">0đ</span>
+                </div>
+
+                <div id="rowExtraPayment" class="bk-summary-total" style="border-top: 1.5px dashed var(--outline-variant); padding-top: 16px; margin-top: 16px; display: none;">
+                    <span class="label" style="font-size: 16px; font-weight: 700; color: var(--error);">Số tiền cần thanh toán thêm</span>
+                    <span class="value" id="resExtraPayment" style="color:var(--error);font-size:20px;font-weight:800;">0đ</span>
                 </div>
 
                 <div>${notification}</div>
@@ -193,10 +198,11 @@
 
             var totalAdditional = lateFee + kmFee + cleaning + damage + lostItem;
 
-            var initialTotal = parseFloat("${booking.totalAmount}") || 0;
+            var depositAmt = parseFloat("${booking.depositAmount}") || 0;
+            var initialTotal = (parseFloat("${booking.totalAmount}") || 0) - depositAmt;
             var totalPaid = parseFloat("${not empty totalPaid ? totalPaid : 0}");
             if (totalPaid <= 0) {
-                totalPaid = parseFloat("${booking.depositAmount}") || 0;
+                totalPaid = depositAmt;
             }
 
             var grandTotal = initialTotal + totalAdditional;
@@ -218,8 +224,15 @@
 
             document.getElementById('resTotal').textContent = formatMoney(totalAdditional);
 
-            document.getElementById('resRefund').textContent = formatMoney(refund);
-            document.getElementById('resExtraPayment').textContent = formatMoney(extraPayment);
+            if (extraPayment > 0) {
+                document.getElementById('rowRefund').style.display = 'none';
+                document.getElementById('rowExtraPayment').style.display = 'flex';
+                document.getElementById('resExtraPayment').textContent = formatMoney(extraPayment);
+            } else {
+                document.getElementById('rowRefund').style.display = 'flex';
+                document.getElementById('rowExtraPayment').style.display = 'none';
+                document.getElementById('resRefund').textContent = formatMoney(refund);
+            }
 
             document.getElementById('totalAdditionalFee').value = totalAdditional;
         }

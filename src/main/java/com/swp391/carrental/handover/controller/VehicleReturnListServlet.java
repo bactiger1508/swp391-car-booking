@@ -48,7 +48,8 @@ public class VehicleReturnListServlet extends HttpServlet {
                     
                     com.swp391.carrental.payment.dao.PaymentDAO paymentDAO = new com.swp391.carrental.payment.dao.PaymentDAO();
                     List<com.swp391.carrental.payment.model.Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
-                    BigDecimal totalPaid = BigDecimal.ZERO;
+                    BigDecimal grossPaid = BigDecimal.ZERO;
+                    BigDecimal completedRefunds = BigDecimal.ZERO;
                     for (com.swp391.carrental.payment.model.Payment p : payments) {
                         if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                             if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
@@ -56,17 +57,22 @@ public class VehicleReturnListServlet extends HttpServlet {
                             }
                             BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                             if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                                totalPaid = totalPaid.subtract(effectiveAmt);
+                                completedRefunds = completedRefunds.add(effectiveAmt);
                             } else {
-                                totalPaid = totalPaid.add(effectiveAmt);
+                                grossPaid = grossPaid.add(effectiveAmt);
                             }
                         }
                     }
                     
-                    BigDecimal totalRequired = booking.getTotalAmount().add(surcharge);
+                    BigDecimal depositAmt = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
+                    BigDecimal pureRentalFee = booking.getTotalAmount().subtract(depositAmt);
+                    BigDecimal totalRequired = pureRentalFee.add(surcharge);
+
                     BigDecimal netRefund = BigDecimal.ZERO;
-                    if (totalPaid.compareTo(totalRequired) > 0) {
-                        netRefund = totalPaid.subtract(totalRequired);
+                    if (completedRefunds.compareTo(BigDecimal.ZERO) > 0) {
+                        netRefund = completedRefunds;
+                    } else if (grossPaid.compareTo(totalRequired) > 0) {
+                        netRefund = grossPaid.subtract(totalRequired);
                     }
 
                     VehicleHandover handover = handoverDAO.findByBookingId(r.getBookingId());
