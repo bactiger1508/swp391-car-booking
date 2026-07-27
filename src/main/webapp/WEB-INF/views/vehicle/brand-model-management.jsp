@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Fetches the models of a brand via AJAX and renders them as clickable chips inside its card.
 function loadModelsForCard(brandId) {
     const container = document.getElementById('modelList-' + brandId);
     fetch(contextPath + '/vehicles/brands', {
@@ -102,6 +103,7 @@ function loadModelsForCard(brandId) {
     });
 }
 
+// Submits the "add brand" form via AJAX and reloads the page on success.
 function submitAddBrand(event) {
     event.preventDefault();
     const brandName = document.getElementById('newBrandName').value;
@@ -120,6 +122,7 @@ function submitAddBrand(event) {
     });
 }
 
+// Toggles a brand's active/hidden status via AJAX and reloads the page.
 function toggleBrandActive(brandId, active) {
     fetch(contextPath + '/vehicles/brands', {
         method: 'POST',
@@ -136,6 +139,7 @@ function toggleBrandActive(brandId, active) {
     });
 }
 
+// Submits the "add model" form for a brand via AJAX and refreshes that brand's model chips.
 function submitAddModel(event, brandId) {
     event.preventDefault();
     const modelName = event.target.querySelector('input[name="modelName"]').value;
@@ -155,6 +159,7 @@ function submitAddModel(event, brandId) {
     });
 }
 
+// Toggles a model's active/hidden status via AJAX and refreshes its brand's model chips.
 function toggleModelActive(modelId, active, brandId) {
     fetch(contextPath + '/vehicles/brands', {
         method: 'POST',

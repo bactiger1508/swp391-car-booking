@@ -514,9 +514,11 @@ public class ContractManagementServlet extends HttpServlet {
 
     private void notifyContractPrepared(RentalContract contract, int contractId, int customerId) {
         try {
+            String detail = describeVehicleAndPeriod(contract);
             Notification notif = new Notification(customerId,
                     "Hợp đồng đã được chuẩn bị",
-                    "Hợp đồng #" + contractId + " cho booking #" + contract.getBookingId() + " đã được soạn thảo. Vui lòng kiểm tra và ký kết.",
+                    "Hợp đồng #" + contractId + " cho booking #" + contract.getBookingId() + " (" + detail
+                            + ") đã được soạn thảo. Vui lòng kiểm tra và ký kết.",
                     "CONTRACT");
             notif.setReferenceType("CONTRACT");
             notif.setReferenceId(contractId);
@@ -528,9 +530,10 @@ public class ContractManagementServlet extends HttpServlet {
 
     private void notifyContractActivated(RentalContract contract, int contractId) {
         try {
+            String detail = describeVehicleAndPeriod(contract);
             Notification notif = new Notification(contract.getCustomerId(),
                     "Hợp đồng đã được kích hoạt",
-                    "Hợp đồng #" + contractId + " đã được ký kết và kích hoạt. Bạn có thể tiến hành bàn giao xe.",
+                    "Hợp đồng #" + contractId + " (" + detail + ") đã được ký kết và kích hoạt. Bạn có thể tiến hành bàn giao xe.",
                     "CONTRACT");
             notif.setReferenceType("CONTRACT");
             notif.setReferenceId(contractId);
@@ -538,5 +541,17 @@ public class ContractManagementServlet extends HttpServlet {
         } catch (Exception e) {
             System.err.println("Failed to send contract-activated notification: " + e.getMessage());
         }
+    }
+
+    /** Builds a "biển số {plate}, dd/MM/yyyy HH:mm - dd/MM/yyyy HH:mm" detail string for a contract's notification message. */
+    private String describeVehicleAndPeriod(RentalContract contract) {
+        Vehicle vehicle = vehicleService.getVehicleById(contract.getVehicleId());
+        String vehicleInfo = vehicle != null ? "biển số " + vehicle.getLicensePlate() : "xe #" + contract.getVehicleId();
+
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String start = contract.getStartDate() != null ? contract.getStartDate().format(fmt) : "?";
+        String end = contract.getEndDate() != null ? contract.getEndDate().format(fmt) : "?";
+
+        return vehicleInfo + ", " + start + " - " + end;
     }
 }

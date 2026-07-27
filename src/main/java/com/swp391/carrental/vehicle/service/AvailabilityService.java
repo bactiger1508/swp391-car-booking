@@ -17,11 +17,15 @@ import com.swp391.carrental.vehicle.model.Vehicle;
  * Description: Handles availability check logic for vehicles.
  */
 
+/**
+ * Checks vehicle availability against status and existing bookings for a given date range.
+ */
 public class AvailabilityService {
 
     private final VehicleDAO vehicleDAO = new VehicleDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
 
+    /** Returns true if a vehicle is AVAILABLE and has no overlapping booking in the given date range. */
     public boolean isVehicleAvailableForRange(int vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
         try {
             Vehicle vehicle = vehicleDAO.findById(vehicleId);
@@ -39,24 +43,7 @@ public class AvailabilityService {
         }
     }
 
-
-
-    public boolean checkAvailability(int vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
-        try {
-            Vehicle vehicle = vehicleDAO.findById(vehicleId);
-            if (vehicle == null) return false;
-            if (!"AVAILABLE".equals(vehicle.getStatus())) return false;
-
-            List<Vehicle> available = vehicleDAO.findAvailable(
-                    Timestamp.valueOf(startDate),
-                    Timestamp.valueOf(endDate)
-            );
-            return available.stream().anyMatch(v -> v.getVehicleId() == vehicleId);
-        } catch (SQLException e) {
-            throw new AppException("Failed to check availability.", e);
-        }
-    }
-
+    /** Returns every vehicle available (by status and booking overlap) in the given date range, with primary images resolved. */
     public List<Vehicle> getAvailableVehicles(LocalDateTime startDate, LocalDateTime endDate) {
         try {
             List<Vehicle> list = vehicleDAO.findAvailable(

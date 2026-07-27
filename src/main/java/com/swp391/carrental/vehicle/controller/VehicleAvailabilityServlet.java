@@ -31,12 +31,16 @@ public class VehicleAvailabilityServlet extends HttpServlet {
     private final AvailabilityService availabilityService = new AvailabilityService();
     private final VehicleService vehicleService = new VehicleService();
 
+    /**
+     * Routes GET requests to the single-vehicle AJAX availability check, or renders the
+     * availability search page for a customer-selected date range.
+     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
-        if ("checkCarAvailability".equals(action) || "checkVehicleAvailability".equals(action)) {
+        if ("checkCarAvailability".equals(action)) {
             handleCheckCarAvailability(request, response);
             return;
         }
@@ -69,7 +73,6 @@ public class VehicleAvailabilityServlet extends HttpServlet {
                     Map<Integer, String> primaryImages = vehicleService.getPrimaryImageUrls(availableVehicles);
                     
                     request.setAttribute("availableVehicles", availableVehicles);
-                    request.setAttribute("availableCars", availableVehicles);
                     request.setAttribute("primaryImages", primaryImages);
                     request.setAttribute("searched", true);
                 }
@@ -86,15 +89,13 @@ public class VehicleAvailabilityServlet extends HttpServlet {
                 .forward(request, response);
     }
 
-    private void handleCheckCarAvailability(HttpServletRequest request, HttpServletResponse response) 
+    /** Handles the AJAX check for whether a single vehicle is free over a given date/time range. */
+    private void handleCheckCarAvailability(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.setContentType("application/json; charset=UTF-8");
 
         try {
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
-                vehicleIdStr = request.getParameter("vehicleId");
-            }
             String startDateStr = request.getParameter("startDate");
             String startTimeStr = request.getParameter("startTime");
             String endDateStr = request.getParameter("endDate");

@@ -153,15 +153,25 @@ public class VehicleHandoverViewServlet extends HttpServlet {
         }
     }
 
+    /** Notifies both the customer and the handing-over staff member once the customer signs off on a handover. */
     private void notifyHandoverSigned(VehicleHandover handover, int bookingId) {
         try {
             NotificationService notificationService = new NotificationService();
+
+            String vehicleInfo = "đơn đặt xe #" + bookingId;
+            Booking booking = bookingDAO.findById(bookingId);
+            if (booking != null) {
+                Vehicle vehicle = vehicleDAO.findById(booking.getVehicleId());
+                vehicleInfo = "đơn đặt xe #" + bookingId
+                        + (vehicle != null ? " (biển số " + vehicle.getLicensePlate() + ")" : "");
+            }
+
             // Notify customer
             Notification notifCustomer = new Notification(
                     handover.getReceivedBy(),
                     "Ký nhận bàn giao xe thành công",
-                    "Bạn đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId
-                    + ". Chúc bạn có chuyến đi an toàn!",
+                    "Bạn đã ký nhận thành công biên bản bàn giao xe cho " + vehicleInfo
+                            + ". Chúc bạn có chuyến đi an toàn!",
                     "HANDOVER");
             notifCustomer.setReferenceType("HANDOVER");
             notifCustomer.setReferenceId(handover.getHandoverId());
@@ -172,7 +182,7 @@ public class VehicleHandoverViewServlet extends HttpServlet {
                 Notification notifStaff = new Notification(
                         handover.getHandedBy(),
                         "Khách hàng đã ký nhận bàn giao xe",
-                        "Khách hàng đã ký nhận thành công biên bản bàn giao xe cho đơn đặt xe #" + bookingId + ".",
+                        "Khách hàng đã ký nhận thành công biên bản bàn giao xe cho " + vehicleInfo + ".",
                         "HANDOVER");
                 notifStaff.setReferenceType("HANDOVER");
                 notifStaff.setReferenceId(handover.getHandoverId());

@@ -1,7 +1,18 @@
+/*
+ * Name: AuditLog
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Represents a single audit log entry recording a user action on a system entity.
+ */
 package com.swp391.carrental.audit.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents one row of the {@code audit_logs} table: who did what action,
+ * on which entity, and when.
+ */
 public class AuditLog {
     private int auditId;
     private int userId;
@@ -12,8 +23,18 @@ public class AuditLog {
     private String ipAddress;
     private LocalDateTime createdAt;
 
+    /** Creates an empty audit log entry (used when mapping from a database row). */
     public AuditLog() {}
 
+    /**
+     * Creates a new audit log entry timestamped at creation.
+     *
+     * @param userId     id of the user who performed the action
+     * @param action     action code (CREATE, UPDATE, DELETE, ...)
+     * @param entityType type of entity affected (VEHICLE, BOOKING, ...)
+     * @param entityId   id of the affected entity, or null if not applicable
+     * @param details    human-readable description of what happened
+     */
     public AuditLog(int userId, String action, String entityType, Integer entityId, String details) {
         this.userId = userId;
         this.action = action;

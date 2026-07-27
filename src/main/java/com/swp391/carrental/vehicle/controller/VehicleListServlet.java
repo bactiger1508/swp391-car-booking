@@ -28,6 +28,10 @@ import com.swp391.carrental.vehicle.service.VehicleService;
 public class VehicleListServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
 
+    /**
+     * Displays the public vehicle catalog: available vehicles for a searched date range if
+     * provided, otherwise every currently AVAILABLE vehicle, plus the brand/model filter data.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

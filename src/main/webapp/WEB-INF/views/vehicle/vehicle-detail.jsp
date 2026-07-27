@@ -454,6 +454,7 @@
 </style>
 
 <script>
+// Displays the custom alert modal with the given title/message and icon style (warning/error/success/info).
 function showAppModalAlert(title, message, type = 'warning') {
     document.getElementById('appAlertTitle').innerText = title || 'Thông báo';
     document.getElementById('appAlertMessage').innerText = message || '';
@@ -482,12 +483,14 @@ function showAppModalAlert(title, message, type = 'warning') {
     document.getElementById('appAlertModal').style.display = 'flex';
 }
 
+// Hides the custom alert modal.
 function closeAppModalAlert() {
     document.getElementById('appAlertModal').style.display = 'none';
 }
 </script>
 
 <script>
+// Swaps the main gallery image and highlights the clicked thumbnail as active.
 function changeMainImage(url, thumb) {
     document.getElementById('mainCarImage').src = url;
     
@@ -500,10 +503,12 @@ function changeMainImage(url, thumb) {
     thumb.style.opacity = '1';
 }
 
+// Shows the vehicle's busy-schedule (bookings/maintenance) calendar modal.
 function openCalendarModal() {
     document.getElementById('calendarModal').style.display = 'flex';
 }
 
+// Hides the vehicle's busy-schedule calendar modal.
 function closeCalendarModal() {
     document.getElementById('calendarModal').style.display = 'none';
 }

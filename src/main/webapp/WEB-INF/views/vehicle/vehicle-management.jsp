@@ -1,24 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="com.swp391.carrental.user.model.User" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/layout/header.jsp">
     <jsp:param name="pageTitle" value="Quản Lý Xe"/>
 </jsp:include>
-
-<%-- Calculate dynamic stats --%>
-<c:set var="totalCars" value="${cars.size()}"/>
-<c:set var="availableCars" value="0"/>
-<c:set var="maintenanceCars" value="0"/>
-<c:set var="rentedCars" value="0"/>
-
-<c:forEach var="car" items="${cars}">
-    <c:choose>
-        <c:when test="${car.status == 'AVAILABLE'}"><c:set var="availableCars" value="${availableCars + 1}"/></c:when>
-        <c:when test="${car.status == 'MAINTENANCE'}"><c:set var="maintenanceCars" value="${maintenanceCars + 1}"/></c:when>
-        <c:when test="${car.status == 'RENTED'}"><c:set var="rentedCars" value="${rentedCars + 1}"/></c:when>
-    </c:choose>
-</c:forEach>
 
 <div class="bk-page-header">
     <div>
@@ -167,19 +152,9 @@
                             </td>
                             <td style="text-align: right;">
                                 <div style="display: inline-flex; gap: 4px; justify-content: flex-end;">
-                                    <%
-                                        User currentUser = (User) session.getAttribute("currentUser");
-                                        String role = (currentUser != null) ? currentUser.getRole() : "CUSTOMER";
-                                    %>
-                                    <%if ("ADMIN".equals(role) || "STAFF".equals(role)) {%>
-                                        <a href="${pageContext.request.contextPath}/vehicles/admin/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết (Admin)" style="display:inline-flex; align-items:center;">
-                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                        </a>
-                                    <%} else {%>
-                                        <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
-                                            <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                        </a>
-                                    <%}%>
+                                    <a href="${pageContext.request.contextPath}/vehicles/detail?id=${car.vehicleId}" class="text-primary hover:text-primary-container p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Xem chi tiết" style="display:inline-flex; align-items:center;">
+                                        <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                                    </a>
                                     <button onclick="openEditModal(${car.vehicleId}, ${car.brandId}, ${car.modelId}, ${car.year}, '${car.color}', ${car.seats}, '${car.transmission}', '${car.fuelType}', ${car.dailyRate}, '${car.description}', '${car.location}', '${car.features}', '${car.status}', ${car.mileage}, '${car.licensePlate}')" class="text-[#1976D2] hover:text-[#1565C0] p-1.5 rounded hover:bg-surface-container-low transition-colors" title="Sửa" style="border:none; background:none; cursor:pointer; display:inline-flex; align-items:center;">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                                     </button>
@@ -246,12 +221,14 @@ let currentPage = 1;
 let pageSize = 10;
 let filteredRows = [];
 
+// Reads the selected page size and re-renders the vehicle table from page 1.
 function changePageSize() {
     pageSize = parseInt(document.getElementById('pageSizeSelect').value);
     currentPage = 1;
     applyPagination();
 }
 
+// Selects a status filter (highlighting its button/stat card) and re-filters the vehicle table.
 function filterByStatus(status) {
     currentStatusFilter = status;
     
@@ -286,6 +263,7 @@ function filterByStatus(status) {
     filterCarTable();
 }
 
+// Filters the vehicle table rows by the current status filter and search keyword.
 function filterCarTable() {
     const input = document.getElementById('carSearchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#vehicleTable tbody tr');
@@ -309,6 +287,7 @@ function filterCarTable() {
     applyPagination();
 }
 
+// Shows only the filtered vehicle rows for the current page and (re)renders the pagination buttons.
 function applyPagination() {
     const totalRows = filteredRows.length;
     const totalPages = Math.ceil(totalRows / pageSize) || 1;
@@ -410,6 +389,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // === MODALS ===
+// Fetches the models of a brand via AJAX and populates the target model select (create or edit form).
 function loadModelsForBrand(brandId, targetSelectId, selectedModelId) {
     const modelSelect = document.getElementById(targetSelectId);
     if (!brandId) {
@@ -437,6 +417,7 @@ function loadModelsForBrand(brandId, targetSelectId, selectedModelId) {
         });
 }
 
+// Resets and opens the "create vehicle" modal.
 function openCreateModal() {
     document.getElementById('createForm').reset();
     document.getElementById('createBrand').value = '';
@@ -446,10 +427,12 @@ function openCreateModal() {
     document.getElementById('createModal').style.display = 'block';
 }
 
+// Hides the "create vehicle" modal.
 function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
 }
 
+// Pre-fills and opens the "edit vehicle" modal with the selected vehicle's current data and images.
 function openEditModal(vehicleId, brandId, modelId, year, color, seats, transmission, fuelType, dailyRate, description, location, features, status, mileage, licensePlate) {
     document.getElementById('editVehicleId').value = vehicleId;
     document.getElementById('editLicensePlate').value = licensePlate;
@@ -479,6 +462,7 @@ function openEditModal(vehicleId, brandId, modelId, year, color, seats, transmis
     document.getElementById('editModal').style.display = 'block';
 }
 
+// Renders local thumbnail previews for the files selected in a file input.
 function previewImages(event, previewContainerId) {
     const files = event.target.files;
     const preview = document.getElementById(previewContainerId);
@@ -506,6 +490,7 @@ function previewImages(event, previewContainerId) {
     }
 }
 
+// Builds a thumbnail card (with delete/make-primary actions) for one existing vehicle image.
 function buildImageCard(img, vehicleId) {
     const card = document.createElement('div');
     card.style.cssText = 'position:relative; background:#F5F5F5; border-radius:4px; overflow:hidden; border:2px solid ' + (img.isPrimary ? '#FFC107' : '#E0E0E0') + ';';
@@ -554,6 +539,7 @@ function buildImageCard(img, vehicleId) {
     return card;
 }
 
+// Fetches a vehicle's current images via AJAX and renders them into the primary/secondary image sections.
 function fetchCarImages(vehicleId) {
     const primaryContainer = document.getElementById('currentPrimaryImage');
     const secondaryContainer = document.getElementById('currentSecondaryImages');
@@ -587,6 +573,7 @@ function fetchCarImages(vehicleId) {
         });
 }
 
+// Confirms with the user, deletes a vehicle image via AJAX, then refreshes the image lists.
 function deleteCarImage(imageId, vehicleId) {
     if (!confirm('Bạn chắc chắn muốn xóa ảnh này?')) return;
 
@@ -602,6 +589,7 @@ function deleteCarImage(imageId, vehicleId) {
         .catch(error => console.error('Error deleting image:', error));
 }
 
+// Sets an existing image as the vehicle's primary image via AJAX, then refreshes the image lists.
 function setPrimaryCarImage(imageId, vehicleId) {
     fetch(contextPath + '/vehicles/manage?action=setPrimaryImage&imageId=' + imageId + '&vehicleId=' + vehicleId, {method: 'POST'})
         .then(response => response.json())
@@ -615,10 +603,12 @@ function setPrimaryCarImage(imageId, vehicleId) {
         .catch(error => console.error('Error setting primary image:', error));
 }
 
+// Hides the "edit vehicle" modal.
 function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
+// Confirms with the user, then permanently deletes a vehicle via AJAX and reloads on success.
 function deleteVehicle(vehicleId) {
     if (!confirm('⚠️ Bạn chắc chắn muốn xóa xe này? Hành động này không thể hoàn tác!\n\nNhư cầu: Chỉ ADMIN được phép xóa. Nếu xe đang cho thuê, bạn phải ẩn nó trước.')) {
         return;
@@ -641,6 +631,7 @@ function deleteVehicle(vehicleId) {
     .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
 }
 
+// Confirms with the user, then hides a vehicle (status INACTIVE) via AJAX and reloads on success.
 function hideVehicle(vehicleId) {
     if (!confirm('Bạn chắc chắn muốn ẩn xe này? Customer sẽ không thể thấy xe.')) {
         return;
@@ -663,6 +654,7 @@ function hideVehicle(vehicleId) {
     .catch(error => showErrorAlert('Lỗi kết nối: ' + error.message));
 }
 
+// Confirms with the user, then shows a hidden vehicle (status AVAILABLE) via AJAX and reloads on success.
 function showVehicle(vehicleId) {
     if (!confirm('Bạn chắc chắn muốn hiện xe này? Customer sẽ có thể thấy xe.')) {
         return;
@@ -778,6 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Shows a temporary red toast notification with an error message.
 function showErrorAlert(message) {
     const alertDiv = document.createElement('div');
     alertDiv.style.cssText = `
@@ -796,6 +789,7 @@ function showErrorAlert(message) {
     setTimeout(() => alertDiv.remove(), 4000);
 }
 
+// Shows a temporary green toast notification with a success message.
 function showSuccessAlert(message) {
     const alertDiv = document.createElement('div');
     alertDiv.style.cssText = `

@@ -24,6 +24,7 @@ import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 
 @WebServlet(name = "MaintenanceScheduleServlet", urlPatterns = {"/maintenance"})
 public class MaintenanceScheduleServlet extends HttpServlet {
+    /** Displays the maintenance schedule board: vehicles currently in maintenance, all vehicles, and every schedule entry. */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -43,12 +44,10 @@ public class MaintenanceScheduleServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance-schedule.jsp").forward(request, response);
     }
 
+    /** Creates a new periodic inspection schedule for a vehicle from the submitted date range. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String vehicleIdStr = request.getParameter("vehicleId");
-        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
-            vehicleIdStr = request.getParameter("vehicleId");
-        }
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
         String notes = request.getParameter("notes");
