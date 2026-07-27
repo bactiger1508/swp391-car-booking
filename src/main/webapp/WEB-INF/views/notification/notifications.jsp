@@ -56,9 +56,7 @@
                             <span style="font-weight:${notif.read ? '500' : '700'}; color:var(--on-background);">${notif.title}</span>
                         </div>
                         <div style="font-size:14px; color:var(--on-surface-variant);">${notif.message}</div>
-                        <div style="font-size:12px; color:var(--on-surface-variant); margin-top:6px;">
-                            ${fn:length(notif.createdAt) >= 19 ? fn:replace(fn:substring(notif.createdAt, 0, 19), 'T', ' ') : notif.createdAt}
-                        </div>
+                        <div style="font-size:12px; color:var(--on-surface-variant); margin-top:6px;">${notif.createdAt}</div>
                     </div>
                     <c:if test="${!notif.read}">
                         <button onclick="event.stopPropagation(); markAsRead(${notif.notificationId})" class="bk-btn bk-btn-sm bk-btn-outline" style="flex-shrink:0;">Đánh dấu đã đọc</button>

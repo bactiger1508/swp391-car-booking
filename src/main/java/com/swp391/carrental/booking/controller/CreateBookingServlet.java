@@ -389,6 +389,8 @@ public class CreateBookingServlet extends HttpServlet {
             // Create booking (service handles all business rule validation)
             int bookingId = bookingService.createBooking(booking);
 
+            notifyBookingCreated(bookingId, user);
+
             request.getSession().setAttribute("successMessage",
                     "Đặt xe thành công! Mã booking: #" + bookingId + ". Vui lòng chờ xác nhận.");
             response.sendRedirect(request.getContextPath() + "/bookings/my");
