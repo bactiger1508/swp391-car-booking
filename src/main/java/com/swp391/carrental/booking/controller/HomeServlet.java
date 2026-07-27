@@ -19,11 +19,19 @@ import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
+/*
+ * Name: HomeServlet
+ * @Author: BacBXHE186736
+ * Date: 29/05/2026
+ * Version: 1.0
+ * Description: Displays the public homepage with featured vehicles, dashboard stats, and pricing policies.
+ */
 @WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
 public class HomeServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
 
+    /** Loads featured vehicles, dashboard stats, and pricing policies for the homepage */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Vehicle> featuredVehicles = vehicleService.getVehiclesByStatus("AVAILABLE");
@@ -56,6 +64,7 @@ public class HomeServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/booking/home.jsp").forward(request, response);
     }
 
+    /** Queries database for homepage dashboard statistics (available cars, bookings, revenue) */
     private Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
         // Default fallback values
