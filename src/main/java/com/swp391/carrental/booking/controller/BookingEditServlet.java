@@ -41,7 +41,7 @@ public class BookingEditServlet extends HttpServlet {
     private final PolicyService policyService = new PolicyService();
     private final FeeCalculator feeCalculator = new FeeCalculator();
 
-    /** Hiển thị form chỉnh sửa booking PENDING cho khách hàng */
+    /** Displays the edit form for a PENDING booking */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -134,7 +134,7 @@ public class BookingEditServlet extends HttpServlet {
         }
     }
 
-    /** Xử lý lưu thông tin booking sau khi chỉnh sửa */
+    /** Processes and saves the edited booking details */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {

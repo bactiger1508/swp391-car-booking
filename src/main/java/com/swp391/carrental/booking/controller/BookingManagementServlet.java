@@ -18,7 +18,7 @@ import com.swp391.carrental.vehicle.service.VehicleService;
 
 /*
  * Name: BookingManagementServlet
- * @Author: BacBui
+ * @Author: BacBXHE186736
  * Date: 29/05/2026
  * Version: 2.0
  * Description: Staff/Admin booking management page with user/car info and optional status filter.
@@ -37,7 +37,7 @@ public class BookingManagementServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
 
-    /** Hiển thị danh sách và thống kê tất cả các đơn đặt xe dành cho Quản lý / Nhân viên */
+    /** Displays booking list and statistics for Staff/Admin management */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

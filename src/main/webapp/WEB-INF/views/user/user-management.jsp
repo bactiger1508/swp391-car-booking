@@ -27,9 +27,9 @@
                  style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                 <h3>Danh sách thành viên</h3>
                 <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
-                <button class="btn btn-primary" onclick="showAddForm()" style="padding: 10px 20px;">+ Thêm
-                    tài khoản</button>
-                </c:if>
+                    <button class="btn btn-primary" onclick="showAddForm()" style="padding: 10px 20px;">+ Thêm
+                        tài khoản</button>
+                    </c:if>
             </div>
 
             <%-- Search & Filter Bar --%>
@@ -71,9 +71,9 @@
                                 <th>Email</th>
                                 <th>Vai trò</th>
                                 <th>Trạng thái</th>
-                                <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
-                                <th style="text-align: right;">Hành động</th>
-                                </c:if>
+                                    <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
+                                    <th style="text-align: right;">Hành động</th>
+                                    </c:if>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,14 +95,14 @@
                                         </span>
                                     </td>
                                     <c:if test="${sessionScope.currentUser.role == 'ADMIN'}">
-                                    <td style="text-align: right;">
-                                        <div
-                                            style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-                                            <a href="${pageContext.request.contextPath}/users?action=edit&userId=${u.userId}&search=${searchParam}&role=${roleParam}&status=${statusParam}"
-                                               class="btn btn-outline"
-                                               style="padding: 6px 12px; font-size: 13px;">Sửa</a>
-                                        </div>
-                                    </td>
+                                        <td style="text-align: right;">
+                                            <div
+                                                style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                                <a href="${pageContext.request.contextPath}/users?action=edit&userId=${u.userId}&search=${searchParam}&role=${roleParam}&status=${statusParam}"
+                                                   class="btn btn-outline"
+                                                   style="padding: 6px 12px; font-size: 13px;">Sửa</a>
+                                            </div>
+                                        </td>
                                     </c:if>
                                 </tr>
                             </c:forEach>
@@ -110,27 +110,58 @@
                     </table>
 
                     <!-- Phân trang cho Danh sách thành viên -->
-                    <div class="bk-pagination-container" id="userPagination"
-                         style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
-                        <div style="font-size:13px; color:var(--text-secondary);">
-                            Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span
-                                id="pag-end" style="font-weight:600;">0</span> trong số <span
-                                id="pag-total" style="font-weight:600;">0</span> thành viên
+                    <div class="bk-pagination-container"
+                         style="display:flex;
+                         justify-content:space-between;
+                         align-items:center;
+                         margin-top:20px;
+                         padding:12px 0;
+                         border-top:1px solid var(--outline-variant);">
+
+                        <div>
+                            Hiển thị
+                            ${(currentPage-1)*10+1}
+                            -
+                            <c:choose>
+                                <c:when test="${currentPage*10 > totalRecords}">
+                                    ${totalRecords}
+                                </c:when>
+                                <c:otherwise>
+                                    ${currentPage*10}
+                                </c:otherwise>
+                            </c:choose>
+                            trong tổng số
+                            ${totalRecords}
+                            thành viên
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <label style="font-size:13px; color:var(--text-secondary);">Số hàng:</label>
-                            <select id="pageSizeSelect" onchange="changePageSize()"
-                                    style="padding:4px 8px; border-radius:6px; border:1px solid var(--outline-variant); background:var(--bg-card); color:var(--text-main); font-size:13px; outline:none; cursor:pointer;">
-                                <option value="5">5</option>
-                                <option value="10" selected="selected">10</option>
-                                <option value="20">20</option>
-                                <option value="50">50</option>
-                            </select>
-                            <div id="paginationButtons"
-                                 style="display:flex; gap:4px; align-items:center; margin-left:12px;">
-                                <!-- nút chuyển trang sinh bằng JS -->
-                            </div>
+
+                        <div style="display:flex;gap:5px;">
+
+                            <c:if test="${currentPage>1}">
+                                <a class="btn btn-outline"
+                                   href="${pageContext.request.contextPath}/users?page=${currentPage-1}&search=${searchParam}&role=${roleParam}&status=${statusParam}">
+                                    ‹
+                                </a>
+                            </c:if>
+
+                            <c:forEach begin="1" end="${totalPages}" var="i">
+
+                                <a class="${i==currentPage?'btn btn-primary':'btn btn-outline'}"
+                                   href="${pageContext.request.contextPath}/users?page=${i}&search=${searchParam}&role=${roleParam}&status=${statusParam}">
+                                    ${i}
+                                </a>
+
+                            </c:forEach>
+
+                            <c:if test="${currentPage<totalPages}">
+                                <a class="btn btn-outline"
+                                   href="${pageContext.request.contextPath}/users?page=${currentPage+1}&search=${searchParam}&role=${roleParam}&status=${statusParam}">
+                                    ›
+                                </a>
+                            </c:if>
+
                         </div>
+
                     </div>
                 </div>
             </c:if>
@@ -281,121 +312,6 @@
             window.location.href = "${pageContext.request.contextPath}/users";
         }
     }
-
-    let currentPage = 1;
-    let pageSize = 10;
-    let tableRows = [];
-
-    function changePageSize() {
-        pageSize = parseInt(document.getElementById('pageSizeSelect').value);
-        currentPage = 1;
-        applyPagination();
-    }
-
-    function initPagination() {
-        tableRows = Array.from(document.querySelectorAll('#userTable tbody tr'));
-        applyPagination();
-    }
-
-    function applyPagination() {
-        const totalRows = tableRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
-        const pagContainer = document.getElementById('userPagination');
-
-        if (!pagContainer)
-            return;
-        if (totalRows <= pageSize && currentPage === 1) {
-            pagContainer.style.display = 'none';
-            tableRows.forEach(row => row.style.display = '');
-            return;
-        } else {
-            pagContainer.style.display = 'flex';
-        }
-
-        if (currentPage > totalPages)
-            currentPage = totalPages;
-        if (currentPage < 1)
-            currentPage = 1;
-
-        tableRows.forEach(row => row.style.display = 'none');
-
-        const startIdx = (currentPage - 1) * pageSize;
-        const endIdx = Math.min(startIdx + pageSize, totalRows);
-
-        for (let i = startIdx; i < endIdx; i++) {
-            tableRows[i].style.display = '';
-        }
-
-        const startDisplay = document.getElementById('pag-start');
-        const endDisplay = document.getElementById('pag-end');
-        const totalDisplay = document.getElementById('pag-total');
-        if (startDisplay)
-            startDisplay.innerText = totalRows > 0 ? (startIdx + 1) : 0;
-        if (endDisplay)
-            endDisplay.innerText = endIdx;
-        if (totalDisplay)
-            totalDisplay.innerText = totalRows;
-
-        const btnContainer = document.getElementById('paginationButtons');
-        if (btnContainer) {
-            btnContainer.innerHTML = '';
-
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'btn btn-outline';
-            prevBtn.style.padding = '4px 8px';
-            prevBtn.style.cursor = 'pointer';
-            prevBtn.disabled = (currentPage === 1);
-            prevBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_left</span>';
-            prevBtn.onclick = () => {
-                currentPage--;
-                applyPagination();
-            };
-            btnContainer.appendChild(prevBtn);
-
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, startPage + 4);
-            if (endPage - startPage < 4) {
-                startPage = Math.max(1, endPage - 4);
-            }
-
-            for (let p = startPage; p <= endPage; p++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = p === currentPage ? 'btn btn-primary' : 'btn btn-outline';
-                pageBtn.style.padding = '4px 10px';
-                pageBtn.style.minWidth = '28px';
-                pageBtn.style.cursor = 'pointer';
-                pageBtn.style.fontWeight = '600';
-                pageBtn.style.fontSize = '12px';
-                if (p === currentPage) {
-                    pageBtn.style.background = 'var(--primary)';
-                    pageBtn.style.color = '#fff';
-                    pageBtn.style.border = 'none';
-                }
-                pageBtn.innerText = p;
-                pageBtn.onclick = () => {
-                    currentPage = p;
-                    applyPagination();
-                };
-                btnContainer.appendChild(pageBtn);
-            }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'btn btn-outline';
-            nextBtn.style.padding = '4px 8px';
-            nextBtn.style.cursor = 'pointer';
-            nextBtn.disabled = (currentPage === totalPages);
-            nextBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">chevron_right</span>';
-            nextBtn.onclick = () => {
-                currentPage++;
-                applyPagination();
-            };
-            btnContainer.appendChild(nextBtn);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        initPagination();
-    });
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp" />

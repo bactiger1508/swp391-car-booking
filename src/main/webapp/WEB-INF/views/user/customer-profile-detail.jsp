@@ -88,25 +88,169 @@
             <div style="display:flex; flex-direction: column; gap:15px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
                 <h3>Xử lý yêu cầu hồ sơ</h3>
                 <div style="display: flex; gap: 15px;">
-                    <form method="post" action="${pageContext.request.contextPath}/user/customer-profiles">
+                    <form id="verifyForm"
+                          method="post"
+                          action="${pageContext.request.contextPath}/user/customer-profiles">
+
                         <input type="hidden" name="action" value="verify">
                         <input type="hidden" name="profileId" value="${profile.profileId}">
-                        <button class="btn btn-success" onclick="return confirm('Bạn có chắc chắn muốn xác minh hồ sơ này?')">
+
+                        <button
+                            type="button"
+                            class="btn btn-success"
+                            onclick="openConfirmModal(
+                                            'Xác minh hồ sơ',
+                                            'Bạn có chắc chắn muốn xác minh hồ sơ này?',
+                                            this.form,
+                                            'success'
+                                            )">
+
                             Đồng ý
+
                         </button>
+
                     </form>
 
-                    <form method="post" action="${pageContext.request.contextPath}/user/customer-profiles">
+                    <form id="rejectForm"
+                          method="post"
+                          action="${pageContext.request.contextPath}/user/customer-profiles">
+
                         <input type="hidden" name="action" value="reject">
                         <input type="hidden" name="profileId" value="${profile.profileId}">
-                        <button class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn từ chối hồ sơ này?')">
+
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="openConfirmModal(
+                                            'Từ chối hồ sơ',
+                                            'Bạn có chắc chắn muốn từ chối hồ sơ này?',
+                                            this.form,
+                                            'danger'
+                                            )">
+
                             Từ chối
+
                         </button>
+
                     </form>
                 </div>
             </div>
         </c:if>
     </div>
 </div>
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-box">
+        <div id="modalIcon" class="modal-icon">
+            <span class="material-symbols-outlined">
+                warning
+            </span>
+        </div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage"></p>
+        <div class="modal-actions">
+            <button
+                type="button"
+                class="btn btn-outline"
+                onclick="closeConfirmModal()">
+                Hủy
+            </button>
+            <button
+                id="confirmBtn"
+                type="button"
+                class="btn">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
 
+<style>
+.modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+.modal-box{
+    width:430px;
+    background:white;
+    border-radius:16px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.25);
+    animation:popup .25s;
+}
+@keyframes popup{
+from{
+transform:scale(.8);
+opacity:0;
+}
+to{
+transform:scale(1);
+opacity:1;
+}
+}
+.modal-icon{
+width:70px;
+height:70px;
+margin:auto;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-bottom:18px;
+}
+.modal-icon.success{
+background:#dcfce7;
+color:#16a34a;
+}
+.modal-icon.danger{
+background:#fee2e2;
+color:#dc2626;
+}
+.modal-actions{
+margin-top:25px;
+display:flex;
+justify-content:center;
+gap:15px;
+}
+</style>
+            
+<script>
+let selectedForm = null;
+function openConfirmModal(title,message,form,type){
+    selectedForm = form;
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalMessage").innerText = message;
+    const icon=document.getElementById("modalIcon");
+    const btn=document.getElementById("confirmBtn");
+    icon.className="modal-icon "+type;
+    if(type==="success"){
+        icon.innerHTML="<span class='material-symbols-outlined'>verified</span>";
+        btn.className="btn btn-success";
+        btn.innerText="Đồng ý";
+    }
+
+    else{
+        icon.innerHTML="<span class='material-symbols-outlined'>cancel</span>";
+        btn.className="btn btn-danger";
+        btn.innerText="Từ chối";
+    }
+    document.getElementById("confirmModal").style.display="flex";
+}
+function closeConfirmModal(){
+    document.getElementById("confirmModal").style.display="none";
+}
+document.getElementById("confirmBtn").onclick=function(){
+    selectedForm.submit();
+};
+window.onclick=function(e){
+    if(e.target.id==="confirmModal"){
+        closeConfirmModal();
+    }
+}
+</script>
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>

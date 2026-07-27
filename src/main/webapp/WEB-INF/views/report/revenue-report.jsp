@@ -340,11 +340,10 @@
                     <div style="flex:1;
                          position:relative;
                          display:flex;
-                         justify-content:space-around;
                          align-items:flex-end;
                          border-left:1px solid var(--outline-variant);
                          border-bottom:2px solid var(--outline);
-                         padding:0 20px;">
+                         padding:0 10px;">
 
                         <div style="position:absolute;left:0;right:0;top:0;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
                         <div style="position:absolute;left:0;right:0;top:20%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
@@ -353,19 +352,21 @@
                         <div style="position:absolute;left:0;right:0;top:80%;border-top:1px dashed var(--outline-variant);opacity:.35;"></div>
 
                         <c:forEach items="${chartData}" var="c">
-                            <div style="width:80px;
+                            <div style="flex:1;
                                  height:100%;
                                  display:flex;
                                  flex-direction:column;
                                  justify-content:flex-end;
                                  align-items:center;
-                                 position:relative;">
+                                 position:relative;
+                                 min-width:0;">
 
-                                <span style="position:absolute; bottom:calc(${c.height}% + 6px); font-size:12px; font-weight:600; white-space:nowrap; color:var(--on-surface);">
+                                <span style="position:absolute; bottom:calc(${c.height}% + 6px); font-size:11px; font-weight:600; white-space:nowrap; color:var(--on-surface);">
                                     <fmt:formatNumber value="${c.revenue/1000000}" maxFractionDigits="0"/>tr
                                 </span>
 
-                                <div style="width:38px;
+                                <div style="width:45%;
+                                     max-width:24px;
                                      height:${c.height}%;
                                      background:linear-gradient(180deg,var(--primary),var(--primary-container));
                                      border-radius:6px 6px 0 0;">
@@ -377,11 +378,11 @@
                 </div>
 
                 <!-- X AXIS LABELS -->
-                <div style="display:flex; margin-left:60px; padding:8px 20px 0 20px;">
-                    <div style="flex:1; display:flex; justify-content:space-around;">
+                <div style="display:flex; margin-left:60px; padding:8px 10px 0 10px;">
+                    <div style="flex:1; display:flex;">
                         <c:forEach items="${chartData}" var="c">
-                            <div style="width:80px; text-align:center;">
-                                <span style="font-weight:600; font-size:12px; white-space:nowrap; color:var(--on-surface-variant);">
+                            <div style="flex:1; text-align:center; min-width:0;">
+                                <span style="font-weight:600; font-size:11px; white-space:nowrap; color:var(--on-surface-variant); display:block; overflow:hidden; text-overflow:ellipsis;" title="${c.label}">
                                     ${c.label}
                                 </span>
                             </div>

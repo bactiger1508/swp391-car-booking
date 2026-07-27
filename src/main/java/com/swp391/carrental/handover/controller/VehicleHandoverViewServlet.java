@@ -22,23 +22,22 @@ import com.swp391.carrental.user.dao.UserDAO;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
+import com.swp391.carrental.vehicle.service.VehicleService;
 
 /**
  * Name: VehicleHandoverViewServlet
- * 
- * @Author: TamTTMHE190340
- *          Date: 21/06/2026
- *          Version: 1.0
- *          Description: Controller for viewing read-only vehicle handover
- *          inspection details.
+ *
+ * @Author: TamTTMHE190340 Date: 21/06/2026 Version: 1.0 Description: Controller
+ * for viewing read-only vehicle handover inspection details.
  */
-@WebServlet(name = "VehicleHandoverViewServlet", urlPatterns = { "/handover/view" })
+@WebServlet(name = "VehicleHandoverViewServlet", urlPatterns = {"/handover/view"})
 public class VehicleHandoverViewServlet extends HttpServlet {
 
     private final HandoverService handoverService = new HandoverService();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final VehicleDAO vehicleDAO = new VehicleDAO();
+    private final VehicleService vehicleService = new VehicleService();
     private final ContractDAO contractDAO = new ContractDAO();
     private final UserDAO userDAO = new UserDAO();
 
@@ -49,19 +48,22 @@ public class VehicleHandoverViewServlet extends HttpServlet {
         try {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
-            if (bookingIdStr != null && vehicleIdStr != null) {
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
-                boolean isStaffOrAdmin = currentUser != null && ("STAFF".equals(currentUser.getRole()) || "ADMIN".equals(currentUser.getRole()));
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.trim().isEmpty())
+                        ? Integer.parseInt(vehicleIdStr)
+                        : (booking != null ? booking.getVehicleId() : 0);
+
+                boolean isStaffOrAdmin = currentUser != null
+                        && ("STAFF".equals(currentUser.getRole()) || "ADMIN".equals(currentUser.getRole()));
                 if (booking != null) {
                     if (!isStaffOrAdmin && booking.getCustomerId() != currentUser.getUserId()) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN);
                         return;
                     }
                 }
-                Vehicle car = vehicleDAO.findById(vehicleId);
+                Vehicle car = vehicleService.getVehicleById(vehicleId);
                 RentalContract contract = contractDAO.findByBookingId(bookingId);
                 VehicleHandover handover = handoverDAO.findByBookingId(bookingId);
 
@@ -107,6 +109,12 @@ public class VehicleHandoverViewServlet extends HttpServlet {
 
                 if (handover != null) {
                     handoverService.updateStatusRequired(handover.getHandoverId());
+                }
+
+                // Send notifications & session message
+                notifyHandoverSigned(handover, bookingId);
+                if (request.getSession() != null) {
+                    request.getSession().setAttribute("successMessage", "Đã yêu cầu chỉnh  biên bản bàn giao xe thành công!");
                 }
 
                 response.sendRedirect(request.getContextPath() + "/bookings/detail?id=" + bookingId);

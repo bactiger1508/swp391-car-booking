@@ -2173,3 +2173,182 @@ input:checked + .toggle-slider:before { transform: translateX(22px); }
     transition: all 0.2s; line-height: 1;
 }
 .toast-close:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-primary); }
+
+/* Style override for no-sidebar public landing page layout */
+body.bk-layout.no-sidebar .bk-main {
+    margin-left: 0;
+    padding-top: 0;
+}
+
+/* ===== PUBLIC TOP NAVBAR (For Customers/Guests) ===== */
+.pub-navbar {
+    background-color: var(--primary, #041638);
+    color: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+.pub-navbar-container {
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px var(--page-margin, 32px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+.pub-navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+.pub-navbar-brand {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: -0.03em;
+}
+.pub-navbar-brand:hover {
+    color: #ffffff;
+    opacity: 0.9;
+}
+.pub-navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.pub-navbar-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: #8393bc;
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+.pub-navbar-link:hover,
+.pub-navbar-link.active {
+    color: #ffffff;
+}
+.pub-navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.pub-navbar-btn {
+    background-color: #ffffff;
+    color: #041638;
+    padding: 8px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.pub-navbar-btn:hover {
+    background-color: #f1f5f9;
+    color: #041638;
+    transform: translateY(-1px);
+}
+.pub-navbar-user-wrap {
+    position: relative;
+    display: inline-block;
+}
+.pub-navbar-user-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.pub-navbar-user-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.pub-navbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #d0e1fb;
+    color: #54647a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    user-select: none;
+}
+.pub-navbar-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 8px;
+    width: 200px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    padding: 8px 0;
+    z-index: 1001;
+}
+.pub-navbar-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: transparent;
+}
+.pub-navbar-user-wrap.active .pub-navbar-dropdown {
+    display: block;
+}
+.pub-navbar-dropdown-item {
+    display: block;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #334155;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+.pub-navbar-dropdown-item:hover {
+    background-color: #f8fafc;
+    color: #041638;
+}
+.pub-navbar-dropdown-item.danger {
+    color: #ef4444;
+}
+.pub-navbar-dropdown-item.danger:hover {
+    background-color: #fef2f2;
+}
+.pub-navbar-divider {
+    height: 1px;
+    background-color: #e2e8f0;
+    margin: 6px 0;
+}
+.pub-navbar-badge-btn {
+    font-size: 11px;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.pub-navbar-badge-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+

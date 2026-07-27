@@ -22,6 +22,7 @@ import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
+import com.swp391.carrental.vehicle.service.VehicleService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class AdditionalFeesServlet extends HttpServlet {
     private final ReturnDAO returnDAO = new ReturnDAO();
     private final BookingDAO bookingDAO = new BookingDAO();
     private final VehicleDAO vehicleDAO = new VehicleDAO();
+    private final VehicleService vehicleService = new VehicleService();
     private final UserDAO userDAO = new UserDAO();
     private final HandoverDAO handoverDAO = new HandoverDAO();
     private final FeeCalculator feeCalculator = new FeeCalculator();
@@ -50,13 +52,14 @@ public class AdditionalFeesServlet extends HttpServlet {
             String bookingIdStr = request.getParameter("bookingId");
             String vehicleIdStr = request.getParameter("vehicleId");
 
-            if (bookingIdStr != null && vehicleIdStr != null) {
-
+            if (bookingIdStr != null) {
                 int bookingId = Integer.parseInt(bookingIdStr);
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-
                 Booking booking = bookingDAO.findById(bookingId);
-                Vehicle car = vehicleDAO.findById(vehicleId);
+                int vehicleId = (vehicleIdStr != null && !vehicleIdStr.trim().isEmpty())
+                        ? Integer.parseInt(vehicleIdStr)
+                        : (booking != null ? booking.getVehicleId() : 0);
+
+                Vehicle car = vehicleService.getVehicleById(vehicleId);
                 request.setAttribute("booking", booking);
                 request.setAttribute("car", car);
                 request.setAttribute("vehicle", car);
@@ -111,6 +114,19 @@ public class AdditionalFeesServlet extends HttpServlet {
                     request.setAttribute("totalAdditionalFee", returns.getTotalAdditionalFee());
                     request.setAttribute("returns", returns);
 
+                    long days = 1;
+                    if (booking != null && booking.getStartDate() != null && booking.getEndDate() != null) {
+                        days = java.time.temporal.ChronoUnit.DAYS.between(booking.getStartDate().toLocalDate(), booking.getEndDate().toLocalDate());
+                        if (days < 1) days = 1;
+                    }
+
+                    com.swp391.carrental.policy.service.FeeCalculator feeCalc = new com.swp391.carrental.policy.service.FeeCalculator();
+                    int kmLimit = (booking != null && booking.getKmLimit() != null && booking.getKmLimit() > 0)
+                            ? booking.getKmLimit()
+                            : (booking != null ? feeCalc.calculateKmLimit(booking.getRentalMode(), booking.getPricingPackage(), days) : 250);
+                    int estimatedKm = (booking != null && booking.getEstimatedKm() != null) ? booking.getEstimatedKm() : 0;
+                    int alreadyPaidExtraKm = Math.max(0, estimatedKm - kmLimit);
+
                     if (handover != null) {
                         int mileageAtHandover = handover.getMileageAtHandover();
                         int mileageAtReturn = returns.getMileageAtReturn();
@@ -122,7 +138,12 @@ public class AdditionalFeesServlet extends HttpServlet {
                                 actualKm = mileageAtReturn;
                             }
                         }
+                        int actualExtraKm = Math.max(0, actualKm - kmLimit);
                         request.setAttribute("actualKm", actualKm);
+                        request.setAttribute("kmLimit", kmLimit);
+                        request.setAttribute("estimatedKm", estimatedKm);
+                        request.setAttribute("alreadyPaidExtraKm", alreadyPaidExtraKm);
+                        request.setAttribute("actualExtraKm", actualExtraKm);
                     }
                 }
             }

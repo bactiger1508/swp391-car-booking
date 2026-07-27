@@ -202,6 +202,14 @@ public class BookingDetailServlet extends HttpServlet {
             com.swp391.carrental.contract.model.RentalContract contract = contractService.getContractByBookingId(bookingId);
             request.setAttribute("contract", contract);
 
+            com.swp391.carrental.handover.model.VehicleHandover handover = null;
+            try {
+                handover = new com.swp391.carrental.handover.dao.HandoverDAO().findByBookingId(bookingId);
+            } catch (Exception e) {
+                // ignore
+            }
+            request.setAttribute("handover", handover);
+
             // Calculate rental days for display
             if (booking.getStartDate() != null && booking.getEndDate() != null) {
                 long days = java.time.temporal.ChronoUnit.DAYS.between(

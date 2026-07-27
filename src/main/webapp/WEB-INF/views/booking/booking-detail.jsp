@@ -447,6 +447,12 @@
                     <a href="${pageContext.request.contextPath}/contracts/detail?id=${contract.contractId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#2F5ACD; border-color:#2F5ACD;">
                         <span class="material-symbols-outlined">description</span> Xem hợp đồng thuê xe
                     </a>
+
+                    <c:if test="${not empty handover && handover.handoverId > 0}">
+                        <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#0288D1; border-color:#0288D1; padding:12px;">
+                            <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao xe
+                        </a>
+                    </c:if>
                 </c:if>
                 <c:if test="${!depositPaid && (booking.status == 'PENDING' || booking.status == 'CONFIRMED')}">
                     <a href="${pageContext.request.contextPath}/payments/record?bookingId=${booking.bookingId}" class="bk-btn bk-btn-primary" style="justify-content:center; background:#05CD99; border-color:#05CD99;">
@@ -466,10 +472,6 @@
 
                 <a href="${pageContext.request.contextPath}/bookings/my" class="bk-btn bk-btn-outline" style="justify-content:center;">
                     <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
-                </a>
-
-                <a href="${pageContext.request.contextPath}/handover/view?bookingId=${booking.bookingId}&vehicleId=${booking.vehicleId}" class="bk-btn bk-btn-outline" style="justify-content:center;">
-                    <span class="material-symbols-outlined">key</span> Xem biên bản bàn giao
                 </a>
 
                 <c:if test="${not empty returns}">
