@@ -91,7 +91,9 @@ public class ReturnService {
                     }
                 }
 
-                BigDecimal totalRequired = booking.getTotalAmount();
+                BigDecimal depositAmt = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
+                BigDecimal pureRentalFee = booking.getTotalAmount().subtract(depositAmt);
+                BigDecimal totalRequired = pureRentalFee;
                 if (vehicleReturn.getTotalAdditionalFee() != null) {
                     totalRequired = totalRequired.add(vehicleReturn.getTotalAdditionalFee());
                 }
