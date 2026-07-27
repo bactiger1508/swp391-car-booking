@@ -62,6 +62,25 @@ public class MaintenanceDAO {
     }
 
     /**
+     * Get scheduled maintenance (not yet completed).
+     */
+    public List<MaintenanceSchedule> getScheduledMaintenance() throws SQLException {
+        List<MaintenanceSchedule> schedules = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance_schedules WHERE status = 'SCHEDULED' " +
+                    "AND scheduled_date <= CAST(GETDATE() AS DATE) ORDER BY scheduled_date ASC";
+        
+        try (Connection conn = DBContext.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                schedules.add(mapRow(rs));
+            }
+        }
+        return schedules;
+    }
+
+    /**
      * Get maintenance schedule by ID.
      */
     public MaintenanceSchedule getMaintenanceById(int maintenanceId) throws SQLException {
@@ -205,7 +224,6 @@ public class MaintenanceDAO {
         }
     }
 
-    // Deletes all maintenance schedules for a vehicle (used when a vehicle is removed).
     public void deleteByVehicleId(int vehicleId) throws SQLException {
         String sql = "DELETE FROM maintenance_schedules WHERE vehicle_id = ?";
         try (Connection conn = DBContext.getConnection();
