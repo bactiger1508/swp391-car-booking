@@ -40,6 +40,7 @@ public class VehicleReturnListServlet extends HttpServlet {
         try {
             List<VehicleReturn> returns = returnService.getAllReturns();
             Map<Integer, BigDecimal> refundsMap = new HashMap<>();
+            Map<Integer, BigDecimal> extraPaymentsMap = new HashMap<>();
             Map<Integer, Integer> distanceDrivenMap = new HashMap<>();
             Map<Integer, Booking> bookings = new HashMap<>();
 
@@ -67,15 +68,17 @@ public class VehicleReturnListServlet extends HttpServlet {
                         }
                     }
 
-                    BigDecimal depositAmt = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
-                    BigDecimal pureRentalFee = booking.getTotalAmount().subtract(depositAmt);
-                    BigDecimal totalRequired = pureRentalFee.add(surcharge);
+                    BigDecimal totalRequired = booking.getTotalAmount().add(surcharge);
 
                     BigDecimal netRefund = BigDecimal.ZERO;
+                    BigDecimal netExtraPayment = BigDecimal.ZERO;
+
                     if (completedRefunds.compareTo(BigDecimal.ZERO) > 0) {
                         netRefund = completedRefunds;
                     } else if (grossPaid.compareTo(totalRequired) > 0) {
                         netRefund = grossPaid.subtract(totalRequired);
+                    } else if (totalRequired.compareTo(grossPaid) > 0) {
+                        netExtraPayment = totalRequired.subtract(grossPaid);
                     }
 
                     VehicleHandover handover = handoverDAO.findByBookingId(r.getBookingId());
@@ -91,6 +94,7 @@ public class VehicleReturnListServlet extends HttpServlet {
                     }
 
                     refundsMap.put(r.getBookingId(), netRefund);
+                    extraPaymentsMap.put(r.getBookingId(), netExtraPayment);
                     distanceDrivenMap.put(r.getBookingId(), driven);
                     bookings.put(r.getBookingId(), booking);
                 }
@@ -98,6 +102,7 @@ public class VehicleReturnListServlet extends HttpServlet {
 
             request.setAttribute("returns", returns);
             request.setAttribute("refundsMap", refundsMap);
+            request.setAttribute("extraPaymentsMap", extraPaymentsMap);
             request.setAttribute("distanceDrivenMap", distanceDrivenMap);
             request.setAttribute("bookings", bookings);
 
