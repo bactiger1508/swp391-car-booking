@@ -28,10 +28,10 @@ import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 
 /**
  * Name: ReportService
- * @Author: TamTTMHE190340
- * Date: 17/07/2026
- * Version: 1.0
- * Description: Service layer handling revenue aggregation, vehicle utilization analytics, and financial report generation.
+ *
+ * @Author: TamTTMHE190340 Date: 28/07/2026 Version: 1.0 Description: Service
+ * layer handling revenue aggregation, vehicle utilization analytics, and
+ * financial report generation.
  */
 public class ReportService {
 
@@ -726,52 +726,41 @@ public class ReportService {
 
         return chart;
     }
-    
     /** Helper method to calculate total used days across all bookings. */
     private int calculateUsedDays(
-        LocalDateTime from,
-        LocalDateTime to)
-        throws SQLException{
+            LocalDateTime from,
+            LocalDateTime to)
+            throws SQLException {
 
+        int total = 0;
 
-    int total=0;
+        for (Booking b : bookingDAO.findAll()) {
 
+            if (!"COMPLETED".equals(b.getStatus())
+                    && !"IN_PROGRESS".equals(b.getStatus())) {
+                continue;
+            }
 
-    for(Booking b:bookingDAO.findAll()){
+            if (b.getEndDate().isBefore(from)
+                    || b.getStartDate().isAfter(to)) {
+                continue;
+            }
 
+            LocalDateTime start
+                    = b.getStartDate().isBefore(from)
+                    ? from : b.getStartDate();
 
-        if(!"COMPLETED".equals(b.getStatus())
-           &&
-           !"IN_PROGRESS".equals(b.getStatus())){
-            continue;
+            LocalDateTime end
+                    = b.getEndDate().isAfter(to)
+                    ? to : b.getEndDate();
+
+            total += ChronoUnit.DAYS
+                    .between(start, end) + 1;
+
         }
 
-
-        if(b.getEndDate().isBefore(from)
-          ||
-          b.getStartDate().isAfter(to)){
-            continue;
-        }
-
-
-        LocalDateTime start =
-            b.getStartDate().isBefore(from)
-            ?from:b.getStartDate();
-
-
-        LocalDateTime end =
-            b.getEndDate().isAfter(to)
-            ?to:b.getEndDate();
-
-
-        total += ChronoUnit.DAYS
-                .between(start,end)+1;
-
+        return total;
     }
-
-
-    return total;
-}
 
     /** Calculates total maintenance cost incurred for completed schedules. */
     public BigDecimal getTotalMaintenanceCost(LocalDate from, LocalDate to) throws SQLException {
