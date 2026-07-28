@@ -152,7 +152,7 @@
             </div>
         </div>
 
-        <%-- Lịch sử thanh toán --%>
+        <%-- Payment history --%>
         <div class="bk-card">
             <div class="bk-card-title">
                 <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán & Giao dịch

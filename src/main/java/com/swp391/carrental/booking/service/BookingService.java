@@ -146,7 +146,7 @@ public class BookingService {
                     null
             );
             if (hasOverlap) {
-                throw new AppException("Xe đã có đặt chỗ trong khoảng thời gian này.");
+                throw new AppException("Xe đã có lịch đặt hoặc thời gian giãn cách giữa 2 chuyến xe quá ngắn (cần tối thiểu 60 phút để vệ sinh và kiểm tra xe).");
             }
 
             booking.setStatus(BookingStatus.PENDING);
@@ -218,7 +218,7 @@ public class BookingService {
                     booking.getBookingId()
             );
             if (hasOverlap) {
-                throw new AppException("Xe đã có đặt chỗ trong khoảng thời gian này.");
+                throw new AppException("Xe đã có lịch đặt hoặc thời gian giãn cách giữa 2 chuyến xe quá ngắn (cần tối thiểu 60 phút để vệ sinh và kiểm tra xe).");
             }
 
             return bookingDAO.update(booking);
