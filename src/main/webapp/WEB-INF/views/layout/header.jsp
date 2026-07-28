@@ -301,7 +301,7 @@
                                     </button>
                                     <div class="pub-navbar-dropdown">
                                         <c:if test="${sessionScope.currentUser.role != 'CUSTOMER'}">
-                                            <a href="${pageContext.request.contextPath}/bookings/approval" class="pub-navbar-dropdown-item" style="font-weight:700;color:var(--primary);">
+                                            <a href="${pageContext.request.contextPath}/bookings/manage" class="pub-navbar-dropdown-item" style="font-weight:700;color:var(--primary);">
                                                 Bảng điều khiển
                                             </a>
                                             <div class="pub-navbar-divider"></div>
