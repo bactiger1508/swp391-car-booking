@@ -1,3 +1,10 @@
+/*
+ * Name: AuditLogDAO
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Data Access Object for AuditLog entities (audit_logs table).
+ */
 package com.swp391.carrental.audit.dao;
 
 import java.sql.*;
@@ -7,8 +14,12 @@ import java.util.List;
 import com.swp391.carrental.core.util.DBContext;
 import com.swp391.carrental.audit.model.AuditLog;
 
+/**
+ * Executes raw SQL against the {@code audit_logs} table using plain JDBC (no ORM).
+ */
 public class AuditLogDAO {
 
+    /** Returns every audit log entry, most recent first. */
     public List<AuditLog> findAll() throws SQLException {
         List<AuditLog> logs = new ArrayList<>();
         String sql = "SELECT * FROM audit_logs ORDER BY created_at DESC";
@@ -22,6 +33,7 @@ public class AuditLogDAO {
         return logs;
     }
 
+    /** Returns audit log entries matching all provided filters (any parameter may be null to skip it), most recent first. */
     public List<AuditLog> findByFilters(Integer userId, String action, String entityType,
                                         LocalDateTime startDate, LocalDateTime endDate) throws SQLException {
         List<AuditLog> logs = new ArrayList<>();
@@ -53,50 +65,7 @@ public class AuditLogDAO {
         return logs;
     }
 
-    public List<AuditLog> findByUserId(int userId) throws SQLException {
-        List<AuditLog> logs = new ArrayList<>();
-        String sql = "SELECT * FROM audit_logs WHERE user_id = ? ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    logs.add(mapRow(rs));
-                }
-            }
-        }
-        return logs;
-    }
-
-    public List<AuditLog> findByEntityType(String entityType) throws SQLException {
-        List<AuditLog> logs = new ArrayList<>();
-        String sql = "SELECT * FROM audit_logs WHERE entity_type = ? ORDER BY created_at DESC";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, entityType);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    logs.add(mapRow(rs));
-                }
-            }
-        }
-        return logs;
-    }
-
-    public AuditLog findById(int auditId) throws SQLException {
-        String sql = "SELECT * FROM audit_logs WHERE log_id = ?";
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, auditId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
-            }
-        }
-        return null;
-    }
-
+    /** Inserts a new audit log entry and returns its generated id, or -1 if generation failed. */
     public int insert(AuditLog auditLog) throws SQLException {
         String sql = "INSERT INTO audit_logs (user_id, action, entity_type, entity_id, description, created_at) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -118,6 +87,7 @@ public class AuditLogDAO {
         return -1;
     }
 
+    /** Maps a single {@code audit_logs} result set row into an {@link AuditLog}. */
     private AuditLog mapRow(ResultSet rs) throws SQLException {
         AuditLog log = new AuditLog();
         log.setAuditId(rs.getInt("log_id"));

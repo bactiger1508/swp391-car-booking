@@ -27,13 +27,9 @@ public class AuditLog {
     private String ipAddress;
     private String description;
     private LocalDateTime createdAt;
-    private String userName;
 
     public AuditLog() {
     }
-
-    public String getUserName() { return userName; }
-    public void setUserName(String userName) { this.userName = userName; }
 
     public int getLogId() { return logId; }
     public void setLogId(int logId) { this.logId = logId; }

@@ -560,7 +560,8 @@ public class PaymentRecordServlet extends HttpServlet {
     }
 
     /**
-     * Notifies the customer that owns the booking that a payment was recorded for them.
+     * Notifies the customer that owns the booking that a payment was recorded for them,
+     * and notifies every STAFF/ADMIN account so the manually recorded payment is visible to the team.
      */
     private void notifyPaymentRecorded(Payment payment, int paymentId) {
         try {
@@ -569,27 +570,52 @@ public class PaymentRecordServlet extends HttpServlet {
                 return;
             }
 
-            String typeLabel;
-            switch (payment.getPaymentType() == null ? "" : payment.getPaymentType().toUpperCase()) {
-                case "DEPOSIT":        typeLabel = "tiền cọc"; break;
-                case "RENTAL":         typeLabel = "tiền thuê xe"; break;
-                case "ADDITIONAL_FEE": typeLabel = "phí phát sinh"; break;
-                case "REFUND":         typeLabel = "hoàn tiền"; break;
-                default:               typeLabel = "thanh toán"; break;
-            }
+            String typeLabel = paymentTypeLabel(payment.getPaymentType());
+            String vehiclePlate = describeVehiclePlate(booking.getVehicleId());
 
             String title = "REFUND".equalsIgnoreCase(payment.getPaymentType())
                     ? "Yêu cầu hoàn tiền đã được xử lý"
                     : "Đã ghi nhận thanh toán";
-            String message = "Đã ghi nhận khoản " + typeLabel + " " + payment.getAmount()
-                    + " VNĐ cho booking #" + payment.getBookingId() + ".";
+            String customerMessage = "Đã ghi nhận khoản " + typeLabel + " " + payment.getAmount()
+                    + " VNĐ cho booking #" + payment.getBookingId() + " (" + vehiclePlate + ").";
 
-            Notification notif = new Notification(booking.getCustomerId(), title, message, "PAYMENT");
-            notif.setReferenceType("PAYMENT");
-            notif.setReferenceId(paymentId);
-            notificationService.createNotification(notif);
+            Notification customerNotif = new Notification(booking.getCustomerId(), title, customerMessage, "PAYMENT");
+            customerNotif.setReferenceType("PAYMENT");
+            customerNotif.setReferenceId(paymentId);
+            notificationService.createNotification(customerNotif);
+
+            String staffMessage = "Đã ghi nhận khoản " + typeLabel + " " + payment.getAmount()
+                    + " VNĐ cho booking #" + payment.getBookingId() + " (" + vehiclePlate + ").";
+            for (String staffRole : new String[]{"STAFF", "ADMIN"}) {
+                for (User staffUser : userService.getUsersByRole(staffRole)) {
+                    Notification staffNotif = new Notification(staffUser.getUserId(), "Thanh toán đã được ghi nhận", staffMessage, "PAYMENT");
+                    staffNotif.setReferenceType("PAYMENT");
+                    staffNotif.setReferenceId(paymentId);
+                    notificationService.createNotification(staffNotif);
+                }
+            }
         } catch (Exception e) {
             System.err.println("Failed to send payment-recorded notification: " + e.getMessage());
         }
+    }
+
+    /** Maps a payment type code to its Vietnamese display label, for notification messages. */
+    private String paymentTypeLabel(String paymentType) {
+        switch (paymentType == null ? "" : paymentType.toUpperCase()) {
+            case "DEPOSIT":        return "tiền cọc";
+            case "RENTAL":         return "tiền thuê xe";
+            case "ADDITIONAL_FEE": return "phí phát sinh";
+            case "REFUND":         return "hoàn tiền";
+            default:               return "thanh toán";
+        }
+    }
+
+    /** Returns "biển số {plate}" for a vehicle, or a fallback label if not found. */
+    private String describeVehiclePlate(int vehicleId) {
+        com.swp391.carrental.vehicle.model.Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
+        if (vehicle == null) {
+            return "xe #" + vehicleId;
+        }
+        return "biển số " + vehicle.getLicensePlate();
     }
 }

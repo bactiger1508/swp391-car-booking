@@ -15,10 +15,23 @@ import com.swp391.carrental.vehicle.model.Vehicle;
 import com.swp391.carrental.vehicle.model.MaintenanceSchedule;
 import com.swp391.carrental.vehicle.service.VehicleService;
 
+/*
+ * Name: MaintenanceServlet
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Staff/Admin screen for recording vehicle maintenance jobs and updating their status.
+ */
+
+/**
+ * Records maintenance jobs for vehicles and tracks their lifecycle
+ * (SCHEDULED -> IN_PROGRESS -> COMPLETED/CANCELLED).
+ */
 @WebServlet(name = "MaintenanceServlet", urlPatterns = {"/vehicles/maintenance"})
 public class MaintenanceServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
 
+    /** Routes GET requests to the maintenance schedule JSON lookup, the per-vehicle list, or the full vehicle list. */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -37,9 +50,6 @@ public class MaintenanceServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         String vehicleIdStr = request.getParameter("vehicleId");
-        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
-            vehicleIdStr = request.getParameter("vehicleId");
-        }
 
         try {
             if ("getSchedule".equals(action) && vehicleIdStr != null) {
@@ -55,6 +65,7 @@ public class MaintenanceServlet extends HttpServlet {
         }
     }
 
+    /** Routes POST requests to record a new maintenance job or update an existing job's status. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -103,6 +114,7 @@ public class MaintenanceServlet extends HttpServlet {
         }
     }
 
+    /** Displays every vehicle on the maintenance overview page. */
     private void handleViewAllVehiclesWithMaintenance(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<Vehicle> cars = vehicleService.getAllVehicles();
@@ -110,6 +122,7 @@ public class MaintenanceServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
+    /** Displays the maintenance history of a single selected vehicle. */
     private void handleViewMaintenanceList(HttpServletRequest request, HttpServletResponse response, int vehicleId)
             throws ServletException, IOException {
         Vehicle car = vehicleService.getVehicleById(vehicleId);
@@ -126,6 +139,7 @@ public class MaintenanceServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/vehicle/maintenance.jsp").forward(request, response);
     }
 
+    /** Returns a vehicle's maintenance schedules as JSON, for AJAX modal display. */
     private void handleGetMaintenanceSchedule(HttpServletRequest request, HttpServletResponse response, int vehicleId)
             throws IOException {
         Vehicle car = vehicleService.getVehicleById(vehicleId);
@@ -157,12 +171,10 @@ public class MaintenanceServlet extends HttpServlet {
         response.getWriter().write(json.toString());
     }
 
+    /** Validates and creates a new maintenance job for a vehicle from submitted form data. */
     private void handleRecordMaintenance(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         String vehicleIdStr = request.getParameter("vehicleId");
-        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
-            vehicleIdStr = request.getParameter("vehicleId");
-        }
         String maintenanceType = request.getParameter("maintenanceType");
         String description = request.getParameter("description");
         String scheduledDateStr = request.getParameter("scheduledDate");
@@ -210,6 +222,7 @@ public class MaintenanceServlet extends HttpServlet {
         }
     }
 
+    /** Validates and applies a maintenance job's new status, returning the applied status string. */
     private String handleUpdateStatus(HttpServletRequest request, HttpServletResponse response, User currentUser) {
         String maintenanceIdStr = request.getParameter("maintenanceId");
         String status = request.getParameter("status");

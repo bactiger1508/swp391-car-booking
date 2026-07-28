@@ -130,12 +130,14 @@
     let schedPageSize = 6;
     let schedAllCards = [];
 
+    // Reads the selected page size and re-renders the schedule grid from page 1.
     function changeSchedPageSize() {
         schedPageSize = parseInt(document.getElementById('schedPageSizeSelect').value);
         schedCurrentPage = 1;
         applySchedPagination();
     }
 
+    // Shows only the schedule cards for the current page and updates the pagination summary/buttons.
     function applySchedPagination() {
         schedAllCards.forEach(card => card.style.display = 'none');
 
@@ -156,6 +158,7 @@
         renderSchedPaginationButtons(totalPages);
     }
 
+    // Builds the prev/page-number/next pagination buttons for the schedule grid.
     function renderSchedPaginationButtons(totalPages) {
         const container = document.getElementById('schedPaginationButtons');
         container.innerHTML = '';
