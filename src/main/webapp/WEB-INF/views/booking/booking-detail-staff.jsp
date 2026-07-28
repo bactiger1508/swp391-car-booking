@@ -465,7 +465,7 @@
                         <c:when test="${refundAmt > 0}">
                             <div class="bk-alert bk-alert-info" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 8px;">
                                 <span class="material-symbols-outlined" style="color: var(--primary);">info</span>
-                                <span>Đơn hàng đã hủy trước 48h. Cần hoàn trả 100% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
+                                <span>Đơn hàng đã hủy trước ${cancelHoursThreshold != null ? cancelHoursThreshold : '24-48'}h. Cần hoàn trả ${refundPercent != null ? refundPercent : '50'}% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
                             </div>
                         </c:when>
                     </c:choose>

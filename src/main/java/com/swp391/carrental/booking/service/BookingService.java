@@ -256,15 +256,21 @@ public class BookingService {
                 LocalDateTime startDate = booking.getStartDate();
                 long hours = ChronoUnit.HOURS.between(now, startDate);
 
+                com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+                int cancelFreeHours = Integer.parseInt(policyService.getPolicyValue("CANCEL_FREE_HOURS", "48"));
+                int cancelPartialHours = Integer.parseInt(policyService.getPolicyValue("CANCEL_PARTIAL_HOURS", "24"));
+                int cancelPartialRefundPercent = Integer.parseInt(policyService.getPolicyValue("CANCEL_PARTIAL_REFUND_PERCENT", "50"));
+
                 BigDecimal refundAmount = BigDecimal.ZERO;
                 int refundPercent = 0;
 
-                if (hours >= 48) {
+                if (hours >= cancelFreeHours) {
                     refundPercent = 100;
                     refundAmount = completedDeposit.getAmount();
-                } else if (hours >= 24) {
-                    refundPercent = 50;
-                    refundAmount = completedDeposit.getAmount().multiply(new BigDecimal("0.5"));
+                } else if (hours >= cancelPartialHours) {
+                    refundPercent = cancelPartialRefundPercent;
+                    BigDecimal multiplier = new BigDecimal(cancelPartialRefundPercent).divide(new BigDecimal("100"));
+                    refundAmount = completedDeposit.getAmount().multiply(multiplier);
                 } else {
                     refundPercent = 0;
                     refundAmount = BigDecimal.ZERO;
