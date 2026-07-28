@@ -18,12 +18,15 @@ import com.swp391.carrental.handover.dao.HandoverDAO;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.handover.service.ReturnService;
+import com.swp391.carrental.payment.dao.PaymentDAO;
+import com.swp391.carrental.payment.model.Payment;
+
 /**
  * Name: VehicleReturnListServlet
- * @Author: TamTTMHE190340
- * Date: 21/06/2026
- * Version: 1.0
- * Description: Controller for displaying the list of all vehicle returns, distance driven, and refund calculations.
+ *
+ * @Author: TamTTMHE190340 Date: 28/07/2026 Version: 1.0 Description: Controller
+ * for displaying the list of all vehicle returns, distance driven, and refund
+ * calculations.
  */
 @WebServlet(name = "VehicleReturnListServlet", urlPatterns = {"/returns"})
 public class VehicleReturnListServlet extends HttpServlet {
@@ -45,12 +48,12 @@ public class VehicleReturnListServlet extends HttpServlet {
 
                 if (booking != null) {
                     BigDecimal surcharge = r.getTotalAdditionalFee() != null ? r.getTotalAdditionalFee() : BigDecimal.ZERO;
-                    
-                    com.swp391.carrental.payment.dao.PaymentDAO paymentDAO = new com.swp391.carrental.payment.dao.PaymentDAO();
-                    List<com.swp391.carrental.payment.model.Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
+
+                    PaymentDAO paymentDAO = new PaymentDAO();
+                    List<Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
                     BigDecimal grossPaid = BigDecimal.ZERO;
                     BigDecimal completedRefunds = BigDecimal.ZERO;
-                    for (com.swp391.carrental.payment.model.Payment p : payments) {
+                    for (Payment p : payments) {
                         if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                             if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
                                 continue;
@@ -63,7 +66,7 @@ public class VehicleReturnListServlet extends HttpServlet {
                             }
                         }
                     }
-                    
+
                     BigDecimal depositAmt = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
                     BigDecimal pureRentalFee = booking.getTotalAmount().subtract(depositAmt);
                     BigDecimal totalRequired = pureRentalFee.add(surcharge);

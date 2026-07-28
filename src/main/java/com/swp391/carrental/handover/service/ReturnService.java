@@ -15,13 +15,14 @@ import com.swp391.carrental.handover.dao.ReturnDAO;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.payment.dao.PaymentDAO;
 import com.swp391.carrental.payment.model.Payment;
+import com.swp391.carrental.vehicle.constant.CarStatus;
 import com.swp391.carrental.vehicle.dao.VehicleDAO;
 import com.swp391.carrental.vehicle.model.Vehicle;
 
 /**
  * Name: ReturnService
  * @Author: TamTTMHE190340
- * Date: 19/06/2026
+ * Date: 28/07/2026
  * Version: 1.0
  * Description: Service layer handling vehicle return processing, surcharge evaluation, settlement status transitions, and final ODO synchronization.
  */
@@ -111,9 +112,9 @@ public class ReturnService {
                             vehicle.setMileage(vehicleReturn.getMileageAtReturn());
                         }
                         if (vehicleReturn.getNotes() != null && vehicleReturn.getNotes().contains("[CẦN BẢO DƯỠNG]")) {
-                            vehicle.setStatus(com.swp391.carrental.vehicle.constant.CarStatus.MAINTENANCE);
+                            vehicle.setStatus(CarStatus.MAINTENANCE);
                         } else {
-                            vehicle.setStatus(com.swp391.carrental.vehicle.constant.CarStatus.AVAILABLE);
+                            vehicle.setStatus(CarStatus.AVAILABLE);
                         }
                         vehicleDAO.update(vehicle);
                     }
