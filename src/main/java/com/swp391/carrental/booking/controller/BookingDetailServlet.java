@@ -179,6 +179,8 @@ public class BookingDetailServlet extends HttpServlet {
             request.setAttribute("refundAmt", refundAmt);
             request.setAttribute("refundPercent", refundPercent);
             request.setAttribute("cancelHoursThreshold", cancelHoursThreshold);
+            request.setAttribute("cancelFreeHours", cancelFreeHours);
+            request.setAttribute("cancelPartialHours", cancelPartialHours);
             request.setAttribute("isForfeited", isForfeited);
             request.setAttribute("forfeitedAmount", forfeitedAmount);
             request.setAttribute("depositPaidAmt", depositPaidAmt);

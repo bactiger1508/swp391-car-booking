@@ -449,23 +449,27 @@
             <c:choose>
                 <c:when test="${booking.status == 'CANCELLED'}">
                     <c:choose>
-                        <c:when test="${isForfeited}">
-                            <div class="bk-alert bk-alert-error" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+                        <%-- Hủy dưới 24h: Tịch thu 100% cọc --%>
+                        <c:when test="${isForfeited && refundAmt <= 0}">
+                            <div class="bk-alert bk-alert-error" style="margin: 12px 0; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
                                 <span class="material-symbols-outlined" style="color: var(--error);">error</span>
-                                <c:choose>
-                                    <c:when test="${refundAmt > 0}">
-                                        <span>Đơn hàng đã hủy sát giờ (dưới 48h). Hoàn trả khách 50% cọc: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>. Tịch thu cọc còn lại: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>.</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span>Đơn hàng đã hủy sát giờ (dưới 24h). Tịch thu toàn bộ cọc của khách: <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>. Không phát sinh hoàn trả.</span>
-                                    </c:otherwise>
-                                </c:choose>
+                                <span>Đơn hủy dưới ${cancelPartialHours != null ? cancelPartialHours : 24}h (Tịch thu 100% cọc): <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>. Khách không được hoàn cọc.</span>
                             </div>
                         </c:when>
+
+                        <%-- Hủy từ 24h - 48h: Phạt cọc 50%, hoàn trả 50% --%>
+                        <c:when test="${isForfeited && refundAmt > 0}">
+                            <div class="bk-alert bk-alert-warning" style="margin: 12px 0; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: #FFF8E1; border: 1px solid #FFE082;">
+                                <span class="material-symbols-outlined" style="color: #F57C00;">warning</span>
+                                <span>Đơn hủy từ ${cancelPartialHours != null ? cancelPartialHours : 24}h-${cancelFreeHours != null ? cancelFreeHours : 48}h (Trừ ${100 - (refundPercent != null ? refundPercent : 50)}% cọc): Hoàn trả <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>, tịch thu <strong style="color: var(--error);"><fmt:formatNumber value="${forfeitedAmount}" pattern="#,##0"/> đ</strong>.</span>
+                            </div>
+                        </c:when>
+
+                        <%-- Hủy trước 48h: Hoàn trả 100% cọc --%>
                         <c:when test="${refundAmt > 0}">
-                            <div class="bk-alert bk-alert-info" style="margin-top: 12px; margin-bottom: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 8px;">
-                                <span class="material-symbols-outlined" style="color: var(--primary);">info</span>
-                                <span>Đơn hàng đã hủy trước ${cancelHoursThreshold != null ? cancelHoursThreshold : '24-48'}h. Cần hoàn trả ${refundPercent != null ? refundPercent : '50'}% cọc cho khách: <strong style="color: var(--primary);"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
+                            <div class="bk-alert bk-alert-info" style="margin: 12px 0; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background: #EAF9F5; border: 1px solid #05CD99;">
+                                <span class="material-symbols-outlined" style="color: #05CD99;">check_circle</span>
+                                <span>Đơn hủy trước ${cancelFreeHours != null ? cancelFreeHours : 48}h (Hoàn trả 100% cọc): Cần trả lại khách <strong style="color: #05CD99;"><fmt:formatNumber value="${refundAmt}" pattern="#,##0"/> đ</strong>.</span>
                             </div>
                         </c:when>
                     </c:choose>
