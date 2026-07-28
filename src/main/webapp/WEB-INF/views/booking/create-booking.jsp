@@ -149,6 +149,12 @@
                                 <input type="time" name="startTime" id="startTime" class="bk-form-input" value="${not empty startTime ? startTime : (not empty param.startTime ? param.startTime : '08:00')}">
                             </div>
                             <span class="error-msg" style="color:var(--error);font-size:12px;margin-top:4px;display:none;" id="err-startTime"></span>
+                            <div id="instantPickupWrap" style="display:inline-flex; align-items:center; gap:6px; margin-top:6px;">
+                                <input type="checkbox" id="instantPickup" name="instantPickup" onchange="onInstantPickupToggle()" style="cursor:pointer; width:15px; height:15px; accent-color:var(--primary);">
+                                <label for="instantPickup" style="font-size:12px; color:var(--text-secondary); cursor:pointer; font-weight:500;">
+                                    ⚡ Tôi đang tại Showroom và muốn nhận xe ngay (15 phút)
+                                </label>
+                            </div>
                         </div>
                         <div class="bk-form-group">
                             <label class="bk-form-label">Ngày kết thúc <span style="color:var(--error);">*</span></label>
@@ -377,7 +383,7 @@ function validateScheduleRealtime() {
     var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
     var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
     
-    var minBufferHours = 1;
+    var minBufferHours = (typeof calculateBufferHours === 'function') ? calculateBufferHours() : 1;
     if (deliveryMethod === 'DELIVERY') {
         var travelHours = deliveryDistance / 25.0;
         minBufferHours = 1.0 + travelHours;
@@ -405,10 +411,13 @@ function validateScheduleRealtime() {
                 var formatMins = String(earliestValidDt.getMinutes()).padStart(2, '0');
                 
                 var dateNotice = (earliestDateStr !== todayStr) ? ' ngày ' + earliestDateStr.split('-').reverse().join('/') : '';
+                var isInstant = document.getElementById('instantPickup') && document.getElementById('instantPickup').checked;
                 
                 if (deliveryMethod === 'DELIVERY') {
                     var travelMins = Math.round((deliveryDistance / 25.0) * 60);
                     errSt.textContent = 'Địa chỉ giao xe cách showroom ' + deliveryDistance + 'km (dự kiến di chuyển ~' + travelMins + ' phút). Giờ nhận xe sớm nhất phải từ ' + formatHrs + ':' + formatMins + dateNotice + ' trở đi (sau ' + minBufferHours + ' tiếng).';
+                } else if (isInstant) {
+                    errSt.textContent = 'Nhận xe ngay tại showroom yêu cầu báo trước tối thiểu 15 phút. Giờ nhận xe sớm nhất từ ' + formatHrs + ':' + formatMins + dateNotice + ' trở đi.';
                 } else {
                     errSt.textContent = 'Lấy xe tại showroom yêu cầu báo trước 1 tiếng. Giờ nhận xe sớm nhất từ ' + formatHrs + ':' + formatMins + dateNotice + ' trở đi.';
                 }
@@ -601,10 +610,11 @@ function updateCarInfo() {
     
     // Auto-fill pickup location for showroom
     var deliveryMethod = document.getElementById('deliveryMethod').value;
+    var resolvedBranch = (typeof resolveShowroomBranchName === 'function') ? resolveShowroomBranchName(location) : location;
     if (deliveryMethod === "SHOWROOM") {
-        document.getElementById('pickupLocation').value = "Showroom: " + location;
+        document.getElementById('pickupLocation').value = resolvedBranch;
     }
-    document.getElementById('returnLocation').value = location;
+    document.getElementById('returnLocation').value = resolvedBranch;
     
     info.innerHTML =
         '<div style="width:100%;height:140px;background:var(--surface-container-high);border-radius:8px;overflow:hidden;margin-bottom:12px;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);">' +
@@ -706,27 +716,54 @@ function autoSetEndDate(startDateStr, comboDays) {
     edInput.value = getLocalDateString(end);
 }
 
-/**
- * Gets earliest valid time string (HH:mm) rounded up to next 30-min slot with buffer hours
- */
+// Calculates buffer hours between rentals based on delivery method and instant pickup preference
+function calculateBufferHours() {
+    var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
+    var isInstant = document.getElementById('instantPickup') && document.getElementById('instantPickup').checked;
+    if (deliveryMethod === 'SHOWROOM' && isInstant) {
+        return 0.25; // 15 mins for walk-in showroom customers
+    }
+    if (deliveryMethod === 'DELIVERY') {
+        var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
+        var hrs = 1.0 + (deliveryDistance / 25.0);
+        return hrs < 1.5 ? 1.5 : hrs;
+    }
+    return 1.0; // Standard 1-hour buffer for online showroom pickup
+}
+
+// Handles instant showroom pickup checkbox toggle for walk-in customers
+function onInstantPickupToggle() {
+    onStartDateChange();
+    calculateBookingCost();
+    if (typeof validateScheduleRealtime === 'function') {
+        validateScheduleRealtime();
+    }
+}
+
+// Returns earliest valid pickup time string (HH:mm) rounded up to 15-min or 30-min slot
 function getEarliestValidTimeString(bufferHours) {
-    if (!bufferHours) bufferHours = 1;
+    if (bufferHours === undefined || bufferHours === null) bufferHours = calculateBufferHours();
     var validDt = new Date(Date.now() + bufferHours * 60 * 60 * 1000);
     var minutes = validDt.getMinutes();
-    if (minutes > 0 && minutes <= 30) {
-        validDt.setMinutes(30);
-    } else if (minutes > 30) {
-        validDt.setHours(validDt.getHours() + 1);
-        validDt.setMinutes(0);
+    if (bufferHours <= 0.25) {
+        var remainder = minutes % 15;
+        if (remainder > 0) {
+            validDt.setMinutes(minutes + (15 - remainder));
+        }
+    } else {
+        if (minutes > 0 && minutes <= 30) {
+            validDt.setMinutes(30);
+        } else if (minutes > 30) {
+            validDt.setHours(validDt.getHours() + 1);
+            validDt.setMinutes(0);
+        }
     }
     var hh = String(validDt.getHours()).padStart(2, '0');
     var mm = String(validDt.getMinutes()).padStart(2, '0');
     return hh + ':' + mm;
 }
 
-/**
- * Called when startDate changes - auto-compute endDate for combo packages
- */
+// Auto-computes end date and updates valid start time when start date changes
 function onStartDateChange() {
     var modeCombo = document.getElementById('rentalModeCombo').value;
     var sdInput = document.getElementById('startDate');
@@ -735,17 +772,10 @@ function onStartDateChange() {
 
     if (!sdInput.value) return;
 
-    // If today is selected and start time is empty or in the past/invalid, auto set earliest valid time
     var now = new Date();
     var todayStr = getLocalDateString(now);
     if (sdInput.value === todayStr) {
-        var deliveryMethod = document.getElementById('deliveryMethod') ? document.getElementById('deliveryMethod').value : 'SHOWROOM';
-        var deliveryDistance = parseFloat(document.getElementById('deliveryDistance') ? document.getElementById('deliveryDistance').value : 0) || 0;
-        var bufferHrs = 1;
-        if (deliveryMethod === 'DELIVERY') {
-            bufferHrs = 1.0 + (deliveryDistance / 25.0);
-            if (bufferHrs < 1.5) bufferHrs = 1.5;
-        }
+        var bufferHrs = calculateBufferHours();
         var earliestTimeStr = getEarliestValidTimeString(bufferHrs);
         
         if (stInput) {
@@ -786,16 +816,31 @@ var BRANCH_HCM = { lat: 10.776889, lng: 106.700806, name: "Chi nhánh TP. HCM: 4
 var SHOWROOM_LAT = BRANCH_HN.lat;
 var SHOWROOM_LNG = BRANCH_HN.lng;
 
+// Resolves raw location string to official showroom branch address
+function resolveShowroomBranchName(locationStr) {
+    if (!locationStr) return BRANCH_HN.name;
+    var locLower = locationStr.toLowerCase();
+    if (locLower.includes('hcm') || locLower.includes('quận') || locLower.includes('chi nhánh tp') || locLower.includes('sài gòn') || locLower.includes('chí minh')) {
+        return BRANCH_HCM.name;
+    }
+    return BRANCH_HN.name;
+}
+
+// Updates form field visibility and pickup time when delivery method changes
 function onDeliveryMethodChange() {
     var deliveryMethod = document.getElementById('deliveryMethod').value;
     var distGroup = document.getElementById('distanceGroup');
     var addrGroup = document.getElementById('deliveryAddressGroup');
     var pickupInput = document.getElementById('pickupLocation');
     var pickupGroup = pickupInput.closest('.bk-form-group');
+    var instantWrap = document.getElementById('instantPickupWrap');
+    var instantCheck = document.getElementById('instantPickup');
     
     if (deliveryMethod === "DELIVERY") {
         distGroup.style.display = 'block';
         addrGroup.style.display = 'block';
+        if (instantWrap) instantWrap.style.display = 'none';
+        if (instantCheck) instantCheck.checked = false;
         if (pickupGroup) {
             pickupGroup.style.display = 'none';
         }
@@ -804,6 +849,7 @@ function onDeliveryMethodChange() {
     } else {
         distGroup.style.display = 'none';
         addrGroup.style.display = 'none';
+        if (instantWrap) instantWrap.style.display = 'inline-flex';
         document.getElementById('deliveryDistance').value = '0';
         var fallbackNotice = document.getElementById('distanceFallbackNotice');
         if (fallbackNotice) fallbackNotice.style.display = 'none';
@@ -817,11 +863,12 @@ function onDeliveryMethodChange() {
         var opt = sel.options[sel.selectedIndex];
         if (opt && opt.value) {
             var location = opt.getAttribute('data-location') || 'Văn phòng chính';
-            pickupInput.value = "Showroom: " + location;
+            pickupInput.value = resolveShowroomBranchName(location);
         } else {
-            pickupInput.value = "Showroom chính: 123 Đường Láng, Hà Nội";
+            pickupInput.value = BRANCH_HN.name;
         }
     }
+    onStartDateChange();
     calculateBookingCost();
     if (typeof validateScheduleRealtime === 'function') {
         validateScheduleRealtime();

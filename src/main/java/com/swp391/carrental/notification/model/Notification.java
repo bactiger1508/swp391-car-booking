@@ -1,7 +1,19 @@
+/*
+ * Name: Notification
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Entity representing an in-app notification sent to a user (booking, payment, contract, handover or system events).
+ */
 package com.swp391.carrental.notification.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a single notification record delivered to a user, optionally
+ * linked to a source entity (booking, contract, payment, handover, ...) via
+ * {@code referenceType}/{@code referenceId}.
+ */
 public class Notification {
     private int notificationId;
     private int userId;
@@ -14,8 +26,17 @@ public class Notification {
     private LocalDateTime readAt;
     private LocalDateTime createdAt;
 
+    /** Creates an empty notification (used when mapping from a database row). */
     public Notification() {}
 
+    /**
+     * Creates a new unread notification for a user, timestamped at creation.
+     *
+     * @param userId           id of the recipient user
+     * @param title            short notification headline
+     * @param message          full notification message body
+     * @param notificationType category of the event (e.g. BOOKING, PAYMENT, CONTRACT, HANDOVER, RETURN)
+     */
     public Notification(int userId, String title, String message, String notificationType) {
         this.userId = userId;
         this.title = title;

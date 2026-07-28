@@ -215,23 +215,23 @@
                     <label class="bk-form-label" style="font-weight:600;">Mức nhiên liệu tại thời điểm nhận lại *</label>
                     <div style="display: flex; background: var(--surface-container-low); border: 1.5px solid var(--outline-variant); border-radius: 8px; overflow: hidden; height: 42px; margin-top: 6px;">
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                            <input type="radio" name="fuel" value="E" required="required" class="fuel-radio" ${returns.fuelLevel == 'EMPTY' || returns.fuelLevel == 'E' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="E" class="fuel-radio" ${returns.fuelLevel == 'EMPTY' || returns.fuelLevel == 'E' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">E</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                            <input type="radio" name="fuel" value="1/4" required="required" class="fuel-radio" ${returns.fuelLevel == '1/4' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="1/4" class="fuel-radio" ${returns.fuelLevel == '1/4' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">1/4</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                            <input type="radio" name="fuel" value="1/2" required="required" class="fuel-radio" ${returns.fuelLevel == '1/2' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="1/2" class="fuel-radio" ${returns.fuelLevel == '1/2' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">1/2</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--outline-variant);">
-                            <input type="radio" name="fuel" value="3/4" required="required" class="fuel-radio" ${returns.fuelLevel == '3/4' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="3/4" class="fuel-radio" ${returns.fuelLevel == '3/4' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">3/4</span>
                         </label>
                         <label style="flex: 1; text-align: center; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <input type="radio" name="fuel" value="F" required="required" class="fuel-radio" ${returns.fuelLevel == 'FULL' || returns.fuelLevel == 'F' ? 'checked="checked"' : ''}/>
+                            <input type="radio" name="fuel" value="F" class="fuel-radio" ${returns.fuelLevel == 'FULL' || returns.fuelLevel == 'F' ? 'checked="checked"' : ''}/>
                             <span class="fuel-label">F</span>
                         </label>
                     </div>
@@ -242,6 +242,11 @@
                             ${not empty handover ? handover.fuelLevel : ''}
                         </span>
                     </span>
+                    <c:if test="${not empty currentFuelLevelError}">
+                        <div style="color:red; margin-top:5px;">
+                            ${currentFuelLevelError}
+                        </div>
+                    </c:if>
                 </div>
             </div>
         </div>
@@ -491,7 +496,8 @@
                 if (submitter && submitter.value === "confirm" && hasUserModified) {
                     e.preventDefault();
                     const warning = document.getElementById('calc-warning');
-                    if (warning) warning.style.display = 'inline-flex';
+                    if (warning)
+                        warning.style.display = 'inline-flex';
                     alert("Thông tin thay đổi. Vui lòng bấm 'Tính phí' trước khi xác nhận!");
                 }
             });

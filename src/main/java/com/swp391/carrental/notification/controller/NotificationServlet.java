@@ -1,3 +1,10 @@
+/*
+ * Name: NotificationServlet
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Handles the notification list page and the AJAX endpoints used for header dropdown polling and read-state updates.
+ */
 package com.swp391.carrental.notification.controller;
 
 import jakarta.servlet.ServletException;
@@ -13,15 +20,15 @@ import com.swp391.carrental.notification.model.Notification;
 import com.swp391.carrental.notification.service.NotificationService;
 import com.swp391.carrental.user.model.User;
 
-/*
- * Name: NotificationServlet
- * Description: Handles listing, click-through routing, and read-state updates for user notifications.
+/**
+ * Serves the notification center page and its supporting AJAX actions
+ * (unread count polling, list refresh, mark-as-read, mark-all-as-read).
  */
 @WebServlet(name = "NotificationServlet", urlPatterns = {"/notifications"})
 public class NotificationServlet extends HttpServlet {
     private final NotificationService notificationService = new NotificationService();
 
-    // Routes GET requests to view/list, unread-count, get-all, or click-through handlers based on the action param.
+    /** Routes GET requests to the notification page or one of the JSON polling actions. */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -40,8 +47,6 @@ public class NotificationServlet extends HttpServlet {
                 handleGetUnreadCount(request, response, currentUser);
             } else if ("getAll".equals(action)) {
                 handleGetAllNotifications(request, response, currentUser);
-            } else if ("click".equals(action)) {
-                handleNotificationClick(request, response, currentUser);
             } else {
                 handleViewNotifications(request, response, currentUser);
             }
@@ -51,7 +56,7 @@ public class NotificationServlet extends HttpServlet {
         }
     }
 
-    // Routes POST requests to mark-as-read or mark-all-as-read handlers based on the action param.
+    /** Routes POST requests to mark-as-read/mark-all-as-read actions, replying JSON for AJAX calls. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -90,60 +95,7 @@ public class NotificationServlet extends HttpServlet {
         }
     }
 
-    // Handles notification click: marks as read and redirects to relevant detail page based on referenceType and user role.
-    private void handleNotificationClick(HttpServletRequest request, HttpServletResponse response, User currentUser)
-            throws IOException {
-        String notificationIdStr = request.getParameter("notificationId");
-        if (notificationIdStr == null || notificationIdStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/notifications");
-            return;
-        }
-
-        int notificationId = Integer.parseInt(notificationIdStr);
-        Notification notification = notificationService.getNotificationById(notificationId);
-
-        if (notification == null || notification.getUserId() != currentUser.getUserId()) {
-            response.sendRedirect(request.getContextPath() + "/notifications");
-            return;
-        }
-
-        // Mark notification as read
-        notificationService.markNotificationAsRead(notificationId);
-
-        // Route to detail page based on referenceType
-        String contextPath = request.getContextPath();
-        String redirectUrl = contextPath + "/notifications";
-
-        if (notification.getReferenceType() != null && notification.getReferenceId() != null) {
-            switch (notification.getReferenceType()) {
-                case "VEHICLE":
-                    // Route to admin detail page if user is ADMIN/STAFF, otherwise customer detail page
-                    String userRole = currentUser.getRole();
-                    if ("ADMIN".equals(userRole) || "STAFF".equals(userRole)) {
-                        redirectUrl = contextPath + "/vehicles/admin/detail?id=" + notification.getReferenceId();
-                    } else {
-                        redirectUrl = contextPath + "/vehicles/detail?id=" + notification.getReferenceId();
-                    }
-                    break;
-                case "BOOKING":
-                    redirectUrl = contextPath + "/bookings/detail?id=" + notification.getReferenceId();
-                    break;
-                case "CONTRACT":
-                    redirectUrl = contextPath + "/contracts/detail?id=" + notification.getReferenceId();
-                    break;
-                case "PAYMENT":
-                    redirectUrl = contextPath + "/payments/record?id=" + notification.getReferenceId();
-                    break;
-                case "MAINTENANCE":
-                    redirectUrl = contextPath + "/vehicles/maintenance?vehicleId=" + notification.getReferenceId();
-                    break;
-            }
-        }
-
-        response.sendRedirect(redirectUrl);
-    }
-
-    // Displays notification list page with all user notifications and unread count.
+    /** Displays the notification list page with all user notifications and the unread count. */
     private void handleViewNotifications(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         List<Notification> notifications = notificationService.getNotificationsByUserId(currentUser.getUserId());
@@ -154,11 +106,10 @@ public class NotificationServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/notification/notifications.jsp").forward(request, response);
     }
 
-    // Returns all user notifications as JSON for header dropdown real-time polling.
+    /** Returns all user notifications as a JSON array, for header dropdown real-time polling. */
     private void handleGetAllNotifications(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException {
         List<Notification> notifications = notificationService.getNotificationsByUserId(currentUser.getUserId());
-        int unreadCount = notificationService.getUnreadCount(currentUser.getUserId());
 
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < notifications.size(); i++) {
@@ -173,7 +124,9 @@ public class NotificationServlet extends HttpServlet {
                 .append("\"isRead\":").append(n.isRead()).append(",")
                 .append("\"createdAt\":\"").append(n.getCreatedAt()).append("\"")
                 .append("}");
-            if (i < notifications.size() - 1) json.append(",");
+            if (i < notifications.size() - 1) {
+                json.append(",");
+            }
         }
         json.append("]");
 
@@ -181,7 +134,7 @@ public class NotificationServlet extends HttpServlet {
         response.getWriter().write(json.toString());
     }
 
-    // Returns unread notification count as JSON for header badge display.
+    /** Returns the unread notification count as JSON, for header badge display. */
     private void handleGetUnreadCount(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws IOException {
         int unreadCount = notificationService.getUnreadCount(currentUser.getUserId());
@@ -190,14 +143,19 @@ public class NotificationServlet extends HttpServlet {
         response.getWriter().write("{\"unreadCount\":" + unreadCount + "}");
     }
 
-    // Marks single notification as read (validates ownership before updating).
+    /** Marks a single notification as read, validating ownership before updating. */
     private void handleMarkAsRead(HttpServletRequest request, HttpServletResponse response, User currentUser) {
         String notificationIdStr = request.getParameter("notificationId");
         if (notificationIdStr == null || notificationIdStr.isEmpty()) {
             throw new AppException("Notification ID is required");
         }
 
-        int notificationId = Integer.parseInt(notificationIdStr);
+        int notificationId;
+        try {
+            notificationId = Integer.parseInt(notificationIdStr);
+        } catch (NumberFormatException e) {
+            throw new AppException("Invalid notification ID");
+        }
         Notification notification = notificationService.getNotificationById(notificationId);
 
         if (notification == null) {
@@ -211,14 +169,16 @@ public class NotificationServlet extends HttpServlet {
         notificationService.markNotificationAsRead(notificationId);
     }
 
-    // Marks all user notifications as read in one bulk operation.
+    /** Marks all user notifications as read in one bulk operation. */
     private void handleMarkAllAsRead(HttpServletRequest request, HttpServletResponse response, User currentUser) {
         notificationService.markAllNotificationsAsRead(currentUser.getUserId());
     }
 
-    // Escapes special characters in text for safe JSON response output (prevents XSS).
+    /** Escapes special characters in text for safe JSON response output (prevents JSON/script injection). */
     private String escapeJson(String text) {
-        if (text == null) return "";
+        if (text == null) {
+            return "";
+        }
         return text.replace("\\", "\\\\")
                    .replace("\"", "\\\"")
                    .replace("\n", "\\n")
@@ -226,7 +186,7 @@ public class NotificationServlet extends HttpServlet {
                    .replace("\t", "\\t");
     }
 
-    // Sends a JSON response with a success flag and message/error field (used for AJAX operations).
+    /** Writes a {success, message|error} JSON response for AJAX notification actions. */
     private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
         response.setContentType("application/json; charset=UTF-8");
         String json = "{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}";

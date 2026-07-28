@@ -25,7 +25,7 @@
                 <li class="menu-section">Nghiệp Vụ</li>
                 <li><a href="${pageContext.request.contextPath}/vehicles/manage">⚙️ Quản Lý Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/vehicles/availability">📅 Kiểm Tra Xe Trống</a></li>
-                <li><a href="${pageContext.request.contextPath}/maintenance">🔧 Lịch Bảo Dưỡng</a></li>
+                <li><a href="${pageContext.request.contextPath}/vehicles/maintenance">🔧 Lịch Bảo Dưỡng</a></li>
                 <li><a href="${pageContext.request.contextPath}/bookings/manage">📊 Quản Lý Đặt Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/bookings/approval">✅ Duyệt Đặt Xe</a></li>
                 <li><a href="${pageContext.request.contextPath}/user/customer-profiles">🪪 Duyệt Hồ Sơ KH</a></li>

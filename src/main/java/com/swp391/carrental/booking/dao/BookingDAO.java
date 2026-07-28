@@ -108,11 +108,11 @@ public class BookingDAO {
         return bookings;
     }
 
-    /** Check if a car has any overlapping active bookings in a given time range */
+    /** Check if a car has any overlapping active bookings in a given time range (includes 60-minute buffer time for cleaning/inspection) */
     public boolean hasOverlappingBooking(int vehicleId, Timestamp startDate, Timestamp endDate, Integer excludeBookingId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM bookings WHERE vehicle_id = ? "
                    + "AND status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
-                   + "AND start_date < ? AND end_date > ?";
+                   + "AND start_date < DATEADD(minute, 60, ?) AND DATEADD(minute, 60, end_date) > ?";
         if (excludeBookingId != null) {
             sql += " AND booking_id != ?";
         }

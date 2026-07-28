@@ -17,13 +17,21 @@ import com.swp391.carrental.core.util.SecurityUtils;
 
 /*
  * Name: VehicleBrandModelServlet
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
  * Description: Manage vehicle brands & models (lookup tables used by Add/Edit Vehicle).
  */
 
+/**
+ * Staff/Admin screen for managing the vehicle brand/model lookup tables used
+ * by the Add/Edit Vehicle form.
+ */
 @WebServlet(name = "VehicleBrandModelServlet", urlPatterns = {"/vehicles/brands"})
 public class VehicleBrandModelServlet extends HttpServlet {
     private final VehicleService vehicleService = new VehicleService();
 
+    /** Displays the brand/model management page, listing every brand (including inactive ones). */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -45,6 +53,7 @@ public class VehicleBrandModelServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/vehicle/brand-model-management.jsp").forward(request, response);
     }
 
+    /** Routes POST requests to the brand/model add/toggle-active/lookup AJAX actions. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

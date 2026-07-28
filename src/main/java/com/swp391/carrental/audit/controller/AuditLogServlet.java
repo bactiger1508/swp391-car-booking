@@ -19,11 +19,24 @@ import com.swp391.carrental.audit.util.AuditLabels;
 import com.swp391.carrental.user.model.User;
 import com.swp391.carrental.user.service.UserService;
 
+/*
+ * Name: AuditLogServlet
+ * @Author: TinhHNHE172394
+ * Date: 27/07/2026
+ * Version: 1.0
+ * Description: Displays and filters the system audit log screen (staff/admin only).
+ */
+
+/**
+ * Serves the audit log listing page, with optional filtering by user, action,
+ * entity type, and date range.
+ */
 @WebServlet(name = "AuditLogServlet", urlPatterns = {"/audit-logs"})
 public class AuditLogServlet extends HttpServlet {
     private final AuditLogService auditLogService = new AuditLogService();
     private final UserService userService = new UserService();
 
+    /** Routes GET requests to either the filtered view or the full unfiltered log list. */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -57,6 +70,7 @@ public class AuditLogServlet extends HttpServlet {
         }
     }
 
+    /** Displays every audit log entry, unfiltered, most recent first. */
     private void handleViewAllLogs(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<AuditLog> logs = auditLogService.getAllLogs();
@@ -82,6 +96,7 @@ public class AuditLogServlet extends HttpServlet {
         return userMap;
     }
 
+    /** Parses filter parameters from the request and displays the matching audit log entries. */
     private void handleFilterLogs(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String userIdStr = request.getParameter("userId");

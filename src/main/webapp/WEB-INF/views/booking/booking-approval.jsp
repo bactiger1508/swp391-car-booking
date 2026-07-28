@@ -76,14 +76,14 @@
                                 <div style="display:flex;justify-content:flex-end;gap:6px;">
                                     <a href="${pageContext.request.contextPath}/bookings/detail?id=${b.bookingId}" class="bk-btn bk-btn-outline bk-btn-sm">Xem</a>
                                     
-                                    <%-- Nút Duyệt sử dụng Modal tùy chỉnh --%>
+                                    <%-- Approve button using custom modal --%>
                                     <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="display:inline;" id="approveForm-${b.bookingId}">
                                         <input type="hidden" name="bookingId" value="${b.bookingId}"/>
                                         <input type="hidden" name="action" value="approve"/>
                                         <button type="button" class="bk-btn bk-btn-success bk-btn-sm" onclick="openApproveModal(${b.bookingId})">Duyệt</button>
                                     </form>
                                     
-                                    <%-- Nút Từ chối sử dụng Modal tùy chỉnh --%>
+                                    <%-- Reject button using custom modal --%>
                                     <form method="post" action="${pageContext.request.contextPath}/bookings/approval" style="display:inline;" id="rejectForm-${b.bookingId}">
                                         <input type="hidden" name="bookingId" value="${b.bookingId}"/>
                                         <input type="hidden" name="action" value="reject"/>
@@ -97,7 +97,7 @@
                 </tbody>
             </table>
         </div>
-        <!-- Phân trang -->
+        <!-- Pagination -->
         <div class="bk-pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:12px 0; border-top:1px solid var(--outline-variant); flex-wrap:wrap; gap:12px;">
             <div style="font-size:13px; color:var(--on-surface-variant);">
                 Hiển thị <span id="pag-start" style="font-weight:600;">0</span> đến <span id="pag-end" style="font-weight:600;">0</span> trong số <span id="pag-total" style="font-weight:600;">0</span> bản ghi
@@ -111,7 +111,7 @@
                     <option value="50">50</option>
                 </select>
                 <div id="paginationButtons" style="display:flex; gap:4px; align-items:center; margin-left:12px;">
-                    <!-- nút chuyển trang -->
+                    <!-- Pagination buttons -->
                 </div>
             </div>
         </div>
@@ -125,7 +125,7 @@
     </c:if>
 </div>
 
-<%-- BK CUSTOM MODAL POPUP (GIAO DIỆN HỘP THOẠI XÁC NHẬN TÙY CHỈNH) --%>
+<%-- BK CUSTOM CONFIRM MODAL POPUP --%>
 <div id="customConfirmModal" class="bk-modal">
     <div class="bk-modal-content">
         <div class="bk-modal-header">
@@ -135,7 +135,7 @@
         <div class="bk-modal-body">
             <p id="modalMessage">Nội dung xác nhận...</p>
             
-            <%-- Khung nhập lý do từ chối (chỉ hiện khi nhấn Từ chối) --%>
+            <%-- Rejection reason input container (shown only for reject action) --%>
             <div id="modalInputContainer" style="display:none;margin-top:16px;">
                 <label class="bk-form-label" style="margin-bottom:8px;display:block;">Lý do từ chối đơn hàng</label>
                 <textarea id="modalReasonInput" class="bk-form-textarea" rows="3" placeholder="Nhập lý do từ chối tại đây..." style="padding-left:12px;"></textarea>
@@ -285,7 +285,7 @@ function openApproveModal(bookingId) {
     document.getElementById('modalInputContainer').style.display = 'none';
     
     var confirmBtn = document.getElementById('modalConfirmBtn');
-    confirmBtn.className = "bk-btn bk-btn-primary"; // Xanh dương
+    confirmBtn.className = "bk-btn bk-btn-primary"; // Primary blue
     
     document.getElementById('customConfirmModal').classList.add('open');
 }
@@ -298,12 +298,12 @@ function openRejectModal(bookingId) {
     document.getElementById('modalMessage').textContent = "Vui lòng nhập lý do cụ thể để gửi thông báo từ chối đơn đặt xe #BK-" + bookingId + " cho khách hàng:";
     
     var reasonInput = document.getElementById('modalReasonInput');
-    reasonInput.value = "Không đạt yêu cầu"; // mặc định gợi ý
+    reasonInput.value = "Không đạt yêu cầu"; // Default reason suggestion
     document.getElementById('modalInputContainer').style.display = 'block';
     document.getElementById('modalErrorMsg').style.display = 'none';
     
     var confirmBtn = document.getElementById('modalConfirmBtn');
-    confirmBtn.className = "bk-btn bk-btn-danger"; // Đỏ
+    confirmBtn.className = "bk-btn bk-btn-danger"; // Danger red
     
     document.getElementById('customConfirmModal').classList.add('open');
     reasonInput.focus();
@@ -314,7 +314,7 @@ function closeModal() {
     activeForm = null;
 }
 
-// Xử lý nút Xác nhận trên Modal tùy chỉnh
+// Handle confirm button action in custom modal
 document.getElementById('modalConfirmBtn').onclick = function() {
     if (!activeForm) return;
     
@@ -327,7 +327,7 @@ document.getElementById('modalConfirmBtn').onclick = function() {
         activeForm.querySelector('input[name="reason"]').value = reasonVal;
     }
     
-    // Tắt modal và submit form thực tế
+    // Close modal and submit actual form
     document.getElementById('customConfirmModal').classList.remove('open');
     activeForm.submit();
 };

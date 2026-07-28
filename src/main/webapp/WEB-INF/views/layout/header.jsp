@@ -1,5 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="isCustomerOrGuest" value="${sessionScope.currentUser == null || sessionScope.currentUser.role == 'CUSTOMER'}" />
+<c:set var="hideSidebarParam" value="${param.hideSidebar == 'true' || isCustomerOrGuest}" />
+<%
+    String reqURI = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+    if (reqURI == null) {
+        reqURI = request.getRequestURI();
+    }
+    String ctx = request.getContextPath();
+    String currentPath = reqURI.startsWith(ctx) ? reqURI.substring(ctx.length()) : reqURI;
+    request.setAttribute("_cp", currentPath);
+%>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -11,8 +22,9 @@
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     </head>
-    <body class="bk-layout">
+    <body class="bk-layout ${hideSidebarParam ? 'no-sidebar' : ''}">
 
+        <c:if test="${not hideSidebarParam}">
         <%-- SIDEBAR --%>
         <aside class="bk-sidebar">
             <div class="bk-sidebar-brand">
@@ -20,15 +32,7 @@
                 <p>Quản lý đội xe thông minh</p>
             </div>
 
-            <%
-                String reqURI = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
-                if (reqURI == null) {
-                    reqURI = request.getRequestURI();
-                }
-                String ctx = request.getContextPath();
-                String currentPath = reqURI.startsWith(ctx) ? reqURI.substring(ctx.length()) : reqURI;
-                request.setAttribute("_cp", currentPath);
-            %>
+            <%-- Path calculation moved to top --%>
 
             <nav class="bk-sidebar-nav">
                 <a href="${pageContext.request.contextPath}/home" class="bk-sidebar-link ${_cp == '/home' || _cp == '/' ? 'active' : ''}">
@@ -255,58 +259,139 @@
                 </c:if>
             </div>
         </aside>
+        </c:if>
 
         <%-- MAIN AREA --%>
         <div class="bk-main">
             <%-- TOP HEADER --%>
-            <header class="bk-header">
-                <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
-
-                <div class="bk-header-actions">
-                    <c:if test="${sessionScope.currentUser != null}">
-                        <div class="bk-header-noti-wrapper" style="position:relative; display:inline-block;">
-                            <button type="button" class="bk-header-icon" id="notiBellBtn" onclick="toggleNotiDropdown(event)" style="position:relative; cursor:pointer; background:none; border:none; color:inherit; padding:6px;">
-                                <span class="material-symbols-outlined" style="font-size:24px;">notifications</span>
-                                <span id="notiBadgeCount" class="bk-noti-badge" style="position:absolute; top:-2px; right:-2px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:16px; height:16px; line-height:14px; text-align:center; border:2px solid var(--surface, #fff); box-shadow:0 2px 5px rgba(0,0,0,0.2); display:none;">0</span>
-                            </button>
-
-                            <%-- Popup Dropdown --%>
-                            <div id="notiDropdownPopup" class="bk-noti-dropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:380px; background:var(--surface, #fff); border:1px solid var(--outline-variant, #e0e0e0); border-radius:14px; box-shadow:0 12px 32px rgba(15,23,42,0.18); z-index:10000; overflow:hidden;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
-                                    <strong style="font-size:14px; color:var(--on-surface);">Thông báo</strong>
-                                    <button type="button" onclick="markAllNotisReadHeader()" style="background:none; border:none; color:var(--primary, #2F5ACD); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">Đánh dấu tất cả</button>
-                                </div>
-                                <div id="notiDropdownList" style="max-height:320px; overflow-y:auto;">
-                                    <div style="padding:20px; text-align:center; color:var(--secondary); font-size:13px;">Đang tải thông báo...</div>
-                                </div>
-                                <div style="padding:10px; text-align:center; border-top:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
-                                    <a href="${pageContext.request.contextPath}/notifications" style="font-size:12px; font-weight:700; color:var(--primary, #2F5ACD); text-decoration:none;">Xem tất cả thông báo &rarr;</a>
-                                </div>
+        <c:choose>
+            <c:when test="${hideSidebarParam}">
+                <%-- LIGHTWEIGHT NAVBAR FOR PUBLIC LANDING PAGE --%>
+                <nav class="pub-navbar">
+                    <div class="pub-navbar-container">
+                        <!-- Left: Brand & Links -->
+                        <div class="pub-navbar-left">
+                            <a href="${pageContext.request.contextPath}/home" class="pub-navbar-brand">
+                                CarPro
+                            </a>
+                            <!-- Mid/Left: Nav links -->
+                            <div class="pub-navbar-nav">
+                                <a href="${pageContext.request.contextPath}/home" class="pub-navbar-link ${_cp == '/home' || _cp == '/' ? 'active' : ''}">Trang chủ</a>
+                                <a href="${pageContext.request.contextPath}/vehicles" class="pub-navbar-link ${_cp == '/vehicles' || _cp == '/vehicles/list' || _cp == '/vehicles/detail' ? 'active' : ''}">Danh sách xe</a>
+                                <a href="${pageContext.request.contextPath}/bookings/policy" class="pub-navbar-link ${_cp == '/bookings/policy' ? 'active' : ''}">Chính sách</a>
+                                
+                                <c:if test="${sessionScope.currentUser != null && sessionScope.currentUser.role == 'CUSTOMER'}">
+                                    <a href="${pageContext.request.contextPath}/bookings/my" class="pub-navbar-link ${_cp == '/bookings/my' || _cp == '/bookings/detail' ? 'active' : ''}">Đơn thuê của tôi</a>
+                                    <a href="${pageContext.request.contextPath}/contracts" class="pub-navbar-link ${_cp == '/contracts' ? 'active' : ''}">Hợp đồng của tôi</a>
+                                    <a href="${pageContext.request.contextPath}/payments/history" class="pub-navbar-link ${_cp == '/payments/history' ? 'active' : ''}">Lịch sử thanh toán</a>
+                                </c:if>
                             </div>
                         </div>
-                    </c:if>
-                    <c:if test="${sessionScope.currentUser == null}">
-                        <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
-                    </c:if>
-                    <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>
 
-                    <c:if test="${sessionScope.currentUser != null}">
-                        <div class="bk-header-user">
-                            <span>${sessionScope.currentUser.fullName}</span>
-                            <div class="bk-header-avatar">
-                                ${sessionScope.currentUser.fullName.substring(0,1)}
-                            </div>
+                        <!-- Right: Actions -->
+                        <div class="pub-navbar-right">
+                            <c:if test="${sessionScope.currentUser != null}">
+                                <%-- If the user is logged in --%>
+                                <div class="pub-navbar-user-wrap" id="pubNavbarUserWrap" onclick="toggleUserDropdown(event)">
+                                    <button class="pub-navbar-user-btn" type="button">
+                                        <span>${sessionScope.currentUser.fullName}</span>
+                                        <div class="pub-navbar-avatar">
+                                            ${sessionScope.currentUser.fullName.substring(0,1)}
+                                        </div>
+                                    </button>
+                                    <div class="pub-navbar-dropdown">
+                                        <c:if test="${sessionScope.currentUser.role != 'CUSTOMER'}">
+                                            <a href="${pageContext.request.contextPath}/bookings/manage" class="pub-navbar-dropdown-item" style="font-weight:700;color:var(--primary);">
+                                                Bảng điều khiển
+                                            </a>
+                                            <div class="pub-navbar-divider"></div>
+                                        </c:if>
+                                        <a href="${pageContext.request.contextPath}/profile" class="pub-navbar-dropdown-item">Hồ sơ cá nhân</a>
+                                        <a href="${pageContext.request.contextPath}/change-password" class="pub-navbar-dropdown-item">Đổi mật khẩu</a>
+                                        <c:if test="${sessionScope.currentUser.role == 'CUSTOMER'}">
+                                            <a href="${pageContext.request.contextPath}/notifications" class="pub-navbar-dropdown-item">Thông báo</a>
+                                        </c:if>
+                                        <div class="pub-navbar-divider"></div>
+                                        <a href="${pageContext.request.contextPath}/logout" class="pub-navbar-dropdown-item danger">Đăng xuất</a>
+                                    </div>
+                                </div>
+                            </c:if>
+                            <c:if test="${sessionScope.currentUser == null}">
+                                <a href="${pageContext.request.contextPath}/login" class="pub-navbar-btn">
+                                    Đăng nhập
+                                </a>
+                            </c:if>
                         </div>
-                    </c:if>
+                    </div>
+                </nav>
+            </c:when>
+            <c:otherwise>
+                <%-- TOP HEADER --%>
+                <header class="bk-header">
+                    <a href="${pageContext.request.contextPath}/home" class="bk-header-brand">Quản lý CarPro</a>
 
-                    <c:if test="${sessionScope.currentUser == null}">
-                        <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
-                    </c:if>
-                </div>
-            </header>
+                    <div class="bk-header-actions">
+                        <c:if test="${sessionScope.currentUser != null}">
+                            <div class="bk-header-noti-wrapper" style="position:relative; display:inline-block;">
+                                <button type="button" class="bk-header-icon" id="notiBellBtn" onclick="toggleNotiDropdown(event)" style="position:relative; cursor:pointer; background:none; border:none; color:inherit; padding:6px;">
+                                    <span class="material-symbols-outlined" style="font-size:24px;">notifications</span>
+                                    <span id="notiBadgeCount" class="bk-noti-badge" style="position:absolute; top:-2px; right:-2px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:16px; height:16px; line-height:14px; text-align:center; border:2px solid var(--surface, #fff); box-shadow:0 2px 5px rgba(0,0,0,0.2); display:none;">0</span>
+                                </button>
+
+                                <%-- Popup Dropdown --%>
+                                <div id="notiDropdownPopup" class="bk-noti-dropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); width:380px; background:var(--surface, #fff); border:1px solid var(--outline-variant, #e0e0e0); border-radius:14px; box-shadow:0 12px 32px rgba(15,23,42,0.18); z-index:10000; overflow:hidden;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
+                                        <strong style="font-size:14px; color:var(--on-surface);">Thông báo</strong>
+                                        <button type="button" onclick="markAllNotisReadHeader()" style="background:none; border:none; color:var(--primary, #2F5ACD); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">Đánh dấu tất cả</button>
+                                    </div>
+                                    <div id="notiDropdownList" style="max-height:320px; overflow-y:auto;">
+                                        <div style="padding:20px; text-align:center; color:var(--secondary); font-size:13px;">Đang tải thông báo...</div>
+                                    </div>
+                                    <div style="padding:10px; text-align:center; border-top:1px solid var(--outline-variant, #eee); background:var(--surface-variant, #f8f9fa);">
+                                        <a href="${pageContext.request.contextPath}/notifications" style="font-size:12px; font-weight:700; color:var(--primary, #2F5ACD); text-decoration:none;">Xem tất cả thông báo &rarr;</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:if>
+                        <c:if test="${sessionScope.currentUser == null}">
+                            <button class="bk-header-icon"><span class="material-symbols-outlined">notifications</span></button>
+                        </c:if>
+                        <button class="bk-header-icon"><span class="material-symbols-outlined">settings</span></button>
+
+                        <c:if test="${sessionScope.currentUser != null}">
+                            <div class="bk-header-user">
+                                <span>${sessionScope.currentUser.fullName}</span>
+                                <div class="bk-header-avatar">
+                                    ${sessionScope.currentUser.fullName.substring(0,1)}
+                                </div>
+                            </div>
+                        </c:if>
+
+                        <c:if test="${sessionScope.currentUser == null}">
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary" style="padding:6px 16px;font-size:13px;">Đăng Nhập</a>
+                        </c:if>
+                    </div>
+                </header>
+            </c:otherwise>
+        </c:choose>
 
             <c:if test="${sessionScope.currentUser != null}">
                 <script>
+                function toggleUserDropdown(event) {
+                    if (event) event.stopPropagation();
+                    var wrap = document.getElementById('pubNavbarUserWrap');
+                    if (wrap) {
+                        wrap.classList.toggle('active');
+                    }
+                }
+
+                document.addEventListener('click', function(e) {
+                    var wrap = document.getElementById('pubNavbarUserWrap');
+                    if (wrap && !wrap.contains(e.target)) {
+                        wrap.classList.remove('active');
+                    }
+                });
+
                 function fetchUnreadCountHeader() {
                     fetch('${pageContext.request.contextPath}/notifications?action=getUnreadCount')
                         .then(r => r.json())
@@ -368,7 +453,11 @@
                 }
 
                 function readNotiHeader(id) {
-                    window.location.href = '${pageContext.request.contextPath}/notifications?action=click&notificationId=' + id;
+                    fetch('${pageContext.request.contextPath}/notifications?action=markAsRead&notificationId=' + id, {method: 'POST'})
+                        .then(() => {
+                            fetchUnreadCountHeader();
+                            window.location.href = '${pageContext.request.contextPath}/notifications';
+                        });
                 }
 
                 function markAllNotisReadHeader() {
@@ -402,3 +491,333 @@
             <%-- CONTENT START --%>
             <div class="bk-content">
 
+        <style>
+            .bk-notification-container {
+                position: relative;
+                display: inline-block;
+            }
+
+            .notification-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #e74c3c;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 20px;
+            }
+
+            .notification-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                width: 360px;
+                max-height: 500px;
+                display: none;
+                z-index: 1000;
+                margin-top: 8px;
+            }
+
+            .notification-dropdown.show {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .notification-header {
+                padding: 12px 16px;
+                border-bottom: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .notification-header h3 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .mark-all-btn {
+                background: none;
+                border: none;
+                color: #3498db;
+                font-size: 12px;
+                cursor: pointer;
+                padding: 0;
+            }
+
+            .mark-all-btn:hover {
+                color: #2980b9;
+            }
+
+            .notification-list {
+                overflow-y: auto;
+                flex: 1;
+            }
+
+            .notification-item {
+                padding: 12px 16px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+
+            .notification-item:hover {
+                background-color: #f9f9f9;
+            }
+
+            .notification-item.unread {
+                background-color: #f0f8ff;
+            }
+
+            .notification-content {
+                flex: 1;
+            }
+
+            .notification-title {
+                font-weight: 600;
+                font-size: 13px;
+                margin: 0 0 4px 0;
+                color: #333;
+            }
+
+            .notification-message {
+                font-size: 12px;
+                color: #666;
+                margin: 0;
+                line-height: 1.4;
+            }
+
+            .notification-time {
+                font-size: 11px;
+                color: #999;
+                margin-top: 4px;
+            }
+
+            .notification-unread-indicator {
+                width: 8px;
+                height: 8px;
+                background: #3498db;
+                border-radius: 50%;
+                margin-left: 8px;
+                flex-shrink: 0;
+                margin-top: 6px;
+            }
+
+            .no-notifications {
+                padding: 24px 16px;
+                text-align: center;
+                color: #999;
+                font-size: 13px;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                .notification-dropdown {
+                    background: #2c3e50;
+                    border-color: #34495e;
+                }
+
+                .notification-header {
+                    border-bottom-color: #34495e;
+                }
+
+                .notification-header h3 {
+                    color: #ecf0f1;
+                }
+
+                .notification-item {
+                    border-bottom-color: #34495e;
+                }
+
+                .notification-item:hover {
+                    background-color: #34495e;
+                }
+
+                .notification-item.unread {
+                    background-color: #1a3a52;
+                }
+
+                .notification-title {
+                    color: #ecf0f1;
+                }
+
+                .notification-message {
+                    color: #bdc3c7;
+                }
+
+                .notification-time {
+                    color: #95a5a6;
+                }
+            }
+        </style>
+
+        <script>
+            let notificationDropdownOpen = false;
+            let notificationPollInterval;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (document.querySelector('#notificationBell')) {
+                    loadNotifications();
+                    notificationPollInterval = setInterval(loadNotifications, 60000);
+                }
+            });
+
+            function toggleNotificationDropdown() {
+                const dropdown = document.getElementById('notificationDropdown');
+                notificationDropdownOpen = !notificationDropdownOpen;
+                if (notificationDropdownOpen) {
+                    dropdown.classList.add('show');
+                    loadNotifications();
+                } else {
+                    dropdown.classList.remove('show');
+                }
+            }
+
+            function loadNotifications() {
+                fetch('${pageContext.request.contextPath}/notifications?action=getAll')
+                    .then(response => response.json())
+                    .then(notifications => {
+                        updateNotificationUI(notifications);
+                    })
+                    .catch(error => console.error('Error loading notifications:', error));
+            }
+
+            function updateNotificationUI(notifications) {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                const badge = document.getElementById('notificationBadge');
+                const list = document.getElementById('notificationList');
+
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                if (notifications.length === 0) {
+                    list.innerHTML = '<div class="no-notifications">Không có thông báo</div>';
+                    return;
+                }
+
+                list.innerHTML = notifications.map(notif => {
+                    const date = new Date(notif.createdAt);
+                    const timeStr = formatNotificationTime(date);
+                    const unreadClass = !notif.isRead ? 'unread' : '';
+                    const unreadIndicator = !notif.isRead ? '<div class="notification-unread-indicator"></div>' : '';
+                    const escapedTitle = escapeHtml(notif.title);
+                    const escapedMessage = escapeHtml(notif.message);
+
+                    return `
+                        <div class="notification-item ${unreadClass}" onclick="clickNotification(${notif.notificationId}, '${notif.referenceType}', ${notif.referenceId})">
+                            <div class="notification-content">
+                                <p class="notification-title">${escapedTitle}</p>
+                                <p class="notification-message">${escapedMessage}</p>
+                                <div class="notification-time">${timeStr}</div>
+                            </div>
+                            ${unreadIndicator}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function formatNotificationTime(date) {
+                const now = new Date();
+                const diff = now - date;
+                const seconds = Math.floor(diff / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (seconds < 60) return 'Vừa xong';
+                if (minutes < 60) return minutes + ' phút trước';
+                if (hours < 24) return hours + ' giờ trước';
+                if (days < 7) return days + ' ngày trước';
+
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            function clickNotification(notificationId, referenceType, referenceId) {
+                markNotificationAsRead(notificationId);
+
+                let redirectUrl = '${pageContext.request.contextPath}/notifications';
+                if (referenceType && referenceId) {
+                    switch(referenceType) {
+                        case 'BOOKING':
+                            redirectUrl = '${pageContext.request.contextPath}/bookings/detail?id=' + referenceId;
+                            break;
+                        case 'CONTRACT':
+                            redirectUrl = '${pageContext.request.contextPath}/contracts/detail?id=' + referenceId;
+                            break;
+                        case 'PAYMENT':
+                            redirectUrl = '${pageContext.request.contextPath}/payments/record?bookingId=' + referenceId;
+                            break;
+                        case 'HANDOVER':
+                            redirectUrl = '${pageContext.request.contextPath}/handovers';
+                            break;
+                        case 'RETURN':
+                            redirectUrl = '${pageContext.request.contextPath}/returns';
+                            break;
+                    }
+                }
+
+                window.location.href = redirectUrl;
+            }
+
+            function markNotificationAsRead(notificationId) {
+                fetch('${pageContext.request.contextPath}/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=markAsRead&notificationId=' + notificationId
+                }).then(() => {
+                    loadNotifications();
+                }).catch(error => console.error('Error marking notification as read:', error));
+            }
+
+            function markAllNotificationsAsRead() {
+                fetch('${pageContext.request.contextPath}/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=markAllAsRead'
+                }).then(() => {
+                    loadNotifications();
+                }).catch(error => console.error('Error marking all notifications as read:', error));
+            }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            document.addEventListener('click', function(event) {
+                const bell = document.getElementById('notificationBell');
+                const dropdown = document.getElementById('notificationDropdown');
+                if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+                    notificationDropdownOpen = false;
+                    dropdown.classList.remove('show');
+                }
+            });
+        </script>

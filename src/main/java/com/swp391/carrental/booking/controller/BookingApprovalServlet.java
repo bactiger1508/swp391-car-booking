@@ -133,24 +133,58 @@ public class BookingApprovalServlet extends HttpServlet {
     }
 
     /**
-     * Notifies the customer whether their booking request was approved or rejected.
+     * Notifies the customer whether their booking request was approved or rejected,
+     * and notifies every STAFF/ADMIN account of the decision for visibility.
      */
     private void notifyBookingDecision(Booking booking, int bookingId, boolean approved, String reason) {
         if (booking == null) {
             return;
         }
         try {
-            String title = approved ? "Đặt xe đã được duyệt" : "Đặt xe bị từ chối";
-            String message = approved
-                    ? "Booking #" + bookingId + " của bạn đã được duyệt. Vui lòng chờ chuẩn bị hợp đồng."
-                    : "Booking #" + bookingId + " của bạn đã bị từ chối. Lý do: " + reason;
+            String vehicleInfo = describeVehicle(booking.getVehicleId());
+            String period = formatBookingPeriod(booking);
 
-            Notification notif = new Notification(booking.getCustomerId(), title, message, "BOOKING");
-            notif.setReferenceType("BOOKING");
-            notif.setReferenceId(bookingId);
-            notificationService.createNotification(notif);
+            String title = approved ? "Đặt xe đã được duyệt" : "Đặt xe bị từ chối";
+            String customerMessage = approved
+                    ? "Booking #" + bookingId + " (" + vehicleInfo + ", " + period + ") của bạn đã được duyệt. Vui lòng chờ chuẩn bị hợp đồng."
+                    : "Booking #" + bookingId + " (" + vehicleInfo + ", " + period + ") của bạn đã bị từ chối. Lý do: " + reason;
+
+            Notification customerNotif = new Notification(booking.getCustomerId(), title, customerMessage, "BOOKING");
+            customerNotif.setReferenceType("BOOKING");
+            customerNotif.setReferenceId(bookingId);
+            notificationService.createNotification(customerNotif);
+
+            String staffTitle = approved ? "Booking đã được duyệt" : "Booking đã bị từ chối";
+            String staffMessage = approved
+                    ? "Booking #" + bookingId + " (" + vehicleInfo + ", " + period + ") đã được duyệt."
+                    : "Booking #" + bookingId + " (" + vehicleInfo + ", " + period + ") đã bị từ chối. Lý do: " + reason;
+            for (String staffRole : new String[]{Role.STAFF, Role.ADMIN}) {
+                for (User staffUser : userDAO.findByRole(staffRole)) {
+                    Notification staffNotif = new Notification(staffUser.getUserId(), staffTitle, staffMessage, "BOOKING");
+                    staffNotif.setReferenceType("BOOKING");
+                    staffNotif.setReferenceId(bookingId);
+                    notificationService.createNotification(staffNotif);
+                }
+            }
         } catch (Exception e) {
             System.err.println("Failed to send booking-decision notification: " + e.getMessage());
         }
+    }
+
+    /** Builds a short "brand model - plate" label for a vehicle, for use in notification messages. */
+    private String describeVehicle(int vehicleId) {
+        Vehicle vehicle = vehicleService.getVehicleById(vehicleId);
+        if (vehicle == null) {
+            return "xe #" + vehicleId;
+        }
+        return "biển số " + vehicle.getLicensePlate();
+    }
+
+    /** Formats a booking's pickup/return period as "dd/MM/yyyy HH:mm - dd/MM/yyyy HH:mm". */
+    private String formatBookingPeriod(Booking booking) {
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String start = booking.getStartDate() != null ? booking.getStartDate().format(fmt) : "?";
+        String end = booking.getEndDate() != null ? booking.getEndDate().format(fmt) : "?";
+        return start + " - " + end;
     }
 }

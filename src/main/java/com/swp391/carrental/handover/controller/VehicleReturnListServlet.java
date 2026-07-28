@@ -18,12 +18,15 @@ import com.swp391.carrental.handover.dao.HandoverDAO;
 import com.swp391.carrental.handover.model.VehicleHandover;
 import com.swp391.carrental.handover.model.VehicleReturn;
 import com.swp391.carrental.handover.service.ReturnService;
+import com.swp391.carrental.payment.dao.PaymentDAO;
+import com.swp391.carrental.payment.model.Payment;
+
 /**
  * Name: VehicleReturnListServlet
- * @Author: TamTTMHE190340
- * Date: 21/06/2026
- * Version: 1.0
- * Description: Controller for displaying the list of all vehicle returns, distance driven, and refund calculations.
+ *
+ * @Author: TamTTMHE190340 Date: 28/07/2026 Version: 1.0 Description: Controller
+ * for displaying the list of all vehicle returns, distance driven, and refund
+ * calculations.
  */
 @WebServlet(name = "VehicleReturnListServlet", urlPatterns = {"/returns"})
 public class VehicleReturnListServlet extends HttpServlet {
@@ -45,28 +48,34 @@ public class VehicleReturnListServlet extends HttpServlet {
 
                 if (booking != null) {
                     BigDecimal surcharge = r.getTotalAdditionalFee() != null ? r.getTotalAdditionalFee() : BigDecimal.ZERO;
-                    
-                    com.swp391.carrental.payment.dao.PaymentDAO paymentDAO = new com.swp391.carrental.payment.dao.PaymentDAO();
-                    List<com.swp391.carrental.payment.model.Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
-                    BigDecimal totalPaid = BigDecimal.ZERO;
-                    for (com.swp391.carrental.payment.model.Payment p : payments) {
+
+                    PaymentDAO paymentDAO = new PaymentDAO();
+                    List<Payment> payments = paymentDAO.findByBookingId(r.getBookingId());
+                    BigDecimal grossPaid = BigDecimal.ZERO;
+                    BigDecimal completedRefunds = BigDecimal.ZERO;
+                    for (Payment p : payments) {
                         if ("COMPLETED".equalsIgnoreCase(p.getStatus())) {
                             if ("DEDUCTION".equalsIgnoreCase(p.getPaymentMethod())) {
                                 continue;
                             }
                             BigDecimal effectiveAmt = p.getAmountPaid() != null ? p.getAmountPaid() : p.getAmount();
                             if ("REFUND".equalsIgnoreCase(p.getPaymentType())) {
-                                totalPaid = totalPaid.subtract(effectiveAmt);
+                                completedRefunds = completedRefunds.add(effectiveAmt);
                             } else {
-                                totalPaid = totalPaid.add(effectiveAmt);
+                                grossPaid = grossPaid.add(effectiveAmt);
                             }
                         }
                     }
-                    
-                    BigDecimal totalRequired = booking.getTotalAmount().add(surcharge);
+
+                    BigDecimal depositAmt = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
+                    BigDecimal pureRentalFee = booking.getTotalAmount().subtract(depositAmt);
+                    BigDecimal totalRequired = pureRentalFee.add(surcharge);
+
                     BigDecimal netRefund = BigDecimal.ZERO;
-                    if (totalPaid.compareTo(totalRequired) > 0) {
-                        netRefund = totalPaid.subtract(totalRequired);
+                    if (completedRefunds.compareTo(BigDecimal.ZERO) > 0) {
+                        netRefund = completedRefunds;
+                    } else if (grossPaid.compareTo(totalRequired) > 0) {
+                        netRefund = grossPaid.subtract(totalRequired);
                     }
 
                     VehicleHandover handover = handoverDAO.findByBookingId(r.getBookingId());
