@@ -248,7 +248,11 @@ VALUES
     (N'BANK_ACCOUNT_NAME',            N'NGUYEN LAM TUNG',    N'Tên tài khoản ngân hàng',             N'PAYMENT', 1),
     (N'BANK_ACCOUNT_NUMBER',          N'00000104077',         N'Số tài khoản ngân hàng',              N'PAYMENT', 1),
     (N'BANK_NAME',                    N'TPBank',              N'Tên ngân hàng',                       N'PAYMENT', 1),
-    (N'BANK_BRANCH',                  N'Chi nhánh Hà Nội',   N'Chi nhánh ngân hàng',                 N'PAYMENT', 1);
+    (N'BANK_BRANCH',                  N'Chi nhánh Hà Nội',   N'Chi nhánh ngân hàng',                 N'PAYMENT', 1),
+    -- Cancellation policy settings
+    (N'CANCEL_FREE_HOURS',            N'48',      N'Số giờ hủy đơn trước để được hoàn 100% cọc',            N'BOOKING', 1),
+    (N'CANCEL_PARTIAL_HOURS',         N'24',      N'Số giờ hủy đơn sát giờ chịu phí phạt cọc',             N'BOOKING', 1),
+    (N'CANCEL_PARTIAL_REFUND_PERCENT',N'50',      N'Phần trăm cọc hoàn lại khi hủy đơn sát giờ (%)',        N'BOOKING', 1);
 GO
 
 -- ============================================================

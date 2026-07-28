@@ -36,7 +36,7 @@
                     <th>Ngày nhận xe</th>
                     <th>Quãng đường đi</th>
                     <th>Phụ thu phát sinh</th>
-                    <th>Số tiền cần hoàn lại</th>
+                    <th>Hoàn trả / Cần thu</th>
                     <th>Nhân viên nhận xe</th>
                     <th>Thao tác</th>
                 </tr>
@@ -59,9 +59,23 @@
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight:700; color:#2E7D32; font-size:13px; background:#EAF9F5; padding: 4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(5,205,153,0.25);">
-                                <fmt:formatNumber value="${refundsMap[r.bookingId]}" type="number" groupingUsed="true"/>đ
-                            </div>
+                            <c:choose>
+                                <c:when test="${extraPaymentsMap[r.bookingId] > 0}">
+                                    <div style="font-weight:700; color:#D32F2F; font-size:13px; background:#FDECEA; padding: 4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(211,47,47,0.25);">
+                                        +<fmt:formatNumber value="${extraPaymentsMap[r.bookingId]}" type="number" groupingUsed="true"/>đ
+                                    </div>
+                                </c:when>
+                                <c:when test="${refundsMap[r.bookingId] > 0}">
+                                    <div style="font-weight:700; color:#2E7D32; font-size:13px; background:#EAF9F5; padding: 4px 10px; border-radius:6px; display:inline-block; border:1px solid rgba(5,205,153,0.25);">
+                                        -<fmt:formatNumber value="${refundsMap[r.bookingId]}" type="number" groupingUsed="true"/>đ
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div style="font-weight:600; color:var(--on-surface-variant); font-size:13px; background:var(--surface-container-low); padding: 4px 10px; border-radius:6px; display:inline-block; border:1px solid var(--outline-variant);">
+                                        0đ
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                         </td>
                         <td>Nhân viên #${r.receivedBy}</td>
                         <td>
