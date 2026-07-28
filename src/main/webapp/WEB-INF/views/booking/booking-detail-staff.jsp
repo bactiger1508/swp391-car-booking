@@ -177,7 +177,7 @@
             </c:if>
         </div>
 
-        <%-- Lịch sử thanh toán (Staff) --%>
+        <%-- Payment history (Staff) --%>
         <div class="bk-card">
             <div class="bk-card-title">
                 <span class="material-symbols-outlined">payments</span> Lịch sử thanh toán & Giao dịch
