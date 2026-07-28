@@ -78,15 +78,15 @@ public class VehicleDAO {
         return null;
     }
 
-    /** Returns AVAILABLE vehicles with no confirmed/in-progress booking overlapping the given date range. */
+    /** Returns AVAILABLE vehicles with no confirmed/in-progress booking overlapping the given date range (including 60-minute buffer time). */
     public List<Vehicle> findAvailable(Timestamp startDate, Timestamp endDate) throws SQLException {
         List<Vehicle> vehicles = new ArrayList<>();
         String sql = BASE_SELECT
                    + "WHERE c.status = 'AVAILABLE' "
                    + "AND c.vehicle_id NOT IN ("
                    + "  SELECT bk.vehicle_id FROM bookings bk "
-                   + "  WHERE bk.status IN ('CONFIRMED', 'IN_PROGRESS') "
-                   + "  AND bk.start_date < ? AND bk.end_date > ?"
+                   + "  WHERE bk.status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS') "
+                   + "  AND bk.start_date < DATEADD(minute, 60, ?) AND DATEADD(minute, 60, bk.end_date) > ?"
                    + ") ORDER BY c.daily_rate";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
