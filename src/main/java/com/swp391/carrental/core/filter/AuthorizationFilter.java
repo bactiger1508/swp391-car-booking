@@ -100,6 +100,10 @@ public class AuthorizationFilter implements Filter {
                 if (session != null) {
                     User user = (User) session.getAttribute("currentUser");
                     if (user != null) {
+                        // Bypass /payments/approve for STAFF and ADMIN roles
+                        if ("/payments/approve".equals(prefix) && ("STAFF".equals(user.getRole()) || "ADMIN".equals(user.getRole()))) {
+                            break;
+                        }
                         // Bypass /payments/record restriction for CUSTOMER role (servlet handles ownership check)
                         if ("/payments/record".equals(prefix) && "CUSTOMER".equals(user.getRole())) {
                             break;

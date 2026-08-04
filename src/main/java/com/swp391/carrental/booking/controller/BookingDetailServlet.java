@@ -158,11 +158,29 @@ public class BookingDetailServlet extends HttpServlet {
                 }
             }
 
+            com.swp391.carrental.policy.service.PolicyService policyService = new com.swp391.carrental.policy.service.PolicyService();
+            int cancelFreeHours = Integer.parseInt(policyService.getPolicyValue("CANCEL_FREE_HOURS", "48"));
+            int cancelPartialHours = Integer.parseInt(policyService.getPolicyValue("CANCEL_PARTIAL_HOURS", "24"));
+            int cancelPartialRefundPercent = Integer.parseInt(policyService.getPolicyValue("CANCEL_PARTIAL_REFUND_PERCENT", "50"));
+
+            int refundPercent = 100;
+            int cancelHoursThreshold = cancelFreeHours;
+            if (depositPaidAmt.compareTo(java.math.BigDecimal.ZERO) > 0 && refundAmt.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                if (refundAmt.compareTo(depositPaidAmt) < 0) {
+                    refundPercent = cancelPartialRefundPercent;
+                    cancelHoursThreshold = cancelPartialHours;
+                }
+            }
+
             request.setAttribute("payments", payments);
             request.setAttribute("depositPaid", depositPaid);
             request.setAttribute("rentalPaid", rentalPaid);
             request.setAttribute("totalPaid", totalPaid);
             request.setAttribute("refundAmt", refundAmt);
+            request.setAttribute("refundPercent", refundPercent);
+            request.setAttribute("cancelHoursThreshold", cancelHoursThreshold);
+            request.setAttribute("cancelFreeHours", cancelFreeHours);
+            request.setAttribute("cancelPartialHours", cancelPartialHours);
             request.setAttribute("isForfeited", isForfeited);
             request.setAttribute("forfeitedAmount", forfeitedAmount);
             request.setAttribute("depositPaidAmt", depositPaidAmt);
